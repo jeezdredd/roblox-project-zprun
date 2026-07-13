@@ -1,0 +1,9 @@
+build.rbxlx
+*.rbxl
+*.rbxlx
+Packages/
+ServerPackages/
+DevPackages/
+sourcemap.json
+roblox.toml
+.DS_Store

@@ -8,6 +8,7 @@ local ChunksConfig = require(ReplicatedStorage.Shared.config.ChunksConfig)
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local LaneSectionFactory = require(ReplicatedStorage.Shared.util.LaneSectionFactory)
 local DistanceTracker = require(script.Parent.DistanceTracker)
+local ZombieAI = require(script.Parent.ZombieAI)
 
 local ChunkSpawner = {}
 
@@ -58,6 +59,9 @@ local function spawnChunk(index: number)
 	model:PivotTo(CFrame.new(runDirection * centerDistance))
 	model.Parent = chunksFolder
 	active[index] = { model = model, configId = config.id }
+
+	local zombieCount = random:NextInteger(config.zombiesMin, config.zombiesMax)
+	ZombieAI.spawnForChunk(index, model:GetPivot(), chunkLength, zombieCount)
 end
 
 local function despawnChunk(index: number)
@@ -68,6 +72,7 @@ local function despawnChunk(index: number)
 	chunk.model.Parent = nil
 	table.insert(pools[chunk.configId], chunk.model)
 	active[index] = nil
+	ZombieAI.clearChunk(index)
 end
 
 local function step()

@@ -8,25 +8,27 @@ local LaneSectionFactory = require(ReplicatedStorage.Shared.util.LaneSectionFact
 
 local TrackBuilder = {}
 
+local platform: Model? = nil
+
 function TrackBuilder.build(): Model
+	TrackBuilder.clear()
+
 	local runDirection = GameConstants.RUN_DIRECTION
 	local length = GameConstants.START_PLATFORM_LENGTH
 
-	local platform = LaneSectionFactory.build("StartPlatform", length, Color3.fromRGB(120, 120, 125))
-	platform:PivotTo(CFrame.new(runDirection * (length / 2)))
+	local model = LaneSectionFactory.build("StartPlatform", length, Color3.fromRGB(120, 120, 125))
+	model:PivotTo(CFrame.new(runDirection * (length / 2)))
+	model.Parent = Workspace
 
-	local spawnPosition = Vector3.new(0, 1.5, 0) + runDirection * 8
-	local spawnLocation = Instance.new("SpawnLocation")
-	spawnLocation.Name = "RunnerSpawn"
-	spawnLocation.Size = Vector3.new(GameConstants.LANE_WIDTH, 1, 8)
-	spawnLocation.CFrame = CFrame.lookAt(spawnPosition, spawnPosition + runDirection)
-	spawnLocation.Anchored = true
-	spawnLocation.Duration = 0
-	spawnLocation.Neutral = true
-	spawnLocation.Parent = platform
+	platform = model
+	return model
+end
 
-	platform.Parent = Workspace
-	return platform
+function TrackBuilder.clear()
+	if platform then
+		platform:Destroy()
+		platform = nil
+	end
 end
 
 return TrackBuilder

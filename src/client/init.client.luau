@@ -1,11 +1,14 @@
 --!strict
 
-local InputController = require(script.controllers.InputController)
-local CameraController = require(script.controllers.CameraController)
-local RunController = require(script.controllers.RunController)
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
 
-InputController.init()
-CameraController.init()
-RunController.init()
+local BootState = require(ReplicatedFirst:WaitForChild("BootState"))
+local BootConfig = require(ReplicatedFirst:WaitForChild("BootConfig"))
+
+local FlowController = require(script.controllers.FlowController)
+
+BootState.awaitReady(BootConfig.READY_TIMEOUT)
+
+FlowController.init()
 
 print("[TaskForceZ][Client] Client started")

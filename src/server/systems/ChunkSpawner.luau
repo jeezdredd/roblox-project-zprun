@@ -9,6 +9,7 @@ local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local LaneSectionFactory = require(ReplicatedStorage.Shared.util.LaneSectionFactory)
 local DistanceTracker = require(script.Parent.DistanceTracker)
 local ZombieAI = require(script.Parent.ZombieAI)
+local MissionState = require(script.Parent.MissionState)
 
 local ChunkSpawner = {}
 
@@ -75,7 +76,18 @@ local function despawnChunk(index: number)
 	ZombieAI.clearChunk(index)
 end
 
+local function despawnAll()
+	for index in active do
+		despawnChunk(index)
+	end
+	nextIndex = 0
+end
+
 local function step()
+	if not MissionState.isActive() then
+		return
+	end
+
 	local spawnEdge = DistanceTracker.getMaxDistance() + GameConstants.SPAWN_AHEAD_DISTANCE
 	while startOffset + nextIndex * chunkLength < spawnEdge do
 		spawnChunk(nextIndex)
@@ -88,6 +100,14 @@ local function step()
 			despawnChunk(index)
 		end
 	end
+end
+
+function ChunkSpawner.reset()
+	despawnAll()
+end
+
+function ChunkSpawner.clear()
+	despawnAll()
 end
 
 function ChunkSpawner.init()

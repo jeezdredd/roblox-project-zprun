@@ -10,6 +10,7 @@ local ZombiesConfig = require(ReplicatedStorage.Shared.config.ZombiesConfig)
 local ZombieFactory = require(script.Parent.ZombieFactory)
 local DistanceTracker = require(script.Parent.DistanceTracker)
 local MissionConfig = require(script.Parent.MissionConfig)
+local MissionState = require(script.Parent.MissionState)
 
 local ZombieAI = {}
 
@@ -141,6 +142,9 @@ local function findNearestPlayerRoot(from: Vector3): BasePart?
 end
 
 local function aiStep()
+	if not MissionState.isActive() then
+		return
+	end
 	local difficulty = MissionConfig.getDifficulty()
 	local aggroActive = difficulty.zombiesChase
 		and DistanceTracker.getMaxDistance() >= GameConstants.ZOMBIE_AGGRO_DISTANCE_THRESHOLD
@@ -181,6 +185,13 @@ function ZombieAI.clearChunk(chunkIndex: number)
 			zombies[model] = nil
 			model:Destroy()
 		end
+	end
+end
+
+function ZombieAI.clearAll()
+	for model in zombies do
+		zombies[model] = nil
+		model:Destroy()
 	end
 end
 

@@ -13,10 +13,12 @@ local runDirection = GameConstants.RUN_DIRECTION
 local rightDirection = runDirection:Cross(Vector3.yAxis)
 local wrapThreshold = GameConstants.LANE_WIDTH / 2 - GameConstants.WALL_WRAP_MARGIN
 
-local function disableDefaultControls()
+local connection: RBXScriptConnection? = nil
+
+local function getControls(): any
 	local playerScripts = Players.LocalPlayer:WaitForChild("PlayerScripts")
 	local playerModule = require(playerScripts:WaitForChild("PlayerModule")) :: any
-	playerModule:GetControls():Disable()
+	return playerModule:GetControls()
 end
 
 local function getAliveHumanoid(): Humanoid?
@@ -40,10 +42,13 @@ local function wrapAroundWalls(root: BasePart)
 	root.CFrame = root.CFrame + Vector3.new(targetX - x, 0, 0)
 end
 
-function RunController.init()
-	disableDefaultControls()
+function RunController.start()
+	if connection then
+		return
+	end
+	getControls():Disable()
 
-	RunService.RenderStepped:Connect(function()
+	connection = RunService.RenderStepped:Connect(function()
 		local humanoid = getAliveHumanoid()
 		if not humanoid then
 			return
@@ -58,6 +63,14 @@ function RunController.init()
 		local direction = (runDirection + rightDirection * axis * GameConstants.LATERAL_SPEED_WEIGHT).Unit
 		humanoid:Move(direction)
 	end)
+end
+
+function RunController.stop()
+	if connection then
+		connection:Disconnect()
+		connection = nil
+	end
+	getControls():Enable()
 end
 
 return RunController

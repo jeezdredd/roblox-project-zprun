@@ -3,6 +3,8 @@
 local GameConstants = {
 	BASE_RUN_SPEED = 24,
 	MAX_RUN_SPEED = 60,
+	HUB_WALK_SPEED = 16,
+	HUB_JUMP_HEIGHT = 7.2,
 	SPEED_GAIN_PER_STUD = 0.002,
 	DEFAULT_DIFFICULTY = "Medium",
 

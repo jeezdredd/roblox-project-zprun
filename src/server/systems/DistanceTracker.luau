@@ -5,12 +5,16 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
+local MissionState = require(script.Parent.MissionState)
 
 local DistanceTracker = {}
 
 local distances: { [Player]: number } = {}
 
 local function createLeaderstats(player: Player)
+	if player:FindFirstChild("leaderstats") then
+		return
+	end
 	local leaderstats = Instance.new("Folder")
 	leaderstats.Name = "leaderstats"
 	local distanceStat = Instance.new("IntValue")
@@ -29,22 +33,21 @@ local function updateLeaderstats(player: Player, distance: number)
 end
 
 local function onPlayerAdded(player: Player)
-	distances[player] = 0
 	createLeaderstats(player)
-	player.CharacterAdded:Connect(function()
-		distances[player] = 0
-		updateLeaderstats(player, 0)
-	end)
 end
 
 local function step()
-	for player, best in distances do
+	if not MissionState.isActive() then
+		return
+	end
+	for _, player in MissionState.getParticipants() do
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		if not root or not root:IsA("BasePart") then
 			continue
 		end
 
+		local best = distances[player] or 0
 		local traveled = root.Position:Dot(GameConstants.RUN_DIRECTION)
 		if traveled > best then
 			best = traveled
@@ -60,6 +63,17 @@ local function step()
 			)
 		end
 	end
+end
+
+function DistanceTracker.beginRun(player: Player)
+	distances[player] = 0
+	createLeaderstats(player)
+	updateLeaderstats(player, 0)
+end
+
+function DistanceTracker.endRun(player: Player)
+	distances[player] = nil
+	updateLeaderstats(player, 0)
 end
 
 function DistanceTracker.init()
@@ -79,16 +93,16 @@ end
 
 function DistanceTracker.getMaxDistance(): number
 	local maxDistance = 0
-	for _, distance in distances do
-		maxDistance = math.max(maxDistance, distance)
+	for _, player in MissionState.getParticipants() do
+		maxDistance = math.max(maxDistance, distances[player] or 0)
 	end
 	return maxDistance
 end
 
 function DistanceTracker.getMinDistance(): number
 	local minDistance = math.huge
-	for _, distance in distances do
-		minDistance = math.min(minDistance, distance)
+	for _, player in MissionState.getParticipants() do
+		minDistance = math.min(minDistance, distances[player] or 0)
 	end
 	if minDistance == math.huge then
 		return 0

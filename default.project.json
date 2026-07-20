@@ -8,6 +8,9 @@
     "ReplicatedStorage": {
       "Shared": { "$path": "src/shared" }
     },
+    "ReplicatedFirst": {
+      "$path": "src/replicatedfirst"
+    },
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "Client": { "$path": "src/client" }

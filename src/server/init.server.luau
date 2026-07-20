@@ -1,17 +1,21 @@
 --!strict
 
-local TrackBuilder = require(script.systems.TrackBuilder)
-local CharacterSetup = require(script.systems.CharacterSetup)
+local FlowService = require(script.systems.FlowService)
+local HangarBuilder = require(script.systems.HangarBuilder)
 local DistanceTracker = require(script.systems.DistanceTracker)
 local MissionConfig = require(script.systems.MissionConfig)
 local ZombieAI = require(script.systems.ZombieAI)
 local ChunkSpawner = require(script.systems.ChunkSpawner)
+local MissionService = require(script.systems.MissionService)
 
-TrackBuilder.build()
-CharacterSetup.init()
-DistanceTracker.init()
 MissionConfig.init()
+FlowService.init()
+DistanceTracker.init()
 ZombieAI.init()
 ChunkSpawner.init()
+MissionService.init()
+
+local deployPrompt = HangarBuilder.build()
+MissionService.bindDeployPrompt(deployPrompt)
 
 print("[TaskForceZ][Server] Server started")

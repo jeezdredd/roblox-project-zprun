@@ -14,7 +14,7 @@ local currentDifficultyId: string = GameConstants.DEFAULT_DIFFICULTY
 
 local function applyDifficulty(id: string): boolean
 	if not DifficultyConfig[id] then
-		warn(`[ZombieRunner] Unknown difficulty "{id}", keeping "{currentDifficultyId}"`)
+		warn(`[TaskForceZ] Unknown difficulty "{id}", keeping "{currentDifficultyId}"`)
 		Workspace:SetAttribute(DIFFICULTY_ATTRIBUTE, currentDifficultyId)
 		return false
 	end

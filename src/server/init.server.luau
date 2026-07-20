@@ -14,4 +14,4 @@ MissionConfig.init()
 ZombieAI.init()
 ChunkSpawner.init()
 
-print("[ZombieRunner][Server] Server started")
+print("[TaskForceZ][Server] Server started")

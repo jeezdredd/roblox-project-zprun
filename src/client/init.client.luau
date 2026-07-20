@@ -8,4 +8,4 @@ InputController.init()
 CameraController.init()
 RunController.init()
 
-print("[ZombieRunner][Client] Client started")
+print("[TaskForceZ][Client] Client started")

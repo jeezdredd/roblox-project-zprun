@@ -7,6 +7,7 @@ local Workspace = game:GetService("Workspace")
 
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local ZombiesConfig = require(ReplicatedStorage.Shared.config.ZombiesConfig)
+local ModifiersConfig = require(ReplicatedStorage.Shared.config.ModifiersConfig)
 local ZombieFactory = require(script.Parent.ZombieFactory)
 local DistanceTracker = require(script.Parent.DistanceTracker)
 local MissionConfig = require(script.Parent.MissionConfig)
@@ -141,18 +142,30 @@ local function findNearestPlayerRoot(from: Vector3): BasePart?
 	return nearest
 end
 
+local function getModifierSpeedBonus(): number
+	local bonus = 0
+	for _, id in MissionState.getModifiers() do
+		local modifier = ModifiersConfig.get(id)
+		if modifier then
+			bonus += modifier.zombieSpeedBonus
+		end
+	end
+	return bonus
+end
+
 local function aiStep()
 	if not MissionState.isActive() then
 		return
 	end
 	local difficulty = MissionConfig.getDifficulty()
+	local speedScale = difficulty.zombieSpeedMultiplier * (1 + getModifierSpeedBonus())
 	local aggroActive = difficulty.zombiesChase
 		and DistanceTracker.getMaxDistance() >= GameConstants.ZOMBIE_AGGRO_DISTANCE_THRESHOLD
 	for _, state in zombies do
 		if state.humanoid.Health <= 0 then
 			continue
 		end
-		state.humanoid.WalkSpeed = state.config.walkSpeed * difficulty.zombieSpeedMultiplier
+		state.humanoid.WalkSpeed = state.config.walkSpeed * speedScale
 		if not aggroActive then
 			continue
 		end

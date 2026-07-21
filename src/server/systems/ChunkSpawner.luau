@@ -27,16 +27,32 @@ local pools: { [string]: { Model } } = {}
 local active: { [number]: ActiveChunk } = {}
 local chunksFolder: Folder? = nil
 local nextIndex = 0
-local totalWeight = 0
+local allowedIds: { [string]: boolean }? = nil
 
 for _, config in ChunksConfig do
-	totalWeight += config.weight
 	pools[config.id] = {}
 end
 
+local function isAllowed(id: string): boolean
+	return allowedIds == nil or allowedIds[id] == true
+end
+
 local function pickConfig(): ChunksConfig.ChunkConfig
-	local roll = random:NextNumber() * totalWeight
+	local weightSum = 0
 	for _, config in ChunksConfig do
+		if isAllowed(config.id) then
+			weightSum += config.weight
+		end
+	end
+	if weightSum <= 0 then
+		return ChunksConfig[#ChunksConfig]
+	end
+
+	local roll = random:NextNumber() * weightSum
+	for _, config in ChunksConfig do
+		if not isAllowed(config.id) then
+			continue
+		end
 		roll -= config.weight
 		if roll <= 0 then
 			return config
@@ -102,12 +118,26 @@ local function step()
 	end
 end
 
+function ChunkSpawner.configure(seed: number, chunkIds: { string }?)
+	random = Random.new(seed)
+	if chunkIds == nil then
+		allowedIds = nil
+		return
+	end
+	local set: { [string]: boolean } = {}
+	for _, id in chunkIds do
+		set[id] = true
+	end
+	allowedIds = set
+end
+
 function ChunkSpawner.reset()
 	despawnAll()
 end
 
 function ChunkSpawner.clear()
 	despawnAll()
+	allowedIds = nil
 end
 
 function ChunkSpawner.init()

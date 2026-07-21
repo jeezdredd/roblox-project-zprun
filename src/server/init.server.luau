@@ -7,6 +7,7 @@ local MissionConfig = require(script.systems.MissionConfig)
 local ZombieAI = require(script.systems.ZombieAI)
 local ChunkSpawner = require(script.systems.ChunkSpawner)
 local MissionService = require(script.systems.MissionService)
+local SquadService = require(script.systems.SquadService)
 
 MissionConfig.init()
 FlowService.init()
@@ -15,7 +16,7 @@ ZombieAI.init()
 ChunkSpawner.init()
 MissionService.init()
 
-local deployPrompt = HangarBuilder.build()
-MissionService.bindDeployPrompt(deployPrompt)
+local helicopters = HangarBuilder.build()
+SquadService.init(helicopters)
 
 print("[TaskForceZ][Server] Server started")

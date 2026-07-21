@@ -4,6 +4,7 @@ local MissionState = {}
 
 local active = false
 local participants: { [Player]: true } = {}
+local modifierIds: { string } = {}
 
 function MissionState.isActive(): boolean
 	return active
@@ -11,6 +12,18 @@ end
 
 function MissionState.setActive(value: boolean)
 	active = value
+end
+
+function MissionState.setModifiers(ids: { string })
+	modifierIds = table.clone(ids)
+end
+
+function MissionState.getModifiers(): { string }
+	return modifierIds
+end
+
+function MissionState.hasModifier(id: string): boolean
+	return table.find(modifierIds, id) ~= nil
 end
 
 function MissionState.addParticipant(player: Player)

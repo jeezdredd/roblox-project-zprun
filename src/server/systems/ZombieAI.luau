@@ -117,10 +117,58 @@ local function spawnZombie(chunkIndex: number, position: Vector3)
 	end)
 end
 
-local function findNearestPlayerRoot(from: Vector3): BasePart?
-	local nearest: BasePart? = nil
+type PositionSample = { t: number, pos: Vector3 }
+
+local HISTORY_WINDOW = 2
+
+local positionHistory: { [Player]: { PositionSample } } = {}
+
+local function recordPositions()
+	local now = os.clock()
+	for _, player in MissionState.getParticipants() do
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if not root or not root:IsA("BasePart") then
+			continue
+		end
+		local samples = positionHistory[player]
+		if not samples then
+			samples = {}
+			positionHistory[player] = samples
+		end
+		table.insert(samples, { t = now, pos = root.Position })
+		while #samples > 0 and now - samples[1].t > HISTORY_WINDOW do
+			table.remove(samples, 1)
+		end
+	end
+	for player in positionHistory do
+		if not MissionState.isParticipant(player) then
+			positionHistory[player] = nil
+		end
+	end
+end
+
+local function getDelayedPosition(player: Player, currentPosition: Vector3, delay: number): Vector3
+	local samples = positionHistory[player]
+	if not samples or #samples == 0 then
+		return currentPosition
+	end
+	local cutoff = os.clock() - delay
+	local chosen = samples[1].pos
+	for _, sample in samples do
+		if sample.t <= cutoff then
+			chosen = sample.pos
+		else
+			break
+		end
+	end
+	return chosen
+end
+
+local function findNearestPlayer(from: Vector3): Player?
+	local nearest: Player? = nil
 	local nearestDistance = GameConstants.ZOMBIE_AGGRO_RANGE
-	for _, player in Players:GetPlayers() do
+	for _, player in MissionState.getParticipants() do
 		local character = player.Character
 		if not character then
 			continue
@@ -136,7 +184,7 @@ local function findNearestPlayerRoot(from: Vector3): BasePart?
 		local distance = (root.Position - from).Magnitude
 		if distance < nearestDistance then
 			nearestDistance = distance
-			nearest = root
+			nearest = player
 		end
 	end
 	return nearest
@@ -157,10 +205,12 @@ local function aiStep()
 	if not MissionState.isActive() then
 		return
 	end
+	recordPositions()
+
 	local difficulty = MissionConfig.getDifficulty()
 	local speedScale = difficulty.zombieSpeedMultiplier * (1 + getModifierSpeedBonus())
-	local aggroActive = difficulty.zombiesChase
-		and DistanceTracker.getMaxDistance() >= GameConstants.ZOMBIE_AGGRO_DISTANCE_THRESHOLD
+	local aggroActive = difficulty.zombiesChase and DistanceTracker.getMaxDistance() >= difficulty.aggroDistance
+
 	for _, state in zombies do
 		if state.humanoid.Health <= 0 then
 			continue
@@ -169,11 +219,15 @@ local function aiStep()
 		if not aggroActive then
 			continue
 		end
-		local targetRoot = findNearestPlayerRoot(state.root.Position)
-		if targetRoot then
-			state.humanoid:MoveTo(targetRoot.Position)
-		else
-			state.humanoid:MoveTo(state.root.Position)
+		local target = findNearestPlayer(state.root.Position)
+		if not target then
+			continue
+		end
+		local character = target.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if root and root:IsA("BasePart") then
+			local delayedPosition = getDelayedPosition(target, root.Position, state.config.reactionDelay)
+			state.humanoid:MoveTo(delayedPosition)
 		end
 	end
 end

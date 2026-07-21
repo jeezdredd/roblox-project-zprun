@@ -7,6 +7,7 @@ export type ZombieConfig = {
 	walkSpeed: number,
 	touchDamage: number,
 	damageCooldown: number,
+	reactionDelay: number,
 	bodyColor: Color3,
 }
 
@@ -18,6 +19,7 @@ local ZombiesConfig: { ZombieConfig } = {
 		walkSpeed = 14,
 		touchDamage = 15,
 		damageCooldown = 1,
+		reactionDelay = 0.75,
 		bodyColor = Color3.fromRGB(88, 122, 82),
 	},
 	{
@@ -27,6 +29,7 @@ local ZombiesConfig: { ZombieConfig } = {
 		walkSpeed = 22,
 		touchDamage = 10,
 		damageCooldown = 0.8,
+		reactionDelay = 0.35,
 		bodyColor = Color3.fromRGB(140, 110, 70),
 	},
 }

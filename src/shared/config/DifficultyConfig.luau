@@ -5,6 +5,7 @@ export type DifficultySetting = {
 	zombiesChase: boolean,
 	zombieSpeedMultiplier: number,
 	rewardMultiplier: number,
+	aggroDistance: number,
 }
 
 local DifficultyConfig: { [string]: DifficultySetting } = {
@@ -13,18 +14,21 @@ local DifficultyConfig: { [string]: DifficultySetting } = {
 		zombiesChase = false,
 		zombieSpeedMultiplier = 0,
 		rewardMultiplier = 1,
+		aggroDistance = math.huge,
 	},
 	Medium = {
 		id = "Medium",
 		zombiesChase = true,
-		zombieSpeedMultiplier = 0.5,
+		zombieSpeedMultiplier = 0.6,
 		rewardMultiplier = 1.25,
+		aggroDistance = 500,
 	},
 	Hard = {
 		id = "Hard",
 		zombiesChase = true,
-		zombieSpeedMultiplier = 1.2,
+		zombieSpeedMultiplier = 1.15,
 		rewardMultiplier = 1.5,
+		aggroDistance = 0,
 	},
 }
 

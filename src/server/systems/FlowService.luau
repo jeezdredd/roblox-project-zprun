@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
+local HangarConfig = require(ReplicatedStorage.Shared.config.HangarConfig)
 local Flow = require(ReplicatedStorage.Shared.types.Flow)
 local MissionState = require(script.Parent.MissionState)
 
@@ -41,10 +42,20 @@ function FlowService.setPhase(player: Player, phase: Flow.FlowPhase)
 	end
 end
 
+local function moveToHub(character: Model)
+	local root = character:WaitForChild("HumanoidRootPart", 5)
+	if root and root:IsA("BasePart") then
+		character:PivotTo(HangarConfig.HUB_SPAWN_CFRAME)
+	end
+end
+
 local function onCharacterAdded(player: Player, character: Model)
 	local phase: Flow.FlowPhase = if MissionState.isParticipant(player) then "Mission" else "Hub"
 	player:SetAttribute(PHASE_ATTRIBUTE, phase)
 	applyHumanoidConfig(character, phase)
+	if phase == "Hub" then
+		task.spawn(moveToHub, character)
+	end
 end
 
 local function onPlayerAdded(player: Player)

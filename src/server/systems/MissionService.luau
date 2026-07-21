@@ -21,6 +21,11 @@ local MissionService = {}
 local diedConnections: { [Player]: RBXScriptConnection } = {}
 local defaultClockTime = 14
 local nightActive = false
+local deathHandler: ((Player) -> ())? = nil
+
+function MissionService.setDeathHandler(handler: (Player) -> ())
+	deathHandler = handler
+end
 
 local function disconnectDied(player: Player)
 	local connection = diedConnections[player]
@@ -67,7 +72,11 @@ local function watchDeath(player: Player)
 	end
 	disconnectDied(player)
 	diedConnections[player] = humanoid.Died:Connect(function()
-		MissionService.stop(player)
+		if deathHandler then
+			deathHandler(player)
+		else
+			MissionService.stop(player)
+		end
 	end)
 end
 
@@ -109,27 +118,32 @@ function MissionService.startSquad(players: { Player }, config: Squad.SquadConfi
 	end
 end
 
+function MissionService.watchPlayerDeath(player: Player)
+	watchDeath(player)
+end
+
+function MissionService.removeFromMission(player: Player)
+	if not MissionState.isParticipant(player) then
+		return
+	end
+	disconnectDied(player)
+	MissionState.removeParticipant(player)
+	DistanceTracker.endRun(player)
+	tearDownIfEmpty()
+end
+
 function MissionService.stop(player: Player)
 	if not MissionState.isParticipant(player) then
 		return
 	end
-
-	disconnectDied(player)
-	MissionState.removeParticipant(player)
-	DistanceTracker.endRun(player)
+	MissionService.removeFromMission(player)
 	FlowService.setPhase(player, "Hub")
 	teleportCharacter(player, HangarConfig.HUB_SPAWN_CFRAME)
-	tearDownIfEmpty()
 end
 
 function MissionService.init()
 	Players.PlayerRemoving:Connect(function(player)
-		disconnectDied(player)
-		if MissionState.isParticipant(player) then
-			MissionState.removeParticipant(player)
-			DistanceTracker.endRun(player)
-			tearDownIfEmpty()
-		end
+		MissionService.removeFromMission(player)
 	end)
 end
 

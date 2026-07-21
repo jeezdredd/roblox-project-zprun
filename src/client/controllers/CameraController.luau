@@ -6,6 +6,7 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
+local SettingsService = require(script.Parent.Parent.systems.SettingsService)
 
 local CameraController = {}
 
@@ -30,6 +31,14 @@ local function updateCamera()
 	end
 
 	local runDirection = GameConstants.RUN_DIRECTION
+
+	if SettingsService.get("firstPerson") == true then
+		local eyePosition = root.Position + Vector3.new(0, 1.4, 0) + runDirection * 1
+		local lookTarget = eyePosition + runDirection * GameConstants.CAMERA_LOOK_AHEAD
+		camera.CFrame = camera.CFrame:Lerp(CFrame.lookAt(eyePosition, lookTarget), 0.35)
+		return
+	end
+
 	local cameraPosition = root.Position
 		- runDirection * GameConstants.CAMERA_BACK_DISTANCE
 		+ Vector3.new(0, GameConstants.CAMERA_HEIGHT, 0)

@@ -24,11 +24,14 @@ type ZombieState = {
 	lastHitAt: { [Player]: number },
 }
 
+local LURE_RANGE = 80
+
 local random = Random.new()
 local zombies: { [Model]: ZombieState } = {}
 local zombiesFolder: Folder? = nil
 local totalWeight = 0
 local tickAccumulator = 0
+local corpseLure: { pos: Vector3, expires: number }? = nil
 
 for _, config in ZombiesConfig do
 	totalWeight += config.weight
@@ -211,11 +214,20 @@ local function aiStep()
 	local speedScale = difficulty.zombieSpeedMultiplier * (1 + getModifierSpeedBonus())
 	local aggroActive = difficulty.zombiesChase and DistanceTracker.getMaxDistance() >= difficulty.aggroDistance
 
+	local lure = corpseLure
+	local lureActive = lure ~= nil and os.clock() < lure.expires
+
 	for _, state in zombies do
 		if state.humanoid.Health <= 0 then
 			continue
 		end
 		state.humanoid.WalkSpeed = state.config.walkSpeed * speedScale
+
+		if lureActive and lure and (state.root.Position - lure.pos).Magnitude < LURE_RANGE then
+			state.humanoid:MoveTo(lure.pos)
+			continue
+		end
+
 		if not aggroActive then
 			continue
 		end
@@ -230,6 +242,10 @@ local function aiStep()
 			state.humanoid:MoveTo(delayedPosition)
 		end
 	end
+end
+
+function ZombieAI.swarmCorpse(position: Vector3, duration: number)
+	corpseLure = { pos = position, expires = os.clock() + duration }
 end
 
 function ZombieAI.spawnForChunk(chunkIndex: number, chunkPivot: CFrame, chunkLength: number, count: number)

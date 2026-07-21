@@ -13,6 +13,8 @@ Remotes.Event = table.freeze({
 	SquadToggleModifier = "SquadToggleModifier",
 	SquadLaunch = "SquadLaunch",
 	SquadLeave = "SquadLeave",
+	DeathBegan = "DeathBegan",
+	DeathChoice = "DeathChoice",
 })
 
 local folder: Folder? = nil

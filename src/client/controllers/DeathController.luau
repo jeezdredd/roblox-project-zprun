@@ -7,6 +7,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
+local DeathGore = require(script.Parent.Parent.systems.DeathGore)
 
 local DeathController = {}
 
@@ -189,10 +190,17 @@ local function onDeathBegan(rewards: any)
 	resultsPanel.BackgroundTransparency = 1
 	screen.Enabled = true
 
+	local character = Players.LocalPlayer.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if root and root:IsA("BasePart") then
+		lastCorpsePos = root.Position
+	end
+	DeathGore.render(lastCorpsePos)
+
 	RunService:BindToRenderStep(DEATH_CAM, Enum.RenderPriority.Camera.Value + 1, updateDeathCam)
 
 	task.spawn(function()
-		task.wait(3)
+		task.wait(4.2)
 		if not active then
 			return
 		end

@@ -72,7 +72,7 @@ function GoreWarningGui.showOnce()
 	body.TextYAlignment = Enum.TextYAlignment.Top
 	body.TextWrapped = true
 	body.TextSize = 16
-	body.Text = "This game contains zombie combat and stylized blood effects. You can turn blood and gore off at any time in Settings (gear icon)."
+	body.Text = "This game contains zombie combat with stylized blood and dismemberment effects. You can turn blood and dismemberment off at any time in Settings (gear icon)."
 	body.Parent = panel
 
 	local continueButton = Instance.new("TextButton")

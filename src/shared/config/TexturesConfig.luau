@@ -1,0 +1,11 @@
+--!strict
+
+local TexturesConfig = {
+	ASPHALT = 115224776116295,
+	CONCRETE = 117864665807575,
+	GRASS = 81024087358603,
+	GROUND = 125991468588773,
+	BRICKS = 136193205189503,
+}
+
+return table.freeze(TexturesConfig)

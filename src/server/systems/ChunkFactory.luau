@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local LocationsConfig = require(ReplicatedStorage.Shared.config.LocationsConfig)
+local TexturesConfig = require(ReplicatedStorage.Shared.config.TexturesConfig)
 
 export type Blend = {
 	next: LocationsConfig.LocationConfig,
@@ -37,6 +38,18 @@ local function createPart(name: string, size: Vector3, cframe: CFrame, color: Co
 	return part
 end
 
+local function applyTexture(part: BasePart, face: Enum.NormalId, textureId: number, studsPerTile: number)
+	if textureId <= 0 then
+		return
+	end
+	local texture = Instance.new("Texture")
+	texture.Texture = "rbxassetid://" .. tostring(textureId)
+	texture.Face = face
+	texture.StudsPerTileU = studsPerTile
+	texture.StudsPerTileV = studsPerTile
+	texture.Parent = part
+end
+
 local function getTemplate(kind: string): Model?
 	local folder = ReplicatedStorage:FindFirstChild("PropTemplates")
 	local template = folder and folder:FindFirstChild(kind)
@@ -54,7 +67,7 @@ local function buildBuilding(sign: number, position: Vector3, rng: Random, paren
 	local material = if rng:NextNumber() < 0.5 then Enum.Material.Concrete else Enum.Material.Brick
 	local color = Color3.fromRGB(shade, shade, math.min(shade + rng:NextInteger(0, 10), 255))
 
-	createPart(
+	local body = createPart(
 		"Building",
 		Vector3.new(depth, height, width),
 		CFrame.new(position.X, position.Y + height / 2, position.Z),
@@ -62,6 +75,10 @@ local function buildBuilding(sign: number, position: Vector3, rng: Random, paren
 		material,
 		parent
 	)
+	local laneFace = if sign > 0 then Enum.NormalId.Left else Enum.NormalId.Right
+	applyTexture(body, laneFace, TexturesConfig.BRICKS, 7)
+	applyTexture(body, Enum.NormalId.Front, TexturesConfig.BRICKS, 7)
+	applyTexture(body, Enum.NormalId.Back, TexturesConfig.BRICKS, 7)
 	createPart(
 		"Roof",
 		Vector3.new(depth + 1.5, 1, width + 1.5),
@@ -210,7 +227,11 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	local model = Instance.new("Model")
 	model.Name = "Chunk_" .. location.id
 
+	local floorTextureId = if far and nextLocation then nextLocation.floorTextureId else location.floorTextureId
+	local apronTextureId = if far and nextLocation then nextLocation.apronTextureId else location.apronTextureId
+
 	local floor = createPart("Floor", Vector3.new(laneWidth, 1, chunkLength), CFrame.new(), floorColor, floorMaterial, model)
+	applyTexture(floor, Enum.NormalId.Top, floorTextureId, 12)
 
 	local barrierSize = Vector3.new(barrierThickness, GameConstants.BARRIER_HEIGHT, chunkLength)
 	local barrierOffsetX = (laneWidth + barrierThickness) / 2
@@ -230,7 +251,7 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 
 	local apronOffsetX = laneWidth / 2 + barrierThickness + apronWidth / 2
 	for _, sign in { -1, 1 } do
-		createPart(
+		local apron = createPart(
 			"Apron",
 			Vector3.new(apronWidth, 1, chunkLength),
 			CFrame.new(sign * apronOffsetX, 0, 0),
@@ -238,6 +259,7 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 			apronMaterial,
 			model
 		)
+		applyTexture(apron, Enum.NormalId.Top, apronTextureId, 10)
 	end
 
 	if effective.roadMarkings then

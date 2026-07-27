@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local HangarConfig = require(ReplicatedStorage.Shared.config.HangarConfig)
+local TexturesConfig = require(ReplicatedStorage.Shared.config.TexturesConfig)
 
 export type Helicopter = {
 	index: number,
@@ -131,15 +132,21 @@ function HangarBuilder.build(): { Helicopter }
 	local model = Instance.new("Model")
 	model.Name = "Hangar"
 
-	createPart(
+	local hangarFloor = createPart(
 		"Part",
 		"HangarFloor",
 		HangarConfig.HUB_FLOOR_SIZE,
 		CFrame.new(HangarConfig.HUB_CENTER),
-		HangarConfig.FLOOR_COLOR,
+		Color3.fromRGB(200, 200, 204),
 		Enum.Material.Concrete,
 		model
 	)
+	local floorTexture = Instance.new("Texture")
+	floorTexture.Texture = "rbxassetid://" .. tostring(TexturesConfig.CONCRETE)
+	floorTexture.Face = Enum.NormalId.Top
+	floorTexture.StudsPerTileU = 12
+	floorTexture.StudsPerTileV = 12
+	floorTexture.Parent = hangarFloor
 	buildWalls(model)
 
 	local spawnLocation = Instance.new("SpawnLocation")

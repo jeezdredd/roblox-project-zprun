@@ -4,80 +4,101 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
-local ChunksConfig = require(ReplicatedStorage.Shared.config.ChunksConfig)
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
-local LaneSectionFactory = require(ReplicatedStorage.Shared.util.LaneSectionFactory)
+local LocationsConfig = require(ReplicatedStorage.Shared.config.LocationsConfig)
+local ChunkFactory = require(script.Parent.ChunkFactory)
 local DistanceTracker = require(script.Parent.DistanceTracker)
 local ZombieAI = require(script.Parent.ZombieAI)
 local MissionState = require(script.Parent.MissionState)
 
 local ChunkSpawner = {}
 
+type PlanEntry = {
+	locationId: string,
+	startIndex: number,
+	endIndex: number,
+}
+
 type ActiveChunk = {
 	model: Model,
-	configId: string,
+	locationId: string,
+	pooled: boolean,
 }
 
 local chunkLength = GameConstants.CHUNK_LENGTH
 local startOffset = GameConstants.START_PLATFORM_LENGTH
 local runDirection = GameConstants.RUN_DIRECTION
+local transitionChunks = GameConstants.TRANSITION_CHUNKS
 
 local random = Random.new()
+local routePool: { string } = table.clone(LocationsConfig.order)
+local plan: { PlanEntry } = {}
 local pools: { [string]: { Model } } = {}
 local active: { [number]: ActiveChunk } = {}
 local chunksFolder: Folder? = nil
 local nextIndex = 0
-local allowedIds: { [string]: boolean }? = nil
 
-for _, config in ChunksConfig do
-	pools[config.id] = {}
+for _, id in LocationsConfig.order do
+	pools[id] = {}
 end
 
-local function isAllowed(id: string): boolean
-	return allowedIds == nil or allowedIds[id] == true
+local function extendPlan(upToIndex: number)
+	while #plan == 0 or plan[#plan].endIndex < upToIndex do
+		local last = plan[#plan]
+		local startIndex = if last then last.endIndex + 1 else 0
+		local id = routePool[random:NextInteger(1, #routePool)]
+		if last and #routePool > 1 and id == last.locationId then
+			id = routePool[random:NextInteger(1, #routePool)]
+		end
+		local location = LocationsConfig.get(id) :: LocationsConfig.LocationConfig
+		local length = random:NextInteger(location.lengthChunksMin, location.lengthChunksMax)
+		table.insert(plan, { locationId = id, startIndex = startIndex, endIndex = startIndex + length - 1 })
+	end
 end
 
-local function pickConfig(): ChunksConfig.ChunkConfig
-	local weightSum = 0
-	for _, config in ChunksConfig do
-		if isAllowed(config.id) then
-			weightSum += config.weight
+local function entryAt(index: number): (PlanEntry, PlanEntry?)
+	extendPlan(index + transitionChunks + 1)
+	for i, entry in plan do
+		if index >= entry.startIndex and index <= entry.endIndex then
+			return entry, plan[i + 1]
 		end
 	end
-	if weightSum <= 0 then
-		return ChunksConfig[#ChunksConfig]
-	end
-
-	local roll = random:NextNumber() * weightSum
-	for _, config in ChunksConfig do
-		if not isAllowed(config.id) then
-			continue
-		end
-		roll -= config.weight
-		if roll <= 0 then
-			return config
-		end
-	end
-	return ChunksConfig[#ChunksConfig]
-end
-
-local function acquireModel(config: ChunksConfig.ChunkConfig): Model
-	local pooled = table.remove(pools[config.id])
-	if pooled then
-		return pooled
-	end
-	return LaneSectionFactory.build("Chunk_" .. config.id, chunkLength, config.floorColor)
+	return plan[#plan], nil
 end
 
 local function spawnChunk(index: number)
-	local config = pickConfig()
-	local model = acquireModel(config)
+	local entry, nextEntry = entryAt(index)
+	local location = LocationsConfig.get(entry.locationId) :: LocationsConfig.LocationConfig
+
+	local blend: ChunkFactory.Blend? = nil
+	local blendStart = entry.endIndex - transitionChunks + 1
+	if nextEntry and index >= blendStart then
+		local nextLocation = LocationsConfig.get(nextEntry.locationId)
+		if nextLocation then
+			local alpha = (index - blendStart + 1) / (transitionChunks + 1)
+			blend = { next = nextLocation, alpha = alpha }
+		end
+	end
+
+	local pooled = blend == nil
+	local model: Model
+	if pooled then
+		local fromPool = table.remove(pools[entry.locationId])
+		if fromPool then
+			model = fromPool
+		else
+			model = ChunkFactory.build(location, nil, random)
+		end
+	else
+		model = ChunkFactory.build(location, blend, random)
+	end
+
 	local centerDistance = startOffset + index * chunkLength + chunkLength / 2
 	model:PivotTo(CFrame.new(runDirection * centerDistance))
 	model.Parent = chunksFolder
-	active[index] = { model = model, configId = config.id }
+	active[index] = { model = model, locationId = entry.locationId, pooled = pooled }
 
-	local zombieCount = random:NextInteger(config.zombiesMin, config.zombiesMax)
+	local zombieCount = random:NextInteger(location.zombiesMin, location.zombiesMax)
 	ZombieAI.spawnForChunk(index, model:GetPivot(), chunkLength, zombieCount)
 end
 
@@ -86,8 +107,12 @@ local function despawnChunk(index: number)
 	if not chunk then
 		return
 	end
-	chunk.model.Parent = nil
-	table.insert(pools[chunk.configId], chunk.model)
+	if chunk.pooled then
+		chunk.model.Parent = nil
+		table.insert(pools[chunk.locationId], chunk.model)
+	else
+		chunk.model:Destroy()
+	end
 	active[index] = nil
 	ZombieAI.clearChunk(index)
 end
@@ -118,26 +143,31 @@ local function step()
 	end
 end
 
-function ChunkSpawner.configure(seed: number, chunkIds: { string }?)
+function ChunkSpawner.configure(seed: number, locationIds: { string }?)
 	random = Random.new(seed)
-	if chunkIds == nil then
-		allowedIds = nil
+	plan = {}
+	if locationIds == nil then
+		routePool = table.clone(LocationsConfig.order)
 		return
 	end
-	local set: { [string]: boolean } = {}
-	for _, id in chunkIds do
-		set[id] = true
+	local validated: { string } = {}
+	for _, id in locationIds do
+		if LocationsConfig.isValid(id) then
+			table.insert(validated, id)
+		end
 	end
-	allowedIds = set
+	routePool = if #validated > 0 then validated else table.clone(LocationsConfig.order)
 end
 
 function ChunkSpawner.reset()
 	despawnAll()
+	plan = {}
 end
 
 function ChunkSpawner.clear()
 	despawnAll()
-	allowedIds = nil
+	plan = {}
+	routePool = table.clone(LocationsConfig.order)
 end
 
 function ChunkSpawner.init()

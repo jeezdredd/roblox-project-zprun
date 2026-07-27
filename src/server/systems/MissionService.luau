@@ -102,7 +102,7 @@ function MissionService.startSquad(players: { Player }, config: Squad.SquadConfi
 	MissionState.setModifiers(config.modifierIds)
 
 	local map = MapsConfig.get(config.mapId)
-	ChunkSpawner.configure(seed, if map then map.chunkIds else nil)
+	ChunkSpawner.configure(seed, if map then map.locationIds else nil)
 	TrackBuilder.build()
 	ChunkSpawner.reset()
 	applyEnvironment(config.modifierIds)

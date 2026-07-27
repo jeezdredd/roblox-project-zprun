@@ -8,12 +8,25 @@ local VendorsConfig = require(ReplicatedStorage.Shared.config.VendorsConfig)
 
 local VendorStands = {}
 
+local function createPart(name: string, size: Vector3, cframe: CFrame, color: Color3, material: Enum.Material, parent: Instance): Part
+	local part = Instance.new("Part")
+	part.Name = name
+	part.Size = size
+	part.CFrame = cframe
+	part.Anchored = true
+	part.CanCollide = true
+	part.Color = color
+	part.Material = material
+	part.Parent = parent
+	return part
+end
+
 local function makeSign(parent: BasePart, title: string, subtitle: string)
 	local billboard = Instance.new("BillboardGui")
 	billboard.Name = "VendorSign"
-	billboard.Size = UDim2.fromScale(9, 3)
-	billboard.StudsOffsetWorldSpace = Vector3.new(0, 6, 0)
-	billboard.AlwaysOnTop = true
+	billboard.Size = UDim2.fromScale(9, 2.6)
+	billboard.StudsOffsetWorldSpace = Vector3.new(0, 7.5, 0)
+	billboard.MaxDistance = 90
 	billboard.Adornee = parent
 	billboard.Parent = parent
 
@@ -28,8 +41,8 @@ local function makeSign(parent: BasePart, title: string, subtitle: string)
 	nameLabel.Parent = billboard
 
 	local subLabel = Instance.new("TextLabel")
-	subLabel.Size = UDim2.fromScale(1, 0.35)
-	subLabel.Position = UDim2.fromScale(0, 0.62)
+	subLabel.Size = UDim2.fromScale(1, 0.34)
+	subLabel.Position = UDim2.fromScale(0, 0.63)
 	subLabel.BackgroundTransparency = 1
 	subLabel.Font = Enum.Font.GothamMedium
 	subLabel.TextScaled = true
@@ -40,27 +53,29 @@ local function makeSign(parent: BasePart, title: string, subtitle: string)
 end
 
 local function buildStand(config: VendorsConfig.VendorConfig, parent: Instance)
-	local basePosition = HangarConfig.HUB_CENTER + config.offset
+	local base = CFrame.new(HangarConfig.HUB_CENTER + config.offset) * CFrame.Angles(0, config.rotationY, 0)
+	local dark = config.color:Lerp(Color3.new(0, 0, 0), 0.45)
 
-	local booth = Instance.new("Part")
-	booth.Name = config.id
-	booth.Size = Vector3.new(8, 8, 5)
-	booth.CFrame = CFrame.new(basePosition + Vector3.new(0, 4.5, 0))
-	booth.Anchored = true
-	booth.CanCollide = true
-	booth.Color = config.color
-	booth.Material = config.material
-	booth.Parent = parent
+	createPart("Platform", Vector3.new(14, 0.4, 10), base * CFrame.new(0, 0.7, 0), Color3.fromRGB(60, 62, 68), Enum.Material.DiamondPlate, parent)
 
-	local counter = Instance.new("Part")
-	counter.Name = "Counter"
-	counter.Size = Vector3.new(10, 1, 3)
-	counter.CFrame = CFrame.new(basePosition + Vector3.new(0, 3, -3))
-	counter.Anchored = true
-	counter.CanCollide = true
-	counter.Color = config.color:Lerp(Color3.new(0, 0, 0), 0.35)
-	counter.Material = Enum.Material.Metal
-	counter.Parent = parent
+	local booth = createPart("Booth", Vector3.new(10, 8, 4), base * CFrame.new(0, 4.9, 2.5), config.color, config.material, parent)
+
+	createPart("SidePanelL", Vector3.new(1, 8, 8), base * CFrame.new(-5.5, 4.9, 0.5), dark, Enum.Material.Metal, parent)
+	createPart("SidePanelR", Vector3.new(1, 8, 8), base * CFrame.new(5.5, 4.9, 0.5), dark, Enum.Material.Metal, parent)
+
+	local canopy = createPart("Canopy", Vector3.new(14, 0.5, 9), base * CFrame.new(0, 9.2, -0.5) * CFrame.Angles(math.rad(-4), 0, 0), dark, Enum.Material.Metal, parent)
+	canopy.CanCollide = false
+
+	local signStrip = createPart("SignStrip", Vector3.new(11, 1.2, 0.4), base * CFrame.new(0, 8.2, -4.4), config.color, Enum.Material.Neon, parent)
+	signStrip.CanCollide = false
+
+	local counter = createPart("Counter", Vector3.new(10, 1, 2.6), base * CFrame.new(0, 3, -2.6), dark, Enum.Material.Metal, parent)
+
+	local lamp = Instance.new("PointLight")
+	lamp.Color = config.color
+	lamp.Range = 18
+	lamp.Brightness = 1.4
+	lamp.Parent = signStrip
 
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.Name = "VendorPrompt"
@@ -69,7 +84,7 @@ local function buildStand(config: VendorsConfig.VendorConfig, parent: Instance)
 	prompt.HoldDuration = 0.2
 	prompt.MaxActivationDistance = 10
 	prompt.RequiresLineOfSight = false
-	prompt.Parent = booth
+	prompt.Parent = counter
 
 	makeSign(booth, config.displayName, config.subtitle)
 end

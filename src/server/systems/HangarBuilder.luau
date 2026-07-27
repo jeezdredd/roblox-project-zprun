@@ -1,5 +1,6 @@
 --!strict
 
+local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
@@ -58,6 +59,34 @@ local function buildWalls(model: Model)
 		Enum.Material.Metal,
 		model
 	)
+end
+
+local function buildCeilingLamp(position: Vector3, parent: Instance)
+	local fixture = createPart(
+		"Part",
+		"CeilingLamp",
+		Vector3.new(6, 0.5, 6),
+		CFrame.new(position),
+		Color3.fromRGB(255, 240, 210),
+		Enum.Material.Neon,
+		parent
+	)
+	fixture.CanCollide = false
+	fixture.CastShadow = false
+
+	local light = Instance.new("PointLight")
+	light.Color = Color3.fromRGB(255, 235, 200)
+	light.Range = 48
+	light.Brightness = 1.3
+	light.Shadows = true
+	light.Parent = fixture
+end
+
+local function setupLighting()
+	Lighting.ClockTime = 17.6
+	Lighting.Brightness = 2
+	Lighting.Ambient = Color3.fromRGB(70, 72, 82)
+	Lighting.OutdoorAmbient = Color3.fromRGB(96, 96, 106)
 end
 
 local function buildHelicopter(index: number, padCFrame: CFrame, parent: Instance): Helicopter
@@ -159,6 +188,15 @@ function HangarBuilder.build(): { Helicopter }
 	spawnLocation.Duration = 0
 	spawnLocation.Neutral = true
 	spawnLocation.Parent = model
+
+	local lampHeight = HangarConfig.HUB_CENTER.Y + HangarConfig.HUB_WALL_HEIGHT - 1
+	for _, xOffset in { -45, 0, 45 } do
+		for _, zOffset in { -45, 0, 45 } do
+			buildCeilingLamp(HangarConfig.HUB_CENTER + Vector3.new(xOffset, lampHeight, zOffset), model)
+		end
+	end
+
+	setupLighting()
 
 	local helicopters: { Helicopter } = {}
 	for index, padCFrame in HangarConfig.HELICOPTER_PADS do

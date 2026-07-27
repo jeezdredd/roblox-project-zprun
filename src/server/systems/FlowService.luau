@@ -17,6 +17,7 @@ local function applyHumanoidConfig(character: Model, phase: Flow.FlowPhase)
 	if not humanoid then
 		return
 	end
+	humanoid.BreakJointsOnDeath = false
 	if phase == "Mission" then
 		humanoid.UseJumpPower = false
 		humanoid.JumpHeight = 0

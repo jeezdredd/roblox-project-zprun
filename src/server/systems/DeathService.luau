@@ -2,6 +2,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local RewardMultiplier = require(ReplicatedStorage.Shared.util.RewardMultiplier)
@@ -65,12 +66,30 @@ local function reviveAtDeath(player: Player, deathCFrame: CFrame)
 	MissionService.watchPlayerDeath(player)
 end
 
+local function poseCorpse(player: Player)
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if not root or not root:IsA("BasePart") then
+		return
+	end
+	root.Anchored = true
+	local position = root.Position
+	local _, yaw = root.CFrame:ToOrientation()
+	local lying = CFrame.new(position.X, 1.15, position.Z)
+		* CFrame.Angles(0, yaw, 0)
+		* CFrame.Angles(math.pi / 2, 0, 0)
+	TweenService:Create(root, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+		CFrame = lying,
+	}):Play()
+end
+
 local function onPlayerDied(player: Player)
 	if not MissionState.isParticipant(player) or pending[player] then
 		return
 	end
 
 	local deathCFrame = getDeathCFrame(player)
+	poseCorpse(player)
 	tokenCounter += 1
 	local token = tokenCounter
 	pending[player] = { deathCFrame = deathCFrame, token = token }

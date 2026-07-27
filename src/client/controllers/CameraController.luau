@@ -6,13 +6,22 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
-local SettingsService = require(script.Parent.Parent.systems.SettingsService)
 
 local CameraController = {}
 
 local RENDER_NAME = "RunnerCamera"
 
 local bound = false
+local characterHidden = false
+
+local function setCharacterVisible(character: Model, visible: boolean)
+	for _, descendant in character:GetDescendants() do
+		if descendant:IsA("BasePart") or descendant:IsA("Decal") then
+			descendant.LocalTransparencyModifier = if visible then 0 else 1
+		end
+	end
+	characterHidden = not visible
+end
 
 local function updateCamera()
 	local camera = Workspace.CurrentCamera
@@ -22,7 +31,15 @@ local function updateCamera()
 
 	local character = Players.LocalPlayer.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
-	if not root or not root:IsA("BasePart") then
+	if not character or not root or not root:IsA("BasePart") then
+		return
+	end
+
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if not humanoid or humanoid.Health <= 0 then
+		if characterHidden then
+			setCharacterVisible(character, true)
+		end
 		return
 	end
 
@@ -31,21 +48,11 @@ local function updateCamera()
 	end
 
 	local runDirection = GameConstants.RUN_DIRECTION
+	local eyePosition = root.Position + Vector3.new(0, 1.5, 0) + runDirection * 1
+	local lookTarget = eyePosition + runDirection * GameConstants.CAMERA_LOOK_AHEAD
+	camera.CFrame = camera.CFrame:Lerp(CFrame.lookAt(eyePosition, lookTarget), 0.4)
 
-	if SettingsService.get("firstPerson") == true then
-		local eyePosition = root.Position + Vector3.new(0, 1.4, 0) + runDirection * 1
-		local lookTarget = eyePosition + runDirection * GameConstants.CAMERA_LOOK_AHEAD
-		camera.CFrame = camera.CFrame:Lerp(CFrame.lookAt(eyePosition, lookTarget), 0.35)
-		return
-	end
-
-	local cameraPosition = root.Position
-		- runDirection * GameConstants.CAMERA_BACK_DISTANCE
-		+ Vector3.new(0, GameConstants.CAMERA_HEIGHT, 0)
-	local lookTarget = root.Position + runDirection * GameConstants.CAMERA_LOOK_AHEAD
-	local targetCFrame = CFrame.lookAt(cameraPosition, lookTarget)
-
-	camera.CFrame = camera.CFrame:Lerp(targetCFrame, GameConstants.CAMERA_SMOOTHING)
+	setCharacterVisible(character, false)
 end
 
 function CameraController.start()
@@ -62,6 +69,11 @@ function CameraController.stop()
 	end
 	bound = false
 	RunService:UnbindFromRenderStep(RENDER_NAME)
+
+	local character = Players.LocalPlayer.Character
+	if character then
+		setCharacterVisible(character, true)
+	end
 
 	local camera = Workspace.CurrentCamera
 	if camera then

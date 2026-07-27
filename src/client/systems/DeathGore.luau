@@ -62,8 +62,8 @@ local function spawnBurst(position: Vector3)
 	Debris:AddItem(anchor, 2)
 end
 
-local function spawnGibs(position: Vector3)
-	for _ = 1, 7 do
+local function spawnGibs(position: Vector3, count: number)
+	for _ = 1, count do
 		local size = random:NextNumber(0.7, 1.5)
 		local gib = Instance.new("Part")
 		gib.Name = "Gib"
@@ -92,7 +92,19 @@ function DeathGore.render(position: Vector3)
 		spawnBurst(position)
 	end
 	if gibs then
-		spawnGibs(position)
+		spawnGibs(position, 7)
+	end
+end
+
+function DeathGore.feastTick(position: Vector3)
+	local blood = SettingsService.get("bloodEnabled") == true
+	local gibs = SettingsService.get("dismembermentEnabled") == true
+	local jitter = Vector3.new(random:NextNumber(-1.5, 1.5), 0.5, random:NextNumber(-1.5, 1.5))
+	if blood then
+		spawnBurst(position + jitter)
+	end
+	if gibs and random:NextNumber() < 0.7 then
+		spawnGibs(position + jitter, random:NextInteger(1, 2))
 	end
 end
 

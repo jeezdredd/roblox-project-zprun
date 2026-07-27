@@ -3,9 +3,11 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
+local AudioConfig = require(ReplicatedStorage.Shared.config.AudioConfig)
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local DeathGore = require(script.Parent.Parent.systems.DeathGore)
 
@@ -173,8 +175,36 @@ local function updateDeathCam()
 		lastCorpsePos = root.Position
 	end
 	camera.CameraType = Enum.CameraType.Scriptable
-	local camPosition = lastCorpsePos + Vector3.new(3, 5, 8)
-	camera.CFrame = camera.CFrame:Lerp(CFrame.lookAt(camPosition, lastCorpsePos), 0.15)
+	local camPosition = lastCorpsePos + Vector3.new(5, 2.6, 7)
+	local lookTarget = lastCorpsePos + Vector3.new(0, 0.8, 0)
+	camera.CFrame = camera.CFrame:Lerp(CFrame.lookAt(camPosition, lookTarget), 0.15)
+end
+
+local function playScream()
+	if AudioConfig.DEATH_SCREAM_ID <= 0 then
+		return
+	end
+	local sound = Instance.new("Sound")
+	sound.Name = "DeathScream"
+	sound.SoundId = "rbxassetid://" .. tostring(AudioConfig.DEATH_SCREAM_ID)
+	sound.Volume = 1
+	sound.Parent = SoundService
+	sound:Play()
+	task.delay(8, function()
+		sound:Destroy()
+	end)
+end
+
+local function restoreCharacterVisibility()
+	local character = Players.LocalPlayer.Character
+	if not character then
+		return
+	end
+	for _, descendant in character:GetDescendants() do
+		if descendant:IsA("BasePart") or descendant:IsA("Decal") then
+			descendant.LocalTransparencyModifier = 0
+		end
+	end
 end
 
 local function onDeathBegan(rewards: any)
@@ -190,23 +220,35 @@ local function onDeathBegan(rewards: any)
 	resultsPanel.BackgroundTransparency = 1
 	screen.Enabled = true
 
+	restoreCharacterVisibility()
 	local character = Players.LocalPlayer.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
 	if root and root:IsA("BasePart") then
 		lastCorpsePos = root.Position
 	end
 	DeathGore.render(lastCorpsePos)
+	playScream()
 
 	RunService:BindToRenderStep(DEATH_CAM, Enum.RenderPriority.Camera.Value + 1, updateDeathCam)
 
 	task.spawn(function()
-		task.wait(4.2)
+		for _ = 1, 5 do
+			task.wait(1.1)
+			if not active then
+				return
+			end
+			DeathGore.feastTick(lastCorpsePos)
+		end
+	end)
+
+	task.spawn(function()
+		task.wait(6)
 		if not active then
 			return
 		end
 		TweenService:Create(blackout, TweenInfo.new(0.9), { BackgroundTransparency = 0.15 }):Play()
 		TweenService:Create(diedLabel, TweenInfo.new(0.9), { TextTransparency = 0 }):Play()
-		task.wait(1.4)
+		task.wait(1.5)
 		if not active then
 			return
 		end

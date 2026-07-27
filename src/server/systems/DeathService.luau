@@ -17,6 +17,9 @@ local DeathService = {}
 local SWARM_DURATION = 8
 local CHOICE_TIMEOUT = 30
 local MANUAL_RESPAWN_TIME = 600
+local HUB_RESPAWN_DELAY = 3
+local REVIVES_PER_RUN = 1
+local REVIVE_PROTECTION_TIME = 3
 
 type PendingDeath = {
 	deathCFrame: CFrame,
@@ -24,6 +27,7 @@ type PendingDeath = {
 }
 
 local pending: { [Player]: PendingDeath } = {}
+local revivesUsed: { [Player]: number } = {}
 local tokenCounter = 0
 
 local function computeRewards(player: Player)
@@ -47,6 +51,7 @@ end
 
 local function returnToHub(player: Player)
 	pending[player] = nil
+	revivesUsed[player] = nil
 	MissionService.removeFromMission(player)
 	player:SetAttribute("FlowPhase", "Hub")
 	player:LoadCharacter()
@@ -58,10 +63,16 @@ local function reviveAtDeath(player: Player, deathCFrame: CFrame)
 		returnToHub(player)
 		return
 	end
+	ZombieAI.clearLure()
 	player:LoadCharacter()
 	local character = player.Character
 	if character then
 		character:PivotTo(deathCFrame + Vector3.new(0, 2, 0))
+		local forceField = Instance.new("ForceField")
+		forceField.Parent = character
+		task.delay(REVIVE_PROTECTION_TIME, function()
+			forceField:Destroy()
+		end)
 	end
 	MissionService.watchPlayerDeath(player)
 end
@@ -110,11 +121,31 @@ local function onChoice(player: Player, choice: any)
 	if not current then
 		return
 	end
-	if choice == "continue" then
+	if choice == "continue" and (revivesUsed[player] or 0) < REVIVES_PER_RUN then
+		revivesUsed[player] = (revivesUsed[player] or 0) + 1
 		reviveAtDeath(player, current.deathCFrame)
 	else
 		returnToHub(player)
 	end
+end
+
+local function watchHubDeaths(player: Player)
+	player.CharacterAdded:Connect(function(character)
+		local humanoid = character:WaitForChild("Humanoid", 10)
+		if not humanoid or not humanoid:IsA("Humanoid") then
+			return
+		end
+		humanoid.Died:Connect(function()
+			if MissionState.isParticipant(player) then
+				return
+			end
+			task.delay(HUB_RESPAWN_DELAY, function()
+				if player.Parent and not MissionState.isParticipant(player) then
+					player:LoadCharacter()
+				end
+			end)
+		end)
+	end)
 end
 
 function DeathService.init()
@@ -123,8 +154,14 @@ function DeathService.init()
 
 	Remotes.getEvent(Remotes.Event.DeathChoice).OnServerEvent:Connect(onChoice)
 
+	Players.PlayerAdded:Connect(watchHubDeaths)
+	for _, player in Players:GetPlayers() do
+		watchHubDeaths(player)
+	end
+
 	Players.PlayerRemoving:Connect(function(player)
 		pending[player] = nil
+		revivesUsed[player] = nil
 	end)
 end
 

@@ -12,7 +12,8 @@ local CameraController = {}
 local RENDER_NAME = "RunnerCamera"
 
 local bound = false
-local characterHidden = false
+local hiddenCharacter: Model? = nil
+local descendantConnection: RBXScriptConnection? = nil
 
 local function setCharacterVisible(character: Model, visible: boolean)
 	for _, descendant in character:GetDescendants() do
@@ -20,10 +21,35 @@ local function setCharacterVisible(character: Model, visible: boolean)
 			descendant.LocalTransparencyModifier = if visible then 0 else 1
 		end
 	end
-	characterHidden = not visible
 end
 
-local function updateCamera()
+local function unhideCharacter()
+	if descendantConnection then
+		descendantConnection:Disconnect()
+		descendantConnection = nil
+	end
+	local character = hiddenCharacter
+	hiddenCharacter = nil
+	if character then
+		setCharacterVisible(character, true)
+	end
+end
+
+local function hideCharacter(character: Model)
+	if hiddenCharacter == character then
+		return
+	end
+	unhideCharacter()
+	hiddenCharacter = character
+	setCharacterVisible(character, false)
+	descendantConnection = character.DescendantAdded:Connect(function(descendant)
+		if descendant:IsA("BasePart") or descendant:IsA("Decal") then
+			descendant.LocalTransparencyModifier = 1
+		end
+	end)
+end
+
+local function updateCamera(deltaTime: number)
 	local camera = Workspace.CurrentCamera
 	if not camera then
 		return
@@ -37,9 +63,7 @@ local function updateCamera()
 
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	if not humanoid or humanoid.Health <= 0 then
-		if characterHidden then
-			setCharacterVisible(character, true)
-		end
+		unhideCharacter()
 		return
 	end
 
@@ -50,9 +74,10 @@ local function updateCamera()
 	local runDirection = GameConstants.RUN_DIRECTION
 	local eyePosition = root.Position + Vector3.new(0, 1.5, 0) + runDirection * 1
 	local lookTarget = eyePosition + runDirection * GameConstants.CAMERA_LOOK_AHEAD
-	camera.CFrame = camera.CFrame:Lerp(CFrame.lookAt(eyePosition, lookTarget), 0.4)
+	local alpha = 1 - math.exp(-12 * deltaTime)
+	camera.CFrame = camera.CFrame:Lerp(CFrame.lookAt(eyePosition, lookTarget), alpha)
 
-	setCharacterVisible(character, false)
+	hideCharacter(character)
 end
 
 function CameraController.start()
@@ -64,16 +89,12 @@ function CameraController.start()
 end
 
 function CameraController.stop()
-	if not bound then
-		return
+	if bound then
+		bound = false
+		RunService:UnbindFromRenderStep(RENDER_NAME)
 	end
-	bound = false
-	RunService:UnbindFromRenderStep(RENDER_NAME)
 
-	local character = Players.LocalPlayer.Character
-	if character then
-		setCharacterVisible(character, true)
-	end
+	unhideCharacter()
 
 	local camera = Workspace.CurrentCamera
 	if camera then

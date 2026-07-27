@@ -26,11 +26,11 @@ local function spawnPool(position: Vector3)
 	pool.Anchored = true
 	pool.CanCollide = false
 	pool.CanQuery = false
-	pool.Color = Color3.fromRGB(96, 16, 16)
+	pool.Color = Color3.fromRGB(70, 12, 12)
 	pool.Material = Enum.Material.SmoothPlastic
 	pool.Parent = Workspace
-	TweenService:Create(pool, TweenInfo.new(2.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-		Size = Vector3.new(0.2, 9, 9),
+	TweenService:Create(pool, TweenInfo.new(3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Vector3.new(0.2, 5.5, 5.5),
 	}):Play()
 	Debris:AddItem(pool, GIB_LIFETIME)
 end
@@ -80,6 +80,12 @@ local function spawnGibs(position: Vector3, count: number)
 		gib:ApplyImpulse(direction * gib.AssemblyMass * random:NextNumber(14, 26))
 		gib:ApplyAngularImpulse(Vector3.new(random:NextNumber(-4, 4), random:NextNumber(-4, 4), random:NextNumber(-4, 4)))
 
+		task.delay(2.5, function()
+			if gib.Parent then
+				gib.Anchored = true
+				gib.CanCollide = false
+			end
+		end)
 		Debris:AddItem(gib, GIB_LIFETIME)
 	end
 end

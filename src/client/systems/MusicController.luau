@@ -74,6 +74,10 @@ local function onPhaseChanged()
 	end
 end
 
+function MusicController.getMasterGroup(): SoundGroup?
+	return masterGroup
+end
+
 function MusicController.setMasterVolume(value: number)
 	masterVolume = math.clamp(value, 0, 1)
 	applyMasterVolume()

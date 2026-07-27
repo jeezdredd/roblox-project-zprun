@@ -10,6 +10,7 @@ local Workspace = game:GetService("Workspace")
 local AudioConfig = require(ReplicatedStorage.Shared.config.AudioConfig)
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local DeathGore = require(script.Parent.Parent.systems.DeathGore)
+local MusicController = require(script.Parent.Parent.systems.MusicController)
 
 local DeathController = {}
 
@@ -26,6 +27,7 @@ local creditsLabel: TextLabel
 local active = false
 local chosen = false
 local lastCorpsePos = Vector3.new(0, 5, 0)
+local deathStartedAt = 0
 
 local function corner(instance: Instance, radius: number)
 	local c = Instance.new("UICorner")
@@ -164,7 +166,10 @@ local function build()
 	end)
 end
 
-local function updateDeathCam()
+local function updateDeathCam(deltaTime: number)
+	if not active then
+		return
+	end
 	local camera = Workspace.CurrentCamera
 	if not camera then
 		return
@@ -175,9 +180,11 @@ local function updateDeathCam()
 		lastCorpsePos = root.Position
 	end
 	camera.CameraType = Enum.CameraType.Scriptable
-	local camPosition = lastCorpsePos + Vector3.new(5, 2.6, 7)
-	local lookTarget = lastCorpsePos + Vector3.new(0, 0.8, 0)
-	camera.CFrame = camera.CFrame:Lerp(CFrame.lookAt(camPosition, lookTarget), 0.15)
+	local angle = (os.clock() - deathStartedAt) * 0.25 + 0.8
+	local camPosition = lastCorpsePos + Vector3.new(math.cos(angle) * 11, 5.5, math.sin(angle) * 11)
+	local lookTarget = lastCorpsePos + Vector3.new(0, 1, 0)
+	local alpha = 1 - math.exp(-5 * deltaTime)
+	camera.CFrame = camera.CFrame:Lerp(CFrame.lookAt(camPosition, lookTarget), alpha)
 end
 
 local function playScream()
@@ -188,6 +195,7 @@ local function playScream()
 	sound.Name = "DeathScream"
 	sound.SoundId = "rbxassetid://" .. tostring(AudioConfig.DEATH_SCREAM_ID)
 	sound.Volume = 1
+	sound.SoundGroup = MusicController.getMasterGroup()
 	sound.Parent = SoundService
 	sound:Play()
 	task.delay(8, function()
@@ -213,6 +221,7 @@ local function onDeathBegan(rewards: any)
 	end
 	active = true
 	chosen = false
+	deathStartedAt = os.clock()
 
 	blackout.BackgroundTransparency = 1
 	diedLabel.TextTransparency = 1
@@ -267,6 +276,10 @@ function DeathController.init()
 		active = false
 		RunService:UnbindFromRenderStep(DEATH_CAM)
 		screen.Enabled = false
+		local camera = Workspace.CurrentCamera
+		if camera then
+			camera.CameraType = Enum.CameraType.Custom
+		end
 	end)
 end
 

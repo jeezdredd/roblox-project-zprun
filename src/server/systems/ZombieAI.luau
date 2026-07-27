@@ -248,6 +248,10 @@ function ZombieAI.swarmCorpse(position: Vector3, duration: number)
 	corpseLure = { pos = position, expires = os.clock() + duration }
 end
 
+function ZombieAI.clearLure()
+	corpseLure = nil
+end
+
 function ZombieAI.spawnForChunk(chunkIndex: number, chunkPivot: CFrame, chunkLength: number, count: number)
 	local margin = GameConstants.ZOMBIE_SPAWN_EDGE_MARGIN
 	local halfWidth = GameConstants.LANE_WIDTH / 2 - margin

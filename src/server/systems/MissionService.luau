@@ -97,6 +97,19 @@ function MissionService.startSquad(players: { Player }, config: Squad.SquadConfi
 		return
 	end
 
+	local alivePlayers: { Player } = {}
+	for _, player in players do
+		local character = player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		if humanoid and humanoid.Health > 0 then
+			table.insert(alivePlayers, player)
+		end
+	end
+	if #alivePlayers == 0 then
+		return
+	end
+	players = alivePlayers
+
 	MissionState.setActive(true)
 	MissionConfig.setDifficulty(config.difficultyId)
 	MissionState.setModifiers(config.modifierIds)

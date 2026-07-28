@@ -14,6 +14,7 @@ local PHASE_ATTRIBUTE = "FlowPhase"
 local masterGroup: SoundGroup
 local musicGroup: SoundGroup
 local menuMusic: Sound?
+local citySiren: Sound?
 local musicVolume = AudioConfig.MENU_MUSIC_VOLUME
 local masterVolume = 0.7
 local muted = false
@@ -52,6 +53,20 @@ local function createMenuMusic()
 	menuMusic = sound
 end
 
+local function createCitySiren()
+	if not isPlayableId(AudioConfig.CITY_SIREN_ID) then
+		return
+	end
+	local sound = Instance.new("Sound")
+	sound.Name = "CitySiren"
+	sound.SoundId = "rbxassetid://" .. tostring(AudioConfig.CITY_SIREN_ID)
+	sound.Looped = true
+	sound.Volume = AudioConfig.SIREN_VOLUME
+	sound.SoundGroup = masterGroup
+	sound.Parent = SoundService
+	citySiren = sound
+end
+
 local function fadeMusicTo(target: number)
 	local sound = menuMusic
 	if not sound then
@@ -67,10 +82,18 @@ end
 
 local function onPhaseChanged()
 	local phase = Players.LocalPlayer:GetAttribute(PHASE_ATTRIBUTE)
-	if phase == "Mission" then
-		fadeMusicTo(0)
-	else
-		fadeMusicTo(musicVolume)
+	local inHub = phase ~= "Mission"
+	fadeMusicTo(if inHub then musicVolume else 0)
+
+	local siren = citySiren
+	if siren then
+		if inHub and not siren.IsPlaying then
+			pcall(function()
+				siren:Play()
+			end)
+		elseif not inHub and siren.IsPlaying then
+			siren:Stop()
+		end
 	end
 end
 
@@ -99,6 +122,7 @@ end
 function MusicController.init()
 	createGroups()
 	createMenuMusic()
+	createCitySiren()
 	Players.LocalPlayer:GetAttributeChangedSignal(PHASE_ATTRIBUTE):Connect(onPhaseChanged)
 	onPhaseChanged()
 end

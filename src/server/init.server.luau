@@ -9,7 +9,8 @@ local ChunkSpawner = require(script.systems.ChunkSpawner)
 local MissionService = require(script.systems.MissionService)
 local DeathService = require(script.systems.DeathService)
 local SquadService = require(script.systems.SquadService)
-local VendorStands = require(script.systems.VendorStands)
+local VendorRooms = require(script.systems.VendorRooms)
+local CityDiorama = require(script.systems.CityDiorama)
 
 MissionConfig.init()
 FlowService.init()
@@ -21,6 +22,7 @@ DeathService.init()
 
 local helicopters = HangarBuilder.build()
 SquadService.init(helicopters)
-VendorStands.build()
+VendorRooms.build()
+CityDiorama.build()
 
 print("[TaskForceZ][Server] Server started")

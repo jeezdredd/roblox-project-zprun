@@ -6,6 +6,7 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local CameraConfig = require(ReplicatedStorage.Shared.config.CameraConfig)
+local BodyMotionController = require(script.Parent.BodyMotionController)
 local ExertionState = require(script.Parent.ExertionState)
 local InputController = require(script.Parent.InputController)
 
@@ -138,6 +139,7 @@ function CameraEffectsController.init()
 		humanoid.HealthChanged:Connect(function(health)
 			if health < lastHealth - 0.001 then
 				CameraEffectsController.impulse(Vector3.new(0.4, -1, 0.2), 3.2)
+				BodyMotionController.impulse(-4.5, 2.5)
 			end
 			lastHealth = health
 		end)

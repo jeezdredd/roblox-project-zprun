@@ -22,6 +22,8 @@ type ZombieState = {
 	config: ZombiesConfig.ZombieConfig,
 	chunkIndex: number,
 	lastHitAt: { [Player]: number },
+	neck: Motor6D?,
+	neckBaseC0: CFrame,
 }
 
 local LURE_RANGE = 80
@@ -95,6 +97,10 @@ local function spawnZombie(chunkIndex: number, position: Vector3)
 	model.Parent = getFolder()
 	root:SetNetworkOwner(nil)
 
+	local bodyPart = model:FindFirstChild("Body")
+	local neckMotor = if bodyPart then bodyPart:FindFirstChild("Neck") else nil
+	local neck = if neckMotor and neckMotor:IsA("Motor6D") then neckMotor else nil
+
 	local state: ZombieState = {
 		model = model,
 		humanoid = humanoid,
@@ -102,6 +108,8 @@ local function spawnZombie(chunkIndex: number, position: Vector3)
 		config = config,
 		chunkIndex = chunkIndex,
 		lastHitAt = {},
+		neck = neck,
+		neckBaseC0 = if neck then neck.C0 else CFrame.new(),
 	}
 	zombies[model] = state
 
@@ -193,6 +201,37 @@ local function findNearestPlayer(from: Vector3): Player?
 	return nearest
 end
 
+local HEAD_TRACK_RANGE = 70
+local HEAD_TRACK_LIMIT = math.rad(60)
+
+local function trackPlayerWithHead(state: ZombieState)
+	local neck = state.neck
+	if not neck or not neck.Parent then
+		return
+	end
+	local target = findNearestPlayer(state.root.Position)
+	if not target then
+		neck.C0 = state.neckBaseC0
+		return
+	end
+	local character = target.Character
+	local targetRoot = character and character:FindFirstChild("HumanoidRootPart")
+	if not targetRoot or not targetRoot:IsA("BasePart") then
+		neck.C0 = state.neckBaseC0
+		return
+	end
+	local offset = targetRoot.Position - state.root.Position
+	if offset.Magnitude > HEAD_TRACK_RANGE then
+		neck.C0 = state.neckBaseC0
+		return
+	end
+
+	local localOffset = state.root.CFrame:VectorToObjectSpace(offset)
+	local yaw = math.clamp(math.atan2(-localOffset.X, -localOffset.Z), -HEAD_TRACK_LIMIT, HEAD_TRACK_LIMIT)
+	local pitch = math.clamp(math.atan2(localOffset.Y, math.max(0.1, math.abs(localOffset.Z))), -0.4, 0.4)
+	neck.C0 = state.neckBaseC0 * CFrame.Angles(pitch * 0.5, yaw, 0)
+end
+
 local function getModifierSpeedBonus(): number
 	local bonus = 0
 	for _, id in MissionState.getModifiers() do
@@ -229,12 +268,14 @@ local function aiStep()
 		end
 
 		if not aggroActive then
+			trackPlayerWithHead(state)
 			continue
 		end
 		local target = findNearestPlayer(state.root.Position)
 		if not target then
 			continue
 		end
+
 		local character = target.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		if root and root:IsA("BasePart") then

@@ -40,9 +40,22 @@ function ZombieFactory.build(config: ZombiesConfig.ZombieConfig): Model
 	body.Material = Enum.Material.Fabric
 	TextureUtil.applySides(body, TexturesConfig.FABRIC, 2.4)
 
-	local head = createWeldedPart("Head", Vector3.new(1.2, 1.2, 1.2), CFrame.new(0, 2.1, 0), config.bodyColor:Lerp(Color3.new(0, 0, 0), 0.3), root, model)
+	local head = Instance.new("Part")
+	head.Name = "Head"
+	head.Size = Vector3.new(1.2, 1.2, 1.2)
+	head.CFrame = root.CFrame * CFrame.new(0, 2.1, 0)
+	head.Color = config.bodyColor:Lerp(Color3.new(0, 0, 0), 0.3)
 	head.Material = Enum.Material.Sand
+	head.CanCollide = false
+	head.Parent = model
 	TextureUtil.applySides(head, TexturesConfig.GROUND, 1.4)
+
+	local neck = Instance.new("Motor6D")
+	neck.Name = "Neck"
+	neck.Part0 = body
+	neck.Part1 = head
+	neck.C0 = CFrame.new(0, 2.1, 0)
+	neck.Parent = body
 
 	for _, sign in { -1, 1 } do
 		local eye = createWeldedPart(

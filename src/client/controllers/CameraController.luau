@@ -6,6 +6,7 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
+local SettingsService = require(script.Parent.Parent.systems.SettingsService)
 
 local CameraController = {}
 
@@ -15,10 +16,24 @@ local bound = false
 local hiddenCharacter: Model? = nil
 local descendantConnection: RBXScriptConnection? = nil
 
+local function isHeadPiece(instance: Instance): boolean
+	local part = if instance:IsA("Decal") then instance.Parent else instance
+	if not part or not part:IsA("BasePart") then
+		return false
+	end
+	if part.Name == "Head" then
+		return true
+	end
+	local parent = part.Parent
+	return parent ~= nil and parent:IsA("Accessory")
+end
+
 local function setCharacterVisible(character: Model, visible: boolean)
+	local keepBody = SettingsService.get("firstPersonBody") == true
 	for _, descendant in character:GetDescendants() do
 		if descendant:IsA("BasePart") or descendant:IsA("Decal") then
-			descendant.LocalTransparencyModifier = if visible then 0 else 1
+			local hide = not visible and (not keepBody or isHeadPiece(descendant))
+			descendant.LocalTransparencyModifier = if hide then 1 else 0
 		end
 	end
 end
@@ -44,7 +59,8 @@ local function hideCharacter(character: Model)
 	setCharacterVisible(character, false)
 	descendantConnection = character.DescendantAdded:Connect(function(descendant)
 		if descendant:IsA("BasePart") or descendant:IsA("Decal") then
-			descendant.LocalTransparencyModifier = 1
+			local keepBody = SettingsService.get("firstPersonBody") == true
+			descendant.LocalTransparencyModifier = if not keepBody or isHeadPiece(descendant) then 1 else 0
 		end
 	end)
 end

@@ -256,12 +256,12 @@ function CityDiorama.build()
 		local chopperModel, rotor = buildChopperModel(model)
 		table.insert(choppers, {
 			model = chopperModel,
-			radius = random:NextNumber(160, 300),
+			radius = random:NextNumber(HangarConfig.CHOPPER_RADIUS_MIN, HangarConfig.CHOPPER_RADIUS_MAX),
 			speed = random:NextNumber(0.06, 0.12) * (if i % 2 == 0 then -1 else 1),
 			phase = random:NextNumber(0, math.pi * 2),
-			height = random:NextNumber(120, 210),
+			height = random:NextNumber(HangarConfig.CHOPPER_HEIGHT_MIN, HangarConfig.CHOPPER_HEIGHT_MAX),
 			centerX = center.X + random:NextNumber(-120, 120),
-			centerZ = center.Z + random:NextNumber(HangarConfig.CITY_FAR_Z + 150, HangarConfig.CITY_NEAR_Z - 60),
+			centerZ = center.Z + random:NextNumber(HangarConfig.CHOPPER_CENTER_FAR, HangarConfig.CHOPPER_CENTER_NEAR),
 			rotor = rotor,
 		})
 	end

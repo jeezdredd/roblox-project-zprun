@@ -72,8 +72,9 @@ local function createPatrol(index: number, soundId: number, volume: number): Pat
 		speed = random:NextNumber(AudioConfig.SIREN_PATROL_SPEED_MIN, AudioConfig.SIREN_PATROL_SPEED_MAX)
 			* (if index % 2 == 0 then -1 else 1),
 		phase = random:NextNumber(0, math.pi * 2),
-		centerZ = HangarConfig.HUB_CENTER.Z + random:NextNumber(HangarConfig.CITY_FAR_Z + 120, HangarConfig.CITY_NEAR_Z - 40),
-		nextToggle = random:NextNumber(0, AudioConfig.SIREN_GAP_MAX),
+		centerZ = HangarConfig.HUB_CENTER.Z
+			+ random:NextNumber(AudioConfig.SIREN_PATROL_CENTER_FAR, AudioConfig.SIREN_PATROL_CENTER_NEAR),
+		nextToggle = if index == 1 then random:NextNumber(1, 5) else random:NextNumber(4, AudioConfig.SIREN_GAP_MAX),
 		playing = false,
 	}
 end
@@ -149,12 +150,10 @@ function CityAmbience.init()
 		local sirenIds = {
 			AudioConfig.POLICE_SIREN_ID,
 			AudioConfig.AMBULANCE_SIREN_ID,
-			AudioConfig.CIVIL_SIREN_ID,
 		}
 		for index = 1, AudioConfig.SIREN_PATROL_COUNT do
 			local soundId = sirenIds[((index - 1) % #sirenIds) + 1]
-			local volume = if soundId == AudioConfig.CIVIL_SIREN_ID then AudioConfig.SIREN_VOLUME else AudioConfig.POLICE_VOLUME
-			local patrol = createPatrol(index, soundId, volume)
+			local patrol = createPatrol(index, soundId, AudioConfig.POLICE_VOLUME)
 			if patrol then
 				table.insert(patrols, patrol)
 			end
@@ -165,7 +164,8 @@ function CityAmbience.init()
 				local sound = Instance.new("Sound")
 				sound.Name = "RotorLoop"
 				configureSound(sound, AudioConfig.HELI_LOOP_ID, AudioConfig.HELI_VOLUME, 1)
-				sound.RollOffMaxDistance = 700
+				sound.RollOffMinDistance = 60
+				sound.RollOffMaxDistance = 1100
 				sound.Parent = model.PrimaryPart
 				table.insert(staticSounds, sound)
 			end

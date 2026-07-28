@@ -7,6 +7,7 @@ local Workspace = game:GetService("Workspace")
 local MapsConfig = require(ReplicatedStorage.Shared.config.MapsConfig)
 local ModifiersConfig = require(ReplicatedStorage.Shared.config.ModifiersConfig)
 local Squad = require(ReplicatedStorage.Shared.types.Squad)
+local CursorMode = require(script.Parent.Parent.systems.CursorMode)
 
 export type Handlers = {
 	onSelectMap: (string) -> (),
@@ -236,7 +237,12 @@ function SquadConfigGui.create(handlers: Handlers): GuiController
 		local snapshot = currentSnapshot
 		if not snapshot then
 			screen.Enabled = false
+			CursorMode.setModalOpen("SquadLobby", false)
 			return
+		end
+		if not screen.Enabled then
+			CursorMode.setModalOpen("SquadLobby", true)
+			CursorMode.focus(launchButton)
 		end
 		screen.Enabled = true
 

@@ -1,10 +1,15 @@
 --!strict
 
+local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 
+local CursorMode = require(script.Parent.Parent.systems.CursorMode)
 local SettingsService = require(script.Parent.Parent.systems.SettingsService)
 
 local GoreWarningGui = {}
+
+local ACCEPT_ACTION = "GoreWarningAccept"
+local DISABLE_ACTION = "GoreWarningDisable"
 
 local shown = false
 
@@ -72,7 +77,7 @@ function GoreWarningGui.showOnce()
 	body.TextYAlignment = Enum.TextYAlignment.Top
 	body.TextWrapped = true
 	body.TextSize = 16
-	body.Text = "This game contains zombie combat with stylized blood and dismemberment effects. You can turn blood and dismemberment off at any time in Settings (gear icon)."
+	body.Text = "This game contains zombie combat with stylized blood and dismemberment effects. You can turn blood and dismemberment off at any time in Settings (gear icon).\n\nPress Enter to continue, or Backspace to disable gore."
 	body.Parent = panel
 
 	local continueButton = Instance.new("TextButton")
@@ -101,14 +106,40 @@ function GoreWarningGui.showOnce()
 	disableButton.Parent = panel
 	corner(disableButton, 6)
 
-	continueButton.Activated:Connect(function()
+	local function close(disableGore: boolean)
+		if disableGore then
+			SettingsService.set("bloodEnabled", false)
+			SettingsService.set("dismembermentEnabled", false)
+		end
+		ContextActionService:UnbindAction(ACCEPT_ACTION)
+		ContextActionService:UnbindAction(DISABLE_ACTION)
+		CursorMode.setModalOpen("GoreWarning", false)
 		screen:Destroy()
+	end
+
+	continueButton.Activated:Connect(function()
+		close(false)
 	end)
 	disableButton.Activated:Connect(function()
-		SettingsService.set("bloodEnabled", false)
-		SettingsService.set("dismembermentEnabled", false)
-		screen:Destroy()
+		close(true)
 	end)
+
+	ContextActionService:BindAction(ACCEPT_ACTION, function(_, inputState)
+		if inputState == Enum.UserInputState.Begin then
+			close(false)
+		end
+		return Enum.ContextActionResult.Sink
+	end, false, Enum.KeyCode.Return, Enum.KeyCode.KeypadEnter, Enum.KeyCode.Space, Enum.KeyCode.ButtonA)
+
+	ContextActionService:BindAction(DISABLE_ACTION, function(_, inputState)
+		if inputState == Enum.UserInputState.Begin then
+			close(true)
+		end
+		return Enum.ContextActionResult.Sink
+	end, false, Enum.KeyCode.Backspace, Enum.KeyCode.ButtonB)
+
+	CursorMode.setModalOpen("GoreWarning", true)
+	CursorMode.focus(continueButton)
 end
 
 return GoreWarningGui

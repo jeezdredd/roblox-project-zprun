@@ -1,20 +1,13 @@
 --!strict
 
-local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
+
+local CursorMode = require(script.Parent.Parent.systems.CursorMode)
 
 local FirstPersonController = {}
 
-local function lockFirstPerson()
-	local player = Players.LocalPlayer
-	player.CameraMode = Enum.CameraMode.LockFirstPerson
-	player.CameraMinZoomDistance = 0.5
-	player.CameraMaxZoomDistance = 0.5
-end
-
 function FirstPersonController.init()
-	lockFirstPerson()
-	Players.LocalPlayer.CharacterAdded:Connect(lockFirstPerson)
+	CursorMode.init()
 	pcall(function()
 		StarterGui:SetCore("ResetButtonCallback", false)
 	end)

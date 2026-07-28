@@ -1,5 +1,6 @@
 --!strict
 
+local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -9,12 +10,16 @@ local Workspace = game:GetService("Workspace")
 
 local AudioConfig = require(ReplicatedStorage.Shared.config.AudioConfig)
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
+local CursorMode = require(script.Parent.Parent.systems.CursorMode)
 local DeathGore = require(script.Parent.Parent.systems.DeathGore)
 local MusicController = require(script.Parent.Parent.systems.MusicController)
 
 local DeathController = {}
 
 local DEATH_CAM = "DeathCam"
+local CONFIRM_ACTION = "DeathConfirm"
+
+local showResultsCursor: (() -> ())? = nil
 
 local screen: ScreenGui
 local blackout: Frame
@@ -154,8 +159,21 @@ local function build()
 		chosen = true
 		active = false
 		RunService:UnbindFromRenderStep(DEATH_CAM)
+		ContextActionService:UnbindAction(CONFIRM_ACTION)
+		CursorMode.setModalOpen("DeathResults", false)
 		screen.Enabled = false
 		Remotes.getEvent(Remotes.Event.DeathChoice):FireServer(choice)
+	end
+
+	showResultsCursor = function()
+		CursorMode.setModalOpen("DeathResults", true)
+		CursorMode.focus(returnButton)
+		ContextActionService:BindAction(CONFIRM_ACTION, function(_, inputState)
+			if inputState == Enum.UserInputState.Begin then
+				choose("return")
+			end
+			return Enum.ContextActionResult.Sink
+		end, false, Enum.KeyCode.Return, Enum.KeyCode.KeypadEnter, Enum.KeyCode.ButtonA)
 	end
 
 	returnButton.Activated:Connect(function()
@@ -293,6 +311,9 @@ local function onDeathBegan(rewards: any)
 		creditsLabel.Text = string.format("Credits: %d  (x%.2f)", rewards.credits or 0, rewards.multiplier or 1)
 		resultsPanel.Visible = true
 		TweenService:Create(resultsPanel, TweenInfo.new(0.5), { BackgroundTransparency = 0 }):Play()
+		if showResultsCursor then
+			showResultsCursor()
+		end
 	end)
 end
 

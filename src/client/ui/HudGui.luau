@@ -9,6 +9,7 @@ local SettingsGui = require(script.Parent.SettingsGui)
 local HudGui = {}
 
 local MUTE_ACTION = "ToggleMute"
+local SETTINGS_ACTION = "ToggleSettings"
 local BUTTON_COLOR = Color3.fromRGB(28, 30, 36)
 local TEXT_COLOR = Color3.fromRGB(228, 228, 230)
 
@@ -63,6 +64,26 @@ function HudGui.init()
 		end
 		return Enum.ContextActionResult.Pass
 	end, false, Enum.KeyCode.M)
+
+	ContextActionService:BindAction(SETTINGS_ACTION, function(_, inputState)
+		if inputState == Enum.UserInputState.Begin then
+			settings.toggle()
+		end
+		return Enum.ContextActionResult.Sink
+	end, false, Enum.KeyCode.P)
+
+	local hint = Instance.new("TextLabel")
+	hint.AnchorPoint = Vector2.new(1, 0)
+	hint.Position = UDim2.new(1, -12, 0, 58)
+	hint.Size = UDim2.fromOffset(180, 20)
+	hint.BackgroundTransparency = 1
+	hint.Font = Enum.Font.GothamMedium
+	hint.TextSize = 13
+	hint.TextXAlignment = Enum.TextXAlignment.Right
+	hint.TextColor3 = Color3.fromRGB(190, 190, 196)
+	hint.TextStrokeTransparency = 0.6
+	hint.Text = "P settings · M mute"
+	hint.Parent = screen
 end
 
 return HudGui

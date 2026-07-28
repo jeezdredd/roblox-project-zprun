@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 
 local SettingsConfig = require(ReplicatedStorage.Shared.config.SettingsConfig)
+local CursorMode = require(script.Parent.Parent.systems.CursorMode)
 local SettingsService = require(script.Parent.Parent.systems.SettingsService)
 
 export type GuiController = {
@@ -216,6 +217,10 @@ function SettingsGui.create(): GuiController
 
 	local function setOpen(open: boolean)
 		screen.Enabled = open
+		CursorMode.setModalOpen("Settings", open)
+		if open then
+			CursorMode.focus(closeButton)
+		end
 	end
 
 	closeButton.Activated:Connect(function()

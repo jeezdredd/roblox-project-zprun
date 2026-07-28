@@ -9,14 +9,16 @@ export type BreathLayer = {
 	pitch: number,
 }
 
+local AssetIds = require(script.Parent.AssetIds)
+
 local BreathingConfig = {}
 
 BreathingConfig.FADE_SPEED = 1.6
 
 BreathingConfig.layers = {
-	{ id = "Calm", soundId = 91667755374191, volume = 0.28, rangeMin = 0, rangeMax = 0.4, pitch = 1 },
-	{ id = "Heavy", soundId = 130259421342917, volume = 0.42, rangeMin = 0.4, rangeMax = 0.75, pitch = 1 },
-	{ id = "Gasp", soundId = 105020284511488, volume = 0.55, rangeMin = 0.75, rangeMax = 1, pitch = 1.04 },
+	{ id = "Calm", soundId = AssetIds.audio.player.breath_calm, volume = 0.28, rangeMin = 0, rangeMax = 0.4, pitch = 1 },
+	{ id = "Heavy", soundId = AssetIds.audio.player.breath_heavy, volume = 0.42, rangeMin = 0.4, rangeMax = 0.75, pitch = 1 },
+	{ id = "Gasp", soundId = AssetIds.audio.player.breath_gasp, volume = 0.55, rangeMin = 0.75, rangeMax = 1, pitch = 1.04 },
 } :: { BreathLayer }
 
 function BreathingConfig.weightFor(layer: BreathLayer, exertion: number): number

@@ -6,13 +6,17 @@ export type MaterialSounds = {
 	pitch: number,
 }
 
-local METAL = { 100020778826074, 91756891849573, 80686912188034 }
-local CONCRETE = { 76239889483945, 102524739087775, 129152333227871 }
-local WOOD = { 72600633695935, 107674184975458, 86632405838667 }
-local GRASS = { 125622012688974, 117551923131946, 119814451831693 }
-local DIRT = { 91992059944636, 126078840343211, 97659269814534 }
-local SAND = { 137562067218683, 100843308344050, 118414794165248 }
-local WATER = { 105672530740348, 109737300005657, 95099484266022 }
+local AssetIds = require(script.Parent.AssetIds)
+
+local steps = AssetIds.audio.footsteps
+
+local METAL = { steps.metal_01, steps.metal_02, steps.metal_03 }
+local CONCRETE = { steps.concrete_01, steps.concrete_02, steps.concrete_03 }
+local WOOD = { steps.wood_01, steps.wood_02, steps.wood_03 }
+local GRASS = { steps.grass_01, steps.grass_02, steps.grass_03 }
+local DIRT = { steps.dirt_01, steps.dirt_02, steps.dirt_03 }
+local SAND = { steps.sand_01, steps.sand_02, steps.sand_03 }
+local WATER = { steps.water_01, steps.water_02, steps.water_03 }
 
 local FootstepConfig = {}
 

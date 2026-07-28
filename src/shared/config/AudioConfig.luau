@@ -1,16 +1,19 @@
 --!strict
 
+local AssetIds = require(script.Parent.AssetIds)
+
 local AudioConfig = {
-	MENU_MUSIC_ID = 109217370500774,
-	MISSION_MUSIC_ID = 81363718709658,
-	DEATH_SCREAM_ID = 114324683839609,
-	CITY_SIREN_ID = 75728715286944,
-	POLICE_SIREN_ID = 90676434432939,
-	AMBULANCE_SIREN_ID = 119061943603302,
-	CIVIL_SIREN_ID = 125737593545616,
-	HELI_LOOP_ID = 140722208536221,
-	ZOMBIE_GROWL_ID = 82512407543783,
-	FOOTSTEP_ID = 0,
+	MENU_MUSIC_ID = AssetIds.audio.music.menu,
+	MISSION_MUSIC_ID = AssetIds.audio.music.mission,
+	DEATH_SCREAM_ID = AssetIds.audio.player.death_scream,
+
+	CITY_SIREN_ID = AssetIds.audio.city.siren_facility,
+	POLICE_SIREN_ID = AssetIds.audio.city.siren_police,
+	AMBULANCE_SIREN_ID = AssetIds.audio.city.siren_ambulance,
+	CIVIL_SIREN_ID = AssetIds.audio.city.siren_civil,
+	HELI_LOOP_ID = AssetIds.audio.city.helicopter,
+
+	ZOMBIE_GROWL_ID = AssetIds.audio.zombie.growl_01,
 
 	MENU_MUSIC_VOLUME = 0.5,
 	MUSIC_FADE_TIME = 1.2,

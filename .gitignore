@@ -9,3 +9,8 @@ roblox.toml
 .DS_Store
 wiki/project-zprun/.obsidian/workspace.json
 .opencloud.key
+assets/textures/*.jpg
+assets/textures/*.png
+assets/audio/**/*.ogg
+assets/audio/**/*.mp3
+assets/audio/**/*.wav

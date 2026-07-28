@@ -1,0 +1,501 @@
+{
+  "texture/surface/asphalt": {
+    "source": "https://ambientcg.com/view?id=Asphalt033",
+    "license": "CC0",
+    "file": "assets/textures/asphalt_color.jpg",
+    "assetId": 115224776116295,
+    "status": "approved"
+  },
+  "texture/surface/concrete": {
+    "source": "https://ambientcg.com/view?id=Concrete034",
+    "license": "CC0",
+    "file": "assets/textures/concrete_color.jpg",
+    "assetId": 117864665807575,
+    "status": "approved"
+  },
+  "texture/surface/grass": {
+    "source": "https://ambientcg.com/view?id=Grass005",
+    "license": "CC0",
+    "file": "assets/textures/grass_color.jpg",
+    "assetId": 81024087358603,
+    "status": "approved"
+  },
+  "texture/surface/ground": {
+    "source": "https://ambientcg.com/view?id=Ground054",
+    "license": "CC0",
+    "file": "assets/textures/ground_color.jpg",
+    "assetId": 125991468588773,
+    "status": "approved"
+  },
+  "texture/surface/bricks": {
+    "source": "https://ambientcg.com/view?id=Bricks104",
+    "license": "CC0",
+    "file": "assets/textures/bricks_color.jpg",
+    "assetId": 136193205189503,
+    "status": "approved"
+  },
+  "texture/surface/metal_plates": {
+    "source": "https://ambientcg.com/view?id=MetalPlates006",
+    "license": "CC0",
+    "file": "assets/textures/metal_plates_color.jpg",
+    "assetId": 138794326612928,
+    "status": "approved"
+  },
+  "texture/surface/corrugated": {
+    "source": "https://ambientcg.com/view?id=CorrugatedSteel009",
+    "license": "CC0",
+    "file": "assets/textures/corrugated_color.jpg",
+    "assetId": 136962871310349,
+    "status": "approved"
+  },
+  "texture/surface/tiles": {
+    "source": "https://ambientcg.com/view?id=Tiles141",
+    "license": "CC0",
+    "file": "assets/textures/tiles_color.jpg",
+    "assetId": 99758356540000,
+    "status": "approved"
+  },
+  "texture/surface/wood": {
+    "source": "https://ambientcg.com/view?id=WoodFloor064",
+    "license": "CC0",
+    "file": "assets/textures/wood_color.jpg",
+    "assetId": 136206214410343,
+    "status": "approved"
+  },
+  "texture/surface/rust": {
+    "source": "https://ambientcg.com/view?id=Metal063",
+    "license": "CC0",
+    "file": "assets/textures/rust_color.jpg",
+    "assetId": 85963499931816,
+    "status": "approved"
+  },
+  "texture/surface/fabric": {
+    "source": "https://ambientcg.com/view?id=Fabric061",
+    "license": "CC0",
+    "file": "assets/textures/fabric_color.jpg",
+    "assetId": 85689029803224,
+    "status": "approved"
+  },
+  "audio/music/menu": {
+    "source": "https://opengameart.org/content/creepyscapes",
+    "license": "CC0",
+    "file": "assets/audio/music/menu.mp3",
+    "assetId": 109217370500774,
+    "status": "approved"
+  },
+  "audio/music/mission": {
+    "source": "https://opengameart.org/content/laboratory-x11",
+    "license": "CC0",
+    "file": "assets/audio/music/mission.mp3",
+    "assetId": 81363718709658,
+    "status": "approved"
+  },
+  "audio/player/death_scream": {
+    "source": "https://opengameart.org/content/phantom-scream",
+    "license": "CC0",
+    "file": "assets/audio/player/death_scream.mp3",
+    "assetId": 114324683839609,
+    "status": "approved"
+  },
+  "audio/player/breath_calm": {
+    "source": "https://commons.wikimedia.org/wiki/File:Breathing_man.ogg",
+    "license": "Public domain",
+    "file": "assets/audio/player/breath_calm.ogg",
+    "assetId": 91667755374191,
+    "status": "approved"
+  },
+  "audio/player/breath_heavy": {
+    "source": "https://commons.wikimedia.org/wiki/File:Heavy_breathing_2.ogg",
+    "license": "Public domain",
+    "file": "assets/audio/player/breath_heavy.ogg",
+    "assetId": 130259421342917,
+    "status": "approved"
+  },
+  "audio/player/breath_gasp": {
+    "source": "https://commons.wikimedia.org/wiki/File:Heavy_breathing_3.ogg",
+    "license": "Public domain",
+    "file": "assets/audio/player/breath_gasp.ogg",
+    "assetId": 105020284511488,
+    "status": "approved"
+  },
+  "audio/footsteps/metal_01": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/metal_01.wav",
+    "assetId": 100020778826074,
+    "status": "approved"
+  },
+  "audio/footsteps/metal_02": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/metal_02.wav",
+    "assetId": 91756891849573,
+    "status": "approved"
+  },
+  "audio/footsteps/metal_03": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/metal_03.wav",
+    "assetId": 80686912188034,
+    "status": "approved"
+  },
+  "audio/footsteps/concrete_01": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/concrete_01.wav",
+    "assetId": 76239889483945,
+    "status": "approved"
+  },
+  "audio/footsteps/concrete_02": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/concrete_02.wav",
+    "assetId": 102524739087775,
+    "status": "approved"
+  },
+  "audio/footsteps/concrete_03": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/concrete_03.wav",
+    "assetId": 129152333227871,
+    "status": "approved"
+  },
+  "audio/footsteps/wood_01": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/wood_01.wav",
+    "assetId": 72600633695935,
+    "status": "approved"
+  },
+  "audio/footsteps/wood_02": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/wood_02.wav",
+    "assetId": 107674184975458,
+    "status": "approved"
+  },
+  "audio/footsteps/wood_03": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/wood_03.wav",
+    "assetId": 86632405838667,
+    "status": "approved"
+  },
+  "audio/footsteps/grass_01": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/grass_01.wav",
+    "assetId": 125622012688974,
+    "status": "approved"
+  },
+  "audio/footsteps/grass_02": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/grass_02.wav",
+    "assetId": 117551923131946,
+    "status": "approved"
+  },
+  "audio/footsteps/grass_03": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/grass_03.wav",
+    "assetId": 119814451831693,
+    "status": "approved"
+  },
+  "audio/footsteps/dirt_01": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/dirt_01.wav",
+    "assetId": 91992059944636,
+    "status": "approved"
+  },
+  "audio/footsteps/dirt_02": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/dirt_02.wav",
+    "assetId": 126078840343211,
+    "status": "approved"
+  },
+  "audio/footsteps/dirt_03": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/dirt_03.wav",
+    "assetId": 97659269814534,
+    "status": "approved"
+  },
+  "audio/footsteps/sand_01": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/sand_01.wav",
+    "assetId": 137562067218683,
+    "status": "approved"
+  },
+  "audio/footsteps/sand_02": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/sand_02.wav",
+    "assetId": 100843308344050,
+    "status": "approved"
+  },
+  "audio/footsteps/sand_03": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/sand_03.wav",
+    "assetId": 118414794165248,
+    "status": "approved"
+  },
+  "audio/footsteps/water_01": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/water_01.wav",
+    "assetId": 105672530740348,
+    "status": "approved"
+  },
+  "audio/footsteps/water_02": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/water_02.wav",
+    "assetId": 109737300005657,
+    "status": "approved"
+  },
+  "audio/footsteps/water_03": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/footsteps/water_03.wav",
+    "assetId": 95099484266022,
+    "status": "approved"
+  },
+  "audio/city/siren_facility": {
+    "source": "https://opengameart.org/content/facility-alert-siren",
+    "license": "CC0",
+    "file": "assets/audio/city/siren_facility.mp3",
+    "assetId": 75728715286944,
+    "status": "approved"
+  },
+  "audio/city/siren_civil": {
+    "source": "https://commons.wikimedia.org/wiki/File:Civil-defense-siren-waver.ogg",
+    "license": "Public domain",
+    "file": "assets/audio/city/siren_civil.ogg",
+    "assetId": 125737593545616,
+    "status": "approved"
+  },
+  "audio/city/siren_police": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/city/siren_police.wav",
+    "assetId": 90676434432939,
+    "status": "approved"
+  },
+  "audio/city/siren_ambulance": {
+    "source": "generated",
+    "license": "Original work (project owner)",
+    "file": "assets/audio/city/siren_ambulance.wav",
+    "assetId": 119061943603302,
+    "status": "approved"
+  },
+  "audio/city/helicopter": {
+    "source": "https://commons.wikimedia.org/wiki/File:Helicopter_over_quiet_neighbourhood.ogg",
+    "license": "Public domain",
+    "file": "assets/audio/city/helicopter.ogg",
+    "assetId": 140722208536221,
+    "status": "approved"
+  },
+  "audio/zombie/growl_01": {
+    "source": "https://commons.wikimedia.org/wiki/File:Man_grunts_like_pig.ogg",
+    "license": "Public domain",
+    "file": "assets/audio/zombie/growl_01.ogg",
+    "assetId": 82512407543783,
+    "status": "approved"
+  },
+  "audio/foley/gear_01": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/foley/gear_01.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/foley/gear_02": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/foley/gear_02.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/foley/gear_03": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/foley/gear_03.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/foley/land_soft": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/foley/land_soft.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/foley/land_hard": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/foley/land_hard.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/foley/cloth_whoosh": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/foley/cloth_whoosh.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/player/heartbeat": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/player/heartbeat.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/player/wind": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/player/wind.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/zombie/idle_01": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/zombie/idle_01.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/zombie/idle_02": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/zombie/idle_02.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/zombie/alert_bark": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/zombie/alert_bark.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/zombie/bite": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/zombie/bite.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/zombie/horde_walla": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/zombie/horde_walla.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/world/fire_crackle": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/world/fire_crackle.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/world/distant_boom": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/world/distant_boom.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/world/hangar_roomtone": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/world/hangar_roomtone.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/ui/hover": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/ui/hover.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/ui/click": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/ui/click.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/ui/countdown_tick": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/ui/countdown_tick.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/ui/countdown_go": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/ui/countdown_go.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/ui/reward_tick": {
+    "source": "pending",
+    "license": "pending",
+    "file": "assets/audio/ui/reward_tick.ogg",
+    "assetId": 0,
+    "status": "pending"
+  },
+  "audio/unused/step_gravel_loop": {
+    "source": "https://commons.wikimedia.org/wiki/File:Walking-on-gravel-38827.ogg",
+    "license": "CC0",
+    "file": "assets/audio/unused/step_gravel_loop.ogg",
+    "assetId": 75914567135656,
+    "status": "approved",
+    "note": "Continuous walking recording, replaced by per-material generated steps"
+  },
+  "audio/unused/siren_police_rejected": {
+    "source": "https://commons.wikimedia.org/wiki/File:American_police_siren_i.ogg",
+    "license": "Public domain",
+    "file": "assets/audio/unused/siren_police_rejected.ogg",
+    "assetId": 128523035804310,
+    "status": "rejected",
+    "note": "Rejected by Roblox moderation, replaced by generated wail"
+  },
+  "texture/pbr/asphalt_normal": {
+    "source": "https://ambientcg.com/view?id=Asphalt033",
+    "license": "CC0",
+    "file": "assets/textures/asphalt_normal.jpg",
+    "assetId": "138058441441084",
+    "status": "approved"
+  },
+  "texture/pbr/asphalt_roughness": {
+    "source": "https://ambientcg.com/view?id=Asphalt033",
+    "license": "CC0",
+    "file": "assets/textures/asphalt_roughness.jpg",
+    "assetId": "74110318979899",
+    "status": "approved"
+  },
+  "texture/pbr/concrete_normal": {
+    "source": "https://ambientcg.com/view?id=Concrete034",
+    "license": "CC0",
+    "file": "assets/textures/concrete_normal.jpg",
+    "assetId": "87774611487630",
+    "status": "approved"
+  },
+  "texture/pbr/concrete_roughness": {
+    "source": "https://ambientcg.com/view?id=Concrete034",
+    "license": "CC0",
+    "file": "assets/textures/concrete_roughness.jpg",
+    "assetId": "114110568469344",
+    "status": "approved"
+  }
+}

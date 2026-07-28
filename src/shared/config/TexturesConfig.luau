@@ -1,17 +1,24 @@
 --!strict
 
+local AssetIds = require(script.Parent.AssetIds)
+
 local TexturesConfig = {
-	ASPHALT = 115224776116295,
-	CONCRETE = 117864665807575,
-	GRASS = 81024087358603,
-	GROUND = 125991468588773,
-	BRICKS = 136193205189503,
-	METAL_PLATES = 138794326612928,
-	CORRUGATED = 136962871310349,
-	TILES = 99758356540000,
-	WOOD = 136206214410343,
-	RUST = 85963499931816,
-	FABRIC = 85689029803224,
+	ASPHALT = AssetIds.texture.surface.asphalt,
+	CONCRETE = AssetIds.texture.surface.concrete,
+	GRASS = AssetIds.texture.surface.grass,
+	GROUND = AssetIds.texture.surface.ground,
+	BRICKS = AssetIds.texture.surface.bricks,
+	METAL_PLATES = AssetIds.texture.surface.metal_plates,
+	CORRUGATED = AssetIds.texture.surface.corrugated,
+	TILES = AssetIds.texture.surface.tiles,
+	WOOD = AssetIds.texture.surface.wood,
+	RUST = AssetIds.texture.surface.rust,
+	FABRIC = AssetIds.texture.surface.fabric,
+
+	ASPHALT_NORMAL = AssetIds.texture.pbr.asphalt_normal,
+	ASPHALT_ROUGHNESS = AssetIds.texture.pbr.asphalt_roughness,
+	CONCRETE_NORMAL = AssetIds.texture.pbr.concrete_normal,
+	CONCRETE_ROUGHNESS = AssetIds.texture.pbr.concrete_roughness,
 }
 
 return table.freeze(TexturesConfig)

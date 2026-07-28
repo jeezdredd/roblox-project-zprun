@@ -93,11 +93,14 @@ local function playFrom(pool: { Sound }, poolIndex: number, soundId: number, vol
 	pcall(function()
 		sound:Play()
 	end)
-	task.delay(FootstepConfig.MAX_SLICE, function()
-		if sound.Parent and sound.IsPlaying then
-			sound:Stop()
-		end
-	end)
+	local length = sound.TimeLength
+	if length <= 0 or length > FootstepConfig.MAX_SLICE then
+		task.delay(FootstepConfig.MAX_SLICE, function()
+			if sound.Parent and sound.IsPlaying then
+				sound:Stop()
+			end
+		end)
+	end
 	return nextIndex
 end
 
@@ -224,6 +227,20 @@ function FootstepController.init()
 		end
 		wasRunning = isRunning
 	end)
+
+	local function watchTeammate(other: Player)
+		if other == player then
+			return
+		end
+		other.CharacterRemoving:Connect(function()
+			teammates[other] = nil
+		end)
+	end
+
+	Players.PlayerAdded:Connect(watchTeammate)
+	for _, existing in Players:GetPlayers() do
+		watchTeammate(existing)
+	end
 	Players.PlayerRemoving:Connect(function(leaving)
 		teammates[leaving] = nil
 	end)

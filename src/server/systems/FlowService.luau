@@ -8,17 +8,27 @@ local HangarConfig = require(ReplicatedStorage.Shared.config.HangarConfig)
 local Flow = require(ReplicatedStorage.Shared.types.Flow)
 local MissionState = require(script.Parent.MissionState)
 local WeaponService = require(script.Parent.WeaponService)
+local SkillEffects = require(script.Parent.SkillEffects)
 
 local PHASE_ATTRIBUTE = "FlowPhase"
 
 local FlowService = {}
 
-local function applyHumanoidConfig(character: Model, phase: Flow.FlowPhase)
+local function applyHumanoidConfig(character: Model, phase: Flow.FlowPhase, player: Player?)
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	if not humanoid then
 		return
 	end
 	humanoid.BreakJointsOnDeath = false
+	if player then
+		local bonusHealth = SkillEffects.bonusHealth(player)
+		local maxHealth = GameConstants.PLAYER_MAX_HEALTH + bonusHealth
+		if humanoid.MaxHealth ~= maxHealth then
+			local ratio = if humanoid.MaxHealth > 0 then humanoid.Health / humanoid.MaxHealth else 1
+			humanoid.MaxHealth = maxHealth
+			humanoid.Health = maxHealth * math.clamp(ratio, 0, 1)
+		end
+	end
 	if phase == "Mission" then
 		humanoid.UseJumpPower = false
 		humanoid.JumpHeight = 0
@@ -41,7 +51,7 @@ function FlowService.setPhase(player: Player, phase: Flow.FlowPhase)
 	player:SetAttribute(PHASE_ATTRIBUTE, phase)
 	local character = player.Character
 	if character then
-		applyHumanoidConfig(character, phase)
+		applyHumanoidConfig(character, phase, player)
 	end
 	if phase == "Mission" and previous ~= "Mission" then
 		WeaponService.refillAmmo(player)

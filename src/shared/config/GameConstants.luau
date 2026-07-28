@@ -1,6 +1,7 @@
 --!strict
 
 local GameConstants = {
+	PLAYER_MAX_HEALTH = 100,
 	BASE_RUN_SPEED = 24,
 	MAX_RUN_SPEED = 60,
 	HUB_WALK_SPEED = 16,

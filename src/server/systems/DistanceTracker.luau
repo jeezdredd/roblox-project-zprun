@@ -6,6 +6,7 @@ local RunService = game:GetService("RunService")
 
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local MissionState = require(script.Parent.MissionState)
+local SkillEffects = require(script.Parent.SkillEffects)
 
 local DistanceTracker = {}
 
@@ -59,7 +60,7 @@ local function step()
 		if humanoid then
 			humanoid.WalkSpeed = math.min(
 				GameConstants.BASE_RUN_SPEED + best * GameConstants.SPEED_GAIN_PER_STUD,
-				GameConstants.MAX_RUN_SPEED
+				GameConstants.MAX_RUN_SPEED + SkillEffects.bonusSpeed(player)
 			)
 		end
 	end

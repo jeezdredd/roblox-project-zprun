@@ -188,12 +188,13 @@ local function buildShell(base: CFrame, config: VendorsConfig.VendorConfig, pare
 
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.Name = "VendorPrompt"
-	prompt.ActionText = "Coming soon"
+	prompt.ActionText = "Browse"
 	prompt.ObjectText = config.displayName
 	prompt.HoldDuration = 0.2
 	prompt.MaxActivationDistance = 14
 	prompt.RequiresLineOfSight = false
 	prompt.Parent = counter
+	counter:SetAttribute("VendorId", config.id)
 
 	buildMannequin(base * CFrame.new(0, 1, -halfD + 12), UNIFORM_COLOR, parent)
 

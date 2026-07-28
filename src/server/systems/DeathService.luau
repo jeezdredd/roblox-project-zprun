@@ -11,6 +11,8 @@ local MissionConfig = require(script.Parent.MissionConfig)
 local MissionService = require(script.Parent.MissionService)
 local DistanceTracker = require(script.Parent.DistanceTracker)
 local ProfileManager = require(script.Parent.ProfileManager)
+local MonetizationService = require(script.Parent.MonetizationService)
+local ProductsConfig = require(ReplicatedStorage.Shared.config.ProductsConfig)
 local ZombieAI = require(script.Parent.ZombieAI)
 
 local DeathService = {}
@@ -123,17 +125,38 @@ local function onPlayerDied(player: Player)
 	end)
 end
 
+local function canRevive(player: Player): boolean
+	return (revivesUsed[player] or 0) < REVIVES_PER_RUN
+end
+
+local function grantContinue(player: Player): boolean
+	local current = pending[player]
+	if not current or not canRevive(player) then
+		return false
+	end
+	revivesUsed[player] = (revivesUsed[player] or 0) + 1
+	reviveAtDeath(player, current.deathCFrame)
+	return true
+end
+
 local function onChoice(player: Player, choice: any)
 	local current = pending[player]
 	if not current then
 		return
 	end
-	if choice == "continue" and (revivesUsed[player] or 0) < REVIVES_PER_RUN then
-		revivesUsed[player] = (revivesUsed[player] or 0) + 1
-		reviveAtDeath(player, current.deathCFrame)
-	else
+	if choice ~= "continue" then
 		returnToHub(player)
+		return
 	end
+	if not canRevive(player) then
+		returnToHub(player)
+		return
+	end
+	if ProductsConfig.isConfigured("Continue") then
+		MonetizationService.promptPurchase(player, "Continue")
+		return
+	end
+	grantContinue(player)
 end
 
 local function watchHubDeaths(player: Player)
@@ -160,6 +183,7 @@ function DeathService.init()
 	MissionService.setDeathHandler(onPlayerDied)
 
 	Remotes.getEvent(Remotes.Event.DeathChoice).OnServerEvent:Connect(onChoice)
+	MonetizationService.setGrantHandler("Continue", grantContinue)
 
 	Players.PlayerAdded:Connect(watchHubDeaths)
 	for _, player in Players:GetPlayers() do

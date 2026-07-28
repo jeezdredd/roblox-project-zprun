@@ -21,6 +21,13 @@ Remotes.Event = table.freeze({
 	WeaponFire = "WeaponFire",
 	WeaponReload = "WeaponReload",
 	WeaponHit = "WeaponHit",
+	ShopSync = "ShopSync",
+	PromptPurchase = "PromptPurchase",
+})
+
+Remotes.Function = table.freeze({
+	ShopCatalog = "ShopCatalog",
+	ShopPurchase = "ShopPurchase",
 })
 
 local folder: Folder? = nil
@@ -62,9 +69,27 @@ function Remotes.getEvent(name: string): RemoteEvent
 	return parent:WaitForChild(name) :: RemoteEvent
 end
 
+function Remotes.getFunction(name: string): RemoteFunction
+	local parent = getFolder()
+	if RunService:IsServer() then
+		local existing = parent:FindFirstChild(name)
+		if existing and existing:IsA("RemoteFunction") then
+			return existing
+		end
+		local remote = Instance.new("RemoteFunction")
+		remote.Name = name
+		remote.Parent = parent
+		return remote
+	end
+	return parent:WaitForChild(name) :: RemoteFunction
+end
+
 function Remotes.init()
 	for _, name in Remotes.Event do
 		Remotes.getEvent(name)
+	end
+	for _, name in Remotes.Function do
+		Remotes.getFunction(name)
 	end
 end
 

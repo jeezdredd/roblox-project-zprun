@@ -113,8 +113,26 @@ WeaponsConfig.weapons = {
 	},
 } :: { [string]: WeaponConfig }
 
+WeaponsConfig.MAX_LEVEL = 5
+WeaponsConfig.UPGRADE_BASE_PRICE = 400
+WeaponsConfig.UPGRADE_PRICE_STEP = 350
+WeaponsConfig.DAMAGE_PER_LEVEL = 0.08
+WeaponsConfig.XP_PER_KILL = 6
+
 function WeaponsConfig.get(id: string): WeaponConfig?
 	return WeaponsConfig.weapons[id]
+end
+
+function WeaponsConfig.upgradePrice(level: number): number
+	return WeaponsConfig.UPGRADE_BASE_PRICE + WeaponsConfig.UPGRADE_PRICE_STEP * math.max(level - 1, 0)
+end
+
+function WeaponsConfig.xpForLevel(level: number): number
+	return 40 * level * level
+end
+
+function WeaponsConfig.damageAt(config: WeaponConfig, level: number): number
+	return config.damage * (1 + WeaponsConfig.DAMAGE_PER_LEVEL * math.max(level - 1, 0))
 end
 
 return table.freeze(WeaponsConfig)

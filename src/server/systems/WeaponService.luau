@@ -7,6 +7,7 @@ local Workspace = game:GetService("Workspace")
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local ProfileManager = require(script.Parent.ProfileManager)
+local SkillEffects = require(script.Parent.SkillEffects)
 
 local WeaponService = {}
 
@@ -58,7 +59,7 @@ local function ownsWeapon(player: Player, weaponId: string): boolean
 	return data.WeaponsOwned[weaponId] ~= nil
 end
 
-local function onEquip(player: Player, weaponId: unknown)
+local function onEquip(player: Player, weaponId: any)
 	if typeof(weaponId) ~= "string" then
 		return
 	end
@@ -151,7 +152,10 @@ local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, res
 		return
 	end
 
-	local damage = config.damage
+	local data = ProfileManager.get(player)
+	local progress = if data then data.WeaponsOwned[config.id] else nil
+	local level = if progress then progress.level else 1
+	local damage = WeaponsConfig.damageAt(config, level)
 	if part.Name == "Head" then
 		damage *= config.headshotMultiplier
 	end
@@ -159,10 +163,13 @@ local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, res
 	humanoid:TakeDamage(damage)
 	if wasAlive and humanoid.Health <= 0 then
 		ProfileManager.addKill(player)
+		if progress then
+			progress.xp += WeaponsConfig.XP_PER_KILL
+		end
 	end
 end
 
-local function onFire(player: Player, origin: unknown, direction: unknown)
+local function onFire(player: Player, origin: any, direction: any)
 	local state = states[player]
 	if not state then
 		return
@@ -263,12 +270,13 @@ local function onReload(player: Player)
 		return
 	end
 
-	state.reloadingUntil = now + config.reloadTime
+	local reloadTime = config.reloadTime * SkillEffects.reloadScale(player)
+	state.reloadingUntil = now + reloadTime
 	state.reloadToken += 1
 	local token = state.reloadToken
 	player:SetAttribute("Reloading", true)
 
-	task.delay(config.reloadTime, function()
+	task.delay(reloadTime, function()
 		local currentState = states[player]
 		if not currentState or currentState.reloadToken ~= token then
 			return

@@ -9,6 +9,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local AudioConfig = require(ReplicatedStorage.Shared.config.AudioConfig)
+local ProductsConfig = require(ReplicatedStorage.Shared.config.ProductsConfig)
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local CursorMode = require(script.Parent.Parent.systems.CursorMode)
 local UiSfx = require(script.Parent.Parent.systems.UiSfx)
@@ -149,7 +150,10 @@ local function build()
 	continueButton.Font = Enum.Font.GothamBold
 	continueButton.TextSize = 15
 	continueButton.TextColor3 = Color3.fromRGB(235, 235, 235)
-	continueButton.Text = "Continue (Robux)"
+	local continueProduct = ProductsConfig.getProduct("Continue")
+	continueButton.Text = if continueProduct and continueProduct.productId > 0
+		then string.format("Continue  %d R$", continueProduct.robuxPrice)
+		else "Continue"
 	continueButton.Parent = buttonRow
 	corner(continueButton, 6)
 
@@ -181,6 +185,10 @@ local function build()
 		choose("return")
 	end)
 	continueButton.Activated:Connect(function()
+		if continueProduct and continueProduct.productId > 0 then
+			Remotes.getEvent(Remotes.Event.DeathChoice):FireServer("continue")
+			return
+		end
 		choose("continue")
 	end)
 end
@@ -350,6 +358,8 @@ function DeathController.init()
 	Players.LocalPlayer.CharacterAdded:Connect(function()
 		active = false
 		RunService:UnbindFromRenderStep(DEATH_CAM)
+		ContextActionService:UnbindAction(CONFIRM_ACTION)
+		CursorMode.setModalOpen("DeathResults", false)
 		screen.Enabled = false
 		local camera = Workspace.CurrentCamera
 		if camera then

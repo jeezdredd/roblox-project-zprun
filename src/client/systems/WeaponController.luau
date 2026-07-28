@@ -261,6 +261,8 @@ function WeaponController.init()
 		elseif input.KeyCode == Enum.KeyCode.Q then
 			local current = player:GetAttribute("WeaponId")
 			equipSlot(if current == player:GetAttribute("LoadoutSlot1") then 2 else 1)
+		elseif input.KeyCode == Enum.KeyCode.F then
+			Viewmodel.toggleInspect()
 		end
 	end)
 	UserInputService.InputEnded:Connect(function(input)

@@ -21,6 +21,9 @@ export type WeaponConfig = {
 	closeSound: string,
 	recoilKick: number,
 	recoilSnap: number,
+	recoilStiffness: number,
+	recoilDamping: number,
+	cameraKick: number,
 }
 
 local WeaponsConfig = {}
@@ -49,6 +52,9 @@ WeaponsConfig.weapons = {
 		closeSound = "close_pistol",
 		recoilKick = 1.6,
 		recoilSnap = 0.9,
+		recoilStiffness = 240,
+		recoilDamping = 22,
+		cameraKick = 0.9,
 	},
 	SMG = {
 		id = "SMG",
@@ -71,6 +77,9 @@ WeaponsConfig.weapons = {
 		closeSound = "close_smg",
 		recoilKick = 1,
 		recoilSnap = 0.55,
+		recoilStiffness = 260,
+		recoilDamping = 24,
+		cameraKick = 0.6,
 	},
 	Shotgun = {
 		id = "Shotgun",
@@ -93,6 +102,9 @@ WeaponsConfig.weapons = {
 		closeSound = "close_shotgun",
 		recoilKick = 3.4,
 		recoilSnap = 1.8,
+		recoilStiffness = 150,
+		recoilDamping = 16,
+		cameraKick = 2.2,
 	},
 	Rifle = {
 		id = "Rifle",
@@ -115,6 +127,9 @@ WeaponsConfig.weapons = {
 		closeSound = "close_rifle",
 		recoilKick = 1.7,
 		recoilSnap = 1,
+		recoilStiffness = 200,
+		recoilDamping = 19,
+		cameraKick = 1.2,
 	},
 } :: { [string]: WeaponConfig }
 

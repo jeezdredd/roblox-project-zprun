@@ -446,6 +446,49 @@ local function buildDryGrass(position: Vector3, rng: Random, parent: Instance)
 	end
 end
 
+local function buildUndergrowth(position: Vector3, rng: Random, parent: Instance)
+	local roll = rng:NextNumber()
+	if roll < 0.4 then
+		local capRadius = rng:NextNumber(0.4, 0.9)
+		local stem = createPart(
+			"MushroomStem",
+			Vector3.new(0.18, capRadius * 1.6, 0.18),
+			CFrame.new(position + Vector3.new(0, capRadius * 0.8, 0)),
+			Color3.fromRGB(216, 208, 186),
+			Enum.Material.SmoothPlastic,
+			parent
+		)
+		noShadow(stem).CanCollide = false
+		local cap = Instance.new("Part")
+		cap.Name = "MushroomCap"
+		cap.Shape = Enum.PartType.Ball
+		cap.Size = Vector3.new(capRadius * 2, capRadius, capRadius * 2)
+		cap.CFrame = CFrame.new(position + Vector3.new(0, capRadius * 1.6, 0))
+		cap.Anchored = true
+		cap.CanCollide = false
+		cap.CanQuery = false
+		cap.CastShadow = false
+		cap.Color = Color3.fromRGB(rng:NextInteger(120, 168), rng:NextInteger(56, 84), rng:NextInteger(48, 70))
+		cap.Material = Enum.Material.SmoothPlastic
+		cap.Parent = parent
+		return
+	end
+
+	for _ = 1, rng:NextInteger(2, 4) do
+		local fern = createPart(
+			"Fern",
+			Vector3.new(rng:NextNumber(1.2, 2.4), 0.12, rng:NextNumber(1.2, 2.2)),
+			CFrame.new(position + Vector3.new(rng:NextNumber(-1.6, 1.6), rng:NextNumber(0.4, 1.1), rng:NextNumber(-1.6, 1.6)))
+				* CFrame.Angles(math.rad(rng:NextNumber(-25, 25)), rng:NextNumber(0, math.pi), math.rad(rng:NextNumber(-25, 25))),
+			Color3.fromRGB(rng:NextInteger(36, 58), rng:NextInteger(72, 98), rng:NextInteger(34, 52)),
+			Enum.Material.Grass,
+			parent
+		)
+		noShadow(fern).CanCollide = false
+		fern.CanQuery = false
+	end
+end
+
 local function buildCornWall(position: Vector3, rng: Random, parent: Instance)
 	local width = rng:NextNumber(16, 26)
 	local wall = createPart(
@@ -735,6 +778,11 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 			local x = rng:NextNumber(-fieldHalf, fieldHalf)
 			local z = rng:NextNumber(-chunkLength / 2 + 16, chunkLength / 2 - 16)
 			buildCanopyCover(Vector3.new(x, 0.5, z), rng, model)
+		end
+		for _ = 1, 14 do
+			local x = rng:NextNumber(-fieldHalf, fieldHalf)
+			local z = rng:NextNumber(-chunkLength / 2 + 8, chunkLength / 2 - 8)
+			buildUndergrowth(Vector3.new(x, 0.5, z), rng, model)
 		end
 	elseif effective.edgeProps == "buildings" and rng:NextNumber() < GameConstants.FIELD_CLUSTER_CHANCE then
 		local clusterX = rng:NextNumber(-fieldHalf * 0.7, fieldHalf * 0.7)

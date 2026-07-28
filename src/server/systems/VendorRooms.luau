@@ -282,31 +282,29 @@ local function buildWorkbench(base: CFrame, parent: Instance)
 end
 
 local function buildShootingLanes(base: CFrame, size: Vector3, parent: Instance)
-	local halfW = size.X / 2
 	local halfD = size.Z / 2
 
-	local partition = makePart("Part", "RangePartition", Vector3.new(1, 16, size.Z - 4), base * CFrame.new(halfW - 34, 9, 0), Color3.fromRGB(70, 72, 76), Enum.Material.Metal, parent)
-	local partitionGlass = makePart("Part", "RangeGlass", Vector3.new(0.5, 7, 20), base * CFrame.new(halfW - 34, 11, 0), Color3.fromRGB(180, 210, 220), Enum.Material.Glass, parent)
+	makePart("Part", "RangePartition", Vector3.new(1.4, 16, size.Z - 4), base * CFrame.new(-2, 9, 0), Color3.fromRGB(70, 72, 76), Enum.Material.Metal, parent)
+	local partitionGlass = makePart("Part", "RangeGlass", Vector3.new(0.5, 7, 22), base * CFrame.new(-2, 11, 0), Color3.fromRGB(180, 210, 220), Enum.Material.Glass, parent)
 	partitionGlass.Transparency = 0.5
 	decor(partitionGlass)
-	local _ = partition
 
 	for i = 0, 2 do
-		local laneX = halfW - 26 - i * 8
+		local laneX = 6 + i * 12
 		if i > 0 then
-			makePart("Part", "LaneDivider", Vector3.new(0.6, 7, 26), base * CFrame.new(laneX + 4, 4.5, 4), Color3.fromRGB(84, 86, 90), Enum.Material.Metal, parent)
+			makePart("Part", "LaneDivider", Vector3.new(0.6, 7, 26), base * CFrame.new(laneX - 6, 4.5, 4), Color3.fromRGB(84, 86, 90), Enum.Material.Metal, parent)
 		end
-		makePart("Part", "FiringBench", Vector3.new(6, 3.4, 2.4), base * CFrame.new(laneX, 2.7, -halfD + 12), DARK_STEEL, Enum.Material.Metal, parent)
+		makePart("Part", "FiringBench", Vector3.new(7, 3.4, 2.4), base * CFrame.new(laneX, 2.7, -halfD + 12), DARK_STEEL, Enum.Material.Metal, parent)
 
 		local laneLight = makePart("Part", "LaneLight", Vector3.new(1.6, 1.6, 0.5), base * CFrame.new(laneX, 12, -halfD + 10), if i == 0 then Color3.fromRGB(80, 240, 120) else Color3.fromRGB(240, 80, 80), Enum.Material.Neon, parent)
 		decor(laneLight)
 
-		buildMannequin(base * CFrame.new(laneX, 1, halfD - 8), Color3.fromRGB(88, 122, 82), parent)
-		local sandbag = makePart("Part", "Sandbags", Vector3.new(7, 3, 3), base * CFrame.new(laneX, 2.4, halfD - 4), Color3.fromRGB(150, 138, 104), Enum.Material.Sand, parent)
+		buildMannequin(base * CFrame.new(laneX, 1, halfD - 9), Color3.fromRGB(88, 122, 82), parent)
+		local sandbag = makePart("Part", "Sandbags", Vector3.new(8, 3, 3), base * CFrame.new(laneX, 2.4, halfD - 4), Color3.fromRGB(150, 138, 104), Enum.Material.Sand, parent)
 		decor(sandbag)
 	end
 
-	local rangeSign = makePart("Part", "RangeSign", Vector3.new(18, 2.6, 0.4), base * CFrame.new(halfW - 22, 15, -halfD + 8), Color3.fromRGB(240, 170, 70), Enum.Material.Neon, parent)
+	local rangeSign = makePart("Part", "RangeSign", Vector3.new(20, 2.6, 0.4), base * CFrame.new(18, 15, -halfD + 8), Color3.fromRGB(240, 170, 70), Enum.Material.Neon, parent)
 	decor(rangeSign)
 	makeSign(rangeSign, "Shooting Range", "Test weapons — SOON", 4)
 end

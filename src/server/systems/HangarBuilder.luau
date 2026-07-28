@@ -90,7 +90,7 @@ local function buildWindowBand(alongX: boolean, fixed: number, from: number, to:
 	for i = 0, segments do
 		local mid = from + i * step
 		makePart(
-			"Mullion",
+			"Part",
 			"Mullion",
 			wallSize(alongX, 1.2, y1 - y0),
 			wallCFrame(alongX, fixed, mid, (y0 + y1) / 2),

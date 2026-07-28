@@ -66,10 +66,13 @@ function CityAmbience.init()
 			attachLoop(sirenSpots[1], AudioConfig.POLICE_SIREN_ID, AudioConfig.POLICE_VOLUME, 1)
 		end
 		if #sirenSpots > 2 then
-			attachLoop(sirenSpots[3], AudioConfig.POLICE_SIREN_ID, AudioConfig.POLICE_VOLUME * 0.8, 0.82)
+			attachLoop(sirenSpots[3], AudioConfig.AMBULANCE_SIREN_ID, AudioConfig.POLICE_VOLUME * 0.85, 1)
 		end
 		if #sirenSpots > 5 then
-			attachLoop(sirenSpots[6], AudioConfig.CIVIL_SIREN_ID, AudioConfig.SIREN_VOLUME, 1)
+			attachLoop(sirenSpots[6], AudioConfig.POLICE_SIREN_ID, AudioConfig.POLICE_VOLUME * 0.7, 0.86)
+		end
+		if #sirenSpots > 8 then
+			attachLoop(sirenSpots[9], AudioConfig.CIVIL_SIREN_ID, AudioConfig.SIREN_VOLUME, 1)
 		end
 
 		for _, model in diorama:GetChildren() do

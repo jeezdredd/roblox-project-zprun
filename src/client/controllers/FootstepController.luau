@@ -93,7 +93,20 @@ local function playFrom(pool: { Sound }, poolIndex: number, soundId: number, vol
 	pcall(function()
 		sound:Play()
 	end)
+	task.delay(FootstepConfig.MAX_SLICE, function()
+		if sound.Parent and sound.IsPlaying then
+			sound:Stop()
+		end
+	end)
 	return nextIndex
+end
+
+local function silencePool(pool: { Sound })
+	for _, sound in pool do
+		if sound.Parent and sound.IsPlaying then
+			sound:Stop()
+		end
+	end
 end
 
 local function onLocalStep()
@@ -202,6 +215,15 @@ function FootstepController.init()
 
 	ExertionState.onStep(onLocalStep)
 	RunService.Heartbeat:Connect(stepTeammates)
+
+	local wasRunning = false
+	RunService.Heartbeat:Connect(function()
+		local isRunning = ExertionState.isRunning()
+		if wasRunning and not isRunning then
+			silencePool(localPool)
+		end
+		wasRunning = isRunning
+	end)
 	Players.PlayerRemoving:Connect(function(leaving)
 		teammates[leaving] = nil
 	end)

@@ -98,26 +98,50 @@ local function playOneShot(soundId: number, volume: number, pitch: number)
 	end)
 end
 
-local function updateTail()
-	local reverbEffect = reverb
-	if not reverbEffect then
-		return
-	end
+local function updateTail(): boolean
 	local character = player.Character
 	local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
-	local interior = root and root:IsA("BasePart") and isInterior(root.Position)
-	if interior then
-		reverbEffect.DecayTime = 1.6
-		reverbEffect.WetLevel = -6
-	else
-		reverbEffect.DecayTime = 0.5
-		reverbEffect.WetLevel = -16
+	local interior = root ~= nil and root:IsA("BasePart") and isInterior(root.Position)
+
+	local reverbEffect = reverb
+	if reverbEffect then
+		if interior then
+			reverbEffect.DecayTime = 1.5
+			reverbEffect.WetLevel = -8
+		else
+			reverbEffect.DecayTime = 0.4
+			reverbEffect.WetLevel = -18
+		end
 	end
+	return interior
+end
+
+local function weaponSoundId(key: string): number
+	return (AssetIds.audio.weapons :: { [string]: number })[key] or 0
 end
 
 local function shotSoundId(config: WeaponsConfig.WeaponConfig): number
-	local id = (AssetIds.audio.weapons :: { [string]: number })[config.shotSound]
-	return id or 0
+	local closeId = weaponSoundId(config.closeSound)
+	if closeId > 0 then
+		return closeId
+	end
+	return weaponSoundId(config.shotSound)
+end
+
+local TAIL_COOLDOWN = 0.55
+local lastTailAt = 0
+
+local function playTail(config: WeaponsConfig.WeaponConfig, interior: boolean)
+	local now = os.clock()
+	if now - lastTailAt < TAIL_COOLDOWN then
+		return
+	end
+	lastTailAt = now
+	local tailId = weaponSoundId(if interior then "tail_interior" else "tail_open")
+	if tailId <= 0 then
+		return
+	end
+	playOneShot(tailId, config.shotVolume * (if interior then 0.34 else 0.46), 1 + (math.random() - 0.5) * 0.06)
 end
 
 function WeaponSfx.playShot(weaponId: string)
@@ -126,10 +150,11 @@ function WeaponSfx.playShot(weaponId: string)
 		return
 	end
 	scanZones()
-	updateTail()
+	local interior = updateTail()
 
 	local jitter = 1 + (math.random() - 0.5) * 0.06
 	playOneShot(shotSoundId(config), config.shotVolume, config.shotPitch * jitter)
+	playTail(config, interior)
 
 	task.delay(0.25 + math.random() * 0.3, function()
 		local shellId = SfxPlayer.pick({ AssetIds.audio.weapons.shell_01, AssetIds.audio.weapons.shell_02 })

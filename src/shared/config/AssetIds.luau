@@ -90,6 +90,10 @@ local AssetIds = {
 		},
 		weapons = {
 			bolt = 118765487481144,
+			close_pistol = 74305022147056,
+			close_rifle = 110884224691219,
+			close_shotgun = 102335137671396,
+			close_smg = 120415397225180,
 			dryfire = 92885069261997,
 			mag_in = 128060588767848,
 			mag_out = 105859367449536,
@@ -100,6 +104,8 @@ local AssetIds = {
 			shot_rifle = 120306703273832,
 			shot_shotgun = 129726512346854,
 			shot_smg = 98517684232791,
+			tail_interior = 105323708354342,
+			tail_open = 108476728399626,
 		},
 		world = {
 			distant_boom = 101875143084608,

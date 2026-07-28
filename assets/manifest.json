@@ -740,5 +740,47 @@
     "file": "assets/audio/weapons/shot_auto.mp3",
     "assetId": "116318686810257",
     "status": "approved"
+  },
+  "audio/weapons/close_pistol": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/close_pistol.wav",
+    "assetId": "74305022147056",
+    "status": "reviewing"
+  },
+  "audio/weapons/close_smg": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/close_smg.wav",
+    "assetId": "120415397225180",
+    "status": "reviewing"
+  },
+  "audio/weapons/close_rifle": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/close_rifle.wav",
+    "assetId": "110884224691219",
+    "status": "reviewing"
+  },
+  "audio/weapons/close_shotgun": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/close_shotgun.wav",
+    "assetId": "102335137671396",
+    "status": "reviewing"
+  },
+  "audio/weapons/tail_open": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/tail_open.wav",
+    "assetId": "108476728399626",
+    "status": "reviewing"
+  },
+  "audio/weapons/tail_interior": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/tail_interior.wav",
+    "assetId": "105323708354342",
+    "status": "reviewing"
   }
 }

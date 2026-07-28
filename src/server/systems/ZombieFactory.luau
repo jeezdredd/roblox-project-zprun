@@ -2,6 +2,8 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local TexturesConfig = require(ReplicatedStorage.Shared.config.TexturesConfig)
+local TextureUtil = require(ReplicatedStorage.Shared.util.TextureUtil)
 local ZombiesConfig = require(ReplicatedStorage.Shared.config.ZombiesConfig)
 
 local ZombieFactory = {}
@@ -34,8 +36,13 @@ function ZombieFactory.build(config: ZombiesConfig.ZombieConfig): Model
 	root.CFrame = CFrame.new()
 	root.Parent = model
 
-	createWeldedPart("Body", Vector3.new(2, 3, 1), CFrame.new(0, 0, 0), config.bodyColor, root, model)
-	createWeldedPart("Head", Vector3.new(1.2, 1.2, 1.2), CFrame.new(0, 2.1, 0), config.bodyColor:Lerp(Color3.new(0, 0, 0), 0.3), root, model)
+	local body = createWeldedPart("Body", Vector3.new(2, 3, 1), CFrame.new(0, 0, 0), config.bodyColor, root, model)
+	body.Material = Enum.Material.Fabric
+	TextureUtil.applySides(body, TexturesConfig.FABRIC, 2.4)
+
+	local head = createWeldedPart("Head", Vector3.new(1.2, 1.2, 1.2), CFrame.new(0, 2.1, 0), config.bodyColor:Lerp(Color3.new(0, 0, 0), 0.3), root, model)
+	head.Material = Enum.Material.Sand
+	TextureUtil.applySides(head, TexturesConfig.GROUND, 1.4)
 
 	for _, sign in { -1, 1 } do
 		local eye = createWeldedPart(

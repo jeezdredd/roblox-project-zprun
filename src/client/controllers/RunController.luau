@@ -33,12 +33,12 @@ local function getAliveHumanoid(): Humanoid?
 	return humanoid
 end
 
-local function wrapAroundWalls(root: BasePart)
+local function clampToField(root: BasePart)
 	local x = root.Position.X
-	if math.abs(x) < wrapThreshold then
+	if math.abs(x) <= wrapThreshold then
 		return
 	end
-	local targetX = -math.sign(x) * (wrapThreshold - 0.5)
+	local targetX = math.sign(x) * wrapThreshold
 	root.CFrame = root.CFrame + Vector3.new(targetX - x, 0, 0)
 end
 
@@ -56,7 +56,7 @@ function RunController.start()
 
 		local root = humanoid.RootPart
 		if root then
-			wrapAroundWalls(root)
+			clampToField(root)
 		end
 
 		local axis = InputController.getLateralAxis()

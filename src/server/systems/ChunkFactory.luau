@@ -60,14 +60,17 @@ local function getTemplate(kind: string): Model?
 	return nil
 end
 
+local MAX_WINDOW_BANDS = 4
+
 local function buildWindowBands(sign: number, height: number, width: number, depth: number, position: Vector3, rng: Random, parent: Instance)
 	local faceX = position.X - sign * (depth / 2 + 0.15)
-	local y = 5
-	while y < height - 4 do
+	local bands = math.min(MAX_WINDOW_BANDS, math.max(1, math.floor((height - 10) / 9)))
+	for index = 1, bands do
+		local y = 6 + (index - 1) * ((height - 12) / bands)
 		local lit = rng:NextNumber() < 0.35
 		local band = createPart(
 			"WindowBand",
-			Vector3.new(0.25, 2, width - 3),
+			Vector3.new(0.25, 2.4, width - 3),
 			CFrame.new(faceX, position.Y + y, position.Z),
 			if lit then Color3.fromRGB(255, 214, 140) else Color3.fromRGB(25, 30, 40),
 			if lit then Enum.Material.Neon else Enum.Material.Glass,
@@ -77,7 +80,6 @@ local function buildWindowBands(sign: number, height: number, width: number, dep
 		band.CanCollide = false
 		band.CanQuery = false
 		band.CastShadow = false
-		y += 4.5
 	end
 end
 
@@ -439,58 +441,73 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	end
 
 	if effective.roadMarkings and not isField then
-		for i = 0, 7 do
-			local z = -chunkLength / 2 + 8 + i * 16
-			local marking = createPart(
-				"Marking",
-				Vector3.new(0.8, 0.05, 6),
-				CFrame.new(0, 0.53, z),
-				Color3.fromRGB(200, 200, 194),
-				Enum.Material.SmoothPlastic,
-				model
-			)
-			marking.CanCollide = false
-			marking.CanQuery = false
-			marking.CastShadow = false
+		for _, laneX in { -laneWidth / 4, laneWidth / 4 } do
+			for i = 0, 7 do
+				local z = -chunkLength / 2 + 8 + i * 16
+				local marking = createPart(
+					"Marking",
+					Vector3.new(0.8, 0.05, 6),
+					CFrame.new(laneX, 0.53, z),
+					Color3.fromRGB(200, 200, 194),
+					Enum.Material.SmoothPlastic,
+					model
+				)
+				marking.CanCollide = false
+				marking.CanQuery = false
+				marking.CastShadow = false
+			end
 		end
 	end
 
-	local edgeStep = if effective.edgeProps == "trees" then { 14, 24 } else { 26, 40 }
+	local edgeStep = if effective.edgeProps == "trees" then { 22, 34 } else { 34, 52 }
 	for _, sign in { -1, 1 } do
-		local z = -chunkLength / 2 + rng:NextNumber(6, 16)
+		local z = -chunkLength / 2 + rng:NextNumber(6, 20)
 		while z < chunkLength / 2 - 8 do
 			local kind = location.edgeProps
 			if nextLocation and rng:NextNumber() < alpha then
 				kind = nextLocation.edgeProps
 			end
-			local x = sign * (laneWidth / 2 + barrierThickness + rng:NextNumber(8, apronWidth - 16))
+			local x = sign * (laneWidth / 2 + barrierThickness + rng:NextNumber(10, apronWidth - 20))
 			buildEdgeProp(kind, sign, Vector3.new(x, 0.5, z), rng, model)
 			z += rng:NextNumber(edgeStep[1], edgeStep[2])
 		end
 	end
 
+	local fieldHalf = laneWidth / 2 - 10
+	local obstacleTotal = math.max(1, math.floor(obstacleCount * GameConstants.FIELD_OBSTACLE_SCALE + 0.5))
+
 	if isField then
-		local laneTreeCount = 4 + obstacleCount
-		for _ = 1, laneTreeCount do
-			local x = rng:NextNumber(-laneWidth / 2 + 6, laneWidth / 2 - 6)
+		for _ = 1, obstacleTotal + 6 do
+			local x = rng:NextNumber(-fieldHalf, fieldHalf)
 			local z = rng:NextNumber(-chunkLength / 2 + 8, chunkLength / 2 - 8)
 			buildTree(Vector3.new(x, 0.5, z), rng, model)
 		end
-		for _ = 1, 4 do
-			local x = rng:NextNumber(-laneWidth / 2, laneWidth / 2)
+		for _ = 1, 6 do
+			local x = rng:NextNumber(-fieldHalf, fieldHalf)
 			local z = rng:NextNumber(-chunkLength / 2 + 16, chunkLength / 2 - 16)
 			buildCanopyCover(Vector3.new(x, 0.5, z), rng, model)
 		end
+	elseif effective.edgeProps == "buildings" and rng:NextNumber() < GameConstants.FIELD_CLUSTER_CHANCE then
+		local clusterX = rng:NextNumber(-fieldHalf * 0.7, fieldHalf * 0.7)
+		local clusterZ = rng:NextNumber(-chunkLength / 2 + 30, chunkLength / 2 - 30)
+		local clusterSign = if clusterX < 0 then -1 else 1
+		buildBuilding(clusterSign, Vector3.new(clusterX, 0.5, clusterZ), rng, model)
 	end
 
-	local zSlots = { -44, -12, 20, 48 }
-	for i = #zSlots, 2, -1 do
-		local j = rng:NextInteger(1, i)
-		zSlots[i], zSlots[j] = zSlots[j], zSlots[i]
-	end
-	for i = 1, math.min(obstacleCount, #zSlots) do
-		local x = rng:NextNumber(-laneWidth / 2 + 12, laneWidth / 2 - 12)
-		buildObstacle(effective.edgeProps, Vector3.new(x, 0.5, zSlots[i] + rng:NextNumber(-6, 6)), rng, model)
+	local laneCount = math.max(3, math.floor(laneWidth / 46))
+	local laneStep = laneWidth / laneCount
+	local placed = 0
+	for lane = 1, laneCount do
+		if placed >= obstacleTotal then
+			break
+		end
+		if rng:NextNumber() < 0.75 then
+			local laneCenter = -laneWidth / 2 + laneStep * (lane - 0.5)
+			local x = math.clamp(laneCenter + rng:NextNumber(-laneStep * 0.3, laneStep * 0.3), -fieldHalf, fieldHalf)
+			local z = rng:NextNumber(-chunkLength / 2 + 14, chunkLength / 2 - 14)
+			buildObstacle(effective.edgeProps, Vector3.new(x, 0.5, z), rng, model)
+			placed += 1
+		end
 	end
 
 	model.PrimaryPart = floor

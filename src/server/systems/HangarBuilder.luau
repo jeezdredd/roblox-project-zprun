@@ -403,6 +403,33 @@ function HangarBuilder.build(): { Helicopter }
 		barrier.CastShadow = false
 		barrier.CanQuery = false
 	end
+
+	local gateGlass = makePart(
+		"Part",
+		"GateGlass",
+		Vector3.new(HangarConfig.GATE_HALF_WIDTH * 2 - 4, HangarConfig.GATE_HEIGHT - 2, 0.6),
+		CFrame.new(center.X, HangarConfig.GATE_HEIGHT / 2, center.Z - halfZ + 0.6),
+		Color3.fromRGB(150, 180, 200),
+		Enum.Material.Glass,
+		model
+	)
+	gateGlass.Transparency = 0.78
+	gateGlass.Reflectance = 0.1
+	gateGlass.CastShadow = false
+
+	local mullionCount = 5
+	for index = 0, mullionCount do
+		local x = center.X - HangarConfig.GATE_HALF_WIDTH + (index / mullionCount) * HangarConfig.GATE_HALF_WIDTH * 2
+		makePart(
+			"Part",
+			"GateMullion",
+			Vector3.new(1.4, HangarConfig.GATE_HEIGHT, 1.2),
+			CFrame.new(x, HangarConfig.GATE_HEIGHT / 2, center.Z - halfZ + 0.6),
+			HangarConfig.TRIM_COLOR,
+			Enum.Material.Metal,
+			model
+		)
+	end
 	buildWall(true, center.Z + halfZ, center.X - halfX, center.X + halfX, nil, nil, model)
 	buildWall(false, center.X - halfX, center.Z - halfZ, center.Z + halfZ, nil, nil, model)
 	buildWall(false, center.X + halfX, center.Z - halfZ, center.Z + halfZ, nil, nil, model)

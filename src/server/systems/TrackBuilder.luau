@@ -17,7 +17,7 @@ function TrackBuilder.build(): Model
 	local length = GameConstants.START_PLATFORM_LENGTH
 
 	local model = LaneSectionFactory.build("StartPlatform", length, Color3.fromRGB(120, 120, 125))
-	model:PivotTo(CFrame.new(runDirection * (length / 2)))
+	model:PivotTo(CFrame.new(GameConstants.RUN_ORIGIN + runDirection * (length / 2)))
 	model.Parent = Workspace
 
 	platform = model

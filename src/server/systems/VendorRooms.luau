@@ -10,7 +10,10 @@ local VendorsConfig = require(ReplicatedStorage.Shared.config.VendorsConfig)
 
 local VendorRooms = {}
 
-local DOOR_HALF_WIDTH = 9
+local DOOR_HALF_WIDTH = 7
+local ROOM_HEIGHT = 13
+local COUNTER_HEIGHT = 3.2
+local COUNTER_TOP_Y = 3.4
 local UNIFORM_COLOR = Color3.fromRGB(80, 92, 70)
 local STEEL = Color3.fromRGB(104, 108, 112)
 local DARK_STEEL = Color3.fromRGB(56, 58, 62)
@@ -65,19 +68,19 @@ local function makeSign(adornee: BasePart, title: string, subtitle: string, offs
 end
 
 local function buildMannequin(base: CFrame, uniformColor: Color3, parent: Instance)
-	makePart("Part", "Legs", Vector3.new(1.9, 2.2, 1), base * CFrame.new(0, 1.1, 0), Color3.fromRGB(45, 48, 52), Enum.Material.Fabric, parent)
-	makePart("Part", "Torso", Vector3.new(2.1, 2.6, 1.1), base * CFrame.new(0, 3.5, 0), uniformColor, Enum.Material.Fabric, parent)
+	makePart("Part", "Legs", Vector3.new(1.5, 1.9, 0.9), base * CFrame.new(0, 0.95, 0), Color3.fromRGB(45, 48, 52), Enum.Material.Fabric, parent)
+	makePart("Part", "Torso", Vector3.new(1.7, 2.1, 0.95), base * CFrame.new(0, 2.95, 0), uniformColor, Enum.Material.Fabric, parent)
 	for _, sign in { -1, 1 } do
-		makePart("Part", "Arm", Vector3.new(0.75, 2.4, 0.85), base * CFrame.new(sign * 1.45, 3.4, 0), uniformColor, Enum.Material.Fabric, parent)
+		makePart("Part", "Arm", Vector3.new(0.6, 2, 0.7), base * CFrame.new(sign * 1.15, 2.85, 0), uniformColor, Enum.Material.Fabric, parent)
 	end
-	makePart("Part", "Head", Vector3.new(1.15, 1.15, 1.15), base * CFrame.new(0, 5.4, 0), Color3.fromRGB(205, 170, 140), Enum.Material.SmoothPlastic, parent)
-	makePart("Part", "Cap", Vector3.new(1.4, 0.45, 1.4), base * CFrame.new(0, 6.1, 0), uniformColor:Lerp(Color3.new(0, 0, 0), 0.35), Enum.Material.Fabric, parent)
+	makePart("Part", "Head", Vector3.new(0.95, 0.95, 0.95), base * CFrame.new(0, 4.5, 0), Color3.fromRGB(205, 170, 140), Enum.Material.SmoothPlastic, parent)
+	makePart("Part", "Cap", Vector3.new(1.15, 0.35, 1.15), base * CFrame.new(0, 5.05, 0), uniformColor:Lerp(Color3.new(0, 0, 0), 0.35), Enum.Material.Fabric, parent)
 end
 
 local function buildShell(base: CFrame, config: VendorsConfig.VendorConfig, parent: Instance): BasePart
 	local halfW = config.size.X / 2
 	local halfD = config.size.Z / 2
-	local height = config.size.Y
+	local height = ROOM_HEIGHT
 	local wall = config.wallColor
 	local trim = wall:Lerp(Color3.new(0, 0, 0), 0.35)
 
@@ -109,9 +112,18 @@ local function buildShell(base: CFrame, config: VendorsConfig.VendorConfig, pare
 		)
 		TextureUtil.applySides(frontWall, wallTexture, 10)
 	end
-	makePart("Part", "DoorLintel", Vector3.new(DOOR_HALF_WIDTH * 2, height - 12, 1.5), base * CFrame.new(0, height - (height - 12) / 2 + 1, -halfD + 0.75), wall, Enum.Material.Metal, parent)
+	local doorHeight = 9
+	makePart(
+		"Part",
+		"DoorLintel",
+		Vector3.new(DOOR_HALF_WIDTH * 2, height - doorHeight, 1.5),
+		base * CFrame.new(0, height - (height - doorHeight) / 2 + 1, -halfD + 0.75),
+		wall,
+		Enum.Material.Metal,
+		parent
+	)
 	for _, sign in { -1, 1 } do
-		local jamb = makePart("Part", "DoorJamb", Vector3.new(1.2, 12, 2.2), base * CFrame.new(sign * DOOR_HALF_WIDTH, 7, -halfD + 0.75), HangarConfig.TRIM_COLOR, Enum.Material.Metal, parent)
+		local jamb = makePart("Part", "DoorJamb", Vector3.new(0.9, doorHeight, 2), base * CFrame.new(sign * DOOR_HALF_WIDTH, doorHeight / 2 + 1, -halfD + 0.75), HangarConfig.TRIM_COLOR, Enum.Material.Metal, parent)
 		decor(jamb)
 	end
 
@@ -131,7 +143,7 @@ local function buildShell(base: CFrame, config: VendorsConfig.VendorConfig, pare
 		end
 	end
 
-	local banner = makePart("Part", "SignBanner", Vector3.new(config.size.X - 6, 3, 0.5), base * CFrame.new(0, height + 0.4, -halfD - 0.4), config.color, Enum.Material.Neon, parent)
+	local banner = makePart("Part", "SignBanner", Vector3.new(config.size.X - 10, 2, 0.5), base * CFrame.new(0, height + 0.4, -halfD - 0.4), config.color, Enum.Material.Neon, parent)
 	decor(banner)
 	local accent = Instance.new("PointLight")
 	accent.Color = config.color
@@ -140,9 +152,9 @@ local function buildShell(base: CFrame, config: VendorsConfig.VendorConfig, pare
 	accent.Parent = banner
 	makeSign(banner, config.displayName, config.subtitle, 5)
 
-	local counter = makePart("Part", "Counter", Vector3.new(16, 3.4, 3), base * CFrame.new(0, 2.7, -halfD + 8), DARK_STEEL, Enum.Material.Metal, parent)
+	local counter = makePart("Part", "Counter", Vector3.new(13, COUNTER_HEIGHT, 2.4), base * CFrame.new(0, 1 + COUNTER_HEIGHT / 2, -halfD + 8), DARK_STEEL, Enum.Material.Metal, parent)
 	TextureUtil.applySides(counter, TexturesConfig.METAL_PLATES, 5)
-	local counterTop = makePart("Part", "CounterTop", Vector3.new(17, 0.5, 4), base * CFrame.new(0, 4.6, -halfD + 8), STEEL, Enum.Material.Metal, parent)
+	local counterTop = makePart("Part", "CounterTop", Vector3.new(14, 0.4, 3.2), base * CFrame.new(0, 1 + COUNTER_TOP_Y, -halfD + 8), STEEL, Enum.Material.Metal, parent)
 	TextureUtil.applyFace(counterTop, Enum.NormalId.Top, TexturesConfig.METAL_PLATES, 5)
 
 	local prompt = Instance.new("ProximityPrompt")

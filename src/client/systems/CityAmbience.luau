@@ -2,50 +2,141 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local AudioConfig = require(ReplicatedStorage.Shared.config.AudioConfig)
+local HangarConfig = require(ReplicatedStorage.Shared.config.HangarConfig)
 local MusicController = require(script.Parent.MusicController)
 
 local CityAmbience = {}
 
+type Patrol = {
+	part: BasePart,
+	sound: Sound,
+	radius: number,
+	speed: number,
+	phase: number,
+	centerZ: number,
+	nextToggle: number,
+	playing: boolean,
+}
+
 local PHASE_ATTRIBUTE = "FlowPhase"
 
-local sounds: { Sound } = {}
+local random = Random.new()
+local patrols: { Patrol } = {}
+local staticSounds: { Sound } = {}
+local active = false
+local elapsed = 0
 
-local function attachLoop(parent: BasePart, soundId: number, volume: number, playbackSpeed: number): Sound?
-	if soundId <= 0 then
-		return nil
-	end
-	local sound = Instance.new("Sound")
-	sound.Name = "Ambience"
+local function isPlayableId(id: number): boolean
+	return id > 0
+end
+
+local function configureSound(sound: Sound, soundId: number, volume: number, pitch: number)
 	sound.SoundId = "rbxassetid://" .. tostring(soundId)
 	sound.Looped = true
 	sound.Volume = volume
-	sound.PlaybackSpeed = playbackSpeed
+	sound.PlaybackSpeed = pitch
 	sound.RollOffMode = Enum.RollOffMode.InverseTapered
 	sound.RollOffMinDistance = AudioConfig.AMBIENCE_ROLLOFF_MIN
 	sound.RollOffMaxDistance = AudioConfig.AMBIENCE_ROLLOFF_MAX
 	sound.SoundGroup = MusicController.getSfxGroup()
-	sound.Parent = parent
-	table.insert(sounds, sound)
-	return sound
 end
 
-local function setPlaying(playing: boolean)
-	for _, sound in sounds do
-		if playing and not sound.IsPlaying then
-			pcall(function()
-				sound:Play()
-			end)
-		elseif not playing and sound.IsPlaying then
+local function createPatrol(index: number, soundId: number, volume: number): Patrol?
+	if not isPlayableId(soundId) then
+		return nil
+	end
+
+	local part = Instance.new("Part")
+	part.Name = "SirenPatrol" .. index
+	part.Size = Vector3.new(1, 1, 1)
+	part.Transparency = 1
+	part.Anchored = true
+	part.CanCollide = false
+	part.CanQuery = false
+	part.CanTouch = false
+	part.Parent = Workspace
+
+	local sound = Instance.new("Sound")
+	sound.Name = "Siren"
+	configureSound(sound, soundId, volume, random:NextNumber(0.94, 1.06))
+	sound.Parent = part
+
+	return {
+		part = part,
+		sound = sound,
+		radius = random:NextNumber(AudioConfig.SIREN_PATROL_RADIUS_MIN, AudioConfig.SIREN_PATROL_RADIUS_MAX),
+		speed = random:NextNumber(AudioConfig.SIREN_PATROL_SPEED_MIN, AudioConfig.SIREN_PATROL_SPEED_MAX)
+			* (if index % 2 == 0 then -1 else 1),
+		phase = random:NextNumber(0, math.pi * 2),
+		centerZ = HangarConfig.HUB_CENTER.Z + random:NextNumber(HangarConfig.CITY_FAR_Z + 120, HangarConfig.CITY_NEAR_Z - 40),
+		nextToggle = random:NextNumber(0, AudioConfig.SIREN_GAP_MAX),
+		playing = false,
+	}
+end
+
+local function stopAll()
+	for _, patrol in patrols do
+		if patrol.sound.IsPlaying then
+			patrol.sound:Stop()
+		end
+		patrol.playing = false
+	end
+	for _, sound in staticSounds do
+		if sound.IsPlaying then
 			sound:Stop()
 		end
 	end
 end
 
+local function step(deltaTime: number)
+	if not active then
+		return
+	end
+	elapsed += deltaTime
+
+	for _, patrol in patrols do
+		local angle = patrol.phase + elapsed * patrol.speed
+		patrol.part.Position = Vector3.new(
+			HangarConfig.HUB_CENTER.X + math.cos(angle) * patrol.radius,
+			8,
+			patrol.centerZ + math.sin(angle) * patrol.radius * 0.6
+		)
+
+		if elapsed >= patrol.nextToggle then
+			if patrol.playing then
+				patrol.sound:Stop()
+				patrol.playing = false
+				patrol.nextToggle = elapsed + random:NextNumber(AudioConfig.SIREN_GAP_MIN, AudioConfig.SIREN_GAP_MAX)
+			else
+				patrol.sound.PlaybackSpeed = random:NextNumber(0.92, 1.08)
+				pcall(function()
+					patrol.sound:Play()
+				end)
+				patrol.playing = true
+				patrol.nextToggle = elapsed + random:NextNumber(AudioConfig.SIREN_BURST_MIN, AudioConfig.SIREN_BURST_MAX)
+			end
+		end
+	end
+end
+
 local function onPhaseChanged()
-	setPlaying(Players.LocalPlayer:GetAttribute(PHASE_ATTRIBUTE) ~= "Mission")
+	local inHub = Players.LocalPlayer:GetAttribute(PHASE_ATTRIBUTE) ~= "Mission"
+	active = inHub
+	if not inHub then
+		stopAll()
+		return
+	end
+	for _, sound in staticSounds do
+		if not sound.IsPlaying then
+			pcall(function()
+				sound:Play()
+			end)
+		end
+	end
 end
 
 function CityAmbience.init()
@@ -55,32 +146,32 @@ function CityAmbience.init()
 			return
 		end
 
-		local sirenSpots: { BasePart } = {}
-		for _, descendant in diorama:GetDescendants() do
-			if descendant:IsA("BasePart") and descendant.Name:match("^CityBlock") then
-				table.insert(sirenSpots, descendant)
+		local sirenIds = {
+			AudioConfig.POLICE_SIREN_ID,
+			AudioConfig.AMBULANCE_SIREN_ID,
+			AudioConfig.CIVIL_SIREN_ID,
+		}
+		for index = 1, AudioConfig.SIREN_PATROL_COUNT do
+			local soundId = sirenIds[((index - 1) % #sirenIds) + 1]
+			local volume = if soundId == AudioConfig.CIVIL_SIREN_ID then AudioConfig.SIREN_VOLUME else AudioConfig.POLICE_VOLUME
+			local patrol = createPatrol(index, soundId, volume)
+			if patrol then
+				table.insert(patrols, patrol)
 			end
-		end
-
-		if #sirenSpots > 0 then
-			attachLoop(sirenSpots[1], AudioConfig.POLICE_SIREN_ID, AudioConfig.POLICE_VOLUME, 1)
-		end
-		if #sirenSpots > 2 then
-			attachLoop(sirenSpots[3], AudioConfig.AMBULANCE_SIREN_ID, AudioConfig.POLICE_VOLUME * 0.85, 1)
-		end
-		if #sirenSpots > 5 then
-			attachLoop(sirenSpots[6], AudioConfig.POLICE_SIREN_ID, AudioConfig.POLICE_VOLUME * 0.7, 0.86)
-		end
-		if #sirenSpots > 8 then
-			attachLoop(sirenSpots[9], AudioConfig.CIVIL_SIREN_ID, AudioConfig.SIREN_VOLUME, 1)
 		end
 
 		for _, model in diorama:GetChildren() do
 			if model:IsA("Model") and model.Name == "PatrolChopper" and model.PrimaryPart then
-				attachLoop(model.PrimaryPart, AudioConfig.HELI_LOOP_ID, AudioConfig.HELI_VOLUME, 1)
+				local sound = Instance.new("Sound")
+				sound.Name = "RotorLoop"
+				configureSound(sound, AudioConfig.HELI_LOOP_ID, AudioConfig.HELI_VOLUME, 1)
+				sound.RollOffMaxDistance = 700
+				sound.Parent = model.PrimaryPart
+				table.insert(staticSounds, sound)
 			end
 		end
 
+		RunService.Heartbeat:Connect(step)
 		Players.LocalPlayer:GetAttributeChangedSignal(PHASE_ATTRIBUTE):Connect(onPhaseChanged)
 		onPhaseChanged()
 	end)

@@ -38,6 +38,7 @@ local pools: { [string]: { Model } } = {}
 local active: { [number]: ActiveChunk } = {}
 local chunksFolder: Folder? = nil
 local nextIndex = 0
+local currentBiomeId: string? = nil
 
 for _, id in LocationsConfig.order do
 	pools[id] = {}
@@ -128,13 +129,26 @@ local function despawnAll()
 	nextIndex = 0
 end
 
+local function updateBiomeAttribute(distance: number)
+	local index = math.max(0, math.floor((distance - startOffset) / chunkLength))
+	local entry = entryAt(index)
+	if entry and entry.locationId ~= currentBiomeId then
+		currentBiomeId = entry.locationId
+		Workspace:SetAttribute("Biome", entry.locationId)
+	end
+end
+
 local function step()
 	if not MissionState.isActive() then
 		return
 	end
 
-	local spawnEdge = DistanceTracker.getMaxDistance() + GameConstants.SPAWN_AHEAD_DISTANCE
+	local leadDistance = DistanceTracker.getMaxDistance()
+	updateBiomeAttribute(leadDistance)
+
+	local spawnEdge = leadDistance + GameConstants.SPAWN_AHEAD_DISTANCE
 	while startOffset + nextIndex * chunkLength < spawnEdge do
+
 		spawnChunk(nextIndex)
 		nextIndex += 1
 	end

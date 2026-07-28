@@ -11,6 +11,22 @@
     "ReplicatedFirst": {
       "$path": "src/replicatedfirst"
     },
+    "Lighting": {
+      "$properties": {
+        "Technology": "Future",
+        "ShadowSoftness": 0.35,
+        "ExposureCompensation": 0.15,
+        "EnvironmentDiffuseScale": 0.6,
+        "EnvironmentSpecularScale": 0.6,
+        "GlobalShadows": true
+      }
+    },
+    "Workspace": {
+      "$properties": {
+        "StreamingEnabled": true,
+        "StreamingTargetRadius": 1024
+      }
+    },
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "Client": { "$path": "src/client" }

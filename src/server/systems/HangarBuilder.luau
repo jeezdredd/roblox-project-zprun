@@ -1,6 +1,5 @@
 --!strict
 
-local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
@@ -249,16 +248,6 @@ local function buildProps(parent: Instance)
 	end
 end
 
-local function setupLighting()
-	Lighting.ClockTime = 20.2
-	Lighting.Brightness = 2.2
-	Lighting.Ambient = Color3.fromRGB(58, 58, 68)
-	Lighting.OutdoorAmbient = Color3.fromRGB(72, 66, 70)
-	Lighting.FogColor = Color3.fromRGB(52, 44, 44)
-	Lighting.FogStart = 180
-	Lighting.FogEnd = 900
-end
-
 local function buildHelicopter(index: number, padCFrame: CFrame, parent: Instance): Helicopter
 	local model = Instance.new("Model")
 	model.Name = "Helicopter" .. index
@@ -401,17 +390,19 @@ function HangarBuilder.build(): { Helicopter }
 
 	buildWall(true, center.Z - halfZ, center.X - halfX, center.X + halfX, center.X - HangarConfig.GATE_HALF_WIDTH, center.X + HangarConfig.GATE_HALF_WIDTH, model)
 
-	local gateBarrier = makePart(
-		"Part",
-		"GateBarrier",
-		Vector3.new(HangarConfig.GATE_HALF_WIDTH * 2, HangarConfig.GATE_HEIGHT + 12, 1),
-		CFrame.new(center.X, (HangarConfig.GATE_HEIGHT + 12) / 2, center.Z - halfZ),
-		Color3.new(0, 0, 0),
-		Enum.Material.SmoothPlastic,
-		model
-	)
-	gateBarrier.Transparency = 1
-	gateBarrier.CastShadow = false
+	local containHeight = wallHeight + 30
+	local containLayouts = {
+		{ Vector3.new(floorSize.X + 8, containHeight, 2), CFrame.new(center.X, containHeight / 2, center.Z - halfZ) },
+		{ Vector3.new(floorSize.X + 8, containHeight, 2), CFrame.new(center.X, containHeight / 2, center.Z + halfZ) },
+		{ Vector3.new(2, containHeight, floorSize.Z + 8), CFrame.new(center.X - halfX, containHeight / 2, center.Z) },
+		{ Vector3.new(2, containHeight, floorSize.Z + 8), CFrame.new(center.X + halfX, containHeight / 2, center.Z) },
+	}
+	for index, layout in containLayouts do
+		local barrier = makePart("Part", "Containment" .. index, layout[1], layout[2], Color3.new(0, 0, 0), Enum.Material.SmoothPlastic, model)
+		barrier.Transparency = 1
+		barrier.CastShadow = false
+		barrier.CanQuery = false
+	end
 	buildWall(true, center.Z + halfZ, center.X - halfX, center.X + halfX, nil, nil, model)
 	buildWall(false, center.X - halfX, center.Z - halfZ, center.Z + halfZ, nil, nil, model)
 	buildWall(false, center.X + halfX, center.Z - halfZ, center.Z + halfZ, nil, nil, model)
@@ -425,7 +416,6 @@ function HangarBuilder.build(): { Helicopter }
 	end
 
 	buildProps(model)
-	setupLighting()
 
 	local spawnLocation = Instance.new("SpawnLocation")
 	spawnLocation.Name = "HubSpawn"

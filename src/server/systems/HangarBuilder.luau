@@ -6,6 +6,7 @@ local Workspace = game:GetService("Workspace")
 local HangarConfig = require(ReplicatedStorage.Shared.config.HangarConfig)
 local TexturesConfig = require(ReplicatedStorage.Shared.config.TexturesConfig)
 local TextureUtil = require(ReplicatedStorage.Shared.util.TextureUtil)
+local MaterialUtil = require(ReplicatedStorage.Shared.util.MaterialUtil)
 
 export type Helicopter = {
 	index: number,
@@ -386,7 +387,9 @@ function HangarBuilder.build(): { Helicopter }
 	model.Name = "Hangar"
 
 	local hangarFloor = makePart("Part", "HangarFloor", floorSize, CFrame.new(center), HangarConfig.FLOOR_COLOR, Enum.Material.Concrete, model)
-	TextureUtil.applyFace(hangarFloor, Enum.NormalId.Top, TexturesConfig.CONCRETE, 16)
+	if not MaterialUtil.apply(hangarFloor, "TFZ_Concrete") then
+		TextureUtil.applyFace(hangarFloor, Enum.NormalId.Top, TexturesConfig.CONCRETE, 16)
+	end
 
 	buildWall(true, center.Z - halfZ, center.X - halfX, center.X + halfX, center.X - HangarConfig.GATE_HALF_WIDTH, center.X + HangarConfig.GATE_HALF_WIDTH, model)
 

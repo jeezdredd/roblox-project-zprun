@@ -21,6 +21,7 @@ local breathPhase = 0
 local swayPhase = 0
 local fov = CameraConfig.BASE_FOV
 local fovKick = 0
+local adrenaline = 0
 
 local shakeOffsetX, shakeOffsetY, shakeOffsetZ = 0, 0, 0
 local shakeVelocityX, shakeVelocityY, shakeVelocityZ = 0, 0, 0
@@ -59,10 +60,17 @@ local function update(deltaTime: number)
 	local exertion = ExertionState.get()
 	local speed = ExertionState.getSpeed()
 
+	local chase = if Workspace:GetAttribute("ZombiesAggro") == true
+			and Players.LocalPlayer:GetAttribute("FlowPhase") == "Mission"
+		then 1
+		else 0
+	adrenaline = approach(adrenaline, chase, 1.5, deltaTime)
+
 	local targetFov = CameraConfig.BASE_FOV
 	local fovRange = CameraConfig.FOV_SPEED_MAX - CameraConfig.FOV_SPEED_MIN
 	local fovAlpha = math.clamp((speed - CameraConfig.FOV_SPEED_MIN) / fovRange, 0, 1)
 	targetFov += (CameraConfig.MAX_FOV - CameraConfig.BASE_FOV) * fovAlpha
+	targetFov += CameraConfig.ADRENALINE_FOV * adrenaline
 	fov = approach(fov, targetFov, CameraConfig.FOV_LERP_SPEED, deltaTime)
 	fovKick = approach(fovKick, 0, CameraConfig.FOV_KICK_DECAY, deltaTime)
 	camera.FieldOfView = fov + fovKick

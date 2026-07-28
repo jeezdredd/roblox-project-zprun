@@ -1,5 +1,6 @@
 --!strict
 
+local MaterialUtil = require(game:GetService("ReplicatedStorage").Shared.util.MaterialUtil)
 local FlowService = require(script.systems.FlowService)
 local HangarBuilder = require(script.systems.HangarBuilder)
 local DistanceTracker = require(script.systems.DistanceTracker)
@@ -20,6 +21,7 @@ local function runStage(name: string, fn: () -> ())
 	end
 end
 
+runStage("Materials", MaterialUtil.register)
 runStage("MissionConfig", MissionConfig.init)
 runStage("FlowService", FlowService.init)
 runStage("DistanceTracker", DistanceTracker.init)

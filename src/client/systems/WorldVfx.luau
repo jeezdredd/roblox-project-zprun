@@ -11,6 +11,7 @@ local WorldVfx = {}
 
 local PHASE_ATTRIBUTE = "FlowPhase"
 
+local random = Random.new()
 local ashEmitter: ParticleEmitter? = nil
 local ashPart: Part? = nil
 local emberCount = 0
@@ -108,6 +109,91 @@ local function buildRotorWash(pad: BasePart)
 	emitter.Parent = attachment
 end
 
+local function buildFlies(host: BasePart)
+	local attachment = Instance.new("Attachment")
+	attachment.Position = Vector3.new(0, 2.5, 0)
+	attachment.Parent = host
+
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Name = "Flies"
+	emitter.Color = ColorSequence.new(Color3.fromRGB(24, 22, 20))
+	emitter.Transparency = NumberSequence.new(0.15)
+	emitter.Size = NumberSequence.new(0.07)
+	emitter.Lifetime = NumberRange.new(1.4, 2.6)
+	emitter.Rate = 12 * VfxConfig.DENSITY
+	emitter.Speed = NumberRange.new(2.5, 5)
+	emitter.SpreadAngle = Vector2.new(180, 180)
+	emitter.Drag = 4
+	emitter.Acceleration = Vector3.new(0, 1.5, 0)
+	emitter.LightInfluence = 1
+	emitter.Parent = attachment
+end
+
+local function buildSparkLamp(host: BasePart)
+	local attachment = Instance.new("Attachment")
+	attachment.Parent = host
+
+	local sparks = Instance.new("ParticleEmitter")
+	sparks.Name = "Sparks"
+	sparks.Color = ColorSequence.new(Color3.fromRGB(255, 226, 150))
+	sparks.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	sparks.Size = NumberSequence.new(0.18, 0.02)
+	sparks.Lifetime = NumberRange.new(0.4, 0.9)
+	sparks.Rate = 0
+	sparks.Speed = NumberRange.new(9, 18)
+	sparks.SpreadAngle = Vector2.new(60, 60)
+	sparks.Acceleration = Vector3.new(0, -30, 0)
+	sparks.LightEmission = 1
+	sparks.LightInfluence = 0
+	sparks.Parent = attachment
+
+	local light = Instance.new("PointLight")
+	light.Color = Color3.fromRGB(255, 228, 170)
+	light.Range = 22
+	light.Brightness = 1.4
+	light.Parent = host
+
+	task.spawn(function()
+		while host.Parent do
+			task.wait(random:NextNumber(2.5, 7))
+			if not host.Parent then
+				break
+			end
+			for _ = 1, random:NextInteger(2, 5) do
+				light.Enabled = not light.Enabled
+				task.wait(random:NextNumber(0.04, 0.12))
+			end
+			light.Enabled = true
+			sparks:Emit(math.floor(6 * VfxConfig.DENSITY + 0.5))
+		end
+	end)
+end
+
+local function buildExhaustHaze(host: BasePart)
+	local attachment = Instance.new("Attachment")
+	attachment.Parent = host
+
+	local haze = Instance.new("ParticleEmitter")
+	haze.Name = "ExhaustHaze"
+	haze.Color = ColorSequence.new(Color3.fromRGB(210, 210, 214))
+	haze.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.9),
+		NumberSequenceKeypoint.new(0.4, 0.93),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	haze.Size = NumberSequence.new(1.4, 4.5)
+	haze.Lifetime = NumberRange.new(0.8, 1.5)
+	haze.Rate = 12 * VfxConfig.DENSITY
+	haze.Speed = NumberRange.new(4, 8)
+	haze.SpreadAngle = Vector2.new(18, 18)
+	haze.Drag = 3
+	haze.LightInfluence = 1
+	haze.Parent = attachment
+end
+
 local function step()
 	local part = ashPart
 	local emitter = ashEmitter
@@ -143,9 +229,20 @@ function WorldVfx.init()
 
 		local hangar = Workspace:WaitForChild("Hangar", 30)
 		if hangar then
+			local lampCount = 0
 			for _, descendant in hangar:GetDescendants() do
-				if descendant:IsA("BasePart") and descendant.Name == "PadHBar" then
+				if not descendant:IsA("BasePart") then
+					continue
+				end
+				if descendant.Name == "PadHBar" then
 					buildRotorWash(descendant)
+				elseif descendant.Name == "Exhaust" then
+					buildExhaustHaze(descendant)
+				elseif descendant.Name == "CeilingLamp" and lampCount < 3 then
+					buildSparkLamp(descendant)
+					lampCount += 1
+				elseif descendant.Name == "FuelDrum" and random:NextNumber() < 0.4 then
+					buildFlies(descendant)
 				end
 			end
 		end

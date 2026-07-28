@@ -6,6 +6,7 @@ local TweenService = game:GetService("TweenService")
 
 local SettingsService = require(script.Parent.SettingsService)
 local ZombieAudio = require(script.Parent.ZombieAudio)
+local ZombieVfx = require(script.Parent.ZombieVfx)
 
 local GoreController = {}
 
@@ -76,6 +77,7 @@ local function watchCharacter(character: Model)
 				ZombieAudio.playBite(root.Position)
 				if SettingsService.get("bloodEnabled") then
 					spawnBlood(root)
+					ZombieVfx.bloodAt(root.Position)
 				end
 			end
 			if SettingsService.get("bloodEnabled") then

@@ -24,6 +24,7 @@ type Chopper = {
 local center = HangarConfig.HUB_CENTER
 local random = Random.new(20260728)
 local choppers: { Chopper } = {}
+local flickerBands: { { part: BasePart, phase: number, rate: number } } = {}
 local elapsed = 0
 
 local function makePart(name: string, size: Vector3, cframe: CFrame, color: Color3, material: Enum.Material, parent: Instance): Part
@@ -171,6 +172,12 @@ local function buildBuilding(index: number, burning: boolean, withLight: boolean
 			)
 			band.Transparency = 0.2
 			band.CastShadow = false
+
+			if random:NextNumber() < 0.12 then
+				local flickerPhase = random:NextNumber(0, math.pi * 2)
+				local flickerRate = random:NextNumber(0.6, 2.4)
+				table.insert(flickerBands, { part = band, phase = flickerPhase, rate = flickerRate })
+			end
 		end
 	end
 
@@ -213,6 +220,15 @@ end
 
 local function step(deltaTime: number)
 	elapsed += deltaTime
+
+	for _, band in flickerBands do
+		if not band.part.Parent then
+			continue
+		end
+		local wave = math.sin(elapsed * band.rate + band.phase)
+		local flicker = math.sin(elapsed * band.rate * 7.3 + band.phase) * 0.15
+		band.part.Transparency = math.clamp(0.2 + wave * 0.25 + flicker, 0.05, 0.85)
+	end
 	for _, chopper in choppers do
 		local angle = chopper.phase + elapsed * chopper.speed
 		local x = chopper.centerX + math.cos(angle) * chopper.radius

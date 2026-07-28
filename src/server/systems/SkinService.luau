@@ -18,8 +18,8 @@ local function buildDescription(skin: SkinsConfig.SkinConfig): HumanoidDescripti
 	description.RightArmColor = skin.armColor
 	description.LeftLegColor = skin.legColor
 	description.RightLegColor = skin.legColor
-	description.Shirt = skin.shirtId
-	description.Pants = skin.pantsId
+	description.Shirt = 0
+	description.Pants = 0
 	description.GraphicTShirt = 0
 	description.Face = 0
 	description.Head = 0

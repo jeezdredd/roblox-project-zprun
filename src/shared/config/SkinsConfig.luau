@@ -10,8 +10,6 @@ export type SkinConfig = {
 	torsoColor: Color3,
 	armColor: Color3,
 	legColor: Color3,
-	shirtId: number,
-	pantsId: number,
 }
 
 local SkinsConfig = {}
@@ -31,8 +29,6 @@ SkinsConfig.skins = {
 		torsoColor = Color3.fromRGB(88, 100, 74),
 		armColor = Color3.fromRGB(205, 170, 140),
 		legColor = Color3.fromRGB(72, 82, 62),
-		shirtId = 0,
-		pantsId = 0,
 	},
 	Ranger = {
 		id = "Ranger",
@@ -44,8 +40,6 @@ SkinsConfig.skins = {
 		torsoColor = Color3.fromRGB(66, 86, 58),
 		armColor = Color3.fromRGB(198, 162, 132),
 		legColor = Color3.fromRGB(54, 70, 48),
-		shirtId = 0,
-		pantsId = 0,
 	},
 	Medic = {
 		id = "Medic",
@@ -57,8 +51,6 @@ SkinsConfig.skins = {
 		torsoColor = Color3.fromRGB(222, 226, 228),
 		armColor = Color3.fromRGB(205, 170, 140),
 		legColor = Color3.fromRGB(120, 128, 132),
-		shirtId = 0,
-		pantsId = 0,
 	},
 	Heavy = {
 		id = "Heavy",
@@ -70,8 +62,6 @@ SkinsConfig.skins = {
 		torsoColor = Color3.fromRGB(72, 76, 84),
 		armColor = Color3.fromRGB(196, 160, 130),
 		legColor = Color3.fromRGB(52, 56, 64),
-		shirtId = 0,
-		pantsId = 0,
 	},
 	Ghost = {
 		id = "Ghost",
@@ -83,8 +73,6 @@ SkinsConfig.skins = {
 		torsoColor = Color3.fromRGB(34, 36, 40),
 		armColor = Color3.fromRGB(48, 50, 56),
 		legColor = Color3.fromRGB(28, 30, 34),
-		shirtId = 0,
-		pantsId = 0,
 	},
 } :: { [string]: SkinConfig }
 

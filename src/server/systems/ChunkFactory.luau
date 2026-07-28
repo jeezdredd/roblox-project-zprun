@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local LocationsConfig = require(ReplicatedStorage.Shared.config.LocationsConfig)
 local TexturesConfig = require(ReplicatedStorage.Shared.config.TexturesConfig)
+local MaterialUtil = require(ReplicatedStorage.Shared.util.MaterialUtil)
 
 export type Blend = {
 	next: LocationsConfig.LocationConfig,
@@ -409,7 +410,32 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	model.Name = "Chunk_" .. location.id
 
 	local floor = createPart("Floor", Vector3.new(laneWidth, 1, chunkLength), CFrame.new(), floorColor, floorMaterial, model)
-	applyTexture(floor, Enum.NormalId.Top, floorTextureId, 12)
+	local pbrName = if floorMaterial == Enum.Material.Asphalt
+		then "TFZ_Asphalt"
+		elseif floorMaterial == Enum.Material.Concrete then "TFZ_Concrete"
+		else nil
+	if not (pbrName and MaterialUtil.apply(floor, pbrName)) then
+		applyTexture(floor, Enum.NormalId.Top, floorTextureId, 12)
+	end
+
+	for _ = 1, rng:NextInteger(2, 5) do
+		local stain = createPart(
+			"Stain",
+			Vector3.new(rng:NextNumber(4, 11), 0.06, rng:NextNumber(4, 11)),
+			CFrame.new(
+				rng:NextNumber(-laneWidth / 2 + 6, laneWidth / 2 - 6),
+				0.56,
+				rng:NextNumber(-chunkLength / 2 + 6, chunkLength / 2 - 6)
+			) * CFrame.Angles(0, rng:NextNumber(0, math.pi), 0),
+			Color3.fromRGB(rng:NextInteger(58, 96), rng:NextInteger(18, 34), rng:NextInteger(16, 30)),
+			Enum.Material.SmoothPlastic,
+			model
+		)
+		stain.Transparency = rng:NextNumber(0.3, 0.55)
+		stain.CanCollide = false
+		stain.CanQuery = false
+		stain.CastShadow = false
+	end
 
 	local barrierSize = Vector3.new(barrierThickness, GameConstants.BARRIER_HEIGHT, chunkLength)
 	local barrierOffsetX = (laneWidth + barrierThickness) / 2

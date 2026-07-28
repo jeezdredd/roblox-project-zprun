@@ -23,6 +23,7 @@ local CAR_COLORS = {
 	Color3.fromRGB(70, 90, 110),
 	Color3.fromRGB(92, 92, 96),
 	Color3.fromRGB(110, 100, 60),
+	Color3.fromRGB(140, 130, 120),
 }
 
 local function createPart(name: string, size: Vector3, cframe: CFrame, color: Color3, material: Enum.Material, parent: Instance): Part
@@ -59,13 +60,37 @@ local function getTemplate(kind: string): Model?
 	return nil
 end
 
+local function buildWindowBands(sign: number, height: number, width: number, depth: number, position: Vector3, rng: Random, parent: Instance)
+	local faceX = position.X - sign * (depth / 2 + 0.15)
+	local y = 5
+	while y < height - 4 do
+		local lit = rng:NextNumber() < 0.35
+		local band = createPart(
+			"WindowBand",
+			Vector3.new(0.25, 2, width - 3),
+			CFrame.new(faceX, position.Y + y, position.Z),
+			if lit then Color3.fromRGB(255, 214, 140) else Color3.fromRGB(25, 30, 40),
+			if lit then Enum.Material.Neon else Enum.Material.Glass,
+			parent
+		)
+		band.Transparency = if lit then 0.45 else 0.1
+		band.CanCollide = false
+		band.CanQuery = false
+		band.CastShadow = false
+		y += 4.5
+	end
+end
+
 local function buildBuilding(sign: number, position: Vector3, rng: Random, parent: Instance)
-	local depth = rng:NextNumber(12, 18)
-	local width = rng:NextNumber(16, 26)
-	local height = rng:NextNumber(24, 56)
-	local shade = rng:NextInteger(70, 110)
-	local material = if rng:NextNumber() < 0.5 then Enum.Material.Concrete else Enum.Material.Brick
-	local color = Color3.fromRGB(shade, shade, math.min(shade + rng:NextInteger(0, 10), 255))
+	local depth = rng:NextNumber(14, 20)
+	local width = rng:NextNumber(18, 30)
+	local height = rng:NextNumber(18, 42)
+	local isBrick = rng:NextNumber() < 0.55
+	local shade = rng:NextInteger(75, 115)
+	local color = if isBrick
+		then Color3.fromRGB(shade + 30, shade - 10, shade - 20)
+		else Color3.fromRGB(shade, shade, shade + 6)
+	local material = if isBrick then Enum.Material.Brick else Enum.Material.Concrete
 
 	local body = createPart(
 		"Building",
@@ -75,39 +100,57 @@ local function buildBuilding(sign: number, position: Vector3, rng: Random, paren
 		material,
 		parent
 	)
-	local laneFace = if sign > 0 then Enum.NormalId.Left else Enum.NormalId.Right
-	applyTexture(body, laneFace, TexturesConfig.BRICKS, 7)
-	applyTexture(body, Enum.NormalId.Front, TexturesConfig.BRICKS, 7)
-	applyTexture(body, Enum.NormalId.Back, TexturesConfig.BRICKS, 7)
+	if isBrick then
+		local laneFace = if sign > 0 then Enum.NormalId.Left else Enum.NormalId.Right
+		applyTexture(body, laneFace, TexturesConfig.BRICKS, 8)
+	end
+	buildWindowBands(sign, height, width, depth, position, rng, parent)
+
+	local roofColor = color:Lerp(Color3.new(0, 0, 0), 0.4)
 	createPart(
 		"Roof",
-		Vector3.new(depth + 1.5, 1, width + 1.5),
+		Vector3.new(depth + 1.2, 1, width + 1.2),
 		CFrame.new(position.X, position.Y + height + 0.5, position.Z),
-		color:Lerp(Color3.new(0, 0, 0), 0.35),
+		roofColor,
 		Enum.Material.Concrete,
 		parent
 	)
+	createPart(
+		"RoofBox",
+		Vector3.new(3, 2, 4),
+		CFrame.new(position.X + rng:NextNumber(-3, 3), position.Y + height + 2, position.Z + rng:NextNumber(-6, 6)),
+		Color3.fromRGB(120, 122, 126),
+		Enum.Material.DiamondPlate,
+		parent
+	)
 
-	local faceX = position.X - sign * (depth / 2 + 0.2)
-	local stripCount = rng:NextInteger(2, 3)
-	for i = 1, stripCount do
-		local zOffset = (i - (stripCount + 1) / 2) * (width / stripCount) * 0.6
-		local strip = createPart(
-			"Windows",
-			Vector3.new(0.3, height * 0.7, 1.4),
-			CFrame.new(faceX, position.Y + height / 2, position.Z + zOffset),
-			Color3.fromRGB(255, 214, 120),
-			Enum.Material.Neon,
+	if rng:NextNumber() < 0.5 and height < 38 then
+		local towerHeight = rng:NextNumber(10, 20)
+		local towerWidth = width * 0.6
+		local towerDepth = depth * 0.7
+		local tower = createPart(
+			"BuildingTower",
+			Vector3.new(towerDepth, towerHeight, towerWidth),
+			CFrame.new(position.X + sign * (depth - towerDepth) / 2, position.Y + height + 1 + towerHeight / 2, position.Z),
+			color,
+			material,
 			parent
 		)
-		strip.Transparency = 0.35
-		strip.CastShadow = false
+		tower.CastShadow = true
+		createPart(
+			"TowerRoof",
+			Vector3.new(towerDepth + 1, 0.8, towerWidth + 1),
+			CFrame.new(position.X + sign * (depth - towerDepth) / 2, position.Y + height + 1.4 + towerHeight, position.Z),
+			roofColor,
+			Enum.Material.Concrete,
+			parent
+		)
 	end
 end
 
 local function buildTree(position: Vector3, rng: Random, parent: Instance)
-	local trunkHeight = rng:NextNumber(7, 13)
-	local trunkRadius = rng:NextNumber(0.6, 1.1)
+	local trunkHeight = rng:NextNumber(9, 15)
+	local trunkRadius = rng:NextNumber(0.7, 1.2)
 
 	local trunk = Instance.new("Part")
 	trunk.Name = "Trunk"
@@ -133,15 +176,32 @@ local function buildTree(position: Vector3, rng: Random, parent: Instance)
 		)
 		ball.Anchored = true
 		ball.CanCollide = false
+		ball.CanQuery = false
 		ball.Color = Color3.fromRGB(rng:NextInteger(40, 60), rng:NextInteger(95, 125), rng:NextInteger(40, 60))
 		ball.Material = Enum.Material.Grass
 		ball.Parent = parent
 	end
 end
 
+local function buildCanopyCover(position: Vector3, rng: Random, parent: Instance)
+	local spanX = rng:NextNumber(28, 42)
+	local spanZ = rng:NextNumber(28, 42)
+	local cover = Instance.new("Part")
+	cover.Name = "CanopyCover"
+	cover.Shape = Enum.PartType.Ball
+	cover.Size = Vector3.new(spanX, rng:NextNumber(7, 10), spanZ)
+	cover.CFrame = CFrame.new(position.X, position.Y + rng:NextNumber(16, 20), position.Z)
+	cover.Anchored = true
+	cover.CanCollide = false
+	cover.CanQuery = false
+	cover.Color = Color3.fromRGB(rng:NextInteger(35, 50), rng:NextInteger(85, 110), rng:NextInteger(35, 50))
+	cover.Material = Enum.Material.Grass
+	cover.Parent = parent
+end
+
 local function buildRuin(position: Vector3, rotationY: number, rng: Random, parent: Instance)
 	local wallHeight = rng:NextNumber(6, 14)
-	local wall = createPart(
+	createPart(
 		"RuinWall",
 		Vector3.new(1.4, wallHeight, rng:NextNumber(8, 14)),
 		CFrame.new(position.X, position.Y + wallHeight / 2, position.Z) * CFrame.Angles(0, rotationY, rng:NextNumber(-0.08, 0.08)),
@@ -149,10 +209,8 @@ local function buildRuin(position: Vector3, rotationY: number, rng: Random, pare
 		Enum.Material.Concrete,
 		parent
 	)
-	wall.CastShadow = true
-
 	for _ = 1, rng:NextInteger(1, 2) do
-		local slab = createPart(
+		createPart(
 			"RuinSlab",
 			Vector3.new(rng:NextNumber(4, 9), rng:NextNumber(0.8, 1.6), rng:NextNumber(3, 7)),
 			CFrame.new(
@@ -164,36 +222,154 @@ local function buildRuin(position: Vector3, rotationY: number, rng: Random, pare
 			Enum.Material.Concrete,
 			parent
 		)
-		slab.CastShadow = false
 	end
 end
 
-local function buildCar(position: Vector3, rng: Random, parent: Instance)
-	local yaw = rng:NextNumber(-0.3, 0.3) + (if rng:NextNumber() < 0.25 then math.pi / 2 else 0)
-	local color = CAR_COLORS[rng:NextInteger(1, #CAR_COLORS)]
-	local base = CFrame.new(position.X, position.Y + 0.8, position.Z) * CFrame.Angles(0, yaw, 0)
-
-	local body = createPart("CarBody", Vector3.new(4.4, 1.6, 8.2), base, color, Enum.Material.Metal, parent)
-	body.CanCollide = false
-	body.CanQuery = false
-	local cabin = createPart("CarCabin", Vector3.new(3.8, 1.3, 3.8), base * CFrame.new(0, 1.45, 0.4), color:Lerp(Color3.new(0, 0, 0), 0.3), Enum.Material.Metal, parent)
-	cabin.CanCollide = false
-	cabin.CanQuery = false
+local function buildWheels(base: CFrame, length: number, parent: Instance)
+	for _, xSign in { -1, 1 } do
+		for _, zSign in { -1, 1 } do
+			local wheel = Instance.new("Part")
+			wheel.Name = "Wheel"
+			wheel.Shape = Enum.PartType.Cylinder
+			wheel.Size = Vector3.new(0.8, 1.6, 1.6)
+			wheel.CFrame = base * CFrame.new(xSign * 2.1, -0.6, zSign * (length / 2 - 1.5)) * CFrame.Angles(0, 0, math.rad(90))
+			wheel.Anchored = true
+			wheel.CanQuery = false
+			wheel.Color = Color3.fromRGB(30, 30, 32)
+			wheel.Material = Enum.Material.SmoothPlastic
+			wheel.Parent = parent
+		end
+	end
 end
 
-local function buildRock(position: Vector3, rng: Random, parent: Instance)
-	local size = rng:NextNumber(1.6, 3.2)
+local function buildCar(position: Vector3, yaw: number, rng: Random, parent: Instance)
+	local color = CAR_COLORS[rng:NextInteger(1, #CAR_COLORS)]
+	local base = CFrame.new(position.X, position.Y + 1.4, position.Z) * CFrame.Angles(0, yaw, 0)
+	createPart("CarBody", Vector3.new(4.4, 1.6, 8.4), base, color, Enum.Material.Metal, parent)
+	local cabin = createPart("CarCabin", Vector3.new(3.8, 1.3, 3.8), base * CFrame.new(0, 1.4, 0.4), Color3.fromRGB(35, 40, 50), Enum.Material.Glass, parent)
+	cabin.Transparency = 0.2
+	buildWheels(base, 8.4, parent)
+end
+
+local function buildBus(position: Vector3, yaw: number, rng: Random, parent: Instance)
+	local base = CFrame.new(position.X, position.Y + 2.6, position.Z) * CFrame.Angles(0, yaw, 0)
+	createPart("BusBody", Vector3.new(5, 4.4, 17), base, Color3.fromRGB(180, 140, 60), Enum.Material.Metal, parent)
+	local windows = createPart("BusWindows", Vector3.new(5.05, 1.4, 14), base * CFrame.new(0, 0.9, 0), Color3.fromRGB(35, 40, 50), Enum.Material.Glass, parent)
+	windows.Transparency = 0.2
+	windows.CanCollide = false
+	windows.CanQuery = false
+	buildWheels(base * CFrame.new(0, -1.1, 0), 15, parent)
+	local _ = rng
+end
+
+local function buildTruck(position: Vector3, yaw: number, rng: Random, parent: Instance)
+	local base = CFrame.new(position.X, position.Y + 2.2, position.Z) * CFrame.Angles(0, yaw, 0)
+	createPart("TruckCab", Vector3.new(5, 3.6, 4.5), base * CFrame.new(0, 0, 7), Color3.fromRGB(90, 110, 130), Enum.Material.Metal, parent)
+	createPart("TruckTrailer", Vector3.new(5.4, 5, 12), base * CFrame.new(0, 0.7, -2.5), Color3.fromRGB(150, 150, 154), Enum.Material.Metal, parent)
+	buildWheels(base * CFrame.new(0, -0.9, -1), 16, parent)
+	local _ = rng
+end
+
+local function buildCrash(position: Vector3, rng: Random, parent: Instance)
+	buildCar(position + Vector3.new(-2.5, 0, -2), rng:NextNumber(0.4, 1.1), rng, parent)
+	buildCar(position + Vector3.new(2.5, 0, 2), rng:NextNumber(-1.1, -0.4), rng, parent)
+	for _ = 1, 3 do
+		createPart(
+			"Debris",
+			Vector3.new(rng:NextNumber(0.8, 1.8), rng:NextNumber(0.4, 0.9), rng:NextNumber(0.8, 1.8)),
+			CFrame.new(position.X + rng:NextNumber(-5, 5), position.Y + 0.8, position.Z + rng:NextNumber(-5, 5))
+				* CFrame.Angles(0, rng:NextNumber(0, math.pi), 0),
+			Color3.fromRGB(60, 60, 64),
+			Enum.Material.CorrodedMetal,
+			parent
+		)
+	end
+end
+
+local function buildDivider(position: Vector3, rng: Random, parent: Instance)
+	local segments = rng:NextInteger(2, 3)
+	for i = 0, segments - 1 do
+		createPart(
+			"Divider",
+			Vector3.new(2.2, 3, 10),
+			CFrame.new(position.X, position.Y + 2, position.Z + i * 11 - (segments - 1) * 5.5),
+			Color3.fromRGB(168, 168, 170),
+			Enum.Material.Concrete,
+			parent
+		)
+	end
+end
+
+local function buildLog(position: Vector3, rng: Random, parent: Instance)
+	local length = rng:NextNumber(8, 14)
+	local log = Instance.new("Part")
+	log.Name = "FallenLog"
+	log.Shape = Enum.PartType.Cylinder
+	log.Size = Vector3.new(length, 2.4, 2.4)
+	log.CFrame = CFrame.new(position.X, position.Y + 1.4, position.Z) * CFrame.Angles(0, rng:NextNumber(0, math.pi), 0)
+	log.Anchored = true
+	log.Color = Color3.fromRGB(86, 62, 42)
+	log.Material = Enum.Material.Wood
+	log.Parent = parent
+end
+
+local function buildBoulder(position: Vector3, rng: Random, parent: Instance)
+	local size = rng:NextNumber(3, 5.5)
 	local rock = Instance.new("Part")
-	rock.Name = "Rock"
+	rock.Name = "Boulder"
 	rock.Shape = Enum.PartType.Ball
-	rock.Size = Vector3.new(size, size * rng:NextNumber(0.6, 0.9), size)
-	rock.CFrame = CFrame.new(position.X, position.Y + size * 0.3, position.Z) * CFrame.Angles(0, rng:NextNumber(0, math.pi), 0)
+	rock.Size = Vector3.new(size, size * rng:NextNumber(0.7, 0.9), size)
+	rock.CFrame = CFrame.new(position.X, position.Y + size * 0.35, position.Z) * CFrame.Angles(0, rng:NextNumber(0, math.pi), 0)
 	rock.Anchored = true
-	rock.CanCollide = false
-	rock.CanQuery = false
 	rock.Color = Color3.fromRGB(rng:NextInteger(100, 125), rng:NextInteger(95, 115), rng:NextInteger(85, 105))
 	rock.Material = Enum.Material.Slate
 	rock.Parent = parent
+end
+
+local function buildRubblePile(position: Vector3, rng: Random, parent: Instance)
+	for _ = 1, rng:NextInteger(3, 4) do
+		createPart(
+			"Rubble",
+			Vector3.new(rng:NextNumber(2, 5), rng:NextNumber(1, 2.4), rng:NextNumber(2, 4)),
+			CFrame.new(position.X + rng:NextNumber(-3, 3), position.Y + rng:NextNumber(0.5, 1.6), position.Z + rng:NextNumber(-3, 3))
+				* CFrame.Angles(rng:NextNumber(-0.2, 0.2), rng:NextNumber(0, math.pi), rng:NextNumber(-0.2, 0.2)),
+			Color3.fromRGB(126, 118, 106),
+			Enum.Material.Concrete,
+			parent
+		)
+	end
+end
+
+local function buildObstacle(kind: string, position: Vector3, rng: Random, parent: Instance)
+	if kind == "buildings" then
+		local roll = rng:NextNumber()
+		if roll < 0.3 then
+			buildCar(position, rng:NextNumber(-0.5, 0.5), rng, parent)
+		elseif roll < 0.45 then
+			buildBus(position, rng:NextNumber(-0.4, 0.4), rng, parent)
+		elseif roll < 0.6 then
+			buildTruck(position, rng:NextNumber(-0.4, 0.4), rng, parent)
+		elseif roll < 0.82 then
+			buildCrash(position, rng, parent)
+		else
+			buildDivider(position, rng, parent)
+		end
+	elseif kind == "trees" then
+		if rng:NextNumber() < 0.55 then
+			buildLog(position, rng, parent)
+		else
+			buildBoulder(position, rng, parent)
+		end
+	else
+		local roll = rng:NextNumber()
+		if roll < 0.45 then
+			buildRubblePile(position, rng, parent)
+		elseif roll < 0.72 then
+			buildBoulder(position, rng, parent)
+		else
+			buildCrash(position, rng, parent)
+		end
+	end
 end
 
 local function buildEdgeProp(kind: string, sign: number, position: Vector3, rng: Random, parent: Instance)
@@ -213,7 +389,7 @@ local function buildEdgeProp(kind: string, sign: number, position: Vector3, rng:
 	end
 end
 
-function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Blend?, rng: Random): Model
+function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Blend?, rng: Random, obstacleCount: number): Model
 	local nextLocation = if blend then blend.next else nil
 	local alpha = if blend then blend.alpha else 0
 	local far = nextLocation ~= nil and alpha >= 0.5
@@ -223,12 +399,12 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	local apronMaterial = if far and nextLocation then nextLocation.apronMaterial else location.apronMaterial
 	local floorColor = if nextLocation then location.floorColor:Lerp(nextLocation.floorColor, alpha) else location.floorColor
 	local apronColor = if nextLocation then location.apronColor:Lerp(nextLocation.apronColor, alpha) else location.apronColor
+	local floorTextureId = if far and nextLocation then nextLocation.floorTextureId else location.floorTextureId
+	local apronTextureId = if far and nextLocation then nextLocation.apronTextureId else location.apronTextureId
+	local isField = effective.laneStyle == "field"
 
 	local model = Instance.new("Model")
 	model.Name = "Chunk_" .. location.id
-
-	local floorTextureId = if far and nextLocation then nextLocation.floorTextureId else location.floorTextureId
-	local apronTextureId = if far and nextLocation then nextLocation.apronTextureId else location.apronTextureId
 
 	local floor = createPart("Floor", Vector3.new(laneWidth, 1, chunkLength), CFrame.new(), floorColor, floorMaterial, model)
 	applyTexture(floor, Enum.NormalId.Top, floorTextureId, 12)
@@ -245,7 +421,7 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 			Enum.Material.SmoothPlastic,
 			model
 		)
-		wall.Transparency = GameConstants.WALL_TRANSPARENCY
+		wall.Transparency = if isField then 1 else GameConstants.WALL_TRANSPARENCY
 		wall.CastShadow = false
 	end
 
@@ -262,15 +438,15 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 		applyTexture(apron, Enum.NormalId.Top, apronTextureId, 10)
 	end
 
-	if effective.roadMarkings then
+	if effective.roadMarkings and not isField then
 		for i = 0, 7 do
 			local z = -chunkLength / 2 + 8 + i * 16
 			local marking = createPart(
 				"Marking",
 				Vector3.new(0.8, 0.05, 6),
 				CFrame.new(0, 0.53, z),
-				Color3.fromRGB(220, 220, 210),
-				Enum.Material.Neon,
+				Color3.fromRGB(200, 200, 194),
+				Enum.Material.SmoothPlastic,
 				model
 			)
 			marking.CanCollide = false
@@ -279,30 +455,42 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 		end
 	end
 
+	local edgeStep = if effective.edgeProps == "trees" then { 14, 24 } else { 26, 40 }
 	for _, sign in { -1, 1 } do
-		local z = -chunkLength / 2 + rng:NextNumber(8, 20)
+		local z = -chunkLength / 2 + rng:NextNumber(6, 16)
 		while z < chunkLength / 2 - 8 do
 			local kind = location.edgeProps
 			if nextLocation and rng:NextNumber() < alpha then
 				kind = nextLocation.edgeProps
 			end
-			local x = sign * (laneWidth / 2 + barrierThickness + rng:NextNumber(10, apronWidth - 16))
+			local x = sign * (laneWidth / 2 + barrierThickness + rng:NextNumber(8, apronWidth - 16))
 			buildEdgeProp(kind, sign, Vector3.new(x, 0.5, z), rng, model)
-			z += rng:NextNumber(24, 38)
+			z += rng:NextNumber(edgeStep[1], edgeStep[2])
 		end
 	end
 
-	if rng:NextNumber() < effective.lanePropChance then
-		for _ = 1, rng:NextInteger(1, 2) do
-			local sign = if rng:NextNumber() < 0.5 then -1 else 1
-			local x = sign * rng:NextNumber(laneWidth / 2 - 16, laneWidth / 2 - 6)
-			local z = rng:NextNumber(-chunkLength / 2 + 10, chunkLength / 2 - 10)
-			if effective.edgeProps == "buildings" then
-				buildCar(Vector3.new(x, 0.5, z), rng, model)
-			else
-				buildRock(Vector3.new(x, 0.5, z), rng, model)
-			end
+	if isField then
+		local laneTreeCount = 4 + obstacleCount
+		for _ = 1, laneTreeCount do
+			local x = rng:NextNumber(-laneWidth / 2 + 6, laneWidth / 2 - 6)
+			local z = rng:NextNumber(-chunkLength / 2 + 8, chunkLength / 2 - 8)
+			buildTree(Vector3.new(x, 0.5, z), rng, model)
 		end
+		for _ = 1, 4 do
+			local x = rng:NextNumber(-laneWidth / 2, laneWidth / 2)
+			local z = rng:NextNumber(-chunkLength / 2 + 16, chunkLength / 2 - 16)
+			buildCanopyCover(Vector3.new(x, 0.5, z), rng, model)
+		end
+	end
+
+	local zSlots = { -44, -12, 20, 48 }
+	for i = #zSlots, 2, -1 do
+		local j = rng:NextInteger(1, i)
+		zSlots[i], zSlots[j] = zSlots[j], zSlots[i]
+	end
+	for i = 1, math.min(obstacleCount, #zSlots) do
+		local x = rng:NextNumber(-laneWidth / 2 + 12, laneWidth / 2 - 12)
+		buildObstacle(effective.edgeProps, Vector3.new(x, 0.5, zSlots[i] + rng:NextNumber(-6, 6)), rng, model)
 	end
 
 	model.PrimaryPart = floor

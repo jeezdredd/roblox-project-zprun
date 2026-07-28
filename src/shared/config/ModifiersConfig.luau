@@ -11,7 +11,7 @@ export type ModifierConfig = {
 
 local ModifiersConfig = {}
 
-ModifiersConfig.order = { "FastZombies", "Night", "Forest" }
+ModifiersConfig.order = { "FastZombies", "Night" }
 
 ModifiersConfig.modifiers = {
 	FastZombies = {
@@ -29,14 +29,6 @@ ModifiersConfig.modifiers = {
 		rewardMultiplier = 1.2,
 		zombieSpeedBonus = 0,
 		nightMode = true,
-	},
-	Forest = {
-		id = "Forest",
-		displayName = "Forest",
-		description = "Denser terrain, less room to move.",
-		rewardMultiplier = 1.25,
-		zombieSpeedBonus = 0,
-		nightMode = false,
 	},
 } :: { [string]: ModifierConfig }
 

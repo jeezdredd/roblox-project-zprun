@@ -6,6 +6,7 @@ export type DifficultySetting = {
 	zombieSpeedMultiplier: number,
 	rewardMultiplier: number,
 	aggroDistance: number,
+	obstacleDensity: number,
 }
 
 local DifficultyConfig: { [string]: DifficultySetting } = {
@@ -15,6 +16,7 @@ local DifficultyConfig: { [string]: DifficultySetting } = {
 		zombieSpeedMultiplier = 0,
 		rewardMultiplier = 1,
 		aggroDistance = math.huge,
+		obstacleDensity = 0.8,
 	},
 	Medium = {
 		id = "Medium",
@@ -22,6 +24,7 @@ local DifficultyConfig: { [string]: DifficultySetting } = {
 		zombieSpeedMultiplier = 0.6,
 		rewardMultiplier = 1.25,
 		aggroDistance = 500,
+		obstacleDensity = 1.6,
 	},
 	Hard = {
 		id = "Hard",
@@ -29,6 +32,7 @@ local DifficultyConfig: { [string]: DifficultySetting } = {
 		zombieSpeedMultiplier = 1.15,
 		rewardMultiplier = 1.5,
 		aggroDistance = 0,
+		obstacleDensity = 2.6,
 	},
 }
 

@@ -18,9 +18,10 @@ local DistanceTracker = require(script.Parent.DistanceTracker)
 
 local MissionService = {}
 
+local HUB_CLOCK_TIME = 17.6
+local MISSION_CLOCK_TIME = 13
+
 local diedConnections: { [Player]: RBXScriptConnection } = {}
-local defaultClockTime = 14
-local nightActive = false
 local deathHandler: ((Player) -> ())? = nil
 
 function MissionService.setDeathHandler(handler: (Player) -> ())
@@ -50,18 +51,11 @@ local function applyEnvironment(modifierIds: { string })
 			wantNight = true
 		end
 	end
-	if wantNight and not nightActive then
-		nightActive = true
-		defaultClockTime = Lighting.ClockTime
-		Lighting.ClockTime = 0
-	end
+	Lighting.ClockTime = if wantNight then 0 else MISSION_CLOCK_TIME
 end
 
 local function restoreEnvironment()
-	if nightActive then
-		nightActive = false
-		Lighting.ClockTime = defaultClockTime
-	end
+	Lighting.ClockTime = HUB_CLOCK_TIME
 end
 
 local function watchDeath(player: Player)

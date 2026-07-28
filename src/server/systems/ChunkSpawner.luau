@@ -10,6 +10,7 @@ local ChunkFactory = require(script.Parent.ChunkFactory)
 local DistanceTracker = require(script.Parent.DistanceTracker)
 local ZombieAI = require(script.Parent.ZombieAI)
 local MissionState = require(script.Parent.MissionState)
+local MissionConfig = require(script.Parent.MissionConfig)
 
 local ChunkSpawner = {}
 
@@ -80,6 +81,9 @@ local function spawnChunk(index: number)
 		end
 	end
 
+	local density = MissionConfig.getDifficulty().obstacleDensity
+	local obstacleCount = math.floor(density * random:NextNumber(0.6, 1.4) + 0.5)
+
 	local pooled = blend == nil
 	local model: Model
 	if pooled then
@@ -87,10 +91,10 @@ local function spawnChunk(index: number)
 		if fromPool then
 			model = fromPool
 		else
-			model = ChunkFactory.build(location, nil, random)
+			model = ChunkFactory.build(location, nil, random, obstacleCount)
 		end
 	else
-		model = ChunkFactory.build(location, blend, random)
+		model = ChunkFactory.build(location, blend, random, obstacleCount)
 	end
 
 	local centerDistance = startOffset + index * chunkLength + chunkLength / 2
@@ -146,6 +150,12 @@ end
 function ChunkSpawner.configure(seed: number, locationIds: { string }?)
 	random = Random.new(seed)
 	plan = {}
+	for id, pool in pools do
+		for _, model in pool do
+			model:Destroy()
+		end
+		pools[id] = {}
+	end
 	if locationIds == nil then
 		routePool = table.clone(LocationsConfig.order)
 		return

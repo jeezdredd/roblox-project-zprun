@@ -248,6 +248,60 @@ function ZombieAI.swarmCorpse(position: Vector3, duration: number)
 	corpseLure = { pos = position, expires = os.clock() + duration }
 end
 
+function ZombieAI.feedOnCorpse(position: Vector3, duration: number, maxFeeders: number)
+	local candidates: { ZombieState } = {}
+	for _, state in zombies do
+		if state.humanoid.Health > 0 and (state.root.Position - position).Magnitude < LURE_RANGE then
+			table.insert(candidates, state)
+		end
+	end
+	table.sort(candidates, function(a, b)
+		return (a.root.Position - position).Magnitude < (b.root.Position - position).Magnitude
+	end)
+
+	local feeders: { { root: BasePart, base: CFrame, phase: number } } = {}
+	local count = math.min(maxFeeders, #candidates)
+	for index = 1, count do
+		local state = candidates[index]
+		local angle = (index / count) * math.pi * 2
+		local offset = Vector3.new(math.cos(angle) * 3.4, 0, math.sin(angle) * 3.4)
+		local standPosition = position + offset + Vector3.new(0, 1.4, 0)
+		local facing = CFrame.lookAt(standPosition, position + Vector3.new(0, 0.5, 0))
+		state.humanoid.WalkSpeed = 0
+		state.root.Anchored = true
+		table.insert(feeders, { root = state.root, base = facing, phase = random:NextNumber(0, math.pi * 2) })
+	end
+
+	if #feeders == 0 then
+		return
+	end
+
+	local startedAt = os.clock()
+	local connection: RBXScriptConnection
+	connection = RunService.Heartbeat:Connect(function()
+		local elapsed = os.clock() - startedAt
+		if elapsed > duration then
+			connection:Disconnect()
+			for _, feeder in feeders do
+				if feeder.root.Parent then
+					feeder.root.Anchored = false
+				end
+			end
+			return
+		end
+		for _, feeder in feeders do
+			if not feeder.root.Parent then
+				continue
+			end
+			local bob = math.sin(elapsed * 5 + feeder.phase)
+			local lean = math.rad(42 + bob * 12)
+			feeder.root.CFrame = feeder.base
+				* CFrame.new(0, bob * 0.25, math.abs(bob) * 0.35)
+				* CFrame.Angles(lean, 0, 0)
+		end
+	end)
+end
+
 function ZombieAI.clearLure()
 	corpseLure = nil
 end

@@ -3,6 +3,7 @@
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local HangarConfig = require(ReplicatedStorage.Shared.config.HangarConfig)
 local MapsConfig = require(ReplicatedStorage.Shared.config.MapsConfig)
@@ -51,11 +52,36 @@ local function applyEnvironment(modifierIds: { string })
 			wantNight = true
 		end
 	end
-	Lighting.ClockTime = if wantNight then 0 else MISSION_CLOCK_TIME
+
+	Workspace:SetAttribute("NightMission", wantNight)
+	if wantNight then
+		Lighting.ClockTime = 0
+		Lighting.Brightness = 0.15
+		Lighting.Ambient = Color3.fromRGB(4, 4, 8)
+		Lighting.OutdoorAmbient = Color3.fromRGB(8, 8, 14)
+		Lighting.FogColor = Color3.fromRGB(4, 4, 8)
+		Lighting.FogStart = 20
+		Lighting.FogEnd = 150
+	else
+		Lighting.ClockTime = MISSION_CLOCK_TIME
+		Lighting.Brightness = 2.4
+		Lighting.Ambient = Color3.fromRGB(96, 96, 104)
+		Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 136)
+		Lighting.FogColor = Color3.fromRGB(150, 150, 158)
+		Lighting.FogStart = 240
+		Lighting.FogEnd = 1400
+	end
 end
 
 local function restoreEnvironment()
+	Workspace:SetAttribute("NightMission", false)
 	Lighting.ClockTime = HUB_CLOCK_TIME
+	Lighting.Brightness = 2.2
+	Lighting.Ambient = Color3.fromRGB(58, 58, 68)
+	Lighting.OutdoorAmbient = Color3.fromRGB(72, 66, 70)
+	Lighting.FogColor = Color3.fromRGB(52, 44, 44)
+	Lighting.FogStart = 180
+	Lighting.FogEnd = 900
 end
 
 local function watchDeath(player: Player)

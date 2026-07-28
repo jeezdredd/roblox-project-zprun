@@ -106,6 +106,9 @@ local function onPlayerDied(player: Player)
 	pending[player] = { deathCFrame = deathCFrame, token = token }
 
 	ZombieAI.swarmCorpse(deathCFrame.Position, SWARM_DURATION)
+	task.delay(1.1, function()
+		ZombieAI.feedOnCorpse(deathCFrame.Position, SWARM_DURATION, 5)
+	end)
 	Remotes.getEvent(Remotes.Event.DeathBegan):FireClient(player, computeRewards(player))
 
 	task.delay(CHOICE_TIMEOUT, function()

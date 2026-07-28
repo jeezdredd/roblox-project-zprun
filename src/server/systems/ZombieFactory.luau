@@ -37,6 +37,21 @@ function ZombieFactory.build(config: ZombiesConfig.ZombieConfig): Model
 	createWeldedPart("Body", Vector3.new(2, 3, 1), CFrame.new(0, 0, 0), config.bodyColor, root, model)
 	createWeldedPart("Head", Vector3.new(1.2, 1.2, 1.2), CFrame.new(0, 2.1, 0), config.bodyColor:Lerp(Color3.new(0, 0, 0), 0.3), root, model)
 
+	for _, sign in { -1, 1 } do
+		local eye = createWeldedPart(
+			"Eye",
+			Vector3.new(0.24, 0.16, 0.16),
+			CFrame.new(sign * 0.28, 2.24, -0.62),
+			config.eyeColor,
+			root,
+			model
+		)
+		eye.Material = Enum.Material.Neon
+		eye.CanCollide = false
+		eye.CanQuery = false
+		eye.CastShadow = false
+	end
+
 	local humanoid = Instance.new("Humanoid")
 	humanoid.RequiresNeck = false
 	humanoid.MaxHealth = config.maxHealth

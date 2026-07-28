@@ -13,7 +13,9 @@ local PHASE_ATTRIBUTE = "FlowPhase"
 
 local masterGroup: SoundGroup
 local musicGroup: SoundGroup
+local sfxGroup: SoundGroup
 local menuMusic: Sound?
+local missionMusic: Sound?
 local citySiren: Sound?
 local musicVolume = AudioConfig.MENU_MUSIC_VOLUME
 local masterVolume = 0.7
@@ -37,20 +39,34 @@ local function createGroups()
 	musicGroup.Name = AudioConfig.MUSIC_GROUP
 	musicGroup.Volume = musicVolume
 	musicGroup.Parent = masterGroup
+
+	sfxGroup = Instance.new("SoundGroup")
+	sfxGroup.Name = AudioConfig.SFX_GROUP
+	sfxGroup.Volume = 1
+	sfxGroup.Parent = masterGroup
 end
 
-local function createMenuMusic()
-	if not isPlayableId(AudioConfig.MENU_MUSIC_ID) then
-		return
+local function createTrack(name: string, assetId: number): Sound?
+	if not isPlayableId(assetId) then
+		return nil
 	end
 	local sound = Instance.new("Sound")
-	sound.Name = "MenuMusic"
-	sound.SoundId = "rbxassetid://" .. tostring(AudioConfig.MENU_MUSIC_ID)
+	sound.Name = name
+	sound.SoundId = "rbxassetid://" .. tostring(assetId)
 	sound.Looped = true
 	sound.Volume = 1
 	sound.SoundGroup = musicGroup
 	sound.Parent = SoundService
-	menuMusic = sound
+	return sound
+end
+
+local function createMenuMusic()
+	menuMusic = createTrack("MenuMusic", AudioConfig.MENU_MUSIC_ID)
+	local missionId = if isPlayableId(AudioConfig.MISSION_MUSIC_ID) then AudioConfig.MISSION_MUSIC_ID else AudioConfig.MENU_MUSIC_ID
+	missionMusic = createTrack("MissionMusic", missionId)
+	if missionMusic then
+		missionMusic.PlaybackSpeed = if isPlayableId(AudioConfig.MISSION_MUSIC_ID) then 1 else 1.12
+	end
 end
 
 local function createCitySiren()
@@ -67,31 +83,36 @@ local function createCitySiren()
 	citySiren = sound
 end
 
-local function fadeMusicTo(target: number)
-	local sound = menuMusic
-	if not sound then
-		return
-	end
-	if target > 0 and not sound.IsPlaying then
+local function playTrack(sound: Sound?)
+	if sound and not sound.IsPlaying then
 		pcall(function()
 			sound:Play()
 		end)
 	end
-	TweenService:Create(musicGroup, TweenInfo.new(AudioConfig.MUSIC_FADE_TIME), { Volume = target }):Play()
 end
 
 local function onPhaseChanged()
 	local phase = Players.LocalPlayer:GetAttribute(PHASE_ATTRIBUTE)
 	local inHub = phase ~= "Mission"
-	fadeMusicTo(if inHub then musicVolume else 0)
+
+	if inHub then
+		if missionMusic and missionMusic.IsPlaying then
+			missionMusic:Stop()
+		end
+		playTrack(menuMusic)
+	else
+		if menuMusic and menuMusic.IsPlaying then
+			menuMusic:Stop()
+		end
+		playTrack(missionMusic)
+	end
+	TweenService:Create(musicGroup, TweenInfo.new(AudioConfig.MUSIC_FADE_TIME), { Volume = musicVolume }):Play()
 
 	local siren = citySiren
 	if siren then
-		if inHub and not siren.IsPlaying then
-			pcall(function()
-				siren:Play()
-			end)
-		elseif not inHub and siren.IsPlaying then
+		if inHub then
+			playTrack(siren)
+		elseif siren.IsPlaying then
 			siren:Stop()
 		end
 	end
@@ -101,6 +122,10 @@ function MusicController.getMasterGroup(): SoundGroup?
 	return masterGroup
 end
 
+function MusicController.getSfxGroup(): SoundGroup?
+	return sfxGroup
+end
+
 function MusicController.setMasterVolume(value: number)
 	masterVolume = math.clamp(value, 0, 1)
 	applyMasterVolume()
@@ -108,10 +133,7 @@ end
 
 function MusicController.setMusicVolume(value: number)
 	musicVolume = math.clamp(value, 0, 1)
-	local phase = Players.LocalPlayer:GetAttribute(PHASE_ATTRIBUTE)
-	if phase ~= "Mission" then
-		musicGroup.Volume = musicVolume
-	end
+	musicGroup.Volume = musicVolume
 end
 
 function MusicController.setMuted(value: boolean)

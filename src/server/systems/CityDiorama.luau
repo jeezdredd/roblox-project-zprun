@@ -6,6 +6,7 @@ local Workspace = game:GetService("Workspace")
 
 local HangarConfig = require(ReplicatedStorage.Shared.config.HangarConfig)
 local TexturesConfig = require(ReplicatedStorage.Shared.config.TexturesConfig)
+local TextureUtil = require(ReplicatedStorage.Shared.util.TextureUtil)
 
 local CityDiorama = {}
 
@@ -50,45 +51,86 @@ local function buildGround(parent: Instance)
 		Enum.Material.Asphalt,
 		parent
 	)
-	local texture = Instance.new("Texture")
-	texture.Texture = "rbxassetid://" .. tostring(TexturesConfig.ASPHALT)
-	texture.Face = Enum.NormalId.Top
-	texture.StudsPerTileU = 40
-	texture.StudsPerTileV = 40
-	texture.Parent = ground
+	TextureUtil.applyFace(ground, Enum.NormalId.Top, TexturesConfig.ASPHALT, 40)
 end
 
-local function addFire(building: Part, height: number, parent: Instance)
-	local top = building.Position + Vector3.new(0, height / 2, 0)
+local function makeFlameEmitter(parent: BasePart, size: number)
+	local attachment = Instance.new("Attachment")
+	attachment.Parent = parent
 
-	local fireAnchor = makePart("FireAnchor", Vector3.new(1, 1, 1), CFrame.new(top), Color3.new(0, 0, 0), Enum.Material.SmoothPlastic, parent)
+	local flame = Instance.new("ParticleEmitter")
+	flame.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 220, 120)),
+		ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 130, 30)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 30, 10)),
+	})
+	flame.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.1),
+		NumberSequenceKeypoint.new(0.7, 0.4),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	flame.Size = NumberSequence.new(size, size * 0.4)
+	flame.Lifetime = NumberRange.new(1.2, 2.4)
+	flame.Rate = 26
+	flame.Speed = NumberRange.new(14, 26)
+	flame.SpreadAngle = Vector2.new(18, 18)
+	flame.Rotation = NumberRange.new(0, 360)
+	flame.RotSpeed = NumberRange.new(-60, 60)
+	flame.LightEmission = 1
+	flame.LightInfluence = 0
+	flame.Acceleration = Vector3.new(0, 12, 0)
+	flame.Parent = attachment
+
+	local smoke = Instance.new("ParticleEmitter")
+	smoke.Color = ColorSequence.new(Color3.fromRGB(46, 42, 42))
+	smoke.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.35),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	smoke.Size = NumberSequence.new(size * 1.4, size * 4)
+	smoke.Lifetime = NumberRange.new(4, 7)
+	smoke.Rate = 14
+	smoke.Speed = NumberRange.new(16, 26)
+	smoke.SpreadAngle = Vector2.new(22, 22)
+	smoke.Acceleration = Vector3.new(random:NextNumber(-6, 6), 16, 0)
+	smoke.LightInfluence = 0.4
+	smoke.Parent = attachment
+end
+
+local function addFire(building: Part, height: number, withLight: boolean, parent: Instance)
+	local top = building.Position + Vector3.new(0, height / 2 - 2, 0)
+	local scale = math.clamp(building.Size.X / 4, 10, 26)
+
+	local fireAnchor = makePart("FireAnchor", Vector3.new(2, 2, 2), CFrame.new(top), Color3.new(0, 0, 0), Enum.Material.SmoothPlastic, parent)
 	fireAnchor.Transparency = 1
+	makeFlameEmitter(fireAnchor, scale)
 
-	local fire = Instance.new("Fire")
-	fire.Heat = 18
-	fire.Size = 26
-	fire.Color = Color3.fromRGB(255, 140, 40)
-	fire.SecondaryColor = Color3.fromRGB(120, 40, 10)
-	fire.Parent = fireAnchor
+	if withLight then
+		local glow = Instance.new("PointLight")
+		glow.Color = Color3.fromRGB(255, 130, 50)
+		glow.Range = 160
+		glow.Brightness = 4
+		glow.Parent = fireAnchor
+	end
 
-	local smoke = Instance.new("Smoke")
-	smoke.Color = Color3.fromRGB(48, 44, 44)
-	smoke.Size = 30
-	smoke.RiseVelocity = 22
-	smoke.Opacity = 0.32
-	smoke.Parent = fireAnchor
+	local sideAnchor = makePart(
+		"FacadeFire",
+		Vector3.new(2, 2, 2),
+		CFrame.new(building.Position + Vector3.new(0, random:NextNumber(-height / 4, height / 4), -building.Size.Z / 2 - 1)),
+		Color3.new(0, 0, 0),
+		Enum.Material.SmoothPlastic,
+		parent
+	)
+	sideAnchor.Transparency = 1
+	makeFlameEmitter(sideAnchor, scale * 0.6)
 
-	local glow = Instance.new("PointLight")
-	glow.Color = Color3.fromRGB(255, 130, 50)
-	glow.Range = 120
-	glow.Brightness = 3
-	glow.Parent = fireAnchor
+	building.Color = building.Color:Lerp(Color3.fromRGB(30, 24, 22), 0.55)
 
-	for _ = 1, 2 do
+	for i = 1, 3 do
 		local windowGlow = makePart(
 			"BurningWindow",
-			Vector3.new(building.Size.X * 0.7, 6, 0.6),
-			CFrame.new(building.Position + Vector3.new(0, random:NextNumber(-height / 3, height / 3), -building.Size.Z / 2 - 0.4)),
+			Vector3.new(building.Size.X * 0.78, 5, 0.6),
+			CFrame.new(building.Position + Vector3.new(0, -height / 3 + i * (height / 4), -building.Size.Z / 2 - 0.4)),
 			Color3.fromRGB(255, 150, 60),
 			Enum.Material.Neon,
 			parent
@@ -97,41 +139,43 @@ local function addFire(building: Part, height: number, parent: Instance)
 	end
 end
 
-local function buildBuilding(index: number, burning: boolean, parent: Instance)
-	local width = random:NextNumber(40, 90)
-	local depth = random:NextNumber(40, 90)
-	local height = random:NextNumber(60, 190)
+local function buildBuilding(index: number, burning: boolean, withLight: boolean, parent: Instance)
+	local width = random:NextNumber(36, 86)
+	local depth = random:NextNumber(36, 86)
+	local height = random:NextNumber(50, 200)
 	local x = center.X + random:NextNumber(-HangarConfig.CITY_HALF_WIDTH, HangarConfig.CITY_HALF_WIDTH)
 	local z = center.Z + random:NextNumber(HangarConfig.CITY_FAR_Z, HangarConfig.CITY_NEAR_Z)
-	local shade = random:NextInteger(38, 62)
+	local shade = random:NextInteger(42, 68)
+	local isBrick = random:NextNumber() < 0.4
 
 	local building = makePart(
 		"CityBlock" .. index,
 		Vector3.new(width, height, depth),
 		CFrame.new(x, height / 2, z),
-		Color3.fromRGB(shade, shade, shade + 4),
+		if isBrick then Color3.fromRGB(shade + 26, shade - 6, shade - 12) else Color3.fromRGB(shade, shade, shade + 4),
 		Enum.Material.Concrete,
 		parent
 	)
+	TextureUtil.applySides(building, if isBrick then TexturesConfig.BRICKS else TexturesConfig.CONCRETE, 14)
 
-	local bandCount = math.floor(height / 22)
+	local bandCount = math.floor(height / 20)
 	for i = 1, bandCount do
-		if random:NextNumber() < 0.45 then
+		if random:NextNumber() < 0.6 then
 			local band = makePart(
 				"CityWindows",
-				Vector3.new(width * 0.82, 4.5, 0.5),
-				CFrame.new(x, i * 22, z - depth / 2 - 0.3),
+				Vector3.new(width * 0.84, 4.5, 0.5),
+				CFrame.new(x, i * 20, z - depth / 2 - 0.3),
 				Color3.fromRGB(255, 216, 150),
 				Enum.Material.Neon,
 				parent
 			)
-			band.Transparency = 0.25
+			band.Transparency = 0.2
 			band.CastShadow = false
 		end
 	end
 
 	if burning then
-		addFire(building, height, parent)
+		addFire(building, height, withLight, parent)
 	end
 end
 
@@ -191,11 +235,21 @@ function CityDiorama.build()
 	buildGround(model)
 
 	local burningSlots: { [number]: boolean } = {}
-	for _ = 1, HangarConfig.CITY_FIRES do
-		burningSlots[random:NextInteger(1, HangarConfig.CITY_BLOCKS)] = true
+	local burningOrder: { number } = {}
+	while #burningOrder < HangarConfig.CITY_FIRES do
+		local slot = random:NextInteger(1, HangarConfig.CITY_BLOCKS)
+		if not burningSlots[slot] then
+			burningSlots[slot] = true
+			table.insert(burningOrder, slot)
+		end
 	end
+	local lightSlots: { [number]: boolean } = {}
+	for i = 1, math.min(HangarConfig.CITY_FIRE_LIGHTS, #burningOrder) do
+		lightSlots[burningOrder[i]] = true
+	end
+
 	for index = 1, HangarConfig.CITY_BLOCKS do
-		buildBuilding(index, burningSlots[index] == true, model)
+		buildBuilding(index, burningSlots[index] == true, lightSlots[index] == true, model)
 	end
 
 	for i = 1, HangarConfig.CITY_CHOPPERS do

@@ -166,6 +166,26 @@ local function build()
 	end)
 end
 
+local function findNearestZombieHead(origin: Vector3): Vector3?
+	local zombies = Workspace:FindFirstChild("Zombies")
+	if not zombies then
+		return nil
+	end
+	local nearest: Vector3? = nil
+	local nearestDistance = 26
+	for _, model in zombies:GetChildren() do
+		local head = model:IsA("Model") and model:FindFirstChild("Head")
+		if head and head:IsA("BasePart") then
+			local distance = (head.Position - origin).Magnitude
+			if distance < nearestDistance then
+				nearestDistance = distance
+				nearest = head.Position
+			end
+		end
+	end
+	return nearest
+end
+
 local function updateDeathCam(deltaTime: number)
 	if not active then
 		return
@@ -180,11 +200,18 @@ local function updateDeathCam(deltaTime: number)
 		lastCorpsePos = root.Position
 	end
 	camera.CameraType = Enum.CameraType.Scriptable
-	local angle = (os.clock() - deathStartedAt) * 0.25 + 0.8
-	local camPosition = lastCorpsePos + Vector3.new(math.cos(angle) * 11, 5.5, math.sin(angle) * 11)
-	local lookTarget = lastCorpsePos + Vector3.new(0, 1, 0)
-	local alpha = 1 - math.exp(-5 * deltaTime)
-	camera.CFrame = camera.CFrame:Lerp(CFrame.lookAt(camPosition, lookTarget), alpha)
+
+	local elapsed = os.clock() - deathStartedAt
+	local eyePosition = lastCorpsePos + Vector3.new(0, 1.1, 0)
+	local target = findNearestZombieHead(eyePosition) or (eyePosition + Vector3.new(0, 6, -2))
+	local shake = Vector3.new(
+		math.sin(elapsed * 11) * 0.13,
+		math.sin(elapsed * 7.3) * 0.1,
+		math.cos(elapsed * 9.1) * 0.13
+	)
+	local desired = CFrame.lookAt(eyePosition + shake, target) * CFrame.Angles(0, 0, math.rad(math.sin(elapsed * 1.6) * 7 - 12))
+	local alpha = 1 - math.exp(-6 * deltaTime)
+	camera.CFrame = camera.CFrame:Lerp(desired, alpha)
 end
 
 local function playScream()

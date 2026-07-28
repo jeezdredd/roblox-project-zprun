@@ -4,6 +4,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local HangarConfig = require(ReplicatedStorage.Shared.config.HangarConfig)
+local TexturesConfig = require(ReplicatedStorage.Shared.config.TexturesConfig)
+local TextureUtil = require(ReplicatedStorage.Shared.util.TextureUtil)
 local VendorsConfig = require(ReplicatedStorage.Shared.config.VendorsConfig)
 
 local VendorRooms = {}
@@ -79,17 +81,24 @@ local function buildShell(base: CFrame, config: VendorsConfig.VendorConfig, pare
 	local wall = config.wallColor
 	local trim = wall:Lerp(Color3.new(0, 0, 0), 0.35)
 
+	local isClinic = config.id == "Medbay"
+	local floorTexture = if isClinic then TexturesConfig.TILES else TexturesConfig.CONCRETE
+	local wallTexture = if isClinic then TexturesConfig.TILES else TexturesConfig.METAL_PLATES
+
 	local pad = makePart("Part", "RoomFloor", Vector3.new(config.size.X, 0.5, config.size.Z), base * CFrame.new(0, 0.75, 0), wall:Lerp(Color3.new(0, 0, 0), 0.55), Enum.Material.Concrete, parent)
 	decor(pad)
+	TextureUtil.applyFace(pad, Enum.NormalId.Top, floorTexture, 8)
 
-	makePart("Part", "BackWall", Vector3.new(config.size.X, height, 1.5), base * CFrame.new(0, height / 2 + 1, halfD - 0.75), wall, Enum.Material.Metal, parent)
+	local backWall = makePart("Part", "BackWall", Vector3.new(config.size.X, height, 1.5), base * CFrame.new(0, height / 2 + 1, halfD - 0.75), wall, Enum.Material.Metal, parent)
+	TextureUtil.applySides(backWall, wallTexture, 10)
 	for _, sign in { -1, 1 } do
-		makePart("Part", "SideWall", Vector3.new(1.5, height, config.size.Z), base * CFrame.new(sign * (halfW - 0.75), height / 2 + 1, 0), wall, Enum.Material.Metal, parent)
+		local sideWall = makePart("Part", "SideWall", Vector3.new(1.5, height, config.size.Z), base * CFrame.new(sign * (halfW - 0.75), height / 2 + 1, 0), wall, Enum.Material.Metal, parent)
+		TextureUtil.applySides(sideWall, wallTexture, 10)
 	end
 
 	local frontSegment = (config.size.X - DOOR_HALF_WIDTH * 2) / 2
 	for _, sign in { -1, 1 } do
-		makePart(
+		local frontWall = makePart(
 			"Part",
 			"FrontWall",
 			Vector3.new(frontSegment, height, 1.5),
@@ -98,6 +107,7 @@ local function buildShell(base: CFrame, config: VendorsConfig.VendorConfig, pare
 			Enum.Material.Metal,
 			parent
 		)
+		TextureUtil.applySides(frontWall, wallTexture, 10)
 	end
 	makePart("Part", "DoorLintel", Vector3.new(DOOR_HALF_WIDTH * 2, height - 12, 1.5), base * CFrame.new(0, height - (height - 12) / 2 + 1, -halfD + 0.75), wall, Enum.Material.Metal, parent)
 	for _, sign in { -1, 1 } do
@@ -131,7 +141,9 @@ local function buildShell(base: CFrame, config: VendorsConfig.VendorConfig, pare
 	makeSign(banner, config.displayName, config.subtitle, 5)
 
 	local counter = makePart("Part", "Counter", Vector3.new(16, 3.4, 3), base * CFrame.new(0, 2.7, -halfD + 8), DARK_STEEL, Enum.Material.Metal, parent)
-	makePart("Part", "CounterTop", Vector3.new(17, 0.5, 4), base * CFrame.new(0, 4.6, -halfD + 8), STEEL, Enum.Material.Metal, parent)
+	TextureUtil.applySides(counter, TexturesConfig.METAL_PLATES, 5)
+	local counterTop = makePart("Part", "CounterTop", Vector3.new(17, 0.5, 4), base * CFrame.new(0, 4.6, -halfD + 8), STEEL, Enum.Material.Metal, parent)
+	TextureUtil.applyFace(counterTop, Enum.NormalId.Top, TexturesConfig.METAL_PLATES, 5)
 
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.Name = "VendorPrompt"
@@ -163,7 +175,8 @@ local function buildBed(base: CFrame, parent: Instance)
 			decor(leg)
 		end
 	end
-	makePart("Part", "Mattress", Vector3.new(4.8, 1.1, 9.6), base * CFrame.new(0, 3.4, 0), Color3.fromRGB(220, 224, 228), Enum.Material.Fabric, parent)
+	local mattress = makePart("Part", "Mattress", Vector3.new(4.8, 1.1, 9.6), base * CFrame.new(0, 3.4, 0), Color3.fromRGB(220, 224, 228), Enum.Material.Fabric, parent)
+	TextureUtil.applyFace(mattress, Enum.NormalId.Top, TexturesConfig.FABRIC, 4)
 	local blanket = makePart("Part", "Blanket", Vector3.new(5, 0.5, 5.6), base * CFrame.new(0, 4.1, -1.6), Color3.fromRGB(90, 128, 150), Enum.Material.Fabric, parent)
 	decor(blanket)
 	local pillow = makePart("Part", "Pillow", Vector3.new(3.4, 0.8, 1.9), base * CFrame.new(0, 4.3, 3.6), Color3.fromRGB(240, 240, 244), Enum.Material.Fabric, parent)
@@ -235,6 +248,7 @@ end
 local function buildAmmoStack(base: CFrame, parent: Instance)
 	for i = 0, 2 do
 		local crate = makePart("Part", "AmmoCrate", Vector3.new(4.4, 2.6, 7), base * CFrame.new(0, 1.3 + i * 2.7, i * 0.4), Color3.fromRGB(92, 100, 74), Enum.Material.WoodPlanks, parent)
+		TextureUtil.applyAll(crate, TexturesConfig.WOOD, 4)
 		local strap = makePart("Part", "CrateStrap", Vector3.new(4.6, 0.4, 1), base * CFrame.new(0, 1.3 + i * 2.7, i * 0.4), Color3.fromRGB(52, 56, 44), Enum.Material.Metal, parent)
 		decor(strap)
 		decor(crate)
@@ -269,7 +283,8 @@ local function buildWeaponDealer(base: CFrame, size: Vector3, parent: Instance)
 end
 
 local function buildWorkbench(base: CFrame, parent: Instance)
-	makePart("Part", "BenchTop", Vector3.new(16, 0.8, 5), base * CFrame.new(0, 4.4, 0), Color3.fromRGB(102, 80, 56), Enum.Material.WoodPlanks, parent)
+	local benchTop = makePart("Part", "BenchTop", Vector3.new(16, 0.8, 5), base * CFrame.new(0, 4.4, 0), Color3.fromRGB(102, 80, 56), Enum.Material.WoodPlanks, parent)
+	TextureUtil.applyFace(benchTop, Enum.NormalId.Top, TexturesConfig.WOOD, 5)
 	for _, sign in { -1, 1 } do
 		makePart("Part", "BenchLeg", Vector3.new(1, 4, 4.6), base * CFrame.new(sign * 7, 2.2, 0), DARK_STEEL, Enum.Material.Metal, parent)
 	end

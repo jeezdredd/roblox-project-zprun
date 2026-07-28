@@ -6,6 +6,7 @@ local Workspace = game:GetService("Workspace")
 
 local HangarConfig = require(ReplicatedStorage.Shared.config.HangarConfig)
 local TexturesConfig = require(ReplicatedStorage.Shared.config.TexturesConfig)
+local TextureUtil = require(ReplicatedStorage.Shared.util.TextureUtil)
 
 export type Helicopter = {
 	index: number,
@@ -55,7 +56,7 @@ local function buildSolidBand(alongX: boolean, fixed: number, from: number, to: 
 	if to - from <= 0.1 or y1 - y0 <= 0.1 then
 		return
 	end
-	makePart(
+	local band = makePart(
 		"Part",
 		"WallBand",
 		wallSize(alongX, to - from, y1 - y0),
@@ -64,6 +65,7 @@ local function buildSolidBand(alongX: boolean, fixed: number, from: number, to: 
 		Enum.Material.Metal,
 		parent
 	)
+	TextureUtil.applySides(band, TexturesConfig.CORRUGATED, 14)
 end
 
 local function buildWindowBand(alongX: boolean, fixed: number, from: number, to: number, y0: number, y1: number, color: Color3, parent: Instance)
@@ -149,6 +151,7 @@ local function buildCeiling(parent: Instance)
 		parent
 	)
 	roof.CastShadow = false
+	TextureUtil.applyFace(roof, Enum.NormalId.Bottom, TexturesConfig.METAL_PLATES, 20)
 
 	for i = -3, 3 do
 		local z = center.Z + i * (floorSize.Z / 7)
@@ -225,8 +228,10 @@ local function buildProps(parent: Instance)
 	for index, spot in spots do
 		local base = center + spot
 		if index % 2 == 1 then
-			makePart("Part", "Crate", Vector3.new(7, 5, 7), CFrame.new(base + Vector3.new(0, 3, 0)), crateColor, Enum.Material.WoodPlanks, parent)
-			makePart("Part", "Crate", Vector3.new(5.5, 4, 5.5), CFrame.new(base + Vector3.new(1.5, 7.5, -1)), crateColor:Lerp(Color3.new(0, 0, 0), 0.15), Enum.Material.WoodPlanks, parent)
+			local crateA = makePart("Part", "Crate", Vector3.new(7, 5, 7), CFrame.new(base + Vector3.new(0, 3, 0)), crateColor, Enum.Material.WoodPlanks, parent)
+			local crateB = makePart("Part", "Crate", Vector3.new(5.5, 4, 5.5), CFrame.new(base + Vector3.new(1.5, 7.5, -1)), crateColor:Lerp(Color3.new(0, 0, 0), 0.15), Enum.Material.WoodPlanks, parent)
+			TextureUtil.applyAll(crateA, TexturesConfig.WOOD, 4)
+			TextureUtil.applyAll(crateB, TexturesConfig.WOOD, 4)
 		else
 			for i = 0, 2 do
 				local drum = Instance.new("Part")
@@ -238,6 +243,7 @@ local function buildProps(parent: Instance)
 				drum.Color = drumColor
 				drum.Material = Enum.Material.CorrodedMetal
 				drum.Parent = parent
+				TextureUtil.applySides(drum, TexturesConfig.RUST, 4)
 			end
 		end
 	end
@@ -282,8 +288,10 @@ local function buildHelicopter(index: number, padCFrame: CFrame, parent: Instanc
 		end
 	end
 
-	place("Part", "Belly", Vector3.new(7.8, 2.4, 13), CFrame.new(0, 4, 0), green, Enum.Material.Metal)
+	local belly = place("Part", "Belly", Vector3.new(7.8, 2.4, 13), CFrame.new(0, 4, 0), green, Enum.Material.Metal)
 	local cabin = place("Part", "Cabin", Vector3.new(8.2, 4.8, 12.5), CFrame.new(0, 6.6, 0), green, Enum.Material.Metal)
+	TextureUtil.applySides(belly, TexturesConfig.METAL_PLATES, 6)
+	TextureUtil.applySides(cabin, TexturesConfig.METAL_PLATES, 6)
 	place("Part", "Roof", Vector3.new(7.8, 1, 12), CFrame.new(0, 9.2, -0.2), green:Lerp(Color3.new(0, 0, 0), 0.2), Enum.Material.Metal)
 
 	local canopy = place("Part", "Canopy", Vector3.new(7.4, 4, 3.4), CFrame.new(0, 6.8, 6.4), Color3.fromRGB(70, 96, 116), Enum.Material.Glass)
@@ -389,14 +397,21 @@ function HangarBuilder.build(): { Helicopter }
 	model.Name = "Hangar"
 
 	local hangarFloor = makePart("Part", "HangarFloor", floorSize, CFrame.new(center), HangarConfig.FLOOR_COLOR, Enum.Material.Concrete, model)
-	local floorTexture = Instance.new("Texture")
-	floorTexture.Texture = "rbxassetid://" .. tostring(TexturesConfig.CONCRETE)
-	floorTexture.Face = Enum.NormalId.Top
-	floorTexture.StudsPerTileU = 16
-	floorTexture.StudsPerTileV = 16
-	floorTexture.Parent = hangarFloor
+	TextureUtil.applyFace(hangarFloor, Enum.NormalId.Top, TexturesConfig.CONCRETE, 16)
 
 	buildWall(true, center.Z - halfZ, center.X - halfX, center.X + halfX, center.X - HangarConfig.GATE_HALF_WIDTH, center.X + HangarConfig.GATE_HALF_WIDTH, model)
+
+	local gateBarrier = makePart(
+		"Part",
+		"GateBarrier",
+		Vector3.new(HangarConfig.GATE_HALF_WIDTH * 2, HangarConfig.GATE_HEIGHT + 12, 1),
+		CFrame.new(center.X, (HangarConfig.GATE_HEIGHT + 12) / 2, center.Z - halfZ),
+		Color3.new(0, 0, 0),
+		Enum.Material.SmoothPlastic,
+		model
+	)
+	gateBarrier.Transparency = 1
+	gateBarrier.CastShadow = false
 	buildWall(true, center.Z + halfZ, center.X - halfX, center.X + halfX, nil, nil, model)
 	buildWall(false, center.X - halfX, center.Z - halfZ, center.Z + halfZ, nil, nil, model)
 	buildWall(false, center.X + halfX, center.Z - halfZ, center.Z + halfZ, nil, nil, model)

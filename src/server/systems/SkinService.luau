@@ -4,11 +4,9 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local SkinsConfig = require(ReplicatedStorage.Shared.config.SkinsConfig)
+local ProfileManager = require(script.Parent.ProfileManager)
 
 local SkinService = {}
-
-local owned: { [Player]: { [string]: boolean } } = {}
-local equipped: { [Player]: string } = {}
 
 local function buildDescription(skin: SkinsConfig.SkinConfig): HumanoidDescription
 	local description = Instance.new("HumanoidDescription")
@@ -46,7 +44,8 @@ local function buildDescription(skin: SkinsConfig.SkinConfig): HumanoidDescripti
 end
 
 local function getSkin(player: Player): SkinsConfig.SkinConfig
-	local id = equipped[player] or SkinsConfig.DEFAULT_ID
+	local data = ProfileManager.get(player)
+	local id = if data then data.EquippedSkin else SkinsConfig.DEFAULT_ID
 	local skin = SkinsConfig.get(id)
 	if not skin then
 		return SkinsConfig.get(SkinsConfig.DEFAULT_ID) :: SkinsConfig.SkinConfig
@@ -68,16 +67,6 @@ local function applyToCharacter(player: Player, character: Model)
 end
 
 local function onPlayerAdded(player: Player)
-	local ownedSet: { [string]: boolean } = {}
-	for _, id in SkinsConfig.order do
-		local skin = SkinsConfig.get(id)
-		if skin and skin.defaultOwned then
-			ownedSet[id] = true
-		end
-	end
-	owned[player] = ownedSet
-	equipped[player] = SkinsConfig.DEFAULT_ID
-
 	player.CharacterAppearanceLoaded:Connect(function(character)
 		applyToCharacter(player, character)
 	end)
@@ -91,12 +80,12 @@ end
 
 function SkinService.getOwned(player: Player): { string }
 	local result: { string } = {}
-	local ownedSet = owned[player]
-	if not ownedSet then
+	local data = ProfileManager.get(player)
+	if not data then
 		return result
 	end
 	for _, id in SkinsConfig.order do
-		if ownedSet[id] then
+		if data.SkinsOwned[id] then
 			table.insert(result, id)
 		end
 	end
@@ -104,19 +93,19 @@ function SkinService.getOwned(player: Player): { string }
 end
 
 function SkinService.isOwned(player: Player, skinId: string): boolean
-	local ownedSet = owned[player]
-	return ownedSet ~= nil and ownedSet[skinId] == true
+	local data = ProfileManager.get(player)
+	return data ~= nil and data.SkinsOwned[skinId] == true
 end
 
 function SkinService.grant(player: Player, skinId: string): boolean
 	if not SkinsConfig.isValid(skinId) then
 		return false
 	end
-	local ownedSet = owned[player]
-	if not ownedSet then
+	local data = ProfileManager.get(player)
+	if not data then
 		return false
 	end
-	ownedSet[skinId] = true
+	data.SkinsOwned[skinId] = true
 	return true
 end
 
@@ -124,7 +113,11 @@ function SkinService.equip(player: Player, skinId: string): boolean
 	if not SkinsConfig.isValid(skinId) or not SkinService.isOwned(player, skinId) then
 		return false
 	end
-	equipped[player] = skinId
+	local data = ProfileManager.get(player)
+	if not data then
+		return false
+	end
+	data.EquippedSkin = skinId
 	local character = player.Character
 	if character then
 		applyToCharacter(player, character)
@@ -133,7 +126,8 @@ function SkinService.equip(player: Player, skinId: string): boolean
 end
 
 function SkinService.getEquipped(player: Player): string
-	return equipped[player] or SkinsConfig.DEFAULT_ID
+	local data = ProfileManager.get(player)
+	return if data then data.EquippedSkin else SkinsConfig.DEFAULT_ID
 end
 
 function SkinService.init()
@@ -141,9 +135,21 @@ function SkinService.init()
 	for _, player in Players:GetPlayers() do
 		onPlayerAdded(player)
 	end
-	Players.PlayerRemoving:Connect(function(player)
-		owned[player] = nil
-		equipped[player] = nil
+
+	ProfileManager.onLoaded(function(player, data)
+		for _, id in SkinsConfig.order do
+			local skin = SkinsConfig.get(id)
+			if skin and skin.defaultOwned then
+				data.SkinsOwned[id] = true
+			end
+		end
+		if not SkinsConfig.isValid(data.EquippedSkin) or not data.SkinsOwned[data.EquippedSkin] then
+			data.EquippedSkin = SkinsConfig.DEFAULT_ID
+		end
+		local character = player.Character
+		if character then
+			applyToCharacter(player, character)
+		end
 	end)
 end
 

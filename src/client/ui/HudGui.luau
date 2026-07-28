@@ -84,6 +84,31 @@ function HudGui.init()
 	hint.TextStrokeTransparency = 0.6
 	hint.Text = "P settings · M mute"
 	hint.Parent = screen
+
+	local player = Players.LocalPlayer
+	local wallet = Instance.new("TextLabel")
+	wallet.AnchorPoint = Vector2.new(1, 0)
+	wallet.Position = UDim2.new(1, -12, 0, 80)
+	wallet.Size = UDim2.fromOffset(180, 22)
+	wallet.BackgroundTransparency = 1
+	wallet.Font = Enum.Font.RobotoMono
+	wallet.TextSize = 16
+	wallet.TextXAlignment = Enum.TextXAlignment.Right
+	wallet.TextColor3 = Color3.fromRGB(198, 164, 74)
+	wallet.TextStrokeTransparency = 0.6
+	wallet.Text = ""
+	wallet.Parent = screen
+
+	local function refreshWallet()
+		local credits = player:GetAttribute("Credits")
+		local xp = player:GetAttribute("XP")
+		if typeof(credits) == "number" then
+			wallet.Text = string.format("$%d · XP %d", credits, if typeof(xp) == "number" then xp else 0)
+		end
+	end
+	player:GetAttributeChangedSignal("Credits"):Connect(refreshWallet)
+	player:GetAttributeChangedSignal("XP"):Connect(refreshWallet)
+	refreshWallet()
 end
 
 return HudGui

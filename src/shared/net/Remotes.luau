@@ -15,6 +15,8 @@ Remotes.Event = table.freeze({
 	SquadLeave = "SquadLeave",
 	DeathBegan = "DeathBegan",
 	DeathChoice = "DeathChoice",
+	SettingsSync = "SettingsSync",
+	SettingsSave = "SettingsSave",
 })
 
 local folder: Folder? = nil

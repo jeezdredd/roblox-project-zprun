@@ -10,6 +10,7 @@ local MissionState = require(script.Parent.MissionState)
 local MissionConfig = require(script.Parent.MissionConfig)
 local MissionService = require(script.Parent.MissionService)
 local DistanceTracker = require(script.Parent.DistanceTracker)
+local ProfileManager = require(script.Parent.ProfileManager)
 local ZombieAI = require(script.Parent.ZombieAI)
 
 local DeathService = {}
@@ -109,7 +110,10 @@ local function onPlayerDied(player: Player)
 	task.delay(1.1, function()
 		ZombieAI.feedOnCorpse(deathCFrame.Position, SWARM_DURATION, 5)
 	end)
-	Remotes.getEvent(Remotes.Event.DeathBegan):FireClient(player, computeRewards(player))
+
+	local rewards = computeRewards(player)
+	ProfileManager.awardRun(player, rewards.credits, rewards.xp, rewards.distance)
+	Remotes.getEvent(Remotes.Event.DeathBegan):FireClient(player, rewards)
 
 	task.delay(CHOICE_TIMEOUT, function()
 		local current = pending[player]

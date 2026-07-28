@@ -3,7 +3,8 @@
   "tree": {
     "$className": "DataModel",
     "ServerScriptService": {
-      "Server": { "$path": "src/server" }
+      "Server": { "$path": "src/server" },
+      "Packages": { "$path": "ServerPackages" }
     },
     "ReplicatedStorage": {
       "Shared": { "$path": "src/shared" }

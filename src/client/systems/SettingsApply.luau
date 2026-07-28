@@ -2,6 +2,9 @@
 
 local Lighting = game:GetService("Lighting")
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local VfxConfig = require(ReplicatedStorage.Shared.config.VfxConfig)
 local SettingsService = require(script.Parent.SettingsService)
 local MusicController = require(script.Parent.MusicController)
 local FpsCounter = require(script.Parent.FpsCounter)
@@ -23,6 +26,11 @@ function SettingsApply.init()
 	end)
 	SettingsService.observe("fpsCounter", function(value)
 		FpsCounter.setVisible(value == true)
+	end)
+	SettingsService.observe("effectsQuality", function(value)
+		if typeof(value) == "number" then
+			VfxConfig.setDensity(value)
+		end
 	end)
 end
 

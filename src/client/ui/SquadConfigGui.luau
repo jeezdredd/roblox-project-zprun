@@ -8,6 +8,7 @@ local MapsConfig = require(ReplicatedStorage.Shared.config.MapsConfig)
 local ModifiersConfig = require(ReplicatedStorage.Shared.config.ModifiersConfig)
 local Squad = require(ReplicatedStorage.Shared.types.Squad)
 local CursorMode = require(script.Parent.Parent.systems.CursorMode)
+local UiSfx = require(script.Parent.Parent.systems.UiSfx)
 
 export type Handlers = {
 	onSelectMap: (string) -> (),
@@ -91,6 +92,7 @@ local function makeSelectorRow(title: string, options: { Option }, layoutOrder: 
 		button.Activated:Connect(function()
 			onSelect(option.id)
 		end)
+		UiSfx.bindButton(button)
 		buttons[option.id] = button
 	end
 
@@ -232,6 +234,7 @@ function SquadConfigGui.create(handlers: Handlers): GuiController
 	launchButton.Activated:Connect(handlers.onLaunch)
 
 	local currentSnapshot: Squad.SquadSnapshot? = nil
+	local lastCountdownSecond = -1
 
 	local function refresh()
 		local snapshot = currentSnapshot
@@ -267,7 +270,16 @@ function SquadConfigGui.create(handlers: Handlers): GuiController
 			if snapshot.countdownEndsAt then
 				remaining = math.max(0, snapshot.countdownEndsAt - Workspace:GetServerTimeNow())
 			end
-			launchButton.Text = string.format("LAUNCHING %d", math.ceil(remaining))
+			local seconds = math.ceil(remaining)
+			if seconds ~= lastCountdownSecond then
+				lastCountdownSecond = seconds
+				if seconds > 0 then
+					UiSfx.countdownTick()
+				else
+					UiSfx.countdownGo()
+				end
+			end
+			launchButton.Text = string.format("LAUNCHING %d", seconds)
 			launchButton.Active = false
 			launchButton.AutoButtonColor = false
 		elseif isLeader then

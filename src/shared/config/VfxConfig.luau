@@ -53,4 +53,8 @@ function VfxConfig.dustFor(material: Enum.Material): StepDust
 	return VfxConfig.stepDust[material] or VfxConfig.STEP_DUST_DEFAULT
 end
 
+function VfxConfig.setDensity(value: number)
+	VfxConfig.DENSITY = math.clamp(value, 0, 1)
+end
+
 return VfxConfig

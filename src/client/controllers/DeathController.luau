@@ -11,6 +11,7 @@ local Workspace = game:GetService("Workspace")
 local AudioConfig = require(ReplicatedStorage.Shared.config.AudioConfig)
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local CursorMode = require(script.Parent.Parent.systems.CursorMode)
+local UiSfx = require(script.Parent.Parent.systems.UiSfx)
 local DeathGore = require(script.Parent.Parent.systems.DeathGore)
 local MusicController = require(script.Parent.Parent.systems.MusicController)
 
@@ -306,10 +307,36 @@ local function onDeathBegan(rewards: any)
 		if not active then
 			return
 		end
-		distanceLabel.Text = string.format("Distance: %d m", rewards.distance or 0)
-		xpLabel.Text = string.format("XP earned: %d", rewards.xp or 0)
-		creditsLabel.Text = string.format("Credits: %d  (x%.2f)", rewards.credits or 0, rewards.multiplier or 1)
+		distanceLabel.Text = "Distance: 0 m"
+		xpLabel.Text = "XP earned: 0"
+		creditsLabel.Text = "Credits: 0"
 		resultsPanel.Visible = true
+
+		task.spawn(function()
+			local rows = {
+				{ label = distanceLabel, value = rewards.distance or 0, format = "Distance: %d m" },
+				{ label = xpLabel, value = rewards.xp or 0, format = "XP earned: %d" },
+				{ label = creditsLabel, value = rewards.credits or 0, format = "Credits: %d" },
+			}
+			for _, row in rows do
+				if not active then
+					return
+				end
+				local steps = 14
+				for index = 1, steps do
+					if not active then
+						return
+					end
+					local shown = math.floor(row.value * index / steps + 0.5)
+					row.label.Text = string.format(row.format, shown)
+					UiSfx.rewardTick()
+					task.wait(0.03)
+				end
+				row.label.Text = string.format(row.format, row.value)
+				task.wait(0.15)
+			end
+			creditsLabel.Text = string.format("Credits: %d  (x%.2f)", rewards.credits or 0, rewards.multiplier or 1)
+		end)
 		TweenService:Create(resultsPanel, TweenInfo.new(0.5), { BackgroundTransparency = 0 }):Play()
 		if showResultsCursor then
 			showResultsCursor()

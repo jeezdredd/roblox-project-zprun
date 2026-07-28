@@ -6,6 +6,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local SettingsConfig = require(ReplicatedStorage.Shared.config.SettingsConfig)
 local CursorMode = require(script.Parent.Parent.systems.CursorMode)
+local UiSfx = require(script.Parent.Parent.systems.UiSfx)
 local SettingsService = require(script.Parent.Parent.systems.SettingsService)
 
 export type GuiController = {
@@ -73,6 +74,7 @@ local function makeToggle(parent: Instance, spec: SettingsConfig.SettingSpec, or
 	button.Activated:Connect(function()
 		SettingsService.set(spec.key, not (SettingsService.get(spec.key) == true))
 	end)
+	UiSfx.bindButton(button)
 	SettingsService.observe(spec.key, render)
 end
 
@@ -226,6 +228,7 @@ function SettingsGui.create(): GuiController
 	closeButton.Activated:Connect(function()
 		setOpen(false)
 	end)
+	UiSfx.bindButton(closeButton)
 
 	return {
 		setOpen = setOpen,

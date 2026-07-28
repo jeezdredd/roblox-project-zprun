@@ -33,6 +33,7 @@ local AnimationController = require(script.controllers.AnimationController)
 local FootstepController = require(script.controllers.FootstepController)
 local BreathingController = require(script.controllers.BreathingController)
 local HudGui = require(script.ui.HudGui)
+local RunHud = require(script.ui.RunHud)
 local GoreWarningGui = require(script.ui.GoreWarningGui)
 
 BootState.awaitReady(BootConfig.READY_TIMEOUT)
@@ -68,6 +69,7 @@ SquadController.init()
 DeathController.init()
 
 HudGui.init()
+RunHud.init()
 GoreWarningGui.showOnce()
 
 print("[TaskForceZ][Client] Client started")

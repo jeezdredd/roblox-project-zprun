@@ -9,6 +9,7 @@ local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local ZombiesConfig = require(ReplicatedStorage.Shared.config.ZombiesConfig)
 local ModifiersConfig = require(ReplicatedStorage.Shared.config.ModifiersConfig)
 local ZombieFactory = require(script.Parent.ZombieFactory)
+local ZombieAnimator = require(script.Parent.ZombieAnimator)
 local DistanceTracker = require(script.Parent.DistanceTracker)
 local MissionConfig = require(script.Parent.MissionConfig)
 local MissionState = require(script.Parent.MissionState)
@@ -24,6 +25,8 @@ type ZombieState = {
 	lastHitAt: { [Player]: number },
 	neck: Motor6D?,
 	neckBaseC0: CFrame,
+	tracks: ZombieAnimator.ZombieTracks?,
+	moving: boolean,
 }
 
 local LURE_RANGE = 80
@@ -111,6 +114,8 @@ local function spawnZombie(chunkIndex: number, position: Vector3)
 		lastHitAt = {},
 		neck = neck,
 		neckBaseC0 = if neck then neck.C0 else CFrame.new(),
+		tracks = ZombieAnimator.setup(model, humanoid, position),
+		moving = false,
 	}
 	zombies[model] = state
 
@@ -275,6 +280,10 @@ local function aiStep()
 
 		if not aggroActive then
 			trackPlayerWithHead(state)
+			if state.moving then
+				state.moving = false
+				ZombieAnimator.setMoving(state.tracks, false, false)
+			end
 			continue
 		end
 		local target = findNearestPlayer(state.root.Position)
@@ -287,6 +296,10 @@ local function aiStep()
 		if root and root:IsA("BasePart") then
 			local delayedPosition = getDelayedPosition(target, root.Position, state.config.reactionDelay)
 			state.humanoid:MoveTo(delayedPosition)
+			if not state.moving then
+				state.moving = true
+				ZombieAnimator.setMoving(state.tracks, true, state.config.id == "Runner")
+			end
 		end
 	end
 end
@@ -316,6 +329,7 @@ function ZombieAI.feedOnCorpse(position: Vector3, duration: number, maxFeeders: 
 		local facing = CFrame.lookAt(standPosition, position + Vector3.new(0, 0.5, 0))
 		state.humanoid.WalkSpeed = 0
 		state.root.Anchored = true
+		ZombieAnimator.playFeeding(state.tracks)
 		table.insert(feeders, { root = state.root, base = facing, phase = random:NextNumber(0, math.pi * 2) })
 	end
 

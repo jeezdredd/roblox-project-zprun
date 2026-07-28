@@ -3,6 +3,7 @@
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local PostFx = {}
 
@@ -74,7 +75,10 @@ local function step(deltaTime: number)
 	damageEffect.Saturation = -(lowness * 0.35 * (0.6 + pulse * 0.4)) - deathFade * 0.65
 	damageEffect.TintColor = Color3.fromRGB(255, 255 - math.floor(damagePulse * 90), 255 - math.floor(damagePulse * 90))
 	damageEffect.Brightness = -damagePulse * 0.06
-	bloom.Intensity = 0.4 + deathFade * 1.6 + damagePulse * 0.5
+	local biome = Workspace:GetAttribute("Biome")
+	local sunInFrame = biome == "Forest" and Workspace:GetAttribute("Night") ~= true
+	bloom.Intensity = (if sunInFrame then 0.62 else 0.34) + deathFade * 1.6 + damagePulse * 0.5
+	bloom.Threshold = if sunInFrame then 1 else 1.25
 
 	vignette.BackgroundTransparency = 1 - math.clamp(damagePulse * 0.7 + lowness * 0.3 * (0.5 + pulse * 0.5), 0, 0.85)
 end
@@ -95,9 +99,9 @@ function PostFx.init()
 
 	bloom = Instance.new("BloomEffect")
 	bloom.Name = "TFZ_Bloom"
-	bloom.Intensity = 0.4
-	bloom.Size = 24
-	bloom.Threshold = 1.1
+	bloom.Intensity = 0.34
+	bloom.Size = 20
+	bloom.Threshold = 1.25
 	bloom.Parent = Lighting
 
 	buildVignette()

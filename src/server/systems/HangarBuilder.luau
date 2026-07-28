@@ -65,7 +65,7 @@ local function buildSolidBand(alongX: boolean, fixed: number, from: number, to: 
 		Enum.Material.Metal,
 		parent
 	)
-	TextureUtil.applySides(band, TexturesConfig.CORRUGATED, 14)
+	TextureUtil.applySides(band, TexturesConfig.CORRUGATED, 6)
 end
 
 local function buildWindowBand(alongX: boolean, fixed: number, from: number, to: number, y0: number, y1: number, color: Color3, parent: Instance)
@@ -577,7 +577,7 @@ function HangarBuilder.build(): { Helicopter }
 
 	local hangarFloor = makePart("Part", "HangarFloor", floorSize, CFrame.new(center), HangarConfig.FLOOR_COLOR, Enum.Material.Concrete, model)
 	if not MaterialUtil.apply(hangarFloor, "TFZ_Concrete") then
-		TextureUtil.applyFace(hangarFloor, Enum.NormalId.Top, TexturesConfig.CONCRETE, 16)
+		TextureUtil.applyFace(hangarFloor, Enum.NormalId.Top, TexturesConfig.CONCRETE, 6)
 	end
 
 	buildWall(true, center.Z - halfZ, center.X - halfX, center.X + halfX, center.X - HangarConfig.GATE_HALF_WIDTH, center.X + HangarConfig.GATE_HALF_WIDTH, model)

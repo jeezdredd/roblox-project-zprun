@@ -40,6 +40,11 @@ local function createPart(name: string, size: Vector3, cframe: CFrame, color: Co
 	return part
 end
 
+local function noShadow(part: BasePart): BasePart
+	part.CastShadow = false
+	return part
+end
+
 local function applyTexture(part: BasePart, face: Enum.NormalId, textureId: number, studsPerTile: number)
 	if textureId <= 0 then
 		return
@@ -105,7 +110,7 @@ local function buildBuilding(sign: number, position: Vector3, rng: Random, paren
 	)
 	if isBrick then
 		local laneFace = if sign > 0 then Enum.NormalId.Left else Enum.NormalId.Right
-		applyTexture(body, laneFace, TexturesConfig.BRICKS, 8)
+		applyTexture(body, laneFace, TexturesConfig.BRICKS, 2.5)
 	end
 	buildWindowBands(sign, height, width, depth, position, rng, parent)
 
@@ -118,14 +123,14 @@ local function buildBuilding(sign: number, position: Vector3, rng: Random, paren
 		Enum.Material.Concrete,
 		parent
 	)
-	createPart(
+	noShadow(createPart(
 		"RoofBox",
 		Vector3.new(3, 2, 4),
 		CFrame.new(position.X + rng:NextNumber(-3, 3), position.Y + height + 2, position.Z + rng:NextNumber(-6, 6)),
 		Color3.fromRGB(120, 122, 126),
 		Enum.Material.DiamondPlate,
 		parent
-	)
+	))
 
 	if rng:NextNumber() < 0.5 and height < 38 then
 		local towerHeight = rng:NextNumber(10, 20)
@@ -606,7 +611,7 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 		elseif floorMaterial == Enum.Material.Concrete then "TFZ_Concrete"
 		else nil
 	if not (pbrName and MaterialUtil.apply(floor, pbrName)) then
-		applyTexture(floor, Enum.NormalId.Top, floorTextureId, 12)
+		applyTexture(floor, Enum.NormalId.Top, floorTextureId, 8)
 	end
 
 	for _ = 1, rng:NextInteger(2, 5) do
@@ -654,7 +659,7 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 			apronMaterial,
 			model
 		)
-		applyTexture(apron, Enum.NormalId.Top, apronTextureId, 10)
+		applyTexture(apron, Enum.NormalId.Top, apronTextureId, 7)
 	end
 
 	if effective.roadMarkings and not isField then

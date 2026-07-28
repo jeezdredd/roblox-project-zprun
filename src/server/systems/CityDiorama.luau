@@ -54,7 +54,7 @@ local function buildGround(parent: Instance)
 		Enum.Material.Asphalt,
 		parent
 	)
-	TextureUtil.applyFace(ground, Enum.NormalId.Top, TexturesConfig.ASPHALT, 40)
+	TextureUtil.applyFace(ground, Enum.NormalId.Top, TexturesConfig.ASPHALT, 12)
 end
 
 local function makeFlameEmitter(parent: BasePart, size: number)

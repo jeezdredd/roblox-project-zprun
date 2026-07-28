@@ -48,7 +48,7 @@ local function buildGround(parent: Instance)
 		parent
 	)
 	if not MaterialUtil.apply(ground, "TFZ_Sand") then
-		TextureUtil.applyFace(ground, Enum.NormalId.Top, TexturesConfig.SAND, 10)
+		TextureUtil.applyFace(ground, Enum.NormalId.Top, TexturesConfig.SAND, 8)
 	end
 
 	for _ = 1, 24 do
@@ -239,7 +239,7 @@ local function buildRange(parent: Instance)
 		Enum.Material.Ground,
 		parent
 	)
-	TextureUtil.applyFace(pad, Enum.NormalId.Top, TexturesConfig.GROUND, 8)
+	TextureUtil.applyFace(pad, Enum.NormalId.Top, TexturesConfig.GROUND, 6)
 
 	local left = yardCenterX - yardWidth / 2
 	local right = yardCenterX + yardWidth / 2

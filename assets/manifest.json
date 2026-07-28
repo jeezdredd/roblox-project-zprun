@@ -614,5 +614,103 @@
     "file": "assets/audio/world/radio_01.ogg",
     "assetId": "109089322959902",
     "status": "reviewing"
+  },
+  "texture/surface/sand": {
+    "source": "https://ambientcg.com/view?id=Ground080",
+    "license": "CC0",
+    "file": "assets/textures/sand_color.jpg",
+    "assetId": "115395312730505",
+    "status": "approved"
+  },
+  "texture/pbr/sand_normal": {
+    "source": "https://ambientcg.com/view?id=Ground080",
+    "license": "CC0",
+    "file": "assets/textures/sand_normal.jpg",
+    "assetId": "134675717486844",
+    "status": "approved"
+  },
+  "texture/pbr/sand_roughness": {
+    "source": "https://ambientcg.com/view?id=Ground080",
+    "license": "CC0",
+    "file": "assets/textures/sand_roughness.jpg",
+    "assetId": "93857502534136",
+    "status": "approved"
+  },
+  "texture/surface/fence_chainlink": {
+    "source": "https://ambientcg.com/view?id=Fence007A",
+    "license": "CC0",
+    "file": "assets/textures/fence_chainlink.png",
+    "assetId": "73508631092381",
+    "status": "approved"
+  },
+  "audio/weapons/shot_core": {
+    "source": "https://commons.wikimedia.org/wiki/File:Gunshots_8.ogg",
+    "license": "Public domain",
+    "file": "assets/audio/weapons/shot_core.ogg",
+    "assetId": "75663090422099",
+    "status": "reviewing"
+  },
+  "audio/weapons/shot_auto": {
+    "source": "https://opengameart.org/content/light-machine-gun",
+    "license": "CC0",
+    "file": "assets/audio/weapons/shot_auto.mp3",
+    "assetId": "116318686810257",
+    "status": "approved"
+  },
+  "audio/weapons/mag_out": {
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "file": "assets/audio/weapons/mag_out.ogg",
+    "assetId": "105859367449536",
+    "status": "approved"
+  },
+  "audio/weapons/mag_in": {
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "file": "assets/audio/weapons/mag_in.ogg",
+    "assetId": "128060588767848",
+    "status": "approved"
+  },
+  "audio/weapons/bolt": {
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "file": "assets/audio/weapons/bolt.ogg",
+    "assetId": "118765487481144",
+    "status": "approved"
+  },
+  "audio/weapons/dryfire": {
+    "source": "https://kenney.nl/assets/interface-sounds",
+    "license": "CC0",
+    "file": "assets/audio/weapons/dryfire.ogg",
+    "assetId": "92885069261997",
+    "status": "approved"
+  },
+  "audio/weapons/shell_01": {
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "file": "assets/audio/weapons/shell_01.ogg",
+    "assetId": "99090331825025",
+    "status": "approved"
+  },
+  "audio/weapons/shell_02": {
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "file": "assets/audio/weapons/shell_02.ogg",
+    "assetId": "90769005184856",
+    "status": "approved"
+  },
+  "audio/weapons/shell_03": {
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "file": "assets/audio/weapons/shell_03.ogg",
+    "assetId": "100605243058923",
+    "status": "rejected"
+  },
+  "audio/range/gong": {
+    "source": "https://commons.wikimedia.org/wiki/File:Gong_or_bell_vibrant.ogg",
+    "license": "Public domain",
+    "file": "assets/audio/range/gong.ogg",
+    "assetId": "126015144651781",
+    "status": "reviewing"
   }
 }

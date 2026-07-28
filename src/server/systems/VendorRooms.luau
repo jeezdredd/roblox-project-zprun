@@ -137,19 +137,48 @@ local function buildShell(base: CFrame, config: VendorsConfig.VendorConfig, pare
 			lamp.CastShadow = false
 			local light = Instance.new("PointLight")
 			light.Color = Color3.fromRGB(255, 240, 214)
-			light.Range = 34
-			light.Brightness = 1.5
+			light.Range = 30
+			light.Brightness = 1.1
 			light.Parent = lamp
 		end
 	end
 
-	local banner = makePart("Part", "SignBanner", Vector3.new(config.size.X - 10, 2, 0.5), base * CFrame.new(0, height + 0.4, -halfD - 0.4), config.color, Enum.Material.Neon, parent)
+	local banner = makePart(
+		"Part",
+		"SignBanner",
+		Vector3.new(config.size.X - 10, 2, 0.5),
+		base * CFrame.new(0, height + 0.4, -halfD - 0.4),
+		Color3.fromRGB(46, 46, 48),
+		Enum.Material.Metal,
+		parent
+	)
 	decor(banner)
+	local stripe = makePart(
+		"Part",
+		"SignStripe",
+		Vector3.new(config.size.X - 10, 0.4, 0.55),
+		base * CFrame.new(0, height - 0.7, -halfD - 0.4),
+		config.color:Lerp(Color3.fromRGB(40, 40, 42), 0.45),
+		Enum.Material.SmoothPlastic,
+		parent
+	)
+	decor(stripe)
+	local statusLamp = makePart(
+		"Part",
+		"StatusLamp",
+		Vector3.new(1.2, 0.8, 0.6),
+		base * CFrame.new((config.size.X - 10) / 2 - 1.4, height + 0.4, -halfD - 0.7),
+		Color3.fromRGB(236, 220, 190),
+		Enum.Material.Neon,
+		parent
+	)
+	decor(statusLamp)
+	statusLamp.Transparency = 0.2
 	local accent = Instance.new("PointLight")
-	accent.Color = config.color
-	accent.Range = 26
-	accent.Brightness = 1.6
-	accent.Parent = banner
+	accent.Color = Color3.fromRGB(255, 236, 200)
+	accent.Range = 14
+	accent.Brightness = 0.7
+	accent.Parent = statusLamp
 	makeSign(banner, config.displayName, config.subtitle, 5)
 
 	local counter = makePart("Part", "Counter", Vector3.new(13, COUNTER_HEIGHT, 2.4), base * CFrame.new(0, 1 + COUNTER_HEIGHT / 2, -halfD + 8), DARK_STEEL, Enum.Material.Metal, parent)
@@ -290,8 +319,8 @@ local function buildWeaponDealer(base: CFrame, size: Vector3, parent: Instance)
 	buildAmmoStack(base * CFrame.new(-halfW + 8, 1, halfD - 6), parent)
 	buildAmmoStack(base * CFrame.new(halfW - 8, 1, halfD - 6), parent)
 
-	local neon = makePart("Part", "AmmoSign", Vector3.new(12, 3, 0.4), base * CFrame.new(0, 13, halfD - 2), Color3.fromRGB(240, 190, 70), Enum.Material.Neon, parent)
-	decor(neon)
+	local ammoSign = makePart("Part", "AmmoSign", Vector3.new(12, 3, 0.4), base * CFrame.new(0, 13, halfD - 2), Color3.fromRGB(150, 122, 52), Enum.Material.SmoothPlastic, parent)
+	decor(ammoSign)
 end
 
 local function buildWorkbench(base: CFrame, parent: Instance)
@@ -308,40 +337,13 @@ local function buildWorkbench(base: CFrame, parent: Instance)
 	decor(tray)
 end
 
-local function buildShootingLanes(base: CFrame, size: Vector3, parent: Instance)
-	local halfD = size.Z / 2
-
-	makePart("Part", "RangePartition", Vector3.new(1.4, 16, size.Z - 4), base * CFrame.new(-2, 9, 0), Color3.fromRGB(70, 72, 76), Enum.Material.Metal, parent)
-	local partitionGlass = makePart("Part", "RangeGlass", Vector3.new(0.5, 7, 22), base * CFrame.new(-2, 11, 0), Color3.fromRGB(180, 210, 220), Enum.Material.Glass, parent)
-	partitionGlass.Transparency = 0.5
-	decor(partitionGlass)
-
-	for i = 0, 2 do
-		local laneX = 6 + i * 12
-		if i > 0 then
-			makePart("Part", "LaneDivider", Vector3.new(0.6, 7, 26), base * CFrame.new(laneX - 6, 4.5, 4), Color3.fromRGB(84, 86, 90), Enum.Material.Metal, parent)
-		end
-		makePart("Part", "FiringBench", Vector3.new(7, 3.4, 2.4), base * CFrame.new(laneX, 2.7, -halfD + 12), DARK_STEEL, Enum.Material.Metal, parent)
-
-		local laneLight = makePart("Part", "LaneLight", Vector3.new(1.6, 1.6, 0.5), base * CFrame.new(laneX, 12, -halfD + 10), if i == 0 then Color3.fromRGB(80, 240, 120) else Color3.fromRGB(240, 80, 80), Enum.Material.Neon, parent)
-		decor(laneLight)
-
-		buildMannequin(base * CFrame.new(laneX, 1, halfD - 9), Color3.fromRGB(88, 122, 82), parent)
-		local sandbag = makePart("Part", "Sandbags", Vector3.new(8, 3, 3), base * CFrame.new(laneX, 2.4, halfD - 4), Color3.fromRGB(150, 138, 104), Enum.Material.Sand, parent)
-		decor(sandbag)
-	end
-
-	local rangeSign = makePart("Part", "RangeSign", Vector3.new(20, 2.6, 0.4), base * CFrame.new(18, 15, -halfD + 8), Color3.fromRGB(240, 170, 70), Enum.Material.Neon, parent)
-	decor(rangeSign)
-	makeSign(rangeSign, "Shooting Range", "Test weapons — SOON", 4)
-end
-
 local function buildGunsmith(base: CFrame, size: Vector3, parent: Instance)
 	local halfW = size.X / 2
 	local halfD = size.Z / 2
 
 	buildWorkbench(base * CFrame.new(-halfW + 14, 0, halfD - 10), parent)
 	buildWorkbench(base * CFrame.new(-halfW + 14, 0, -2) * CFrame.Angles(0, math.rad(90), 0), parent)
+	buildWorkbench(base * CFrame.new(halfW - 14, 0, halfD - 10), parent)
 
 	makePart("Part", "Pegboard", Vector3.new(18, 10, 0.6), base * CFrame.new(-halfW + 14, 9, halfD - 2), Color3.fromRGB(118, 94, 64), Enum.Material.WoodPlanks, parent)
 	for i = 0, 5 do
@@ -350,11 +352,19 @@ local function buildGunsmith(base: CFrame, size: Vector3, parent: Instance)
 	end
 
 	buildAmmoStack(base * CFrame.new(-halfW + 6, 1, -halfD + 12), parent)
+	buildAmmoStack(base * CFrame.new(halfW - 6, 1, -halfD + 12), parent)
 	for i = 0, 2 do
 		buildRifle(base * CFrame.new(-halfW + 24, 6 + i * 3.4, -halfD + 8) * CFrame.Angles(0, math.rad(90), 0), parent)
 	end
 
-	buildShootingLanes(base, size, parent)
+	makePart("Part", "GunRack", Vector3.new(1, 12, 20), base * CFrame.new(halfW - 2.4, 8, -4), Color3.fromRGB(74, 58, 42), Enum.Material.WoodPlanks, parent)
+	for i = 0, 3 do
+		buildRifle(base * CFrame.new(halfW - 3.6, 5.5 + (i % 2) * 4.5, -10 + i * 4) * CFrame.Angles(0, math.rad(90), math.rad(6)), parent)
+	end
+
+	local rangePointer = makePart("Part", "RangePointer", Vector3.new(14, 2.2, 0.4), base * CFrame.new(0, 13, -halfD + 2), Color3.fromRGB(214, 200, 170), Enum.Material.SmoothPlastic, parent)
+	decor(rangePointer)
+	makeSign(rangePointer, "Shooting Range", "Outside — behind the hangar", 4)
 end
 
 local function buildVendingMachine(base: CFrame, bodyColor: Color3, panelColor: Color3, parent: Instance)

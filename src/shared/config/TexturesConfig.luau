@@ -19,6 +19,11 @@ local TexturesConfig = {
 	ASPHALT_ROUGHNESS = AssetIds.texture.pbr.asphalt_roughness,
 	CONCRETE_NORMAL = AssetIds.texture.pbr.concrete_normal,
 	CONCRETE_ROUGHNESS = AssetIds.texture.pbr.concrete_roughness,
+
+	SAND = AssetIds.texture.surface.sand,
+	SAND_NORMAL = AssetIds.texture.pbr.sand_normal,
+	SAND_ROUGHNESS = AssetIds.texture.pbr.sand_roughness,
+	FENCE_CHAINLINK = AssetIds.texture.surface.fence_chainlink,
 }
 
 return table.freeze(TexturesConfig)

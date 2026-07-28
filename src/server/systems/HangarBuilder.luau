@@ -169,16 +169,17 @@ local function buildCeiling(parent: Instance)
 	end
 end
 
-local function buildCeilingLamp(position: Vector3, parent: Instance)
-	local fixture = makePart("Part", "CeilingLamp", Vector3.new(9, 0.6, 5), CFrame.new(position), Color3.fromRGB(255, 244, 220), Enum.Material.Neon, parent)
+local function buildCeilingLamp(position: Vector3, parent: Instance, range: number?, brightness: number?)
+	local fixture = makePart("Part", "CeilingLamp", Vector3.new(7, 0.6, 4), CFrame.new(position), Color3.fromRGB(236, 224, 198), Enum.Material.Neon, parent)
 	fixture.CanCollide = false
 	fixture.CastShadow = false
+	fixture.Transparency = 0.15
 
 	local light = Instance.new("PointLight")
-	light.Color = Color3.fromRGB(255, 238, 205)
-	light.Range = 60
-	light.Brightness = 1.6
-	light.Shadows = true
+	light.Color = Color3.fromRGB(255, 236, 200)
+	light.Range = range or 42
+	light.Brightness = brightness or 1.1
+	light.Shadows = false
 	light.Parent = fixture
 end
 
@@ -214,6 +215,95 @@ local function buildHelipadMarkings(padCFrame: CFrame, parent: Instance)
 	cross.CastShadow = false
 end
 
+local function buildPalletStack(base: Vector3, height: number, parent: Instance)
+	for i = 0, height - 1 do
+		local pallet = makePart(
+			"Part",
+			"Pallet",
+			Vector3.new(7, 0.9, 7),
+			CFrame.new(base + Vector3.new((i % 2) * 0.4, 0.45 + i * 0.95, (i % 2) * -0.3)) * CFrame.Angles(0, math.rad(i * 4), 0),
+			Color3.fromRGB(126, 104, 72),
+			Enum.Material.WoodPlanks,
+			parent
+		)
+		TextureUtil.applyFace(pallet, Enum.NormalId.Top, TexturesConfig.WOOD, 4)
+	end
+end
+
+local function buildSackPile(base: Vector3, parent: Instance)
+	local sackColor = Color3.fromRGB(112, 106, 88)
+	local layout = {
+		{ Vector3.new(0, 0.9, 0), 0 },
+		{ Vector3.new(3.4, 0.9, 0.6), 24 },
+		{ Vector3.new(1.4, 0.9, 3.2), -18 },
+		{ Vector3.new(1.8, 2.6, 1.4), 40 },
+	}
+	for _, entry in layout do
+		local sack = makePart(
+			"Part",
+			"Sack",
+			Vector3.new(3.6, 1.8, 2.4),
+			CFrame.new(base + entry[1]) * CFrame.Angles(0, math.rad(entry[2]), 0),
+			sackColor,
+			Enum.Material.Fabric,
+			parent
+		)
+		TextureUtil.applyAll(sack, TexturesConfig.FABRIC, 3)
+	end
+end
+
+local function buildCableSpool(base: Vector3, upright: boolean, parent: Instance)
+	local spoolColor = Color3.fromRGB(140, 112, 70)
+	local orientation = if upright
+		then CFrame.new(base + Vector3.new(0, 3.2, 0)) * CFrame.Angles(0, 0, math.rad(90))
+		else CFrame.new(base + Vector3.new(0, 1.1, 0))
+	for _, offset in { -2.4, 2.4 } do
+		local disc = Instance.new("Part")
+		disc.Name = "SpoolDisc"
+		disc.Shape = Enum.PartType.Cylinder
+		disc.Size = Vector3.new(0.8, 6.4, 6.4)
+		disc.CFrame = orientation * CFrame.new(offset, 0, 0)
+		disc.Anchored = true
+		disc.Color = spoolColor
+		disc.Material = Enum.Material.WoodPlanks
+		disc.Parent = parent
+	end
+	local core = Instance.new("Part")
+	core.Name = "SpoolCore"
+	core.Shape = Enum.PartType.Cylinder
+	core.Size = Vector3.new(4.8, 3.6, 3.6)
+	core.CFrame = orientation
+	core.Anchored = true
+	core.Color = Color3.fromRGB(44, 46, 50)
+	core.Material = Enum.Material.Plastic
+	core.Parent = parent
+end
+
+local function buildShelving(base: Vector3, yaw: number, parent: Instance)
+	local frameColor = Color3.fromRGB(180, 92, 40)
+	local rootCFrame = CFrame.new(base) * CFrame.Angles(0, math.rad(yaw), 0)
+	for _, x in { -7, 7 } do
+		for _, z in { -1.6, 1.6 } do
+			makePart("Part", "RackLeg", Vector3.new(0.6, 12, 0.6), rootCFrame * CFrame.new(x, 6, z), frameColor, Enum.Material.Metal, parent)
+		end
+	end
+	for _, y in { 3, 7, 11 } do
+		makePart("Part", "RackShelf", Vector3.new(15, 0.4, 4), rootCFrame * CFrame.new(0, y, 0), Color3.fromRGB(96, 100, 106), Enum.Material.DiamondPlate, parent)
+	end
+	local boxSpots = { { -4.5, 3.6, 0 }, { 2, 3.7, 0.4 }, { -1, 7.7, -0.4 }, { 5, 7.6, 0 } }
+	for _, spot in boxSpots do
+		makePart(
+			"Part",
+			"RackBox",
+			Vector3.new(3.4, 2.6, 2.8),
+			rootCFrame * CFrame.new(spot[1], spot[2] + 0.9, spot[3]),
+			Color3.fromRGB(104, 98, 78),
+			Enum.Material.WoodPlanks,
+			parent
+		)
+	end
+end
+
 local function buildProps(parent: Instance)
 	local crateColor = Color3.fromRGB(96, 104, 78)
 	local drumColor = Color3.fromRGB(150, 90, 40)
@@ -247,6 +337,105 @@ local function buildProps(parent: Instance)
 			end
 		end
 	end
+
+	buildPalletStack(center + Vector3.new(-150, 0, 0), 4, parent)
+	buildPalletStack(center + Vector3.new(-142, 0, 8), 2, parent)
+	buildSackPile(center + Vector3.new(-148, 0, -14), parent)
+	buildCableSpool(center + Vector3.new(150, 0, 110), true, parent)
+	buildCableSpool(center + Vector3.new(144, 0, 122), false, parent)
+	buildShelving(center + Vector3.new(152, 0, 2), 90, parent)
+	buildShelving(center + Vector3.new(152, 0, 22), 90, parent)
+	buildPalletStack(center + Vector3.new(60, 0, -140), 3, parent)
+	buildSackPile(center + Vector3.new(-70, 0, -142), parent)
+	buildCableSpool(center + Vector3.new(-118, 0, -138), false, parent)
+end
+
+local function paintStrip(name: string, size: Vector3, cframe: CFrame, color: Color3, transparency: number, parent: Instance)
+	local strip = makePart("Part", name, size, cframe, color, Enum.Material.SmoothPlastic, parent)
+	strip.CanCollide = false
+	strip.CanQuery = false
+	strip.CastShadow = false
+	strip.Transparency = transparency
+	return strip
+end
+
+local function buildFloorGrime(parent: Instance)
+	local floorY = center.Y + 0.56
+
+	local stainSpots = {
+		{ Vector3.new(-90, 0, -108), 11 },
+		{ Vector3.new(6, 0, -104), 14 },
+		{ Vector3.new(94, 0, -112), 9 },
+		{ Vector3.new(-118, 0, 116), 8 },
+		{ Vector3.new(120, 0, 108), 10 },
+		{ Vector3.new(-146, 0, 12), 7 },
+		{ Vector3.new(148, 0, 100), 8 },
+		{ Vector3.new(30, 0, 30), 12 },
+	}
+	for index, spot in stainSpots do
+		local stain = Instance.new("Part")
+		stain.Name = "OilStain"
+		stain.Shape = Enum.PartType.Cylinder
+		stain.Size = Vector3.new(0.06, spot[2], spot[2])
+		stain.CFrame = CFrame.new(center + spot[1] + Vector3.new(0, floorY, 0)) * CFrame.Angles(0, math.rad(index * 37), math.rad(90))
+		stain.Anchored = true
+		stain.CanCollide = false
+		stain.CanQuery = false
+		stain.CastShadow = false
+		stain.Color = Color3.fromRGB(26, 26, 28)
+		stain.Material = Enum.Material.SmoothPlastic
+		stain.Transparency = 0.42
+		stain.Parent = parent
+	end
+
+	local trackColor = Color3.fromRGB(38, 38, 40)
+	for _, padCFrame in HangarConfig.HELICOPTER_PADS do
+		local padX = padCFrame.Position.X
+		local padZ = padCFrame.Position.Z
+		local gateZ = center.Z - halfZ
+		local length = padZ - gateZ
+		for _, side in { -3.2, 3.2 } do
+			paintStrip(
+				"TireTrack",
+				Vector3.new(1.6, 0.05, length),
+				CFrame.new(padX + side + (padX - center.X) * 0.04, floorY, gateZ + length / 2),
+				trackColor,
+				0.55,
+				parent
+			)
+		end
+	end
+
+	local hazardY = floorY + 0.01
+	local gateZ = center.Z - halfZ + 6
+	local stripeCount = math.floor((HangarConfig.GATE_HALF_WIDTH * 2 - 8) / 6)
+	for i = 0, stripeCount - 1 do
+		local color = if i % 2 == 0 then Color3.fromRGB(196, 160, 40) else Color3.fromRGB(30, 30, 32)
+		paintStrip(
+			"HazardStripe",
+			Vector3.new(6, 0.05, 4),
+			CFrame.new(center.X - HangarConfig.GATE_HALF_WIDTH + 4 + i * 6 + 3, hazardY, gateZ) * CFrame.Angles(0, math.rad(18), 0),
+			color,
+			0.1,
+			parent
+		)
+	end
+	for i = 0, 4 do
+		local color = if i % 2 == 0 then Color3.fromRGB(196, 160, 40) else Color3.fromRGB(30, 30, 32)
+		paintStrip(
+			"HazardStripe",
+			Vector3.new(4.4, 0.05, 3),
+			CFrame.new(center.X - HangarConfig.RANGE_DOOR_HALF_WIDTH + i * 5 + 2.2, hazardY, center.Z + halfZ - 5) * CFrame.Angles(0, math.rad(-18), 0),
+			color,
+			0.1,
+			parent
+		)
+	end
+
+	local guideColor = Color3.fromRGB(158, 148, 112)
+	paintStrip("GuideLine", Vector3.new(0.9, 0.05, 220), CFrame.new(center.X - 24, floorY, center.Z + 20), guideColor, 0.35, parent)
+	paintStrip("GuideLine", Vector3.new(0.9, 0.05, 220), CFrame.new(center.X + 24, floorY, center.Z + 20), guideColor, 0.35, parent)
+	paintStrip("GuideLine", Vector3.new(200, 0.05, 0.9), CFrame.new(center.X, floorY, center.Z - 70), guideColor, 0.35, parent)
 end
 
 local function buildHelicopter(index: number, padCFrame: CFrame, parent: Instance): Helicopter
@@ -394,9 +583,12 @@ function HangarBuilder.build(): { Helicopter }
 	buildWall(true, center.Z - halfZ, center.X - halfX, center.X + halfX, center.X - HangarConfig.GATE_HALF_WIDTH, center.X + HangarConfig.GATE_HALF_WIDTH, model)
 
 	local containHeight = wallHeight + 30
+	local doorHalf = HangarConfig.RANGE_DOOR_HALF_WIDTH
+	local backSegment = (floorSize.X + 8) / 2 - doorHalf
 	local containLayouts = {
 		{ Vector3.new(floorSize.X + 8, containHeight, 2), CFrame.new(center.X, containHeight / 2, center.Z - halfZ) },
-		{ Vector3.new(floorSize.X + 8, containHeight, 2), CFrame.new(center.X, containHeight / 2, center.Z + halfZ) },
+		{ Vector3.new(backSegment, containHeight, 2), CFrame.new(center.X - doorHalf - backSegment / 2, containHeight / 2, center.Z + halfZ) },
+		{ Vector3.new(backSegment, containHeight, 2), CFrame.new(center.X + doorHalf + backSegment / 2, containHeight / 2, center.Z + halfZ) },
 		{ Vector3.new(2, containHeight, floorSize.Z + 8), CFrame.new(center.X - halfX, containHeight / 2, center.Z) },
 		{ Vector3.new(2, containHeight, floorSize.Z + 8), CFrame.new(center.X + halfX, containHeight / 2, center.Z) },
 	}
@@ -412,11 +604,11 @@ function HangarBuilder.build(): { Helicopter }
 		"GateGlass",
 		Vector3.new(HangarConfig.GATE_HALF_WIDTH * 2 - 4, HangarConfig.GATE_HEIGHT - 2, 0.6),
 		CFrame.new(center.X, HangarConfig.GATE_HEIGHT / 2, center.Z - halfZ + 0.6),
-		Color3.fromRGB(150, 180, 200),
+		Color3.fromRGB(255, 168, 104),
 		Enum.Material.Glass,
 		model
 	)
-	gateGlass.Transparency = 0.78
+	gateGlass.Transparency = 0.62
 	gateGlass.Reflectance = 0.1
 	gateGlass.CastShadow = false
 
@@ -433,19 +625,32 @@ function HangarBuilder.build(): { Helicopter }
 			model
 		)
 	end
-	buildWall(true, center.Z + halfZ, center.X - halfX, center.X + halfX, nil, nil, model)
+	buildWall(
+		true,
+		center.Z + halfZ,
+		center.X - halfX,
+		center.X + halfX,
+		center.X - HangarConfig.RANGE_DOOR_HALF_WIDTH,
+		center.X + HangarConfig.RANGE_DOOR_HALF_WIDTH,
+		model
+	)
 	buildWall(false, center.X - halfX, center.Z - halfZ, center.Z + halfZ, nil, nil, model)
 	buildWall(false, center.X + halfX, center.Z - halfZ, center.Z + halfZ, nil, nil, model)
 
 	buildCeiling(model)
 
-	for _, xOffset in { -120, -40, 40, 120 } do
-		for _, zOffset in { -110, -30, 50, 130 } do
-			buildCeilingLamp(center + Vector3.new(xOffset, wallHeight - 4, zOffset), model)
-		end
+	for _, padCFrame in HangarConfig.HELICOPTER_PADS do
+		buildCeilingLamp(Vector3.new(padCFrame.Position.X, wallHeight - 4, padCFrame.Position.Z), model, 52, 1.35)
 	end
+	buildCeilingLamp(center + Vector3.new(0, wallHeight - 4, 92), model, 46, 1.2)
+	buildCeilingLamp(center + Vector3.new(-120, wallHeight - 4, 40), model, 44, 1.05)
+	buildCeilingLamp(center + Vector3.new(120, wallHeight - 4, 40), model, 44, 1.05)
+	buildCeilingLamp(center + Vector3.new(0, wallHeight - 4, 0), model, 46, 1.1)
+	buildCeilingLamp(center + Vector3.new(-60, wallHeight - 4, 140), model, 40, 1)
+	buildCeilingLamp(center + Vector3.new(60, wallHeight - 4, 140), model, 40, 1)
 
 	buildProps(model)
+	buildFloorGrime(model)
 
 	local spawnLocation = Instance.new("SpawnLocation")
 	spawnLocation.Name = "HubSpawn"

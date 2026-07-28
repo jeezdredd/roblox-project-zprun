@@ -33,7 +33,15 @@ MaterialUtil.sets = {
 		color = TexturesConfig.CONCRETE,
 		normal = TexturesConfig.CONCRETE_NORMAL,
 		roughness = TexturesConfig.CONCRETE_ROUGHNESS,
-		studsPerTile = 14,
+		studsPerTile = 6,
+	},
+	{
+		name = "TFZ_Sand",
+		baseMaterial = Enum.Material.Sand,
+		color = TexturesConfig.SAND,
+		normal = TexturesConfig.SAND_NORMAL,
+		roughness = TexturesConfig.SAND_ROUGHNESS,
+		studsPerTile = 8,
 	},
 } :: { PbrSet }
 

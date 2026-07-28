@@ -25,6 +25,8 @@ local center = HangarConfig.HUB_CENTER
 local random = Random.new(20260728)
 local choppers: { Chopper } = {}
 local flickerBands: { { part: BasePart, phase: number, rate: number } } = {}
+local flickerLights: { { light: PointLight, phase: number, rate: number, base: number } } = {}
+local flashers: { { light: PointLight, part: BasePart, phase: number, isRed: boolean } } = {}
 local elapsed = 0
 
 local function makePart(name: string, size: Vector3, cframe: CFrame, color: Color3, material: Enum.Material, parent: Instance): Part
@@ -107,11 +109,22 @@ local function addFire(building: Part, height: number, withLight: boolean, paren
 	makeFlameEmitter(fireAnchor, scale)
 
 	if withLight then
+		local lowAnchor = makePart(
+			"FireGlowLow",
+			Vector3.new(2, 2, 2),
+			CFrame.new(building.Position.X + random:NextNumber(-building.Size.X, building.Size.X), 7, building.Position.Z - building.Size.Z / 2 - random:NextNumber(8, 30)),
+			Color3.new(0, 0, 0),
+			Enum.Material.SmoothPlastic,
+			parent
+		)
+		lowAnchor.Transparency = 1
 		local glow = Instance.new("PointLight")
-		glow.Color = Color3.fromRGB(255, 130, 50)
-		glow.Range = 160
-		glow.Brightness = 4
-		glow.Parent = fireAnchor
+		glow.Color = Color3.fromRGB(255, 118, 40)
+		glow.Range = 110
+		glow.Brightness = 2.2
+		glow.Parent = lowAnchor
+		table.insert(flickerLights, { light = glow, phase = random:NextNumber(0, math.pi * 2), rate = random:NextNumber(3, 7), base = 2.2 })
+		makeFlameEmitter(lowAnchor, 7)
 	end
 
 	local sideAnchor = makePart(
@@ -127,15 +140,16 @@ local function addFire(building: Part, height: number, withLight: boolean, paren
 
 	building.Color = building.Color:Lerp(Color3.fromRGB(30, 24, 22), 0.55)
 
-	for i = 1, 3 do
+	for i = 1, 2 do
 		local windowGlow = makePart(
 			"BurningWindow",
-			Vector3.new(building.Size.X * 0.78, 5, 0.6),
+			Vector3.new(building.Size.X * 0.6, 4, 0.6),
 			CFrame.new(building.Position + Vector3.new(0, -height / 3 + i * (height / 4), -building.Size.Z / 2 - 0.4)),
-			Color3.fromRGB(255, 150, 60),
+			Color3.fromRGB(220, 116, 42),
 			Enum.Material.Neon,
 			parent
 		)
+		windowGlow.Transparency = 0.3
 		windowGlow.CastShadow = false
 	end
 end
@@ -146,37 +160,45 @@ local function buildBuilding(index: number, burning: boolean, withLight: boolean
 	local height = random:NextNumber(50, 200)
 	local x = center.X + random:NextNumber(-HangarConfig.CITY_HALF_WIDTH, HangarConfig.CITY_HALF_WIDTH)
 	local z = center.Z + random:NextNumber(HangarConfig.CITY_FAR_Z, HangarConfig.CITY_NEAR_Z)
-	local shade = random:NextInteger(42, 68)
+	local shade = random:NextInteger(22, 38)
 	local isBrick = random:NextNumber() < 0.4
 
 	local building = makePart(
 		"CityBlock" .. index,
 		Vector3.new(width, height, depth),
 		CFrame.new(x, height / 2, z),
-		if isBrick then Color3.fromRGB(shade + 26, shade - 6, shade - 12) else Color3.fromRGB(shade, shade, shade + 4),
+		if isBrick then Color3.fromRGB(shade + 10, shade - 2, shade - 4) else Color3.fromRGB(shade, shade, shade + 3),
 		Enum.Material.Concrete,
 		parent
 	)
-	TextureUtil.applySides(building, if isBrick then TexturesConfig.BRICKS else TexturesConfig.CONCRETE, 14)
+	TextureUtil.applySides(building, if isBrick then TexturesConfig.BRICKS else TexturesConfig.CONCRETE, if isBrick then 3 else 5)
 
 	local bandCount = math.floor(height / 20)
 	for i = 1, bandCount do
-		if random:NextNumber() < 0.6 then
-			local band = makePart(
-				"CityWindows",
-				Vector3.new(width * 0.84, 4.5, 0.5),
-				CFrame.new(x, i * 20, z - depth / 2 - 0.3),
-				Color3.fromRGB(255, 216, 150),
-				Enum.Material.Neon,
-				parent
-			)
-			band.Transparency = 0.2
-			band.CastShadow = false
+		if random:NextNumber() < 0.3 then
+			local cellCount = math.max(2, math.floor(width / 14))
+			local cellWidth = width * 0.84 / cellCount
+			for cell = 0, cellCount - 1 do
+				if random:NextNumber() > 0.55 then
+					continue
+				end
+				local cellX = x - width * 0.42 + cellWidth * (cell + 0.5)
+				local band = makePart(
+					"CityWindows",
+					Vector3.new(cellWidth * 0.62, 3.6, 0.5),
+					CFrame.new(cellX, i * 20, z - depth / 2 - 0.3),
+					Color3.fromRGB(226, 186, 128),
+					Enum.Material.Neon,
+					parent
+				)
+				band.Transparency = 0.45
+				band.CastShadow = false
 
-			if random:NextNumber() < 0.12 then
-				local flickerPhase = random:NextNumber(0, math.pi * 2)
-				local flickerRate = random:NextNumber(0.6, 2.4)
-				table.insert(flickerBands, { part = band, phase = flickerPhase, rate = flickerRate })
+				if random:NextNumber() < 0.14 then
+					local flickerPhase = random:NextNumber(0, math.pi * 2)
+					local flickerRate = random:NextNumber(0.6, 2.4)
+					table.insert(flickerBands, { part = band, phase = flickerPhase, rate = flickerRate })
+				end
 			end
 		end
 	end
@@ -184,6 +206,33 @@ local function buildBuilding(index: number, burning: boolean, withLight: boolean
 	if burning then
 		addFire(building, height, withLight, parent)
 	end
+end
+
+local function buildPoliceCar(position: Vector3, yaw: number, parent: Instance)
+	local rootCFrame = CFrame.new(position) * CFrame.Angles(0, math.rad(yaw), 0)
+	local body = makePart("PoliceBody", Vector3.new(6.4, 3, 15), rootCFrame * CFrame.new(0, 2.4, 0), Color3.fromRGB(28, 30, 36), Enum.Material.Metal, parent)
+	makePart("PoliceCabin", Vector3.new(5.8, 2.2, 6.5), rootCFrame * CFrame.new(0, 4.9, -0.5), Color3.fromRGB(22, 24, 28), Enum.Material.Metal, parent)
+	makePart("PoliceStripe", Vector3.new(6.5, 0.8, 15.1), rootCFrame * CFrame.new(0, 2.6, 0), Color3.fromRGB(180, 180, 186), Enum.Material.SmoothPlastic, parent)
+
+	for index, offset in { -1.6, 1.6 } do
+		local isRed = index == 1
+		local lamp = makePart(
+			"FlasherLamp",
+			Vector3.new(1.6, 0.7, 1.2),
+			rootCFrame * CFrame.new(offset, 6.3, -0.5),
+			if isRed then Color3.fromRGB(255, 60, 60) else Color3.fromRGB(70, 110, 255),
+			Enum.Material.Neon,
+			parent
+		)
+		lamp.CastShadow = false
+		local light = Instance.new("PointLight")
+		light.Color = lamp.Color
+		light.Range = 60
+		light.Brightness = 0
+		light.Parent = lamp
+		table.insert(flashers, { light = light, part = lamp, phase = random:NextNumber(0, math.pi * 2), isRed = isRed })
+	end
+	return body
 end
 
 local function buildChopperModel(parent: Instance): (Model, BasePart)
@@ -227,7 +276,18 @@ local function step(deltaTime: number)
 		end
 		local wave = math.sin(elapsed * band.rate + band.phase)
 		local flicker = math.sin(elapsed * band.rate * 7.3 + band.phase) * 0.15
-		band.part.Transparency = math.clamp(0.2 + wave * 0.25 + flicker, 0.05, 0.85)
+		band.part.Transparency = math.clamp(0.35 + wave * 0.25 + flicker, 0.15, 0.9)
+	end
+	for _, entry in flickerLights do
+		local wave = math.sin(elapsed * entry.rate + entry.phase)
+		local jitter = math.sin(elapsed * entry.rate * 5.1 + entry.phase * 2) * 0.25
+		entry.light.Brightness = math.max(0.4, entry.base * (0.75 + wave * 0.2 + jitter))
+	end
+	for _, flasher in flashers do
+		local cycle = (elapsed * 2 + flasher.phase) % 1
+		local active = if flasher.isRed then cycle < 0.5 else cycle >= 0.5
+		flasher.light.Brightness = if active then 3 else 0
+		flasher.part.Transparency = if active then 0 else 0.65
 	end
 	for _, chopper in choppers do
 		local angle = chopper.phase + elapsed * chopper.speed
@@ -267,6 +327,11 @@ function CityDiorama.build()
 	for index = 1, HangarConfig.CITY_BLOCKS do
 		buildBuilding(index, burningSlots[index] == true, lightSlots[index] == true, model)
 	end
+
+	local nearZ = center.Z + HangarConfig.CITY_NEAR_Z
+	buildPoliceCar(Vector3.new(center.X - 60, 0, nearZ + 26), 12, model)
+	buildPoliceCar(Vector3.new(center.X + 44, 0, nearZ + 14), -32, model)
+	buildPoliceCar(Vector3.new(center.X + 130, 0, nearZ - 40), 74, model)
 
 	for i = 1, HangarConfig.CITY_CHOPPERS do
 		local chopperModel, rotor = buildChopperModel(model)

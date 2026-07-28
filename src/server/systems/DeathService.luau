@@ -11,6 +11,7 @@ local MissionConfig = require(script.Parent.MissionConfig)
 local MissionService = require(script.Parent.MissionService)
 local DistanceTracker = require(script.Parent.DistanceTracker)
 local ProfileManager = require(script.Parent.ProfileManager)
+local MissionGoals = require(script.Parent.MissionGoals)
 local MonetizationService = require(script.Parent.MonetizationService)
 local ProductsConfig = require(ReplicatedStorage.Shared.config.ProductsConfig)
 local ZombieAI = require(script.Parent.ZombieAI)
@@ -36,11 +37,16 @@ local tokenCounter = 0
 local function computeRewards(player: Player)
 	local distance = math.floor(DistanceTracker.getDistance(player))
 	local multiplier = RewardMultiplier.compute(MissionConfig.getDifficulty().id, MissionState.getModifiers())
+	MissionGoals.report(player, "Distance", distance)
+	local goals = MissionGoals.completed(player)
+	local bonus = MissionGoals.bonusCredits(player)
 	return {
 		distance = distance,
 		xp = math.floor(distance / 5),
-		credits = math.floor(distance / 10 * multiplier),
+		credits = math.floor(distance / 10 * multiplier) + bonus,
 		multiplier = multiplier,
+		goals = goals,
+		goalBonus = bonus,
 	}
 end
 
@@ -55,6 +61,7 @@ end
 local function returnToHub(player: Player)
 	pending[player] = nil
 	revivesUsed[player] = nil
+	MissionGoals.endRun(player)
 	MissionService.removeFromMission(player)
 	player:SetAttribute("FlowPhase", "Hub")
 	player:LoadCharacter()

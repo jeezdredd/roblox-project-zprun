@@ -11,7 +11,7 @@ local MapsConfig = {}
 
 MapsConfig.DEFAULT_ID = "City"
 
-MapsConfig.order = { "City", "Forest", "Mixed" }
+MapsConfig.order = { "City", "Forest", "Farmland", "Mixed" }
 
 MapsConfig.maps = {
 	City = {
@@ -26,10 +26,16 @@ MapsConfig.maps = {
 		locationIds = { "Forest", "Wasteland" },
 		ambientTint = Color3.fromRGB(100, 125, 95),
 	},
+	Farmland = {
+		id = "Farmland",
+		displayName = "Farmland",
+		locationIds = { "Farmstead", "Cornfield" },
+		ambientTint = Color3.fromRGB(150, 128, 92),
+	},
 	Mixed = {
 		id = "Mixed",
 		displayName = "Mixed Route",
-		locationIds = { "City", "Forest", "Wasteland" },
+		locationIds = { "City", "Forest", "Wasteland", "Farmstead", "Cornfield" },
 		ambientTint = Color3.fromRGB(118, 120, 118),
 	},
 } :: { [string]: MapConfig }

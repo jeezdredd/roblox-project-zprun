@@ -188,6 +188,12 @@ local function build()
 end
 
 local function actionTextFor(entry: any): (string, Color3, boolean)
+	if entry.kind == "Loadout" then
+		if entry.equipped then
+			return "IN LOADOUT", UiTheme.OK, true
+		end
+		return "ADD TO LOADOUT", UiTheme.ACCENT, true
+	end
 	if entry.kind == "Skin" then
 		if entry.equipped then
 			return "EQUIPPED", UiTheme.TEXT_DIM, false
@@ -206,7 +212,7 @@ local function actionTextFor(entry: any): (string, Color3, boolean)
 	return string.format("UPGRADE  $%d", entry.price), (if entry.affordable then UiTheme.ACCENT else UiTheme.DANGER), entry.affordable
 end
 
-local function purchase(entryId: string)
+local function purchase(entryId: string, kind: string)
 	local vendorId = currentVendor
 	if busy or not vendorId then
 		return
@@ -218,7 +224,7 @@ local function purchase(entryId: string)
 	end
 	task.spawn(function()
 		local ok, response = pcall(function()
-			return Remotes.getFunction(Remotes.Function.ShopPurchase):InvokeServer(vendorId, entryId)
+			return Remotes.getFunction(Remotes.Function.ShopPurchase):InvokeServer(vendorId, entryId, kind)
 		end)
 		busy = false
 		if not ok or typeof(response) ~= "table" then
@@ -280,7 +286,7 @@ function ShopGui.render(catalog: any)
 		action.AutoButtonColor = enabled
 		if enabled then
 			action.Activated:Connect(function()
-				purchase(entry.id)
+				purchase(entry.id, entry.kind)
 			end)
 		end
 

@@ -9,6 +9,7 @@ local SkillsConfig = require(ReplicatedStorage.Shared.config.SkillsConfig)
 local SkinsConfig = require(ReplicatedStorage.Shared.config.SkinsConfig)
 local ProfileManager = require(script.Parent.ProfileManager)
 local SkinService = require(script.Parent.SkinService)
+local WeaponService = require(script.Parent.WeaponService)
 
 local ShopService = {}
 
@@ -84,6 +85,35 @@ local function weaponEntries(data: ProfileManager.ProfileData): { CatalogEntry }
 	return entries
 end
 
+local LOADOUT_SLOTS = 2
+
+local function loadoutEntries(data: ProfileManager.ProfileData): { CatalogEntry }
+	local entries: { CatalogEntry } = {}
+	for _, weaponId in WeaponsConfig.order do
+		local config = WeaponsConfig.get(weaponId)
+		local progress = data.WeaponsOwned[weaponId]
+		if not config or not progress then
+			continue
+		end
+		local slot = table.find(data.Loadout, weaponId)
+		table.insert(entries, {
+			id = weaponId,
+			kind = "Loadout",
+			displayName = config.displayName,
+			description = string.format("Loadout slot · %s · L%d", config.class, progress.level),
+			price = 0,
+			level = progress.level,
+			maxLevel = 0,
+			owned = true,
+			affordable = true,
+			equipped = slot ~= nil,
+			xp = 0,
+			xpNeeded = 0,
+		})
+	end
+	return entries
+end
+
 local function skillEntries(data: ProfileManager.ProfileData): { CatalogEntry }
 	local entries: { CatalogEntry } = {}
 	for _, skillId in SkillsConfig.order do
@@ -144,7 +174,12 @@ local function buildCatalog(player: Player, vendorId: string): Catalog?
 		return nil
 	end
 	local entries: { CatalogEntry }
-	if vendorId == "Gunsmith" or vendorId == "WeaponDealer" then
+	if vendorId == "Gunsmith" then
+		entries = weaponEntries(data)
+		for _, entry in loadoutEntries(data) do
+			table.insert(entries, entry)
+		end
+	elseif vendorId == "WeaponDealer" then
 		entries = weaponEntries(data)
 	elseif vendorId == "Medbay" then
 		entries = skillEntries(data)
@@ -218,8 +253,31 @@ local function purchaseSkin(player: Player, data: ProfileManager.ProfileData, sk
 	return true, config.displayName .. " equipped"
 end
 
-local function onPurchase(player: Player, vendorId: any, entryId: any): any
+local function toggleLoadout(data: ProfileManager.ProfileData, weaponId: string): (boolean, string)
+	local config = WeaponsConfig.get(weaponId)
+	if not config or not data.WeaponsOwned[weaponId] then
+		return false, "Weapon not owned"
+	end
+	local slot = table.find(data.Loadout, weaponId)
+	if slot then
+		if #data.Loadout <= 1 then
+			return false, "Need at least one weapon"
+		end
+		table.remove(data.Loadout, slot)
+		return true, config.displayName .. " removed from loadout"
+	end
+	if #data.Loadout >= LOADOUT_SLOTS then
+		table.remove(data.Loadout, 1)
+	end
+	table.insert(data.Loadout, weaponId)
+	return true, config.displayName .. " added to loadout"
+end
+
+local function onPurchase(player: Player, vendorId: any, entryId: any, kind: any): any
 	if typeof(vendorId) ~= "string" or typeof(entryId) ~= "string" then
+		return { ok = false, message = "Bad request" }
+	end
+	if kind ~= nil and typeof(kind) ~= "string" then
 		return { ok = false, message = "Bad request" }
 	end
 	if not throttle(player) then
@@ -234,21 +292,26 @@ local function onPurchase(player: Player, vendorId: any, entryId: any): any
 	if not catalog then
 		return { ok = false, message = "Unknown vendor" }
 	end
-	local allowed = false
+	local matched: CatalogEntry? = nil
 	for _, entry in catalog.entries do
-		if entry.id == entryId then
-			allowed = true
+		if entry.id == entryId and (kind == nil or entry.kind == kind) then
+			matched = entry
 			break
 		end
 	end
-	if not allowed then
+	if not matched then
 		return { ok = false, message = "Item not sold here" }
 	end
 
 	local ok: boolean, message: string
-	if vendorId == "Gunsmith" or vendorId == "WeaponDealer" then
+	if matched.kind == "Loadout" then
+		ok, message = toggleLoadout(data, entryId)
+		if ok then
+			WeaponService.applyLoadout(player)
+		end
+	elseif matched.kind == "Weapon" or matched.kind == "WeaponUpgrade" then
 		ok, message = purchaseWeapon(player, data, entryId)
-	elseif vendorId == "Medbay" then
+	elseif matched.kind == "Skill" then
 		ok, message = purchaseSkill(player, data, entryId)
 	else
 		ok, message = purchaseSkin(player, data, entryId)

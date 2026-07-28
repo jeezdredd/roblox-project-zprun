@@ -23,7 +23,7 @@ export type LocationConfig = {
 
 local LocationsConfig = {}
 
-LocationsConfig.order = { "City", "Forest", "Wasteland" }
+LocationsConfig.order = { "City", "Forest", "Wasteland", "Farmstead", "Cornfield" }
 
 LocationsConfig.locations = {
 	City = {
@@ -79,6 +79,42 @@ LocationsConfig.locations = {
 		roadMarkings = false,
 		zombiesMin = 3,
 		zombiesMax = 5,
+	},
+	Farmstead = {
+		id = "Farmstead",
+		displayName = "Farmstead",
+		lengthChunksMin = 4,
+		lengthChunksMax = 7,
+		floorMaterial = Enum.Material.Ground,
+		floorColor = Color3.fromRGB(196, 176, 132),
+		floorTextureId = TexturesConfig.GROUND,
+		apronMaterial = Enum.Material.Grass,
+		apronColor = Color3.fromRGB(186, 168, 108),
+		apronTextureId = TexturesConfig.GRASS,
+		edgeProps = "farm",
+		laneStyle = "field",
+		lanePropChance = 0.5,
+		roadMarkings = false,
+		zombiesMin = 2,
+		zombiesMax = 5,
+	},
+	Cornfield = {
+		id = "Cornfield",
+		displayName = "Cornfield",
+		lengthChunksMin = 3,
+		lengthChunksMax = 6,
+		floorMaterial = Enum.Material.Ground,
+		floorColor = Color3.fromRGB(150, 138, 104),
+		floorTextureId = TexturesConfig.GROUND,
+		apronMaterial = Enum.Material.Grass,
+		apronColor = Color3.fromRGB(126, 122, 82),
+		apronTextureId = TexturesConfig.GRASS,
+		edgeProps = "corn",
+		laneStyle = "field",
+		lanePropChance = 0.3,
+		roadMarkings = false,
+		zombiesMin = 2,
+		zombiesMax = 4,
 	},
 } :: { [string]: LocationConfig }
 

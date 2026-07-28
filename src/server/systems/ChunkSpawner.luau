@@ -9,6 +9,7 @@ local LocationsConfig = require(ReplicatedStorage.Shared.config.LocationsConfig)
 local ChunkFactory = require(script.Parent.ChunkFactory)
 local DistanceTracker = require(script.Parent.DistanceTracker)
 local ZombieAI = require(script.Parent.ZombieAI)
+local AmmoCrates = require(script.Parent.AmmoCrates)
 local MissionState = require(script.Parent.MissionState)
 local MissionConfig = require(script.Parent.MissionConfig)
 
@@ -105,6 +106,7 @@ local function spawnChunk(index: number)
 
 	local zombieCount = random:NextInteger(location.zombiesMin, location.zombiesMax)
 	ZombieAI.spawnForChunk(index, model:GetPivot(), chunkLength, zombieCount)
+	AmmoCrates.spawnForChunk(index, model:GetPivot(), chunkLength, MissionConfig.getDifficulty().ammoCrateChance)
 end
 
 local function despawnChunk(index: number)
@@ -120,6 +122,7 @@ local function despawnChunk(index: number)
 	end
 	active[index] = nil
 	ZombieAI.clearChunk(index)
+	AmmoCrates.clearChunk(index)
 end
 
 local function despawnAll()

@@ -343,7 +343,154 @@ local function buildRubblePile(position: Vector3, rng: Random, parent: Instance)
 	end
 end
 
+local function buildFarmhouse(sign: number, position: Vector3, rng: Random, parent: Instance)
+	local width = rng:NextNumber(16, 26)
+	local depth = rng:NextNumber(14, 22)
+	local height = rng:NextNumber(10, 15)
+	local shell = Color3.fromRGB(rng:NextInteger(24, 34), rng:NextInteger(22, 30), rng:NextInteger(22, 28))
+
+	createPart("FarmWall", Vector3.new(width, height, depth), CFrame.new(position + Vector3.new(0, height / 2, 0)), shell, Enum.Material.WoodPlanks, parent)
+
+	local roof = Instance.new("WedgePart")
+	roof.Name = "FarmRoof"
+	roof.Size = Vector3.new(depth, height * 0.45, width)
+	roof.CFrame = CFrame.new(position + Vector3.new(0, height + height * 0.22, 0)) * CFrame.Angles(0, math.rad(90), 0)
+	roof.Anchored = true
+	roof.CanCollide = false
+	roof.CanQuery = false
+	roof.CastShadow = false
+	roof.Color = shell:Lerp(Color3.new(), 0.35)
+	roof.Material = Enum.Material.Wood
+	roof.Parent = parent
+
+	local porch = createPart(
+		"FarmPorch",
+		Vector3.new(width * 0.8, 0.6, 4),
+		CFrame.new(position + Vector3.new(0, 1.4, -sign * (depth / 2 + 2))),
+		shell:Lerp(Color3.new(), 0.2),
+		Enum.Material.WoodPlanks,
+		parent
+	)
+	porch.CanCollide = false
+	for _, offset in { -0.36, 0.36 } do
+		createPart(
+			"PorchPost",
+			Vector3.new(0.5, 4.6, 0.5),
+			CFrame.new(position + Vector3.new(width * offset, 3.7, -sign * (depth / 2 + 3.6))),
+			shell:Lerp(Color3.new(), 0.2),
+			Enum.Material.Wood,
+			parent
+		)
+	end
+end
+
+local function buildTelegraphPole(position: Vector3, parent: Instance): BasePart
+	local pole = createPart(
+		"TelegraphPole",
+		Vector3.new(0.9, 26, 0.9),
+		CFrame.new(position + Vector3.new(0, 13, 0)),
+		Color3.fromRGB(58, 46, 36),
+		Enum.Material.Wood,
+		parent
+	)
+	createPart(
+		"PoleCross",
+		Vector3.new(7, 0.5, 0.5),
+		CFrame.new(position + Vector3.new(0, 23.4, 0)),
+		Color3.fromRGB(52, 42, 32),
+		Enum.Material.Wood,
+		parent
+	).CanCollide = false
+
+	local attachment = Instance.new("Attachment")
+	attachment.Name = "WireAnchor"
+	attachment.Position = Vector3.new(0, 10.4, 0)
+	attachment.Parent = pole
+	return pole
+end
+
+local function buildFencePost(position: Vector3, rng: Random, parent: Instance)
+	local post = createPart(
+		"FencePost",
+		Vector3.new(0.4, rng:NextNumber(4, 5.4), 0.4),
+		CFrame.new(position + Vector3.new(0, 2.4, 0)) * CFrame.Angles(0, rng:NextNumber(-0.2, 0.2), rng:NextNumber(-0.06, 0.06)),
+		Color3.fromRGB(64, 52, 40),
+		Enum.Material.Wood,
+		parent
+	)
+	post.CanCollide = false
+end
+
+local function buildDryGrass(position: Vector3, rng: Random, parent: Instance)
+	for i = 1, rng:NextInteger(3, 6) do
+		local blade = createPart(
+			"DryGrass",
+			Vector3.new(rng:NextNumber(1.4, 2.6), rng:NextNumber(3, 5.5), 0.14),
+			CFrame.new(position + Vector3.new(rng:NextNumber(-3, 3), 2, rng:NextNumber(-3, 3)))
+				* CFrame.Angles(0, rng:NextNumber(0, math.pi), math.rad(rng:NextNumber(-8, 8))),
+			Color3.fromRGB(rng:NextInteger(150, 186), rng:NextInteger(128, 156), rng:NextInteger(64, 88)),
+			Enum.Material.Grass,
+			parent
+		)
+		blade.CanCollide = false
+		blade.CanQuery = false
+		blade.CastShadow = false
+		if i > 4 then
+			break
+		end
+	end
+end
+
+local function buildCornWall(position: Vector3, rng: Random, parent: Instance)
+	local width = rng:NextNumber(16, 26)
+	local wall = createPart(
+		"CornWall",
+		Vector3.new(width, rng:NextNumber(13, 17), rng:NextNumber(10, 18)),
+		CFrame.new(position + Vector3.new(0, 7.5, 0)) * CFrame.Angles(0, rng:NextNumber(-0.15, 0.15), 0),
+		Color3.fromRGB(rng:NextInteger(26, 38), rng:NextInteger(30, 42), rng:NextInteger(20, 28)),
+		Enum.Material.Grass,
+		parent
+	)
+	wall.CanCollide = false
+
+	for _ = 1, rng:NextInteger(4, 7) do
+		local stalk = createPart(
+			"CornStalk",
+			Vector3.new(0.3, rng:NextNumber(8, 12), 0.3),
+			CFrame.new(position + Vector3.new(rng:NextNumber(-width / 2, width / 2), 5, rng:NextNumber(-6, 6)))
+				* CFrame.Angles(math.rad(rng:NextNumber(-6, 6)), rng:NextNumber(0, math.pi), math.rad(rng:NextNumber(-6, 6))),
+			Color3.fromRGB(rng:NextInteger(40, 58), rng:NextInteger(48, 66), rng:NextInteger(28, 38)),
+			Enum.Material.Grass,
+			parent
+		)
+		stalk.CanCollide = false
+		stalk.CanQuery = false
+		stalk.CastShadow = false
+	end
+end
+
 local function buildObstacle(kind: string, position: Vector3, rng: Random, parent: Instance)
+	if kind == "farm" then
+		local roll = rng:NextNumber()
+		if roll < 0.35 then
+			buildCar(position, rng:NextNumber(-0.5, 0.5), rng, parent)
+		elseif roll < 0.6 then
+			buildLog(position, rng, parent)
+		elseif roll < 0.85 then
+			buildBoulder(position, rng, parent)
+		else
+			buildCrash(position, rng, parent)
+		end
+		return
+	end
+	if kind == "corn" then
+		if rng:NextNumber() < 0.6 then
+			buildLog(position, rng, parent)
+		else
+			buildBoulder(position, rng, parent)
+		end
+		return
+	end
 	if kind == "buildings" then
 		local roll = rng:NextNumber()
 		if roll < 0.3 then
@@ -387,8 +534,52 @@ local function buildEdgeProp(kind: string, sign: number, position: Vector3, rng:
 		buildBuilding(sign, position, rng, parent)
 	elseif kind == "trees" then
 		buildTree(position, rng, parent)
+	elseif kind == "farm" then
+		local roll = rng:NextNumber()
+		if roll < 0.3 then
+			buildFarmhouse(sign, position, rng, parent)
+		elseif roll < 0.5 then
+			buildTree(position, rng, parent)
+		else
+			buildDryGrass(position, rng, parent)
+			buildFencePost(position, rng, parent)
+		end
+	elseif kind == "corn" then
+		buildCornWall(position, rng, parent)
 	else
 		buildRuin(position, rng:NextNumber(0, math.pi * 2), rng, parent)
+	end
+end
+
+local function buildWireRun(kind: string, sign: number, zStart: number, zEnd: number, x: number, rng: Random, parent: Instance)
+	if kind ~= "farm" and kind ~= "corn" then
+		return
+	end
+	local spacing = 58
+	local previous: Attachment? = nil
+	local z = zStart
+	while z <= zEnd do
+		local pole = buildTelegraphPole(Vector3.new(x + rng:NextNumber(-3, 3), 0.5, z), parent)
+		local anchor = pole:FindFirstChild("WireAnchor") :: Attachment
+		if previous and anchor then
+			local wire = Instance.new("Beam")
+			wire.Name = "PowerWire"
+			wire.Attachment0 = previous
+			wire.Attachment1 = anchor
+			wire.Width0 = 0.12
+			wire.Width1 = 0.12
+			wire.CurveSize0 = -6
+			wire.CurveSize1 = -6
+			wire.Color = ColorSequence.new(Color3.fromRGB(24, 22, 20))
+			wire.LightInfluence = 0
+			wire.FaceCamera = true
+			wire.Parent = previous.Parent
+		end
+		previous = anchor
+		z += spacing
+	end
+	if sign < 0 then
+		return
 	end
 end
 
@@ -502,7 +693,34 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	local fieldHalf = laneWidth / 2 - 10
 	local obstacleTotal = math.max(1, math.floor(obstacleCount * GameConstants.FIELD_OBSTACLE_SCALE + 0.5))
 
-	if isField then
+	if effective.edgeProps == "farm" or effective.edgeProps == "corn" then
+		local isCorn = effective.edgeProps == "corn"
+		for _ = 1, if isCorn then 4 else obstacleTotal do
+			local x = rng:NextNumber(-fieldHalf, fieldHalf)
+			local z = rng:NextNumber(-chunkLength / 2 + 8, chunkLength / 2 - 8)
+			if isCorn then
+				buildCornWall(Vector3.new(x, 0.5, z), rng, model)
+			else
+				buildDryGrass(Vector3.new(x, 0.5, z), rng, model)
+			end
+		end
+		if not isCorn then
+			for _ = 1, 3 do
+				local x = rng:NextNumber(-fieldHalf, fieldHalf)
+				local z = rng:NextNumber(-chunkLength / 2 + 16, chunkLength / 2 - 16)
+				buildTree(Vector3.new(x, 0.5, z), rng, model)
+			end
+		end
+		buildWireRun(
+			effective.edgeProps,
+			1,
+			-chunkLength / 2 + 10,
+			chunkLength / 2 - 10,
+			laneWidth / 2 + barrierThickness + 16,
+			rng,
+			model
+		)
+	elseif isField then
 		for _ = 1, obstacleTotal + 6 do
 			local x = rng:NextNumber(-fieldHalf, fieldHalf)
 			local z = rng:NextNumber(-chunkLength / 2 + 8, chunkLength / 2 - 8)

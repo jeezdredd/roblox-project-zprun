@@ -9,6 +9,7 @@ local MapsConfig = require(ReplicatedStorage.Shared.config.MapsConfig)
 local ModifiersConfig = require(ReplicatedStorage.Shared.config.ModifiersConfig)
 local Squad = require(ReplicatedStorage.Shared.types.Squad)
 local MissionState = require(script.Parent.MissionState)
+local MissionGoals = require(script.Parent.MissionGoals)
 local MissionConfig = require(script.Parent.MissionConfig)
 local FlowService = require(script.Parent.FlowService)
 local TrackBuilder = require(script.Parent.TrackBuilder)
@@ -116,6 +117,7 @@ function MissionService.startSquad(players: { Player }, config: Squad.SquadConfi
 	local count = #players
 	for index, player in players do
 		MissionState.addParticipant(player)
+		MissionGoals.beginRun(player)
 		DistanceTracker.beginRun(player)
 		FlowService.setPhase(player, "Mission")
 		local lateralOffset = (index - (count + 1) / 2) * HangarConfig.SQUAD_SPAWN_SPACING

@@ -21,6 +21,7 @@ export type ProfileData = {
 	SkinsOwned: { [string]: boolean },
 	EquippedSkin: string,
 	PurchaseHistory: { [string]: boolean },
+	Loadout: { string },
 	Settings: { [string]: any },
 	StatsLifetime: {
 		Distance: number,
@@ -30,7 +31,7 @@ export type ProfileData = {
 }
 
 local TEMPLATE: ProfileData = {
-	Version = 1,
+	Version = 2,
 	Credits = 0,
 	XP = 0,
 	WeaponsOwned = {
@@ -40,6 +41,7 @@ local TEMPLATE: ProfileData = {
 	SkinsOwned = { Recruit = true },
 	EquippedSkin = "Recruit",
 	PurchaseHistory = {},
+	Loadout = { "Pistol" },
 	Settings = {},
 	StatsLifetime = {
 		Distance = 0,
@@ -72,6 +74,12 @@ local useMock = not dataStoresAvailable()
 local function migrate(data: ProfileData)
 	if data.Version < 1 then
 		data.Version = 1
+	end
+	if data.Version < 2 then
+		if #data.Loadout == 0 then
+			data.Loadout = { "Pistol" }
+		end
+		data.Version = 2
 	end
 end
 

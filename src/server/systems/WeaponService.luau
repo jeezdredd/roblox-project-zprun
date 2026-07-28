@@ -8,6 +8,7 @@ local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local ProfileManager = require(script.Parent.ProfileManager)
 local SkillEffects = require(script.Parent.SkillEffects)
+local MissionGoals = require(script.Parent.MissionGoals)
 
 local WeaponService = {}
 
@@ -57,6 +58,13 @@ local function ownsWeapon(player: Player, weaponId: string): boolean
 		return weaponId == "Pistol"
 	end
 	return data.WeaponsOwned[weaponId] ~= nil
+end
+
+local function syncLoadout(player: Player)
+	local data = ProfileManager.get(player)
+	local loadout = if data then data.Loadout else { "Pistol" }
+	player:SetAttribute("LoadoutSlot1", loadout[1] or "Pistol")
+	player:SetAttribute("LoadoutSlot2", loadout[2] or "")
 end
 
 local function onEquip(player: Player, weaponId: any)
@@ -163,6 +171,7 @@ local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, res
 	humanoid:TakeDamage(damage)
 	if wasAlive and humanoid.Health <= 0 then
 		ProfileManager.addKill(player)
+		MissionGoals.report(player, "Kills", 1)
 		if progress then
 			progress.xp += WeaponsConfig.XP_PER_KILL
 		end
@@ -291,6 +300,36 @@ local function onReload(player: Player)
 	end)
 end
 
+function WeaponService.applyLoadout(player: Player)
+	syncLoadout(player)
+	local data = ProfileManager.get(player)
+	if not data then
+		return
+	end
+	local state = states[player]
+	if state and table.find(data.Loadout, state.weaponId) then
+		return
+	end
+	local primary = data.Loadout[1]
+	if typeof(primary) == "string" then
+		onEquip(player, primary)
+	end
+end
+
+function WeaponService.addReserve(player: Player, rounds: number)
+	local state = states[player]
+	if not state or rounds <= 0 then
+		return
+	end
+	local config = WeaponsConfig.get(state.weaponId)
+	if not config then
+		return
+	end
+	local cap = config.magSize * config.reserveMags
+	state.reserve = math.min(state.reserve + math.floor(rounds), cap)
+	syncAttributes(player, state)
+end
+
 function WeaponService.refillAmmo(player: Player)
 	savedAmmo[player] = nil
 	local state = states[player]
@@ -318,6 +357,13 @@ function WeaponService.init()
 		local state = defaultState("Pistol")
 		states[player] = state
 		syncAttributes(player, state)
+	end)
+	ProfileManager.onLoaded(function(player, data)
+		syncLoadout(player)
+		local primary = data.Loadout[1]
+		if typeof(primary) == "string" and WeaponsConfig.get(primary) then
+			onEquip(player, primary)
+		end
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		states[player] = nil

@@ -105,8 +105,8 @@ local function tryReload()
 end
 
 local function equipSlot(slot: number)
-	local weaponId = WeaponsConfig.order[slot]
-	if not weaponId then
+	local weaponId = player:GetAttribute("LoadoutSlot" .. tostring(slot))
+	if typeof(weaponId) ~= "string" or weaponId == "" then
 		return
 	end
 	Remotes.getEvent(Remotes.Event.WeaponEquip):FireServer(weaponId)
@@ -239,10 +239,9 @@ function WeaponController.init()
 			equipSlot(1)
 		elseif input.KeyCode == Enum.KeyCode.Two then
 			equipSlot(2)
-		elseif input.KeyCode == Enum.KeyCode.Three then
-			equipSlot(3)
-		elseif input.KeyCode == Enum.KeyCode.Four then
-			equipSlot(4)
+		elseif input.KeyCode == Enum.KeyCode.Q then
+			local current = player:GetAttribute("WeaponId")
+			equipSlot(if current == player:GetAttribute("LoadoutSlot1") then 2 else 1)
 		end
 	end)
 	UserInputService.InputEnded:Connect(function(input)

@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 
 local SettingsService = require(script.Parent.SettingsService)
+local ZombieAudio = require(script.Parent.ZombieAudio)
 
 local GoreController = {}
 
@@ -70,11 +71,14 @@ local function watchCharacter(character: Model)
 	local lastHealth = humanoid.Health
 	humanoid.HealthChanged:Connect(function(health)
 		if health < lastHealth - 0.001 and health > 0 then
-			if SettingsService.get("bloodEnabled") then
-				local root = character:FindFirstChild("HumanoidRootPart")
-				if root and root:IsA("BasePart") then
+			local root = character:FindFirstChild("HumanoidRootPart")
+			if root and root:IsA("BasePart") then
+				ZombieAudio.playBite(root.Position)
+				if SettingsService.get("bloodEnabled") then
 					spawnBlood(root)
 				end
+			end
+			if SettingsService.get("bloodEnabled") then
 				flashVignette()
 			end
 		end

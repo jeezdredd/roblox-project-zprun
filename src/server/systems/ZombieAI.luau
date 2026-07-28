@@ -34,6 +34,7 @@ local zombiesFolder: Folder? = nil
 local totalWeight = 0
 local tickAccumulator = 0
 local corpseLure: { pos: Vector3, expires: number }? = nil
+local lastAggroState = false
 
 for _, config in ZombiesConfig do
 	totalWeight += config.weight
@@ -252,6 +253,11 @@ local function aiStep()
 	local difficulty = MissionConfig.getDifficulty()
 	local speedScale = difficulty.zombieSpeedMultiplier * (1 + getModifierSpeedBonus())
 	local aggroActive = difficulty.zombiesChase and DistanceTracker.getMaxDistance() >= difficulty.aggroDistance
+
+	if aggroActive ~= lastAggroState then
+		lastAggroState = aggroActive
+		Workspace:SetAttribute("ZombiesAggro", aggroActive)
+	end
 
 	local lure = corpseLure
 	local lureActive = lure ~= nil and os.clock() < lure.expires

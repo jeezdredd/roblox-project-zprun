@@ -308,151 +308,144 @@
     "status": "approved"
   },
   "audio/foley/gear_01": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
     "file": "assets/audio/foley/gear_01.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "127890120174624",
+    "status": "approved"
   },
   "audio/foley/gear_02": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
     "file": "assets/audio/foley/gear_02.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "99795581531690",
+    "status": "approved"
   },
   "audio/foley/gear_03": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
     "file": "assets/audio/foley/gear_03.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "85374366319950",
+    "status": "approved"
   },
   "audio/foley/land_soft": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
     "file": "assets/audio/foley/land_soft.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "101639095236264",
+    "status": "approved"
   },
   "audio/foley/land_hard": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
     "file": "assets/audio/foley/land_hard.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "72510582692705",
+    "status": "approved"
   },
   "audio/foley/cloth_whoosh": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
     "file": "assets/audio/foley/cloth_whoosh.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "95568169859931",
+    "status": "approved"
   },
   "audio/player/heartbeat": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://commons.wikimedia.org/wiki/File:Heartbeat_mitral_valve_150_bpm.ogg",
+    "license": "Public domain",
     "file": "assets/audio/player/heartbeat.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "95498531760189",
+    "status": "approved"
   },
   "audio/player/wind": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://opengameart.org/content/breeze",
+    "license": "CC0",
     "file": "assets/audio/player/wind.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "115486628564450",
+    "status": "approved"
   },
   "audio/zombie/idle_01": {
-    "source": "pending",
-    "license": "pending",
-    "file": "assets/audio/zombie/idle_01.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "source": "https://opengameart.org/content/zombie-noises",
+    "license": "CC0",
+    "file": "assets/audio/zombie/idle_01.mp3",
+    "assetId": "127122495679051",
+    "status": "approved"
   },
   "audio/zombie/idle_02": {
-    "source": "pending",
-    "license": "pending",
-    "file": "assets/audio/zombie/idle_02.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "source": "https://opengameart.org/content/zombie-noises",
+    "license": "CC0",
+    "file": "assets/audio/zombie/idle_02.mp3",
+    "assetId": "119778333739075",
+    "status": "approved"
   },
   "audio/zombie/alert_bark": {
-    "source": "pending",
-    "license": "pending",
-    "file": "assets/audio/zombie/alert_bark.ogg",
-    "assetId": 0,
-    "status": "pending"
-  },
-  "audio/zombie/bite": {
-    "source": "pending",
-    "license": "pending",
-    "file": "assets/audio/zombie/bite.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "source": "https://opengameart.org/content/zombie-noises",
+    "license": "CC0",
+    "file": "assets/audio/zombie/alert_bark.mp3",
+    "assetId": "113759209784474",
+    "status": "approved"
   },
   "audio/zombie/horde_walla": {
-    "source": "pending",
-    "license": "pending",
-    "file": "assets/audio/zombie/horde_walla.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "source": "https://opengameart.org/content/zombie-noises",
+    "license": "CC0",
+    "file": "assets/audio/zombie/horde_walla.mp3",
+    "assetId": "84404158352505",
+    "status": "approved"
   },
   "audio/world/fire_crackle": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://commons.wikimedia.org/wiki/File:Bones_breaking_wood_fire_ice_crackling.ogg",
+    "license": "Public domain",
     "file": "assets/audio/world/fire_crackle.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "89851532795463",
+    "status": "approved"
   },
   "audio/world/distant_boom": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://opengameart.org/content/big-low-frequency-explosion-boom",
+    "license": "CC0",
     "file": "assets/audio/world/distant_boom.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "101875143084608",
+    "status": "approved"
   },
   "audio/world/hangar_roomtone": {
-    "source": "pending",
-    "license": "pending",
-    "file": "assets/audio/world/hangar_roomtone.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "source": "https://opengameart.org/content/abandoned-building-ambience",
+    "license": "CC0",
+    "file": "assets/audio/world/hangar_roomtone.mp3",
+    "assetId": "108834904648009",
+    "status": "approved"
   },
   "audio/ui/hover": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://kenney.nl/assets/interface-sounds",
+    "license": "CC0",
     "file": "assets/audio/ui/hover.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "114789742656759",
+    "status": "approved"
   },
   "audio/ui/click": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://kenney.nl/assets/interface-sounds",
+    "license": "CC0",
     "file": "assets/audio/ui/click.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "133624826489555",
+    "status": "approved"
   },
   "audio/ui/countdown_tick": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://kenney.nl/assets/interface-sounds",
+    "license": "CC0",
     "file": "assets/audio/ui/countdown_tick.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "82455130321663",
+    "status": "approved"
   },
   "audio/ui/countdown_go": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://kenney.nl/assets/interface-sounds",
+    "license": "CC0",
     "file": "assets/audio/ui/countdown_go.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "129265379079595",
+    "status": "approved"
   },
   "audio/ui/reward_tick": {
-    "source": "pending",
-    "license": "pending",
+    "source": "https://kenney.nl/assets/interface-sounds",
+    "license": "CC0",
     "file": "assets/audio/ui/reward_tick.ogg",
-    "assetId": 0,
-    "status": "pending"
+    "assetId": "113785737468412",
+    "status": "approved"
   },
   "audio/unused/step_gravel_loop": {
     "source": "https://commons.wikimedia.org/wiki/File:Walking-on-gravel-38827.ogg",
@@ -593,5 +586,33 @@
     "assetId": 0,
     "status": "pending",
     "note": "Zombie feeding on corpse"
+  },
+  "audio/zombie/bite_01": {
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "file": "assets/audio/zombie/bite_01.ogg",
+    "assetId": "106969970034751",
+    "status": "approved"
+  },
+  "audio/zombie/bite_02": {
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "file": "assets/audio/zombie/bite_02.ogg",
+    "assetId": "98510188553476",
+    "status": "approved"
+  },
+  "audio/zombie/bite_03": {
+    "source": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "file": "assets/audio/zombie/bite_03.ogg",
+    "assetId": "94505098896495",
+    "status": "approved"
+  },
+  "audio/world/radio_01": {
+    "source": "https://opengameart.org/content/radio-call",
+    "license": "CC0",
+    "file": "assets/audio/world/radio_01.ogg",
+    "assetId": "109089322959902",
+    "status": "reviewing"
   }
 }

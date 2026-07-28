@@ -18,6 +18,7 @@ local menuMusic: Sound?
 local missionMusic: Sound?
 local citySiren: Sound?
 local musicVolume = AudioConfig.MENU_MUSIC_VOLUME
+local duckScale = 1
 local masterVolume = 0.7
 local muted = false
 
@@ -133,7 +134,12 @@ end
 
 function MusicController.setMusicVolume(value: number)
 	musicVolume = math.clamp(value, 0, 1)
-	musicGroup.Volume = musicVolume
+	musicGroup.Volume = musicVolume * duckScale
+end
+
+function MusicController.setDuck(reduction: number)
+	duckScale = math.clamp(1 - reduction, 0.1, 1)
+	musicGroup.Volume = musicVolume * duckScale
 end
 
 function MusicController.setMuted(value: boolean)

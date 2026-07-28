@@ -23,6 +23,9 @@ local lastShotAt = 0
 local lastDryfireAt = 0
 local predictedMag = 0
 local localReloadUntil = 0
+local burstShots = 0
+local lastBurstAt = 0
+local tracerCounter = 0
 
 local ammoLabel: TextLabel? = nil
 local weaponLabel: TextLabel? = nil
@@ -74,6 +77,8 @@ local function tryFire()
 
 	lastShotAt = now
 	predictedMag -= 1
+	burstShots += 1
+	lastBurstAt = now
 	local camera = Workspace.CurrentCamera
 	local origin = camera.CFrame.Position
 	local direction = camera.CFrame.LookVector
@@ -209,11 +214,25 @@ local function onWeaponHit(kind: string, ...: any)
 	if kind == "Shot" then
 		local origin, hits, shooter, weaponId = ...
 		local isLocal = shooter == player
+		local config = if typeof(weaponId) == "string" then WeaponsConfig.get(weaponId) else nil
+		tracerCounter += 1
+		local everyThird = config ~= nil and config.auto
+		local showTracer = not everyThird or tracerCounter % 3 == 0
 		if typeof(hits) == "table" then
+			local from = if isLocal then Viewmodel.getMuzzlePosition() else origin
 			for _, hit in hits :: { { position: Vector3, normal: Vector3, material: string } } do
 				WeaponVfx.impact(hit.position, hit.normal, hit.material)
-				local from = if isLocal then Viewmodel.getMuzzlePosition() else origin
-				WeaponVfx.tracer(from, hit.position)
+				if showTracer then
+					WeaponVfx.tracer(from, hit.position)
+				end
+			end
+			if #hits == 0 and showTracer and config and typeof(origin) == "Vector3" then
+				local direction = if isLocal
+					then Workspace.CurrentCamera.CFrame.LookVector
+					else Vector3.new(0, 0, 0)
+				if direction.Magnitude > 0 then
+					WeaponVfx.tracer(from, from + direction * config.range)
+				end
 			end
 		end
 		if not isLocal and typeof(origin) == "Vector3" and typeof(weaponId) == "string" then
@@ -251,12 +270,18 @@ function WeaponController.init()
 	end)
 
 	RunService.Heartbeat:Connect(function()
-		if not triggerHeld then
+		if triggerHeld then
+			local config = currentConfig()
+			if config and config.auto then
+				tryFire()
+			end
 			return
 		end
-		local config = currentConfig()
-		if config and config.auto then
-			tryFire()
+		if burstShots >= 3 and os.clock() - lastBurstAt > 0.35 then
+			WeaponVfx.barrelSmoke(Viewmodel.getMuzzleAttachment())
+			burstShots = 0
+		elseif burstShots > 0 and os.clock() - lastBurstAt > 0.35 then
+			burstShots = 0
 		end
 	end)
 

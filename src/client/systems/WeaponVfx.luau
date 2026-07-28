@@ -108,6 +108,31 @@ function WeaponVfx.tracer(from: Vector3, to: Vector3)
 	end)
 end
 
+function WeaponVfx.barrelSmoke(attachment: Attachment?)
+	if not attachment then
+		return
+	end
+	local smoke = Instance.new("ParticleEmitter")
+	smoke.Name = "BarrelSmoke"
+	smoke.Color = ColorSequence.new(Color3.fromRGB(160, 158, 152))
+	smoke.Size = NumberSequence.new(0.2, 1.6)
+	smoke.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.55),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	smoke.Lifetime = NumberRange.new(0.7, 1.4)
+	smoke.Speed = NumberRange.new(1.5, 3)
+	smoke.SpreadAngle = Vector2.new(18, 18)
+	smoke.Acceleration = Vector3.new(0, 2.5, 0)
+	smoke.Rate = 0
+	smoke.LightInfluence = 0.8
+	smoke.Parent = attachment
+	smoke:Emit(10)
+	task.delay(2, function()
+		smoke:Destroy()
+	end)
+end
+
 function WeaponVfx.impact(position: Vector3, normal: Vector3, materialName: string)
 	local anchor = makeGhostPart("Impact", Vector3.new(0.2, 0.2, 0.2), CFrame.lookAt(position, position + normal))
 	anchor.Transparency = 1

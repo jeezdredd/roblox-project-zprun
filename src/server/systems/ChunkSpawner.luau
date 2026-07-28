@@ -99,7 +99,7 @@ local function spawnChunk(index: number)
 	end
 
 	local centerDistance = startOffset + index * chunkLength + chunkLength / 2
-	model:PivotTo(CFrame.new(runDirection * centerDistance))
+	model:PivotTo(CFrame.new(GameConstants.RUN_ORIGIN + runDirection * centerDistance))
 	model.Parent = chunksFolder
 	active[index] = { model = model, locationId = entry.locationId, pooled = pooled }
 

@@ -199,7 +199,7 @@ local function buildFencePanel(from: Vector3, to: Vector3, parent: Instance)
 	local delta = (to - from)
 	local length = delta.Magnitude
 	local look = CFrame.lookAt((from + to) / 2 + Vector3.new(0, 4, 0), to + Vector3.new(0, 4, 0))
-	local panel = makePart("FencePanel", Vector3.new(0.2, 8, length), look * CFrame.Angles(0, math.rad(90), 0), Color3.fromRGB(255, 255, 255), Enum.Material.SmoothPlastic, parent)
+	local panel = makePart("FencePanel", Vector3.new(0.2, 8, length), look, Color3.fromRGB(255, 255, 255), Enum.Material.SmoothPlastic, parent)
 	panel.Transparency = 1
 	panel.CanQuery = false
 	for _, face in { Enum.NormalId.Left, Enum.NormalId.Right } do

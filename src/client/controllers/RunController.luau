@@ -34,12 +34,12 @@ local function getAliveHumanoid(): Humanoid?
 end
 
 local function clampToField(root: BasePart)
-	local x = root.Position.X
-	if math.abs(x) <= wrapThreshold then
+	local offsetX = root.Position.X - GameConstants.RUN_ORIGIN.X
+	if math.abs(offsetX) <= wrapThreshold then
 		return
 	end
-	local targetX = math.sign(x) * wrapThreshold
-	root.CFrame = root.CFrame + Vector3.new(targetX - x, 0, 0)
+	local targetX = math.sign(offsetX) * wrapThreshold
+	root.CFrame = root.CFrame + Vector3.new(targetX - offsetX, 0, 0)
 end
 
 function RunController.start()

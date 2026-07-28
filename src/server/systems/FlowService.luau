@@ -7,6 +7,7 @@ local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local HangarConfig = require(ReplicatedStorage.Shared.config.HangarConfig)
 local Flow = require(ReplicatedStorage.Shared.types.Flow)
 local MissionState = require(script.Parent.MissionState)
+local WeaponService = require(script.Parent.WeaponService)
 
 local PHASE_ATTRIBUTE = "FlowPhase"
 
@@ -36,10 +37,14 @@ function FlowService.getPhase(player: Player): Flow.FlowPhase
 end
 
 function FlowService.setPhase(player: Player, phase: Flow.FlowPhase)
+	local previous = player:GetAttribute(PHASE_ATTRIBUTE)
 	player:SetAttribute(PHASE_ATTRIBUTE, phase)
 	local character = player.Character
 	if character then
 		applyHumanoidConfig(character, phase)
+	end
+	if phase == "Mission" and previous ~= "Mission" then
+		WeaponService.refillAmmo(player)
 	end
 end
 

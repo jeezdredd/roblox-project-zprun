@@ -643,20 +643,6 @@
     "assetId": "73508631092381",
     "status": "approved"
   },
-  "audio/weapons/shot_core": {
-    "source": "https://commons.wikimedia.org/wiki/File:Gunshots_8.ogg",
-    "license": "Public domain",
-    "file": "assets/audio/weapons/shot_core.ogg",
-    "assetId": "75663090422099",
-    "status": "reviewing"
-  },
-  "audio/weapons/shot_auto": {
-    "source": "https://opengameart.org/content/light-machine-gun",
-    "license": "CC0",
-    "file": "assets/audio/weapons/shot_auto.mp3",
-    "assetId": "116318686810257",
-    "status": "approved"
-  },
   "audio/weapons/mag_out": {
     "source": "https://kenney.nl/assets/impact-sounds",
     "license": "CC0",
@@ -712,5 +698,47 @@
     "file": "assets/audio/range/gong.ogg",
     "assetId": "126015144651781",
     "status": "reviewing"
+  },
+  "audio/weapons/shot_pistol": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/shot_pistol.wav",
+    "assetId": "86945440175418",
+    "status": "reviewing"
+  },
+  "audio/weapons/shot_smg": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/shot_smg.wav",
+    "assetId": "98517684232791",
+    "status": "reviewing"
+  },
+  "audio/weapons/shot_rifle": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/shot_rifle.wav",
+    "assetId": "120306703273832",
+    "status": "reviewing"
+  },
+  "audio/weapons/shot_shotgun": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/shot_shotgun.wav",
+    "assetId": "129726512346854",
+    "status": "reviewing"
+  },
+  "audio/unused/shot_core": {
+    "source": "https://commons.wikimedia.org/wiki/File:Gunshots_8.ogg",
+    "license": "Public domain",
+    "file": "assets/audio/weapons/shot_core.ogg",
+    "assetId": "75663090422099",
+    "status": "reviewing"
+  },
+  "audio/unused/shot_auto": {
+    "source": "https://opengameart.org/content/light-machine-gun",
+    "license": "CC0",
+    "file": "assets/audio/weapons/shot_auto.mp3",
+    "assetId": "116318686810257",
+    "status": "approved"
   }
 }

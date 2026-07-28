@@ -13,7 +13,7 @@ local HangarConfig = {
 	GATE_HALF_WIDTH = 62,
 	GATE_HEIGHT = 34,
 
-	RUN_START_CFRAME = CFrame.lookAt(Vector3.new(0, 5, 0), Vector3.new(0, 5, -20)),
+	RUN_START_CFRAME = CFrame.lookAt(Vector3.new(-4000, 5, 0), Vector3.new(-4000, 5, -20)),
 
 	SQUAD_CAPACITY = 3,
 	SQUAD_SPAWN_SPACING = 8,

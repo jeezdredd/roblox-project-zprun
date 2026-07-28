@@ -192,7 +192,7 @@ local function buildHelipadMarkings(padCFrame: CFrame, parent: Instance)
 			"Part",
 			"PadRing",
 			Vector3.new(3.4, 0.08, 1.2),
-			padCFrame * CFrame.new(math.cos(angle) * radius, 0.55, math.sin(angle) * radius) * CFrame.Angles(0, -angle, 0),
+			padCFrame * CFrame.new(math.cos(angle) * radius, 0.06, math.sin(angle) * radius) * CFrame.Angles(0, -angle, 0),
 			HangarConfig.TRIM_COLOR,
 			Enum.Material.SmoothPlastic,
 			parent
@@ -204,12 +204,12 @@ local function buildHelipadMarkings(padCFrame: CFrame, parent: Instance)
 
 	local barOffsets = { Vector3.new(-4, 0, 0), Vector3.new(4, 0, 0) }
 	for _, offset in barOffsets do
-		local bar = makePart("Part", "PadH", Vector3.new(1.6, 0.08, 12), padCFrame * CFrame.new(offset.X, 0.55, 0), HangarConfig.TRIM_COLOR, Enum.Material.SmoothPlastic, parent)
+		local bar = makePart("Part", "PadH", Vector3.new(1.6, 0.08, 12), padCFrame * CFrame.new(offset.X, 0.06, 0), HangarConfig.TRIM_COLOR, Enum.Material.SmoothPlastic, parent)
 		bar.CanCollide = false
 		bar.CanQuery = false
 		bar.CastShadow = false
 	end
-	local cross = makePart("Part", "PadHBar", Vector3.new(8, 0.08, 1.6), padCFrame * CFrame.new(0, 0.55, 0), HangarConfig.TRIM_COLOR, Enum.Material.SmoothPlastic, parent)
+	local cross = makePart("Part", "PadHBar", Vector3.new(8, 0.08, 1.6), padCFrame * CFrame.new(0, 0.06, 0), HangarConfig.TRIM_COLOR, Enum.Material.SmoothPlastic, parent)
 	cross.CanCollide = false
 	cross.CanQuery = false
 	cross.CastShadow = false
@@ -651,6 +651,21 @@ function HangarBuilder.build(): { Helicopter }
 
 	buildProps(model)
 	buildFloorGrime(model)
+
+	local acousticZone = makePart(
+		"Part",
+		"HangarInteriorZone",
+		Vector3.new(floorSize.X, wallHeight, floorSize.Z),
+		CFrame.new(center.X, wallHeight / 2, center.Z),
+		Color3.new(1, 1, 1),
+		Enum.Material.SmoothPlastic,
+		model
+	)
+	acousticZone.Transparency = 1
+	acousticZone.CanCollide = false
+	acousticZone.CanQuery = false
+	acousticZone.CanTouch = false
+	acousticZone:SetAttribute("AcousticSpace", "Interior")
 
 	local spawnLocation = Instance.new("SpawnLocation")
 	spawnLocation.Name = "HubSpawn"

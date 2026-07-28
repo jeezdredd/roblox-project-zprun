@@ -112,7 +112,7 @@ local function addFire(building: Part, height: number, withLight: boolean, paren
 		local lowAnchor = makePart(
 			"FireGlowLow",
 			Vector3.new(2, 2, 2),
-			CFrame.new(building.Position.X + random:NextNumber(-building.Size.X, building.Size.X), 7, building.Position.Z - building.Size.Z / 2 - random:NextNumber(8, 30)),
+			CFrame.new(building.Position.X + random:NextNumber(-building.Size.X, building.Size.X), 7, building.Position.Z + building.Size.Z / 2 + random:NextNumber(8, 30)),
 			Color3.new(0, 0, 0),
 			Enum.Material.SmoothPlastic,
 			parent
@@ -120,7 +120,7 @@ local function addFire(building: Part, height: number, withLight: boolean, paren
 		lowAnchor.Transparency = 1
 		local glow = Instance.new("PointLight")
 		glow.Color = Color3.fromRGB(255, 118, 40)
-		glow.Range = 110
+		glow.Range = 60
 		glow.Brightness = 2.2
 		glow.Parent = lowAnchor
 		table.insert(flickerLights, { light = glow, phase = random:NextNumber(0, math.pi * 2), rate = random:NextNumber(3, 7), base = 2.2 })
@@ -130,7 +130,7 @@ local function addFire(building: Part, height: number, withLight: boolean, paren
 	local sideAnchor = makePart(
 		"FacadeFire",
 		Vector3.new(2, 2, 2),
-		CFrame.new(building.Position + Vector3.new(0, random:NextNumber(-height / 4, height / 4), -building.Size.Z / 2 - 1)),
+		CFrame.new(building.Position + Vector3.new(0, random:NextNumber(-height / 4, height / 4), building.Size.Z / 2 + 1)),
 		Color3.new(0, 0, 0),
 		Enum.Material.SmoothPlastic,
 		parent
@@ -144,7 +144,7 @@ local function addFire(building: Part, height: number, withLight: boolean, paren
 		local windowGlow = makePart(
 			"BurningWindow",
 			Vector3.new(building.Size.X * 0.6, 4, 0.6),
-			CFrame.new(building.Position + Vector3.new(0, -height / 3 + i * (height / 4), -building.Size.Z / 2 - 0.4)),
+			CFrame.new(building.Position + Vector3.new(0, -height / 3 + i * (height / 4), building.Size.Z / 2 + 0.4)),
 			Color3.fromRGB(220, 116, 42),
 			Enum.Material.Neon,
 			parent
@@ -186,7 +186,7 @@ local function buildBuilding(index: number, burning: boolean, withLight: boolean
 				local band = makePart(
 					"CityWindows",
 					Vector3.new(cellWidth * 0.62, 3.6, 0.5),
-					CFrame.new(cellX, i * 20, z - depth / 2 - 0.3),
+					CFrame.new(cellX, i * 20, z + depth / 2 + 0.3),
 					Color3.fromRGB(226, 186, 128),
 					Enum.Material.Neon,
 					parent
@@ -256,7 +256,7 @@ local function buildChopperModel(parent: Instance): (Model, BasePart)
 
 	local searchlight = Instance.new("SpotLight")
 	searchlight.Color = Color3.fromRGB(255, 250, 225)
-	searchlight.Range = 220
+	searchlight.Range = 60
 	searchlight.Brightness = 4
 	searchlight.Angle = 42
 	searchlight.Face = Enum.NormalId.Bottom

@@ -17,6 +17,7 @@ local GameConstants = {
 	APRON_WIDTH = 110,
 
 	RUN_DIRECTION = Vector3.new(0, 0, -1),
+	RUN_ORIGIN = Vector3.new(-4000, 0, 0),
 	LATERAL_SPEED_WEIGHT = 0.7,
 	WALL_WRAP_MARGIN = 2,
 

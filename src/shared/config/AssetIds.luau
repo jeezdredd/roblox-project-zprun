@@ -72,6 +72,9 @@ local AssetIds = {
 			heartbeat = 95498531760189,
 			wind = 115486628564450,
 		},
+		range = {
+			gong = 126015144651781,
+		},
 		ui = {
 			click = 133624826489555,
 			countdown_go = 129265379079595,
@@ -80,8 +83,23 @@ local AssetIds = {
 			reward_tick = 113785737468412,
 		},
 		unused = {
+			shot_auto = 116318686810257,
+			shot_core = 75663090422099,
 			siren_police_rejected = 0,
 			step_gravel_loop = 75914567135656,
+		},
+		weapons = {
+			bolt = 118765487481144,
+			dryfire = 92885069261997,
+			mag_in = 128060588767848,
+			mag_out = 105859367449536,
+			shell_01 = 99090331825025,
+			shell_02 = 90769005184856,
+			shell_03 = 0,
+			shot_pistol = 86945440175418,
+			shot_rifle = 120306703273832,
+			shot_shotgun = 129726512346854,
+			shot_smg = 98517684232791,
 		},
 		world = {
 			distant_boom = 101875143084608,

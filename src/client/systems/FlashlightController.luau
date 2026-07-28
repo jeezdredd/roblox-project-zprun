@@ -36,6 +36,28 @@ local function ensureBeam(): Part
 	spot.Shadows = true
 	spot.Parent = part
 
+	local motesAttachment = Instance.new("Attachment")
+	motesAttachment.Position = Vector3.new(0, 0, -8)
+	motesAttachment.Parent = part
+
+	local motes = Instance.new("ParticleEmitter")
+	motes.Name = "DustMotes"
+	motes.Color = ColorSequence.new(Color3.fromRGB(240, 234, 214))
+	motes.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.65),
+		NumberSequenceKeypoint.new(0.4, 0.8),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	motes.Size = NumberSequence.new(0.06, 0.12)
+	motes.Lifetime = NumberRange.new(1.6, 3)
+	motes.Rate = 26
+	motes.Speed = NumberRange.new(0.4, 1.6)
+	motes.SpreadAngle = Vector2.new(50, 50)
+	motes.Acceleration = Vector3.new(0.4, -0.6, 0)
+	motes.LightEmission = 0.6
+	motes.LightInfluence = 1
+	motes.Parent = motesAttachment
+
 	beam = part
 	light = spot
 	return part

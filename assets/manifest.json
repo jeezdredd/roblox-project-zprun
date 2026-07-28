@@ -497,5 +497,101 @@
     "file": "assets/textures/concrete_roughness.jpg",
     "assetId": "114110568469344",
     "status": "approved"
+  },
+  "animation/player/run": {
+    "source": "pending",
+    "license": "Original work (project owner)",
+    "file": "assets/animation/player/run.rbxm",
+    "assetId": 0,
+    "status": "pending",
+    "note": "Heavy tired forward run cycle"
+  },
+  "animation/player/strafe_left": {
+    "source": "pending",
+    "license": "Original work (project owner)",
+    "file": "assets/animation/player/strafe_left.rbxm",
+    "assetId": 0,
+    "status": "pending",
+    "note": "Additive lean while strafing left"
+  },
+  "animation/player/strafe_right": {
+    "source": "pending",
+    "license": "Original work (project owner)",
+    "file": "assets/animation/player/strafe_right.rbxm",
+    "assetId": 0,
+    "status": "pending",
+    "note": "Additive lean while strafing right"
+  },
+  "animation/player/stumble": {
+    "source": "pending",
+    "license": "Original work (project owner)",
+    "file": "assets/animation/player/stumble.rbxm",
+    "assetId": 0,
+    "status": "pending",
+    "note": "Trip on obstacle contact"
+  },
+  "animation/player/death": {
+    "source": "pending",
+    "license": "Original work (project owner)",
+    "file": "assets/animation/player/death.rbxm",
+    "assetId": 0,
+    "status": "pending",
+    "note": "Fall backwards on death"
+  },
+  "animation/zombie/idle_a": {
+    "source": "pending",
+    "license": "Original work (project owner)",
+    "file": "assets/animation/zombie/idle_a.rbxm",
+    "assetId": 0,
+    "status": "pending",
+    "note": "Zombie idle sway variation A"
+  },
+  "animation/zombie/idle_b": {
+    "source": "pending",
+    "license": "Original work (project owner)",
+    "file": "assets/animation/zombie/idle_b.rbxm",
+    "assetId": 0,
+    "status": "pending",
+    "note": "Zombie idle sway variation B"
+  },
+  "animation/zombie/idle_c": {
+    "source": "pending",
+    "license": "Original work (project owner)",
+    "file": "assets/animation/zombie/idle_c.rbxm",
+    "assetId": 0,
+    "status": "pending",
+    "note": "Zombie idle sway variation C"
+  },
+  "animation/zombie/walk_shuffle": {
+    "source": "pending",
+    "license": "Original work (project owner)",
+    "file": "assets/animation/zombie/walk_shuffle.rbxm",
+    "assetId": 0,
+    "status": "pending",
+    "note": "Walker shuffling gait"
+  },
+  "animation/zombie/run_ragged": {
+    "source": "pending",
+    "license": "Original work (project owner)",
+    "file": "assets/animation/zombie/run_ragged.rbxm",
+    "assetId": 0,
+    "status": "pending",
+    "note": "Runner ragged sprint"
+  },
+  "animation/zombie/attack_lunge": {
+    "source": "pending",
+    "license": "Original work (project owner)",
+    "file": "assets/animation/zombie/attack_lunge.rbxm",
+    "assetId": 0,
+    "status": "pending",
+    "note": "Zombie lunge attack"
+  },
+  "animation/zombie/feeding": {
+    "source": "pending",
+    "license": "Original work (project owner)",
+    "file": "assets/animation/zombie/feeding.rbxm",
+    "assetId": 0,
+    "status": "pending",
+    "note": "Zombie feeding on corpse"
   }
 }

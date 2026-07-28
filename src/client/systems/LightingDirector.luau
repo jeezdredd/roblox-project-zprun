@@ -105,6 +105,12 @@ function LightingDirector.init()
 	grading.Enabled = true
 	grading.Parent = Lighting
 
+	local sunRays = Instance.new("SunRaysEffect")
+	sunRays.Name = "TFZ_SunRays"
+	sunRays.Intensity = 0.08
+	sunRays.Spread = 0.6
+	sunRays.Parent = Lighting
+
 	current = LightingConfig.get("Hub")
 	target = current
 	apply(current)

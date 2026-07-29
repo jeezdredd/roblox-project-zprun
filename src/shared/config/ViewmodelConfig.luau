@@ -7,7 +7,14 @@ export type SpringSetting = {
 
 local ViewmodelConfig = {}
 
-ViewmodelConfig.BASE_OFFSET = CFrame.new(0.9, -0.9, -1.9)
+ViewmodelConfig.BASE_OFFSET = CFrame.new(0.62, -0.62, -1.55)
+
+ViewmodelConfig.FILL_LIGHT = {
+	enabled = true,
+	brightness = 1.4,
+	range = 9,
+	color = Color3.fromRGB(255, 246, 226),
+}
 
 ViewmodelConfig.springs = {
 	sway = { stiffness = 90, damping = 13 },

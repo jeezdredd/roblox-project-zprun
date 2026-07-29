@@ -133,6 +133,31 @@ function WeaponVfx.barrelSmoke(attachment: Attachment?)
 	end)
 end
 
+function WeaponVfx.pickupBurst(position: Vector3)
+	local anchor = makeGhostPart("PickupBurst", Vector3.new(0.2, 0.2, 0.2), CFrame.new(position))
+	anchor.Transparency = 1
+
+	local attachment = Instance.new("Attachment")
+	attachment.Parent = anchor
+
+	local sparkle = Instance.new("ParticleEmitter")
+	sparkle.Color = ColorSequence.new(Color3.fromRGB(140, 255, 170))
+	sparkle.Size = NumberSequence.new(0.6, 0.05)
+	sparkle.Transparency = NumberSequence.new(0.1, 1)
+	sparkle.Lifetime = NumberRange.new(0.4, 0.8)
+	sparkle.Speed = NumberRange.new(8, 16)
+	sparkle.SpreadAngle = Vector2.new(180, 180)
+	sparkle.Rate = 0
+	sparkle.LightEmission = 1
+	sparkle.LightInfluence = 0
+	sparkle.Parent = attachment
+	sparkle:Emit(18)
+
+	task.delay(1.2, function()
+		anchor:Destroy()
+	end)
+end
+
 function WeaponVfx.impact(position: Vector3, normal: Vector3, materialName: string)
 	local anchor = makeGhostPart("Impact", Vector3.new(0.2, 0.2, 0.2), CFrame.lookAt(position, position + normal))
 	anchor.Transparency = 1

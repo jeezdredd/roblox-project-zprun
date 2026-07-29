@@ -1,5 +1,6 @@
 --!strict
 
+local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
@@ -74,28 +75,58 @@ local function ensureGroup(): SoundGroup
 	return created
 end
 
+local POOL_PER_SOUND = 4
+local pools: { [number]: { Sound } } = {}
+local poolCursor: { [number]: number } = {}
+
+local function ensurePool(soundId: number): { Sound }
+	local pool = pools[soundId]
+	if pool then
+		return pool
+	end
+	local group = ensureGroup()
+	pool = {}
+	for _ = 1, POOL_PER_SOUND do
+		local sound = Instance.new("Sound")
+		sound.SoundId = "rbxassetid://" .. tostring(soundId)
+		sound.SoundGroup = group
+		sound.Parent = SoundService
+		table.insert(pool, sound)
+	end
+	pools[soundId] = pool
+	poolCursor[soundId] = 0
+	pcall(function()
+		ContentProvider:PreloadAsync(pool)
+	end)
+	return pool
+end
+
 local function playOneShot(soundId: number, volume: number, pitch: number)
 	if soundId <= 0 then
 		return
 	end
-	local group = ensureGroup()
-	local sound = Instance.new("Sound")
-	sound.SoundId = "rbxassetid://" .. tostring(soundId)
+	local pool = ensurePool(soundId)
+	local cursor = (poolCursor[soundId] or 0) % #pool + 1
+	poolCursor[soundId] = cursor
+	local sound = pool[cursor]
 	sound.Volume = volume
 	sound.PlaybackSpeed = pitch
-	sound.SoundGroup = group
-	sound.Parent = SoundService
-	sound.Ended:Once(function()
-		sound:Destroy()
-	end)
-	task.delay(6, function()
-		if sound.Parent then
-			sound:Destroy()
-		end
-	end)
+	sound.TimePosition = 0
 	pcall(function()
 		sound:Play()
 	end)
+end
+
+function WeaponSfx.preload()
+	local weapons = AssetIds.audio.weapons :: { [string]: number }
+	for _, id in weapons do
+		if id > 0 then
+			ensurePool(id)
+		end
+	end
+	if AssetIds.audio.range.gong > 0 then
+		ensurePool(AssetIds.audio.range.gong)
+	end
 end
 
 local function updateTail(): boolean

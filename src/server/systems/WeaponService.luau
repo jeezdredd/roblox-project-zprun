@@ -24,6 +24,8 @@ type PlayerWeaponState = {
 local ORIGIN_TOLERANCE = 5
 local RATE_TOLERANCE = 0.97
 local GONG_COOLDOWN = 0.8
+local MAX_YAW_COSINE = math.cos(math.rad(100))
+local MAX_PITCH_SINE = math.sin(math.rad(85))
 
 type AmmoSnapshot = { mag: number, reserve: number, lastFireAt: number }
 
@@ -225,6 +227,22 @@ local function onFire(player: Player, origin: any, direction: any)
 		losParams.FilterType = Enum.RaycastFilterType.Exclude
 		losParams.FilterDescendantsInstances = if character then { character } else {}
 		if Workspace:Raycast(anchor, toOrigin, losParams) then
+			return
+		end
+	end
+
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if root and root:IsA("BasePart") then
+		local facing = root.CFrame.LookVector
+		local flatFacing = Vector3.new(facing.X, 0, facing.Z)
+		local flatShot = Vector3.new(direction.X, 0, direction.Z)
+		if flatFacing.Magnitude > 0.01 and flatShot.Magnitude > 0.01 then
+			local yawCosine = flatFacing.Unit:Dot(flatShot.Unit)
+			if not (yawCosine >= MAX_YAW_COSINE) then
+				return
+			end
+		end
+		if not (math.abs(direction.Y) <= MAX_PITCH_SINE) then
 			return
 		end
 	end

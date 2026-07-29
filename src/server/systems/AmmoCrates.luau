@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
+local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local WeaponService = require(script.Parent.WeaponService)
 local SkillEffects = require(script.Parent.SkillEffects)
@@ -113,6 +114,7 @@ local function collect(player: Player, crate: Crate)
 	local config = if typeof(weaponId) == "string" then WeaponsConfig.get(weaponId) else nil
 	local rounds = if config then math.floor(config.magSize * BASE_MAGS * SkillEffects.ammoScale(player)) else 0
 	WeaponService.addReserve(player, rounds)
+	Remotes.getEvent(Remotes.Event.AmmoPickup):FireClient(player, rounds, crate.root.Position)
 	crate.model:Destroy()
 	crates[crate.model] = nil
 end

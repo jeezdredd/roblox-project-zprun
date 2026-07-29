@@ -3,6 +3,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
@@ -12,6 +13,7 @@ local Viewmodel = require(script.Parent.Viewmodel)
 local WeaponSfx = require(script.Parent.WeaponSfx)
 local WeaponVfx = require(script.Parent.WeaponVfx)
 local CursorMode = require(script.Parent.CursorMode)
+local UiSfx = require(script.Parent.UiSfx)
 local UiTheme = require(script.Parent.Parent.ui.UiTheme)
 
 local WeaponController = {}
@@ -195,6 +197,40 @@ local function refreshHud()
 	end
 end
 
+local function showPickup(rounds: number)
+	local gui = ammoLabel and ammoLabel.Parent
+	if not gui or not gui:IsA("ScreenGui") then
+		return
+	end
+	local toast = Instance.new("TextLabel")
+	toast.Name = "PickupToast"
+	toast.AnchorPoint = Vector2.new(0.5, 0.5)
+	toast.Position = UDim2.fromScale(0.5, 0.62)
+	toast.Size = UDim2.fromOffset(240, 28)
+	toast.BackgroundTransparency = 1
+	toast.Font = UiTheme.FONT
+	toast.TextSize = 20
+	toast.TextColor3 = Color3.fromRGB(140, 226, 150)
+	toast.TextStrokeTransparency = 0.6
+	toast.Text = string.format("+%d AMMO", rounds)
+	toast.Parent = gui
+
+	TweenService:Create(toast, TweenInfo.new(1.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Position = UDim2.fromScale(0.5, 0.56),
+		TextTransparency = 1,
+		TextStrokeTransparency = 1,
+	}):Play()
+	task.delay(1.2, function()
+		toast:Destroy()
+	end)
+
+	local label = ammoLabel
+	if label then
+		label.TextColor3 = Color3.fromRGB(140, 226, 150)
+		task.delay(0.35, refreshHud)
+	end
+end
+
 local function onWeaponChanged()
 	local weaponId = player:GetAttribute("WeaponId")
 	if typeof(weaponId) == "string" then
@@ -244,6 +280,7 @@ end
 function WeaponController.init()
 	Viewmodel.init()
 	buildHud()
+	task.spawn(WeaponSfx.preload)
 
 	UserInputService.InputBegan:Connect(function(input, processed)
 		if processed then
@@ -302,6 +339,16 @@ function WeaponController.init()
 	end)
 
 	Remotes.getEvent(Remotes.Event.WeaponHit).OnClientEvent:Connect(onWeaponHit)
+	Remotes.getEvent(Remotes.Event.AmmoPickup).OnClientEvent:Connect(function(rounds, position)
+		if typeof(rounds) ~= "number" then
+			return
+		end
+		showPickup(rounds)
+		UiSfx.rewardTick()
+		if typeof(position) == "Vector3" then
+			WeaponVfx.pickupBurst(position)
+		end
+	end)
 
 	onWeaponChanged()
 end

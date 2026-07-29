@@ -3,6 +3,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
+local ViewmodelConfig = require(ReplicatedStorage.Shared.config.ViewmodelConfig)
+local TexturesConfig = require(ReplicatedStorage.Shared.config.TexturesConfig)
 
 local ViewmodelBuilder = {}
 
@@ -31,13 +33,28 @@ export type PoseOverrides = {
 	supportHand: CFrame?,
 }
 
-local COLOR_METAL = Color3.fromRGB(46, 48, 52)
-local COLOR_STEEL = Color3.fromRGB(72, 74, 80)
-local COLOR_GRIP = Color3.fromRGB(52, 44, 36)
-local COLOR_WOOD = Color3.fromRGB(96, 72, 48)
-local COLOR_SLEEVE = Color3.fromRGB(66, 74, 58)
-local COLOR_GLOVE = Color3.fromRGB(38, 38, 40)
-local COLOR_SKIN = Color3.fromRGB(192, 152, 120)
+local COLOR_METAL = Color3.fromRGB(104, 108, 116)
+local COLOR_STEEL = Color3.fromRGB(140, 144, 152)
+local COLOR_GRIP = Color3.fromRGB(96, 84, 68)
+local COLOR_WOOD = Color3.fromRGB(150, 112, 72)
+local COLOR_SLEEVE = Color3.fromRGB(112, 124, 96)
+local COLOR_GLOVE = Color3.fromRGB(78, 78, 82)
+local COLOR_SKIN = Color3.fromRGB(214, 172, 138)
+
+local function applyTexture(part: BasePart, textureId: number, studsPerTile: number)
+	if textureId <= 0 then
+		return
+	end
+	for _, face in { Enum.NormalId.Left, Enum.NormalId.Right, Enum.NormalId.Top, Enum.NormalId.Bottom } do
+		local texture = Instance.new("Texture")
+		texture.Texture = "rbxassetid://" .. tostring(textureId)
+		texture.Face = face
+		texture.StudsPerTileU = studsPerTile
+		texture.StudsPerTileV = studsPerTile
+		texture.Transparency = 0.35
+		texture.Parent = part
+	end
+end
 
 local function addNode(
 	rig: Rig,
@@ -91,11 +108,11 @@ local function buildArm(rig: Rig, side: number, handRest: CFrame, handBone: stri
 	local forearmRest = CFrame.Angles(math.rad(elbowPitch), math.rad(side * 16), 0)
 	addNode(rig, "Part", "ForearmPivot", Vector3.new(0.05, 0.05, 0.05), COLOR_SLEEVE, Enum.Material.Fabric, forearmRest, wristBone, forearmBone).Transparency = 1
 	addNode(rig, "Part", "SleeveCuff", Vector3.new(0.42, 0.42, 0.24), COLOR_SLEEVE:Lerp(Color3.new(), 0.25), Enum.Material.Fabric, CFrame.new(0, 0, 0.12), forearmBone)
-	addNode(rig, "Part", "Forearm", Vector3.new(0.36, 0.36, 1.35), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 0.72), forearmBone)
+	applyTexture(addNode(rig, "Part", "Forearm", Vector3.new(0.36, 0.36, 1.35), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 0.72), forearmBone), TexturesConfig.FABRIC, 0.7)
 
 	local upperBone = handBone .. "Upper"
 	addNode(rig, "Part", "UpperPivot", Vector3.new(0.05, 0.05, 0.05), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 1.4) * CFrame.Angles(math.rad(30), math.rad(side * 8), 0), forearmBone, upperBone).Transparency = 1
-	addNode(rig, "Part", "UpperArm", Vector3.new(0.42, 0.42, 1.4), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 0.6), upperBone)
+	applyTexture(addNode(rig, "Part", "UpperArm", Vector3.new(0.42, 0.42, 1.4), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 0.6), upperBone), TexturesConfig.FABRIC, 0.7)
 end
 
 function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Camera): Rig
@@ -124,8 +141,22 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 		barrelLength = 1.35
 	end
 
-	addNode(rig, "Part", "WeaponRoot", Vector3.new(0.05, 0.05, 0.05), COLOR_METAL, Enum.Material.Metal, CFrame.identity, nil, "weaponRoot").Transparency = 1
-	addNode(rig, "Part", "Receiver", Vector3.new(0.24, bodyHeight, bodyLength), COLOR_METAL, Enum.Material.Metal, CFrame.identity, "weaponRoot")
+	local weaponRoot = addNode(rig, "Part", "WeaponRoot", Vector3.new(0.05, 0.05, 0.05), COLOR_METAL, Enum.Material.Metal, CFrame.identity, nil, "weaponRoot")
+	weaponRoot.Transparency = 1
+
+	local fill = ViewmodelConfig.FILL_LIGHT
+	if fill.enabled then
+		local light = Instance.new("PointLight")
+		light.Name = "ViewmodelFill"
+		light.Brightness = fill.brightness
+		light.Range = fill.range
+		light.Color = fill.color
+		light.Shadows = false
+		light.Parent = weaponRoot
+	end
+
+	local receiver = addNode(rig, "Part", "Receiver", Vector3.new(0.24, bodyHeight, bodyLength), COLOR_METAL, Enum.Material.Metal, CFrame.identity, "weaponRoot")
+	applyTexture(receiver, TexturesConfig.METAL_PLATES, 0.9)
 
 	local slideTopY = bodyHeight / 2 + 0.09
 	if isPistol then
@@ -219,7 +250,8 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 	if not isPistol then
 		local stockColor = if isShotgun then COLOR_WOOD else COLOR_GRIP
 		local stockMaterial = if isShotgun then Enum.Material.WoodPlanks else Enum.Material.SmoothPlastic
-		addNode(rig, "Part", "Stock", Vector3.new(0.22, 0.34, 0.8), stockColor, stockMaterial, CFrame.new(0, -0.08, bodyLength / 2 + 0.36) * CFrame.Angles(math.rad(-4), 0, 0), "weaponRoot")
+		local stock = addNode(rig, "Part", "Stock", Vector3.new(0.22, 0.34, 0.8), stockColor, stockMaterial, CFrame.new(0, -0.08, bodyLength / 2 + 0.36) * CFrame.Angles(math.rad(-4), 0, 0), "weaponRoot")
+		applyTexture(stock, if isShotgun then TexturesConfig.WOOD else TexturesConfig.FABRIC, 0.8)
 		addNode(rig, "WedgePart", "StockComb", Vector3.new(0.22, 0.18, 0.46), stockColor, stockMaterial, CFrame.new(0, 0.17, bodyLength / 2 + 0.38) * CFrame.Angles(0, math.rad(180), 0), "weaponRoot")
 	end
 

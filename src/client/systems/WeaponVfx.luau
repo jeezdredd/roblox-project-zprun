@@ -2,9 +2,9 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
-local Debris = game:GetService("Debris")
 
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
+local VfxConfig = require(ReplicatedStorage.Shared.config.VfxConfig)
 
 local WeaponVfx = {}
 
@@ -58,7 +58,7 @@ function WeaponVfx.muzzleFlash(attachment: Attachment?, weaponId: string)
 	flash.SpreadAngle = Vector2.new(35, 35)
 	flash.Rate = 0
 	flash.Parent = attachment
-	flash:Emit(6)
+	flash:Emit(math.max(2, math.floor(6 * VfxConfig.DENSITY)))
 
 	local light = Instance.new("PointLight")
 	light.Color = FLASH_COLOR
@@ -74,25 +74,65 @@ function WeaponVfx.muzzleFlash(attachment: Attachment?, weaponId: string)
 	end)
 end
 
+local SHELL_POOL_SIZE = 20
+local shellPool: { BasePart } = {}
+local shellCursor = 0
+
+local function ensureShellPool()
+	if #shellPool > 0 then
+		return
+	end
+	for _ = 1, SHELL_POOL_SIZE do
+		local shell = Instance.new("Part")
+		shell.Name = "Shell"
+		shell.Size = Vector3.new(0.08, 0.08, 0.24)
+		shell.Color = Color3.fromRGB(190, 150, 60)
+		shell.Material = Enum.Material.Metal
+		shell.CanCollide = false
+		shell.CanQuery = false
+		shell.CastShadow = false
+		shell.Transparency = 1
+		shell.Anchored = true
+		shell.Parent = getFolder()
+		table.insert(shellPool, shell)
+	end
+end
+
 function WeaponVfx.shellEject(attachment: Attachment?)
 	if not attachment then
 		return
 	end
+	ensureShellPool()
+	shellCursor = shellCursor % SHELL_POOL_SIZE + 1
+	local shell = shellPool[shellCursor]
+	if not shell or not shell.Parent then
+		return
+	end
+
 	local origin = attachment.WorldPosition
 	local rightVector = attachment.WorldCFrame.RightVector
-	local shell = Instance.new("Part")
-	shell.Name = "Shell"
-	shell.Size = Vector3.new(0.08, 0.08, 0.24)
-	shell.Color = Color3.fromRGB(190, 150, 60)
-	shell.Material = Enum.Material.Metal
+	shell.Anchored = false
+	shell.Transparency = 0
 	shell.CFrame = CFrame.new(origin + rightVector * 0.3)
-	shell.CanCollide = false
-	shell.CanQuery = false
-	shell.CastShadow = false
 	shell.AssemblyLinearVelocity = rightVector * (6 + math.random() * 3) + Vector3.new(0, 5 + math.random() * 2, 0)
 	shell.AssemblyAngularVelocity = Vector3.new(math.random() * 20 - 10, math.random() * 20 - 10, math.random() * 20 - 10)
-	shell.Parent = getFolder()
-	Debris:AddItem(shell, 1.2)
+
+	task.delay(1.4, function()
+		if shell.Parent then
+			shell.Anchored = true
+			shell.Transparency = 1
+			shell.AssemblyLinearVelocity = Vector3.zero
+		end
+	end)
+end
+
+function WeaponVfx.shellLandMaterial(position: Vector3): Enum.Material
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	local folder = vfxFolder
+	params.FilterDescendantsInstances = if folder then { folder } else {}
+	local result = Workspace:Raycast(position, Vector3.new(0, -12, 0), params)
+	return if result then result.Material else Enum.Material.Concrete
 end
 
 function WeaponVfx.tracer(from: Vector3, to: Vector3)
@@ -127,7 +167,7 @@ function WeaponVfx.barrelSmoke(attachment: Attachment?)
 	smoke.Rate = 0
 	smoke.LightInfluence = 0.8
 	smoke.Parent = attachment
-	smoke:Emit(10)
+	smoke:Emit(math.max(3, math.floor(10 * VfxConfig.DENSITY)))
 	task.delay(2, function()
 		smoke:Destroy()
 	end)
@@ -151,7 +191,7 @@ function WeaponVfx.pickupBurst(position: Vector3)
 	sparkle.LightEmission = 1
 	sparkle.LightInfluence = 0
 	sparkle.Parent = attachment
-	sparkle:Emit(18)
+	sparkle:Emit(math.max(6, math.floor(18 * VfxConfig.DENSITY)))
 
 	task.delay(1.2, function()
 		anchor:Destroy()
@@ -178,7 +218,7 @@ function WeaponVfx.impact(position: Vector3, normal: Vector3, materialName: stri
 	puff.Rate = 0
 	puff.LightInfluence = 0.6
 	puff.Parent = attachment
-	puff:Emit(8)
+	puff:Emit(math.max(2, math.floor(8 * VfxConfig.DENSITY)))
 
 	if not isFlesh then
 		local sparks = Instance.new("ParticleEmitter")
@@ -192,7 +232,7 @@ function WeaponVfx.impact(position: Vector3, normal: Vector3, materialName: stri
 		sparks.LightEmission = 1
 		sparks.LightInfluence = 0
 		sparks.Parent = attachment
-		sparks:Emit(4)
+		sparks:Emit(math.max(1, math.floor(4 * VfxConfig.DENSITY)))
 	end
 
 	task.delay(0.8, function()

@@ -8,8 +8,10 @@ local Workspace = game:GetService("Workspace")
 
 local AssetIds = require(ReplicatedStorage.Shared.config.AssetIds)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
+local FootstepConfig = require(ReplicatedStorage.Shared.config.FootstepConfig)
 local SfxPlayer = require(script.Parent.SfxPlayer)
 local MusicController = require(script.Parent.MusicController)
+local WeaponVfx = require(script.Parent.WeaponVfx)
 
 local WeaponSfx = {}
 
@@ -187,9 +189,16 @@ function WeaponSfx.playShot(weaponId: string)
 	playOneShot(shotSoundId(config), config.shotVolume, config.shotPitch * jitter)
 	playTail(config, interior)
 
-	task.delay(0.25 + math.random() * 0.3, function()
+	task.delay(0.3 + math.random() * 0.3, function()
+		local character = player.Character
+		local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
+		local material = if root and root:IsA("BasePart")
+			then WeaponVfx.shellLandMaterial(root.Position)
+			else Enum.Material.Concrete
+		local steps = FootstepConfig.get(material)
 		local shellId = SfxPlayer.pick({ AssetIds.audio.weapons.shell_01, AssetIds.audio.weapons.shell_02 })
-		playOneShot(shellId, 0.16, 1 + (math.random() - 0.5) * 0.2)
+		local pitch = if material == Enum.Material.Grass or material == Enum.Material.Sand then 0.82 else 1.05
+		playOneShot(shellId, if steps then 0.16 else 0.14, pitch + (math.random() - 0.5) * 0.16)
 	end)
 end
 
@@ -207,9 +216,17 @@ function WeaponSfx.playReload(reloadTime: number)
 	end)
 end
 
+local DISTANT_THRESHOLD = 40
+
 function WeaponSfx.playDistantShot(position: Vector3, weaponId: string)
 	local config = WeaponsConfig.get(weaponId)
 	if not config then
+		return
+	end
+	local character = player.Character
+	local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
+	local distance = if root and root:IsA("BasePart") then (root.Position - position).Magnitude else 0
+	if distance < DISTANT_THRESHOLD then
 		return
 	end
 	local anchor = Instance.new("Part")

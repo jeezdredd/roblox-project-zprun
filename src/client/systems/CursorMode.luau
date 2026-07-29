@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
+local PostFx = require(script.Parent.PostFx)
 
 local CursorMode = {}
 
@@ -71,6 +72,8 @@ function CursorMode.setModalOpen(id: string, open: boolean)
 	if modalCount < 0 then
 		modalCount = 0
 	end
+
+	PostFx.setMenuBlur(modalCount > 0)
 
 	if modalCount > 0 then
 		enterFreeMode()

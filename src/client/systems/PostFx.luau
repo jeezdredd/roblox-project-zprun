@@ -14,6 +14,7 @@ local HEARTBEAT_RATE_CRITICAL = 3.6
 
 local damageEffect: ColorCorrectionEffect
 local bloom: BloomEffect
+local menuBlur: DepthOfFieldEffect
 local vignette: Frame
 local damagePulse = 0
 local deathFade = 0
@@ -83,6 +84,12 @@ local function step(deltaTime: number)
 	vignette.BackgroundTransparency = 1 - math.clamp(damagePulse * 0.7 + lowness * 0.3 * (0.5 + pulse * 0.5), 0, 0.85)
 end
 
+function PostFx.setMenuBlur(enabled: boolean)
+	if menuBlur then
+		menuBlur.Enabled = enabled
+	end
+end
+
 function PostFx.damage(amount: number)
 	damagePulse = math.clamp(damagePulse + amount, 0, 1)
 end
@@ -96,6 +103,15 @@ function PostFx.init()
 	damageEffect = Instance.new("ColorCorrectionEffect")
 	damageEffect.Name = "TFZ_EventGrading"
 	damageEffect.Parent = Lighting
+
+	menuBlur = Instance.new("DepthOfFieldEffect")
+	menuBlur.Name = "TFZ_MenuDof"
+	menuBlur.FarIntensity = 0.55
+	menuBlur.NearIntensity = 0
+	menuBlur.FocusDistance = 12
+	menuBlur.InFocusRadius = 18
+	menuBlur.Enabled = false
+	menuBlur.Parent = Lighting
 
 	bloom = Instance.new("BloomEffect")
 	bloom.Name = "TFZ_Bloom"

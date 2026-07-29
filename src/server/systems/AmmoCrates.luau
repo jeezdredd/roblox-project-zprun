@@ -12,7 +12,8 @@ local SkillEffects = require(script.Parent.SkillEffects)
 
 local AmmoCrates = {}
 
-local BASE_MAGS = 1.5
+local ROUNDS_MIN = 3
+local ROUNDS_MAX = 8
 local PICKUP_RADIUS = 9
 
 type Crate = {
@@ -112,7 +113,8 @@ local function collect(player: Player, crate: Crate)
 	crate.taken = true
 	local weaponId = player:GetAttribute("WeaponId")
 	local config = if typeof(weaponId) == "string" then WeaponsConfig.get(weaponId) else nil
-	local rounds = if config then math.floor(config.magSize * BASE_MAGS * SkillEffects.ammoScale(player)) else 0
+	local base = random:NextInteger(ROUNDS_MIN, ROUNDS_MAX)
+	local rounds = if config then math.floor(base * SkillEffects.ammoScale(player)) else 0
 	WeaponService.addReserve(player, rounds)
 	Remotes.getEvent(Remotes.Event.AmmoPickup):FireClient(player, rounds, crate.root.Position)
 	crate.model:Destroy()

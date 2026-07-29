@@ -17,8 +17,8 @@ ViewmodelConfig.FILL_LIGHT = {
 }
 
 ViewmodelConfig.springs = {
-	sway = { stiffness = 90, damping = 13 },
-	lag = { stiffness = 120, damping = 18 },
+	sway = { stiffness = 130, damping = 22 },
+	lag = { stiffness = 160, damping = 24 },
 	movePos = { stiffness = 70, damping = 14 },
 	moveRot = { stiffness = 60, damping = 13 },
 	recoilPos = { stiffness = 190, damping = 20 },
@@ -33,22 +33,22 @@ ViewmodelConfig.springs = {
 } :: { [string]: SpringSetting }
 
 ViewmodelConfig.sway = {
-	yawImpulse = 26,
-	pitchImpulse = 20,
-	maxImpulse = 0.9,
-	positionScale = Vector3.new(1.6, 1.1, 0.3),
+	yawImpulse = 10,
+	pitchImpulse = 8,
+	maxImpulse = 0.35,
+	positionScale = Vector3.new(0.5, 0.35, 0.1),
 }
 
 ViewmodelConfig.lag = {
-	frames = 4,
-	rotationScale = 0.55,
+	frames = 3,
+	rotationScale = 0.22,
 }
 
 ViewmodelConfig.bob = {
-	horizontal = 0.055,
-	vertical = 0.07,
-	roll = 0.035,
-	pitch = 0.02,
+	horizontal = 0.022,
+	vertical = 0.028,
+	roll = 0.012,
+	pitch = 0.008,
 	speedReference = 16,
 }
 
@@ -59,8 +59,8 @@ ViewmodelConfig.breathe = {
 }
 
 ViewmodelConfig.tilt = {
-	roll = 0.09,
-	lateralShift = 0.07,
+	roll = 0.035,
+	lateralShift = 0.028,
 }
 
 ViewmodelConfig.impact = {

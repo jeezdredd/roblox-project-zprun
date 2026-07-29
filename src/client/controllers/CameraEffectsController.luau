@@ -9,6 +9,7 @@ local CameraConfig = require(ReplicatedStorage.Shared.config.CameraConfig)
 local BodyMotionController = require(script.Parent.BodyMotionController)
 local ExertionState = require(script.Parent.ExertionState)
 local InputController = require(script.Parent.InputController)
+local AimAssist = require(script.Parent.Parent.systems.AimAssist)
 
 local CameraEffectsController = {}
 
@@ -109,6 +110,11 @@ local function update(deltaTime: number)
 	local offsetY = bobVertical + breathVertical + shakeOffsetY * intensity
 	local offsetZ = shakeOffsetZ * intensity
 	local rotationScale = CameraConfig.SHAKE_ROTATION_SCALE * intensity
+
+	local aimed = AimAssist.cameraPull(camera.CFrame.Position, camera.CFrame.LookVector, deltaTime)
+	if aimed then
+		camera.CFrame = CFrame.lookAt(camera.CFrame.Position, camera.CFrame.Position + aimed)
+	end
 
 	camera.CFrame = camera.CFrame
 		* CFrame.new(offsetX, offsetY, offsetZ)

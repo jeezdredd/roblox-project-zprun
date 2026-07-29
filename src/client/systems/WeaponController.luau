@@ -13,6 +13,7 @@ local Viewmodel = require(script.Parent.Viewmodel)
 local WeaponSfx = require(script.Parent.WeaponSfx)
 local WeaponVfx = require(script.Parent.WeaponVfx)
 local CursorMode = require(script.Parent.CursorMode)
+local AimAssist = require(script.Parent.AimAssist)
 local UiSfx = require(script.Parent.UiSfx)
 local UiTheme = require(script.Parent.Parent.ui.UiTheme)
 
@@ -83,7 +84,7 @@ local function tryFire()
 	lastBurstAt = now
 	local camera = Workspace.CurrentCamera
 	local origin = camera.CFrame.Position
-	local direction = camera.CFrame.LookVector
+	local direction = AimAssist.adjustFireDirection(origin, camera.CFrame.LookVector)
 
 	Remotes.getEvent(Remotes.Event.WeaponFire):FireServer(origin, direction)
 

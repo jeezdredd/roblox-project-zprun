@@ -28,11 +28,48 @@ local function isHeadPiece(instance: Instance): boolean
 	return parent ~= nil and parent:IsA("Accessory")
 end
 
+-- Even with "Show Own Body" on, the torso and arms sit inside the camera and fill
+-- the frame with giant untextured slabs, and the arms duplicate the viewmodel's.
+-- Only the legs read correctly when looking down, so everything above the waist
+-- is hidden regardless of the setting.
+local ALWAYS_HIDDEN = {
+	UpperTorso = true,
+	LowerTorso = true,
+	Torso = true,
+	LeftUpperArm = true,
+	LeftLowerArm = true,
+	LeftHand = true,
+	RightUpperArm = true,
+	RightLowerArm = true,
+	RightHand = true,
+	["Left Arm"] = true,
+	["Right Arm"] = true,
+}
+
+local function isAlwaysHidden(instance: Instance): boolean
+	local part = if instance:IsA("Decal") then instance.Parent else instance
+	if not part or not part:IsA("BasePart") then
+		return false
+	end
+	if ALWAYS_HIDDEN[part.Name] then
+		return true
+	end
+	-- the third-person weapon model is welded to the hand and would double the viewmodel
+	local ancestor = part.Parent
+	while ancestor do
+		if ancestor.Name == "WorldWeapon" then
+			return true
+		end
+		ancestor = ancestor.Parent
+	end
+	return false
+end
+
 local function setCharacterVisible(character: Model, visible: boolean)
 	local keepBody = SettingsService.get("firstPersonBody") == true
 	for _, descendant in character:GetDescendants() do
 		if descendant:IsA("BasePart") or descendant:IsA("Decal") then
-			local hide = not visible and (not keepBody or isHeadPiece(descendant))
+			local hide = not visible and (not keepBody or isHeadPiece(descendant) or isAlwaysHidden(descendant))
 			descendant.LocalTransparencyModifier = if hide then 1 else 0
 		end
 	end
@@ -60,7 +97,7 @@ local function hideCharacter(character: Model)
 	descendantConnection = character.DescendantAdded:Connect(function(descendant)
 		if descendant:IsA("BasePart") or descendant:IsA("Decal") then
 			local keepBody = SettingsService.get("firstPersonBody") == true
-			descendant.LocalTransparencyModifier = if not keepBody or isHeadPiece(descendant) then 1 else 0
+			descendant.LocalTransparencyModifier = if not keepBody or isHeadPiece(descendant) or isAlwaysHidden(descendant) then 1 else 0
 		end
 	end)
 end

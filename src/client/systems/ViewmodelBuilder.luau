@@ -118,8 +118,10 @@ local function buildArm(rig: Rig, side: number, handRest: CFrame, handBone: stri
 	local forearmBone = handBone .. "Forearm"
 	local forearmRest = CFrame.Angles(math.rad(elbowPitch), math.rad(side * 12), 0)
 	addNode(rig, "Part", "ForearmPivot", Vector3.new(0.05, 0.05, 0.05), COLOR_SLEEVE, Enum.Material.Fabric, forearmRest, wristBone, forearmBone).Transparency = 1
-	addNode(rig, "Part", "SleeveCuff", Vector3.new(0.36, 0.36, 0.2), COLOR_SLEEVE:Lerp(Color3.new(), 0.25), Enum.Material.Fabric, CFrame.new(0, 0, 0.1), forearmBone)
-	applyTexture(addNode(rig, "Part", "Forearm", Vector3.new(0.32, 0.32, 0.95), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 0.52), forearmBone), TexturesConfig.FABRIC, 0.7)
+	addNode(rig, "Part", "SleeveCuff", Vector3.new(0.3, 0.3, 0.16), COLOR_SLEEVE:Lerp(Color3.new(), 0.25), Enum.Material.Fabric, CFrame.new(0, 0, 0.08), forearmBone)
+	-- a short stub: measured in Studio, a 0.95-long forearm sat 1.1 studs from the
+	-- camera and covered 60% of screen height on its own
+	applyTexture(addNode(rig, "Part", "Forearm", Vector3.new(0.28, 0.28, 0.5), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 0.3), forearmBone), TexturesConfig.FABRIC, 0.7)
 end
 
 function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Camera): Rig

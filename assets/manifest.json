@@ -119,150 +119,150 @@
     "status": "approved"
   },
   "audio/footsteps/metal_01": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/metal_01.wav",
-    "assetId": 100020778826074,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from boots on aluminum ladder 01 by Eelke (freesound 462598)",
+    "file": "assets/audio/footsteps/metal_01.ogg",
+    "assetId": "139148914264303",
     "status": "approved"
   },
   "audio/footsteps/metal_02": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/metal_02.wav",
-    "assetId": 91756891849573,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from boots on aluminum ladder 01 by Eelke (freesound 462598)",
+    "file": "assets/audio/footsteps/metal_02.ogg",
+    "assetId": "134601296635590",
     "status": "approved"
   },
   "audio/footsteps/metal_03": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/metal_03.wav",
-    "assetId": 80686912188034,
-    "status": "approved"
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from boots on aluminum ladder 01 by Eelke (freesound 462598)",
+    "file": "assets/audio/footsteps/metal_03.ogg",
+    "assetId": "100991598130169",
+    "status": "reviewing"
   },
   "audio/footsteps/concrete_01": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/concrete_01.wav",
-    "assetId": 76239889483945,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from footstep-concrete.wav by swuing (freesound 38873)",
+    "file": "assets/audio/footsteps/concrete_01.ogg",
+    "assetId": "73288476581453",
     "status": "approved"
   },
   "audio/footsteps/concrete_02": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/concrete_02.wav",
-    "assetId": 102524739087775,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from footstep-concrete.wav by swuing (freesound 38873)",
+    "file": "assets/audio/footsteps/concrete_02.ogg",
+    "assetId": "123706872294438",
     "status": "approved"
   },
   "audio/footsteps/concrete_03": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/concrete_03.wav",
-    "assetId": 129152333227871,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from footstep-concrete.wav by swuing (freesound 38873)",
+    "file": "assets/audio/footsteps/concrete_03.ogg",
+    "assetId": "115985657086486",
     "status": "approved"
   },
   "audio/footsteps/wood_01": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/wood_01.wav",
-    "assetId": 72600633695935,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from footstep-wood.wav by swuing (freesound 38876)",
+    "file": "assets/audio/footsteps/wood_01.ogg",
+    "assetId": "136225104374756",
     "status": "approved"
   },
   "audio/footsteps/wood_02": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/wood_02.wav",
-    "assetId": 107674184975458,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from footstep-wood.wav by swuing (freesound 38876)",
+    "file": "assets/audio/footsteps/wood_02.ogg",
+    "assetId": "118808003689042",
     "status": "approved"
   },
   "audio/footsteps/wood_03": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/wood_03.wav",
-    "assetId": 86632405838667,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from footstep-wood.wav by swuing (freesound 38876)",
+    "file": "assets/audio/footsteps/wood_03.ogg",
+    "assetId": "135390807689146",
     "status": "approved"
   },
   "audio/footsteps/grass_01": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/grass_01.wav",
-    "assetId": 125622012688974,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from footstep-grass.wav by swuing (freesound 38874)",
+    "file": "assets/audio/footsteps/grass_01.ogg",
+    "assetId": "74344434197060",
     "status": "approved"
   },
   "audio/footsteps/grass_02": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/grass_02.wav",
-    "assetId": 117551923131946,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from footstep-grass.wav by swuing (freesound 38874)",
+    "file": "assets/audio/footsteps/grass_02.ogg",
+    "assetId": "90840756367174",
     "status": "approved"
   },
   "audio/footsteps/grass_03": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/grass_03.wav",
-    "assetId": 119814451831693,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from footstep-grass.wav by swuing (freesound 38874)",
+    "file": "assets/audio/footsteps/grass_03.ogg",
+    "assetId": "95217396069473",
     "status": "approved"
   },
   "audio/footsteps/dirt_01": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/dirt_01.wav",
-    "assetId": 91992059944636,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC0 - congusbongus, derived from Gravel Footsteps pack by Ali_6868 (freesound pack 21608)",
+    "file": "assets/audio/footsteps/dirt_01.ogg",
+    "assetId": "92919071662513",
     "status": "approved"
   },
   "audio/footsteps/dirt_02": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/dirt_02.wav",
-    "assetId": 126078840343211,
-    "status": "approved"
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC0 - congusbongus, derived from Gravel Footsteps pack by Ali_6868 (freesound pack 21608)",
+    "file": "assets/audio/footsteps/dirt_02.ogg",
+    "assetId": "139157958457273",
+    "status": "reviewing"
   },
   "audio/footsteps/dirt_03": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/dirt_03.wav",
-    "assetId": 97659269814534,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC0 - congusbongus, derived from Gravel Footsteps pack by Ali_6868 (freesound pack 21608)",
+    "file": "assets/audio/footsteps/dirt_03.ogg",
+    "assetId": "131650563079899",
     "status": "approved"
   },
   "audio/footsteps/sand_01": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/sand_01.wav",
-    "assetId": 137562067218683,
+    "source": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+    "license": "CC0 - Fantozzi, submitted by qubodup",
+    "file": "assets/audio/footsteps/sand_01.ogg",
+    "assetId": "88189455726246",
     "status": "approved"
   },
   "audio/footsteps/sand_02": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/sand_02.wav",
-    "assetId": 100843308344050,
-    "status": "approved"
+    "source": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+    "license": "CC0 - Fantozzi, submitted by qubodup",
+    "file": "assets/audio/footsteps/sand_02.ogg",
+    "assetId": "124347093278523",
+    "status": "reviewing"
   },
   "audio/footsteps/sand_03": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/sand_03.wav",
-    "assetId": 118414794165248,
-    "status": "approved"
+    "source": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+    "license": "CC0 - Fantozzi, submitted by qubodup",
+    "file": "assets/audio/footsteps/sand_03.ogg",
+    "assetId": "134445351058100",
+    "status": "reviewing"
   },
   "audio/footsteps/water_01": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/water_01.wav",
-    "assetId": 105672530740348,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from Water Footsteps by EminYILDIRIM (freesound 608663)",
+    "file": "assets/audio/footsteps/water_01.ogg",
+    "assetId": "135453491913877",
     "status": "approved"
   },
   "audio/footsteps/water_02": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/water_02.wav",
-    "assetId": 109737300005657,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from Water Footsteps by EminYILDIRIM (freesound 608663)",
+    "file": "assets/audio/footsteps/water_02.ogg",
+    "assetId": "76693791730774",
     "status": "approved"
   },
   "audio/footsteps/water_03": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/footsteps/water_03.wav",
-    "assetId": 95099484266022,
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC-BY 3.0 - congusbongus, derived from Water Footsteps by EminYILDIRIM (freesound 608663)",
+    "file": "assets/audio/footsteps/water_03.ogg",
+    "assetId": "84790879692726",
     "status": "approved"
   },
   "audio/city/siren_facility": {
@@ -280,18 +280,20 @@
     "status": "approved"
   },
   "audio/city/siren_police": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/city/siren_police.wav",
-    "assetId": 90676434432939,
-    "status": "approved"
+    "source": "https://commons.wikimedia.org/wiki/File:American_police_siren_i.ogg",
+    "license": "Public domain - lezer",
+    "file": "assets/audio/city/siren_police.ogg",
+    "assetId": 0,
+    "status": "rejected",
+    "note": "Real emergency-service siren rejected by Roblox moderation. Needs a stylised siren, not a genuine recording."
   },
   "audio/city/siren_ambulance": {
-    "source": "generated",
-    "license": "Original work (project owner)",
-    "file": "assets/audio/city/siren_ambulance.wav",
-    "assetId": 119061943603302,
-    "status": "approved"
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Every Commons ambulance siren found is CC BY-SA (copyleft). Need CC0 or CC-BY."
   },
   "audio/city/helicopter": {
     "source": "https://commons.wikimedia.org/wiki/File:Helicopter_over_quiet_neighbourhood.ogg",
@@ -903,5 +905,19 @@
     "textureAssetId": "121905215560047",
     "assetId": "140279851451360",
     "status": "approved"
+  },
+  "audio/zombie/bone_rattle_01": {
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC0 - congusbongus, derived from bone shell by blukotek (freesound 249319)",
+    "file": "assets/audio/zombie/bone_rattle_01.ogg",
+    "assetId": "87281543307970",
+    "status": "reviewing"
+  },
+  "audio/zombie/bone_rattle_02": {
+    "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
+    "license": "CC0 - congusbongus, derived from bone shell by blukotek (freesound 249319)",
+    "file": "assets/audio/zombie/bone_rattle_02.ogg",
+    "assetId": "116306680002799",
+    "status": "reviewing"
   }
 }

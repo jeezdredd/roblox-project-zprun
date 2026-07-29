@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local CameraController = require(script.Parent.CameraController)
 local InputController = require(script.Parent.InputController)
 local RunController = require(script.Parent.RunController)
+local Viewmodel = require(script.Parent.Parent.systems.Viewmodel)
 
 local FlowController = {}
 
@@ -13,7 +14,8 @@ local PHASE_ATTRIBUTE = "FlowPhase"
 local function applyPhase()
 	local player = Players.LocalPlayer
 	local phase = player:GetAttribute(PHASE_ATTRIBUTE)
-	if phase == "Mission" then
+	local inMission = phase == "Mission"
+	if inMission then
 		InputController.start()
 		CameraController.start()
 		RunController.start()
@@ -22,6 +24,7 @@ local function applyPhase()
 		InputController.stop()
 		CameraController.stop()
 	end
+	Viewmodel.setActive(inMission)
 end
 
 function FlowController.init()

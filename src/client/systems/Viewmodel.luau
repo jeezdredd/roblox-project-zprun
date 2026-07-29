@@ -24,6 +24,11 @@ local sequencer = AnimationSequencer.new("Pistol")
 local phaseListeners: { (string) -> () } = {}
 local sprintActive = false
 
+-- The viewmodel only belongs to the run. Outside the Mission phase the camera is not
+-- ours, so a rig parented to it hangs in mid-air in front of the hub camera.
+local active = false
+local pendingWeaponId: string? = nil
+
 local function makeSpring(id: string)
 	local setting = ViewmodelConfig.spring(id)
 	return Spring.vector(setting.stiffness, setting.damping)
@@ -71,9 +76,24 @@ local function laggedCamera(current: CFrame): CFrame
 	return cameraHistory[index] or current
 end
 
+local function destroyRig()
+	local previous = rig
+	if previous then
+		previous.model:Destroy()
+	end
+	rig = nil
+	sprintActive = false
+	sequencer:stop()
+end
+
 function Viewmodel.setWeapon(weaponId: string)
 	local config = WeaponsConfig.get(weaponId)
 	if not config then
+		return
+	end
+	pendingWeaponId = weaponId
+	if not active then
+		destroyRig()
 		return
 	end
 	local camera = currentCamera()
@@ -81,10 +101,7 @@ function Viewmodel.setWeapon(weaponId: string)
 		return
 	end
 
-	local previous = rig
-	if previous then
-		previous.model:Destroy()
-	end
+	destroyRig()
 	rig = ViewmodelBuilder.build(config, camera)
 	isVisible = true
 
@@ -103,6 +120,21 @@ function Viewmodel.setWeapon(weaponId: string)
 	sequencer:setClass(config.class)
 	sequencer:play("Equip")
 	sprintActive = false
+end
+
+function Viewmodel.setActive(value: boolean)
+	if active == value then
+		return
+	end
+	active = value
+	if not active then
+		destroyRig()
+		return
+	end
+	local weaponId = pendingWeaponId or player:GetAttribute("WeaponId")
+	if typeof(weaponId) == "string" then
+		Viewmodel.setWeapon(weaponId)
+	end
 end
 
 function Viewmodel.onFired(config: WeaponsConfig.WeaponConfig)
@@ -270,7 +302,7 @@ end
 local function step(deltaTime: number)
 	local current = rig
 	local camera = currentCamera()
-	if not current or not camera or current.model.Parent ~= camera then
+	if not active or not current or not camera or current.model.Parent ~= camera then
 		return
 	end
 	local character = player.Character

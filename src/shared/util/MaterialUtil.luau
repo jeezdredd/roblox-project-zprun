@@ -47,31 +47,23 @@ MaterialUtil.sets = {
 
 local registered: { [string]: boolean } = {}
 
-local function assetUrl(id: number): string
-	return "rbxassetid://" .. tostring(id)
-end
-
+-- MaterialVariant.BaseMaterial is a plugin-capability property, so a runtime script
+-- cannot build these. They ship as instances declared under MaterialService in
+-- default.project.json; this pass only records which ones actually arrived.
 function MaterialUtil.register()
 	if not MaterialUtil.ENABLED then
 		return
 	end
 	for _, set in MaterialUtil.sets do
-		if registered[set.name] or set.color <= 0 or set.normal <= 0 or set.roughness <= 0 then
+		if registered[set.name] then
 			continue
 		end
-		if MaterialService:FindFirstChild(set.name) then
+		local existing = MaterialService:FindFirstChild(set.name)
+		if existing and existing:IsA("MaterialVariant") then
 			registered[set.name] = true
-			continue
+		else
+			warn(`[TaskForceZ] MaterialVariant "{set.name}" missing from MaterialService, falling back to flat textures`)
 		end
-		local variant = Instance.new("MaterialVariant")
-		variant.Name = set.name
-		variant.BaseMaterial = set.baseMaterial
-		variant.ColorMap = assetUrl(set.color)
-		variant.NormalMap = assetUrl(set.normal)
-		variant.RoughnessMap = assetUrl(set.roughness)
-		variant.StudsPerTile = set.studsPerTile
-		variant.Parent = MaterialService
-		registered[set.name] = true
 	end
 end
 

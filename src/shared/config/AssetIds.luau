@@ -139,6 +139,13 @@ local AssetIds = {
 			idle_02 = 119778333739075,
 		},
 	},
+	mesh = {
+		props = {
+			barrel = 111395527681865,
+			car_wreck = 140279851451360,
+			supply_crate = 125675158565972,
+		},
+	},
 	texture = {
 		pbr = {
 			asphalt_normal = 138058441441084,

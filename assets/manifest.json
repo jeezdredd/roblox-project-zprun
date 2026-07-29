@@ -873,5 +873,35 @@
     "file": "assets/animations/weapon_sprint.rbxm",
     "assetId": "0",
     "status": "pending"
+  },
+  "mesh/props/barrel": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "rusty metal fuel barrel with dents and faded olive paint, weathered, low-poly game prop, desaturated olive-tan-grey military palette, flat neutral albedo texture without baked lighting, manifold geometry, no floating parts",
+    "maxTriangles": 800,
+    "triangles": 798,
+    "textureAssetId": "108100362542934",
+    "assetId": "111395527681865",
+    "status": "approved"
+  },
+  "mesh/props/supply_crate": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "military supply crate, olive green wooden box with metal corners, weathered, low-poly game prop, desaturated olive-tan-grey military palette, flat neutral albedo texture without baked lighting, manifold geometry, no floating parts",
+    "maxTriangles": 600,
+    "triangles": 584,
+    "textureAssetId": "100123389258401",
+    "assetId": "125675158565972",
+    "status": "approved"
+  },
+  "mesh/props/car_wreck": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "burnt scrap metal wreckage of a stripped sedan chassis lying on the ground, only the hollow skeletal frame remains, roof torn off and collapsed, doors missing, engine bay empty, bare axles with no wheels or tires, every window empty, twisted crumpled panels, soot black charred metal with dull dark brown oxidation, junkyard scrap, low-poly game prop, desaturated olive-tan-grey military palette, flat neutral albedo texture without baked lighting, manifold geometry, no floating parts",
+    "maxTriangles": 2500,
+    "triangles": 2488,
+    "textureAssetId": "121905215560047",
+    "assetId": "140279851451360",
+    "status": "approved"
   }
 }

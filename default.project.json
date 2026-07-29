@@ -3,11 +3,17 @@
   "tree": {
     "$className": "DataModel",
     "ServerScriptService": {
-      "Server": { "$path": "src/server" },
-      "Packages": { "$path": "ServerPackages" }
+      "Server": {
+        "$path": "src/server"
+      },
+      "Packages": {
+        "$path": "ServerPackages"
+      }
     },
     "ReplicatedStorage": {
-      "Shared": { "$path": "src/shared" }
+      "Shared": {
+        "$path": "src/shared"
+      }
     },
     "ReplicatedFirst": {
       "$path": "src/replicatedfirst"
@@ -30,7 +36,42 @@
     },
     "StarterPlayer": {
       "StarterPlayerScripts": {
-        "Client": { "$path": "src/client" }
+        "Client": {
+          "$path": "src/client"
+        }
+      }
+    },
+    "MaterialService": {
+      "$className": "MaterialService",
+      "TFZ_Asphalt": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Asphalt",
+          "ColorMap": "rbxassetid://115224776116295",
+          "NormalMap": "rbxassetid://138058441441084",
+          "RoughnessMap": "rbxassetid://74110318979899",
+          "StudsPerTile": 12
+        }
+      },
+      "TFZ_Concrete": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Concrete",
+          "ColorMap": "rbxassetid://117864665807575",
+          "NormalMap": "rbxassetid://87774611487630",
+          "RoughnessMap": "rbxassetid://114110568469344",
+          "StudsPerTile": 6
+        }
+      },
+      "TFZ_Sand": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Sand",
+          "ColorMap": "rbxassetid://115395312730505",
+          "NormalMap": "rbxassetid://134675717486844",
+          "RoughnessMap": "rbxassetid://93857502534136",
+          "StudsPerTile": 8
+        }
       }
     }
   }

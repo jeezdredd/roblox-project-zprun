@@ -7,7 +7,7 @@ export type SpringSetting = {
 
 local ViewmodelConfig = {}
 
-ViewmodelConfig.BASE_OFFSET = CFrame.new(0.62, -0.62, -1.55)
+ViewmodelConfig.BASE_OFFSET = CFrame.new(0.48, -0.42, -1.85)
 
 ViewmodelConfig.FILL_LIGHT = {
 	enabled = true,

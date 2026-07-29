@@ -105,17 +105,15 @@ local function buildArm(rig: Rig, side: number, handRest: CFrame, handBone: stri
 	)
 
 	local wristBone = handBone .. "Wrist"
-	addNode(rig, "Part", "Wrist", Vector3.new(0.3, 0.24, 0.26), COLOR_SKIN, Enum.Material.SmoothPlastic, CFrame.new(side * 0.1, -0.16, 0.26), handBone, wristBone)
+	addNode(rig, "Part", "Wrist", Vector3.new(0.28, 0.22, 0.24), COLOR_SKIN, Enum.Material.SmoothPlastic, CFrame.new(side * 0.06, -0.08, 0.2), handBone, wristBone)
 
+	-- Only the forearm stub is ever inside a first-person frame; an upper arm would
+	-- chain behind the camera and render as nothing.
 	local forearmBone = handBone .. "Forearm"
-	local forearmRest = CFrame.Angles(math.rad(elbowPitch), math.rad(side * 16), 0)
+	local forearmRest = CFrame.Angles(math.rad(elbowPitch), math.rad(side * 12), 0)
 	addNode(rig, "Part", "ForearmPivot", Vector3.new(0.05, 0.05, 0.05), COLOR_SLEEVE, Enum.Material.Fabric, forearmRest, wristBone, forearmBone).Transparency = 1
-	addNode(rig, "Part", "SleeveCuff", Vector3.new(0.42, 0.42, 0.24), COLOR_SLEEVE:Lerp(Color3.new(), 0.25), Enum.Material.Fabric, CFrame.new(0, 0, 0.12), forearmBone)
-	applyTexture(addNode(rig, "Part", "Forearm", Vector3.new(0.36, 0.36, 1.35), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 0.72), forearmBone), TexturesConfig.FABRIC, 0.7)
-
-	local upperBone = handBone .. "Upper"
-	addNode(rig, "Part", "UpperPivot", Vector3.new(0.05, 0.05, 0.05), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 1.4) * CFrame.Angles(math.rad(30), math.rad(side * 8), 0), forearmBone, upperBone).Transparency = 1
-	applyTexture(addNode(rig, "Part", "UpperArm", Vector3.new(0.42, 0.42, 1.4), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 0.6), upperBone), TexturesConfig.FABRIC, 0.7)
+	addNode(rig, "Part", "SleeveCuff", Vector3.new(0.36, 0.36, 0.2), COLOR_SLEEVE:Lerp(Color3.new(), 0.25), Enum.Material.Fabric, CFrame.new(0, 0, 0.1), forearmBone)
+	applyTexture(addNode(rig, "Part", "Forearm", Vector3.new(0.32, 0.32, 0.95), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 0.52), forearmBone), TexturesConfig.FABRIC, 0.7)
 end
 
 function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Camera): Rig
@@ -269,7 +267,7 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 		"weaponRoot"
 	)
 
-	buildArm(rig, 1, gripRest * CFrame.new(0.02, -0.04, 0.08), "handR", "weaponRoot", 42)
+	buildArm(rig, 1, gripRest * CFrame.new(0.02, -0.04, 0.08), "handR", "weaponRoot", 26)
 
 	local supportRest: CFrame
 	local supportParent = "weaponRoot"
@@ -281,7 +279,7 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 	else
 		supportRest = CFrame.new(-0.04, -0.26, -(bodyLength / 2 + barrelLength * 0.3)) * CFrame.Angles(math.rad(6), 0, 0)
 	end
-	buildArm(rig, -1, supportRest, "handL", supportParent, 54)
+	buildArm(rig, -1, supportRest, "handL", supportParent, 34)
 
 	rig.muzzle.Name = "Muzzle"
 	rig.muzzle.Position = Vector3.new(0, 0, -barrelLength / 2)

@@ -334,6 +334,10 @@ function WeaponService.applyLoadout(player: Player)
 	end
 end
 
+function WeaponService.equip(player: Player, weaponId: string)
+	onEquip(player, weaponId)
+end
+
 function WeaponService.addReserve(player: Player, rounds: number)
 	local state = states[player]
 	if not state or rounds <= 0 then

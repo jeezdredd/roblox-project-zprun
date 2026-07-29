@@ -1,9 +1,12 @@
 --!strict
 
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local BootState = require(ReplicatedFirst:WaitForChild("BootState"))
 local BootConfig = require(ReplicatedFirst:WaitForChild("BootConfig"))
+local DevConfig = require(ReplicatedStorage.Shared.config.DevConfig)
 
 local FlowController = require(script.controllers.FlowController)
 local SquadController = require(script.controllers.SquadController)
@@ -78,6 +81,8 @@ VendorInteraction.init()
 
 HudGui.init()
 RunHud.init()
-GoreWarningGui.showOnce()
+if not (RunService:IsStudio() and DevConfig.SKIP_GORE_WARNING) then
+	GoreWarningGui.showOnce()
+end
 
 print("[TaskForceZ][Client] Client started")

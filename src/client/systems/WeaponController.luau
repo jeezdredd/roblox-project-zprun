@@ -13,6 +13,7 @@ local Viewmodel = require(script.Parent.Viewmodel)
 local WeaponSfx = require(script.Parent.WeaponSfx)
 local WeaponVfx = require(script.Parent.WeaponVfx)
 local CursorMode = require(script.Parent.CursorMode)
+local RunController = require(script.Parent.Parent.controllers.RunController)
 local AimAssist = require(script.Parent.AimAssist)
 local UiSfx = require(script.Parent.UiSfx)
 local UiTheme = require(script.Parent.Parent.ui.UiTheme)
@@ -303,6 +304,12 @@ local function installDebugHook()
 			for _, id in { "GoreWarning", "Shop", "Settings", "SquadLobby", "DeathResults" } do
 				CursorMode.setModalOpen(id, false)
 			end
+		elseif command == "freeze" then
+			-- Stops the forward run so a static target range stays in front of you.
+			-- Without this the runner leaves the dummies behind within a second.
+			RunController.stop()
+		elseif command == "unfreeze" then
+			RunController.start()
 		elseif command == "state" then
 			print(string.format(
 				"[DebugWeapon] modalOpen=%s alive=%s reloading=%s predictedMag=%d weapon=%s",

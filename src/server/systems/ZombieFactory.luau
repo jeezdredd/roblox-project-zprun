@@ -74,6 +74,9 @@ function ZombieFactory.build(config: ZombiesConfig.ZombieConfig): Model
 
 	local humanoid = Instance.new("Humanoid")
 	humanoid.RequiresNeck = false
+	humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+	humanoid.NameDisplayDistance = 0
+	humanoid.HealthDisplayDistance = 0
 	humanoid.MaxHealth = config.maxHealth
 	humanoid.Health = config.maxHealth
 	humanoid.WalkSpeed = config.walkSpeed

@@ -724,7 +724,10 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 		end
 	end
 
-	local edgeStep = if effective.edgeProps == "trees" then { 22, 34 } else { 34, 52 }
+	local edgeStep = if effective.edgeProps == "trees"
+		then { 22, 34 }
+		elseif effective.edgeProps == "buildings" then { 18, 30 }
+		else { 30, 46 }
 	for _, sign in { -1, 1 } do
 		local z = -chunkLength / 2 + rng:NextNumber(6, 20)
 		while z < chunkLength / 2 - 8 do
@@ -732,9 +735,30 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 			if nextLocation and rng:NextNumber() < alpha then
 				kind = nextLocation.edgeProps
 			end
-			local x = sign * (laneWidth / 2 + barrierThickness + rng:NextNumber(10, apronWidth - 20))
+			local nearOffset = if kind == "buildings" then 2 else 10
+			local farOffset = if kind == "buildings" then apronWidth - 55 else apronWidth - 20
+			local x = sign * (laneWidth / 2 + barrierThickness + rng:NextNumber(nearOffset, farOffset))
 			buildEdgeProp(kind, sign, Vector3.new(x, 0.5, z), rng, model)
 			z += rng:NextNumber(edgeStep[1], edgeStep[2])
+		end
+
+		if effective.edgeProps == "buildings" then
+			local debrisZ = -chunkLength / 2 + rng:NextNumber(8, 22)
+			while debrisZ < chunkLength / 2 - 8 do
+				local x = sign * (laneWidth / 2 - rng:NextNumber(4, 26))
+				local roll = rng:NextNumber()
+				local position = Vector3.new(x, 0.5, debrisZ)
+				if roll < 0.4 then
+					buildCar(position, rng:NextNumber(-1.2, 1.2), rng, model)
+				elseif roll < 0.66 then
+					buildRubblePile(position, rng, model)
+				elseif roll < 0.86 then
+					buildDivider(position, rng, model)
+				else
+					buildCrash(position, rng, model)
+				end
+				debrisZ += rng:NextNumber(20, 40)
+			end
 		end
 	end
 

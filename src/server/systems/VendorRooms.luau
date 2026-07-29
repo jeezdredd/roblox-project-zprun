@@ -122,9 +122,22 @@ local function buildShell(base: CFrame, config: VendorsConfig.VendorConfig, pare
 		Enum.Material.Metal,
 		parent
 	)
+	local jambColor = Color3.fromRGB(122, 116, 86)
 	for _, sign in { -1, 1 } do
-		local jamb = makePart("Part", "DoorJamb", Vector3.new(0.9, doorHeight, 2), base * CFrame.new(sign * DOOR_HALF_WIDTH, doorHeight / 2 + 1, -halfD + 0.75), HangarConfig.TRIM_COLOR, Enum.Material.Metal, parent)
+		local jamb = makePart("Part", "DoorJamb", Vector3.new(0.9, doorHeight, 2), base * CFrame.new(sign * DOOR_HALF_WIDTH, doorHeight / 2 + 1, -halfD + 0.75), jambColor, Enum.Material.Metal, parent)
 		decor(jamb)
+		for index = 0, 5 do
+			local stripe = makePart(
+				"Part",
+				"HazardEdge",
+				Vector3.new(1, 1.3, 0.3),
+				base * CFrame.new(sign * DOOR_HALF_WIDTH, 1.7 + index * 1.45, -halfD - 0.3) * CFrame.Angles(math.rad(28), 0, 0),
+				if index % 2 == 0 then Color3.fromRGB(184, 150, 42) else Color3.fromRGB(32, 30, 28),
+				Enum.Material.SmoothPlastic,
+				parent
+			)
+			decor(stripe)
+		end
 	end
 
 	local ceiling = makePart("Part", "RoomCeiling", Vector3.new(config.size.X, 1, config.size.Z), base * CFrame.new(0, height + 1.5, 0), trim, Enum.Material.Metal, parent)
@@ -297,18 +310,33 @@ local function buildAmmoStack(base: CFrame, parent: Instance)
 	end
 end
 
+local function buildWorkbench(base: CFrame, parent: Instance)
+	local benchTop = makePart("Part", "BenchTop", Vector3.new(16, 0.8, 5), base * CFrame.new(0, 4.4, 0), Color3.fromRGB(102, 80, 56), Enum.Material.WoodPlanks, parent)
+	TextureUtil.applyFace(benchTop, Enum.NormalId.Top, TexturesConfig.WOOD, 5)
+	for _, sign in { -1, 1 } do
+		makePart("Part", "BenchLeg", Vector3.new(1, 4, 4.6), base * CFrame.new(sign * 7, 2.2, 0), DARK_STEEL, Enum.Material.Metal, parent)
+	end
+	local vice = makePart("Part", "Vice", Vector3.new(1.8, 1.8, 2.2), base * CFrame.new(-6, 5.7, 0), STEEL, Enum.Material.Metal, parent)
+	decor(vice)
+	local grinder = makePart("Part", "Grinder", Vector3.new(2.6, 2.2, 2), base * CFrame.new(6, 5.9, 0), Color3.fromRGB(120, 90, 60), Enum.Material.Metal, parent)
+	decor(grinder)
+	local tray = makePart("Part", "PartsTray", Vector3.new(3.4, 0.5, 2.6), base * CFrame.new(1.5, 5.1, 0), STEEL, Enum.Material.Metal, parent)
+	decor(tray)
+end
+
 local function buildWeaponDealer(base: CFrame, size: Vector3, parent: Instance)
 	local halfW = size.X / 2
 	local halfD = size.Z / 2
 
 	for _, sign in { -1, 1 } do
-		makePart("Part", "RackBoard", Vector3.new(1, 12, 26), base * CFrame.new(sign * (halfW - 2.4), 8, 2), Color3.fromRGB(74, 58, 42), Enum.Material.WoodPlanks, parent)
+		makePart("Part", "RackBoard", Vector3.new(1, 12, 26), base * CFrame.new(sign * (halfW - 2.4), 8, 2), Color3.fromRGB(84, 88, 92), Enum.Material.DiamondPlate, parent)
 		for i = 0, 4 do
 			buildRifle(base * CFrame.new(sign * (halfW - 3.6), 6 + (i % 2) * 4.5, -8 + i * 4.6) * CFrame.Angles(0, math.rad(90), math.rad(6)), parent)
 		end
 	end
 
-	local display = makePart("Part", "DisplayCase", Vector3.new(24, 3, 6), base * CFrame.new(0, 2.6, halfD - 12), DARK_STEEL, Enum.Material.Metal, parent)
+	local display = makePart("Part", "DisplayCase", Vector3.new(24, 3, 6), base * CFrame.new(0, 2.6, halfD - 12), DARK_STEEL, Enum.Material.DiamondPlate, parent)
+	buildWorkbench(base * CFrame.new(-halfW + 14, 0, -halfD + 14), parent)
 	local glass = makePart("Part", "DisplayGlass", Vector3.new(24, 3.4, 6), base * CFrame.new(0, 5.8, halfD - 12), Color3.fromRGB(190, 215, 225), Enum.Material.Glass, parent)
 	glass.Transparency = 0.55
 	decor(glass)
@@ -324,19 +352,6 @@ local function buildWeaponDealer(base: CFrame, size: Vector3, parent: Instance)
 	decor(ammoSign)
 end
 
-local function buildWorkbench(base: CFrame, parent: Instance)
-	local benchTop = makePart("Part", "BenchTop", Vector3.new(16, 0.8, 5), base * CFrame.new(0, 4.4, 0), Color3.fromRGB(102, 80, 56), Enum.Material.WoodPlanks, parent)
-	TextureUtil.applyFace(benchTop, Enum.NormalId.Top, TexturesConfig.WOOD, 5)
-	for _, sign in { -1, 1 } do
-		makePart("Part", "BenchLeg", Vector3.new(1, 4, 4.6), base * CFrame.new(sign * 7, 2.2, 0), DARK_STEEL, Enum.Material.Metal, parent)
-	end
-	local vice = makePart("Part", "Vice", Vector3.new(1.8, 1.8, 2.2), base * CFrame.new(-6, 5.7, 0), STEEL, Enum.Material.Metal, parent)
-	decor(vice)
-	local grinder = makePart("Part", "Grinder", Vector3.new(2.6, 2.2, 2), base * CFrame.new(6, 5.9, 0), Color3.fromRGB(120, 90, 60), Enum.Material.Metal, parent)
-	decor(grinder)
-	local tray = makePart("Part", "PartsTray", Vector3.new(3.4, 0.5, 2.6), base * CFrame.new(1.5, 5.1, 0), STEEL, Enum.Material.Metal, parent)
-	decor(tray)
-end
 
 local function buildGunsmith(base: CFrame, size: Vector3, parent: Instance)
 	local halfW = size.X / 2

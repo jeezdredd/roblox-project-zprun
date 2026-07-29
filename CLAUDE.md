@@ -11,6 +11,10 @@ Co-op endless runner set in a zombie apocalypse (1-3 players). Roblox, Rojo + Wa
 | Call of Duty: Zombies | Risk economy and meta loop: kills pay out, perks, upgrade stations |
 | TTK Testing by Sable Digital (Roblox) | Weapon feel benchmark: viewmodel animation quality, weapon textures, gunshot audio layering |
 
+## Asset policy
+
+Animation and audio follow permanent rules recorded in [docs/asset-policy.md](docs/asset-policy.md). The short version: never author artistic keyframe animation in code, never synthesise audio, leave a slot silent at `assetId = 0` and log it in `assets/NEEDED.md` rather than filling it with something unsuitable, and never invent an assetId. Unreal (Fab) and Unity Asset Store packs are forbidden even when free.
+
 ## Hard rules
 
 - Server is authoritative for ammo, damage, credits and purchase grants. Every remote validates its arguments.

@@ -189,11 +189,13 @@ end
 function ChunkSpawner.reset()
 	despawnAll()
 	plan = {}
+	currentBiomeId = nil
 end
 
 function ChunkSpawner.clear()
 	despawnAll()
 	plan = {}
+	currentBiomeId = nil
 	routePool = table.clone(LocationsConfig.order)
 end
 

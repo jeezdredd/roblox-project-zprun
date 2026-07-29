@@ -86,28 +86,62 @@ function HudGui.init()
 	hint.Parent = screen
 
 	local player = Players.LocalPlayer
-	local wallet = Instance.new("TextLabel")
-	wallet.AnchorPoint = Vector2.new(1, 0)
-	wallet.Position = UDim2.new(1, -12, 0, 80)
-	wallet.Size = UDim2.fromOffset(180, 22)
-	wallet.BackgroundTransparency = 1
-	wallet.Font = Enum.Font.RobotoMono
-	wallet.TextSize = 16
-	wallet.TextXAlignment = Enum.TextXAlignment.Right
-	wallet.TextColor3 = Color3.fromRGB(198, 164, 74)
-	wallet.TextStrokeTransparency = 0.6
-	wallet.Text = ""
-	wallet.Parent = screen
+
+	local walletPanel = Instance.new("Frame")
+	walletPanel.Name = "Wallet"
+	walletPanel.AnchorPoint = Vector2.new(1, 0)
+	walletPanel.Position = UDim2.new(1, -14, 0, 76)
+	walletPanel.Size = UDim2.fromOffset(178, 40)
+	walletPanel.BackgroundColor3 = Color3.fromRGB(12, 13, 14)
+	walletPanel.BackgroundTransparency = 0.35
+	walletPanel.BorderSizePixel = 0
+	walletPanel.Parent = screen
+
+	local walletAccent = Instance.new("Frame")
+	walletAccent.Name = "Accent"
+	walletAccent.Size = UDim2.new(0, 2, 1, 0)
+	walletAccent.BackgroundColor3 = Color3.fromRGB(126, 142, 96)
+	walletAccent.BorderSizePixel = 0
+	walletAccent.Parent = walletPanel
+
+	local creditsLabel = Instance.new("TextLabel")
+	creditsLabel.Name = "Credits"
+	creditsLabel.Position = UDim2.fromOffset(12, 4)
+	creditsLabel.Size = UDim2.new(1, -22, 0, 20)
+	creditsLabel.BackgroundTransparency = 1
+	creditsLabel.Font = Enum.Font.RobotoMono
+	creditsLabel.TextSize = 17
+	creditsLabel.TextXAlignment = Enum.TextXAlignment.Left
+	creditsLabel.TextColor3 = Color3.fromRGB(214, 216, 206)
+	creditsLabel.TextStrokeTransparency = 1
+	creditsLabel.Text = ""
+	creditsLabel.Parent = walletPanel
+
+	local xpLabel = Instance.new("TextLabel")
+	xpLabel.Name = "Xp"
+	xpLabel.Position = UDim2.fromOffset(12, 22)
+	xpLabel.Size = UDim2.new(1, -22, 0, 14)
+	xpLabel.BackgroundTransparency = 1
+	xpLabel.Font = Enum.Font.RobotoMono
+	xpLabel.TextSize = 12
+	xpLabel.TextXAlignment = Enum.TextXAlignment.Left
+	xpLabel.TextColor3 = Color3.fromRGB(138, 140, 130)
+	xpLabel.TextStrokeTransparency = 1
+	xpLabel.Text = ""
+	xpLabel.Parent = walletPanel
 
 	local function refreshWallet()
+		local inMission = player:GetAttribute("FlowPhase") == "Mission"
+		walletPanel.Visible = not inMission
+
 		local credits = player:GetAttribute("Credits")
 		local xp = player:GetAttribute("XP")
-		if typeof(credits) == "number" then
-			wallet.Text = string.format("$%d · XP %d", credits, if typeof(xp) == "number" then xp else 0)
-		end
+		creditsLabel.Text = if typeof(credits) == "number" then string.format("CR %d", credits) else "CR --"
+		xpLabel.Text = if typeof(xp) == "number" then string.format("XP %d", xp) else ""
 	end
 	player:GetAttributeChangedSignal("Credits"):Connect(refreshWallet)
 	player:GetAttributeChangedSignal("XP"):Connect(refreshWallet)
+	player:GetAttributeChangedSignal("FlowPhase"):Connect(refreshWallet)
 	refreshWallet()
 end
 

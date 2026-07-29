@@ -38,13 +38,13 @@ VendorsConfig.vendors = {
 	},
 	WeaponDealer = {
 		id = "WeaponDealer",
-		displayName = "Weapon Dealer",
+		displayName = "Armory",
 		subtitle = "Buy weapons — SOON",
 		offset = Vector3.new(152, 0, -52),
 		rotationY = math.pi / 2,
 		size = Vector3.new(56, 18, 44),
-		wallColor = Color3.fromRGB(70, 66, 60),
-		color = Color3.fromRGB(200, 170, 90),
+		wallColor = Color3.fromRGB(96, 92, 74),
+		color = Color3.fromRGB(150, 128, 70),
 	},
 	Gunsmith = {
 		id = "Gunsmith",
@@ -53,8 +53,8 @@ VendorsConfig.vendors = {
 		offset = Vector3.new(152, 0, 62),
 		rotationY = math.pi / 2,
 		size = Vector3.new(56, 18, 44),
-		wallColor = Color3.fromRGB(64, 62, 60),
-		color = Color3.fromRGB(230, 150, 60),
+		wallColor = Color3.fromRGB(92, 88, 72),
+		color = Color3.fromRGB(158, 116, 56),
 	},
 	BubblegumMachine = {
 		id = "BubblegumMachine",

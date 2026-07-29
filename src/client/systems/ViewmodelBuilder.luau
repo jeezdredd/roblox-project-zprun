@@ -33,10 +33,10 @@ export type PoseOverrides = {
 	supportHand: CFrame?,
 }
 
-local COLOR_METAL = Color3.fromRGB(104, 108, 116)
-local COLOR_STEEL = Color3.fromRGB(140, 144, 152)
-local COLOR_GRIP = Color3.fromRGB(96, 84, 68)
-local COLOR_WOOD = Color3.fromRGB(150, 112, 72)
+local COLOR_METAL = Color3.fromRGB(78, 84, 94)
+local COLOR_STEEL = Color3.fromRGB(158, 164, 174)
+local COLOR_GRIP = Color3.fromRGB(58, 54, 50)
+local COLOR_WOOD = Color3.fromRGB(158, 116, 70)
 local COLOR_SLEEVE = Color3.fromRGB(112, 124, 96)
 local COLOR_GLOVE = Color3.fromRGB(78, 78, 82)
 local COLOR_SKIN = Color3.fromRGB(214, 172, 138)
@@ -72,6 +72,9 @@ local function addNode(
 	part.Size = size
 	part.Color = color
 	part.Material = material
+	if material == Enum.Material.Metal then
+		part.Reflectance = 0.12
+	end
 	part.Anchored = true
 	part.CanCollide = false
 	part.CanQuery = false

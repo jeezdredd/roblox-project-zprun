@@ -84,6 +84,12 @@ local function refreshTarget()
 	target = LightingConfig.get(resolveTargetId())
 end
 
+local function snapToTarget()
+	refreshTarget()
+	current = target
+	apply(current)
+end
+
 local function step(deltaTime: number)
 	local alpha = 1 - math.exp(-LightingConfig.LERP_SPEED * deltaTime)
 	current = blend(current, target, alpha)
@@ -115,7 +121,13 @@ function LightingDirector.init()
 	target = current
 	apply(current)
 
-	Players.LocalPlayer:GetAttributeChangedSignal(PHASE_ATTRIBUTE):Connect(refreshTarget)
+	Players.LocalPlayer:GetAttributeChangedSignal(PHASE_ATTRIBUTE):Connect(function()
+		if Players.LocalPlayer:GetAttribute(PHASE_ATTRIBUTE) == "Mission" then
+			snapToTarget()
+		else
+			refreshTarget()
+		end
+	end)
 	Workspace:GetAttributeChangedSignal(NIGHT_ATTRIBUTE):Connect(refreshTarget)
 	Workspace:GetAttributeChangedSignal(BIOME_ATTRIBUTE):Connect(refreshTarget)
 	refreshTarget()

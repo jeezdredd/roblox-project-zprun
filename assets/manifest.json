@@ -613,7 +613,7 @@
     "license": "CC0",
     "file": "assets/audio/world/radio_01.ogg",
     "assetId": "109089322959902",
-    "status": "reviewing"
+    "status": "approved"
   },
   "texture/surface/sand": {
     "source": "https://ambientcg.com/view?id=Ground080",
@@ -697,42 +697,42 @@
     "license": "Public domain",
     "file": "assets/audio/range/gong.ogg",
     "assetId": "126015144651781",
-    "status": "reviewing"
+    "status": "rejected"
   },
   "audio/weapons/shot_pistol": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/shot_pistol.wav",
     "assetId": "86945440175418",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/shot_smg": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/shot_smg.wav",
     "assetId": "98517684232791",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/shot_rifle": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/shot_rifle.wav",
     "assetId": "120306703273832",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/shot_shotgun": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/shot_shotgun.wav",
     "assetId": "129726512346854",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/unused/shot_core": {
     "source": "https://commons.wikimedia.org/wiki/File:Gunshots_8.ogg",
     "license": "Public domain",
     "file": "assets/audio/weapons/shot_core.ogg",
     "assetId": "75663090422099",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/unused/shot_auto": {
     "source": "https://opengameart.org/content/light-machine-gun",
@@ -746,98 +746,98 @@
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/close_pistol.wav",
     "assetId": "74305022147056",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/close_smg": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/close_smg.wav",
     "assetId": "120415397225180",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/close_rifle": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/close_rifle.wav",
     "assetId": "110884224691219",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/close_shotgun": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/close_shotgun.wav",
     "assetId": "102335137671396",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/tail_open": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/tail_open.wav",
     "assetId": "108476728399626",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/tail_interior": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/tail_interior.wav",
     "assetId": "105323708354342",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/close_pistol_02": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/close_pistol_02.wav",
     "assetId": "95057167104811",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/close_pistol_03": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/close_pistol_03.wav",
     "assetId": "104162930240953",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/close_rifle_02": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/close_rifle_02.wav",
     "assetId": "83354177139368",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/close_rifle_03": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/close_rifle_03.wav",
     "assetId": "74726287934893",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/close_smg_02": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/close_smg_02.wav",
     "assetId": "113891967382551",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/close_smg_03": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/close_smg_03.wav",
     "assetId": "133963121189870",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/close_shotgun_02": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/close_shotgun_02.wav",
     "assetId": "104315440827993",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/weapons/close_shotgun_03": {
     "source": "https://opengameart.org/content/gunshot-sounds",
     "license": "CC BY 3.0 (Vincent Sevedge)",
     "file": "assets/audio/weapons/close_shotgun_03.wav",
     "assetId": "89094909367132",
-    "status": "reviewing"
+    "status": "approved"
   },
   "animation/weapon/fire": {
     "source": "authored in Blender (pending)",

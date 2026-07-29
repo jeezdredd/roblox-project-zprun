@@ -37,6 +37,8 @@ GUIDE = {
     "animation/weapon/equip": ("Viewmodel — replaces procedural raise", "Universal Viewmodel Template: raise/equip", "polish"),
     "animation/weapon/inspect": ("Viewmodel — F key inspect", "Universal Viewmodel Template: inspect", "polish"),
     "animation/weapon/sprint": ("Viewmodel — sprint carry pose", "Universal Viewmodel Template: sprint/run", "polish"),
+    "audio/range/gong": ("Shooting range — gong hit feedback", "Freesound CC0: metal gong hit / steel target ping", "blocker"),
+    "audio/weapons/shell_03": ("Weapon shell casing variation 3", "Kenney CC0 impact sounds: small metal drop", "polish"),
 }
 
 CATEGORY_TITLES = {

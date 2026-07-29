@@ -7,7 +7,11 @@ export type SpringSetting = {
 
 local ViewmodelConfig = {}
 
-ViewmodelConfig.BASE_OFFSET = CFrame.new(0.48, -0.42, -1.85)
+-- Whole-rig scale. Measured in Studio: at 1.0 the weapon filled 48% of screen
+-- height, roughly double a normal first-person framing.
+ViewmodelConfig.SCALE = 0.72
+
+ViewmodelConfig.BASE_OFFSET = CFrame.new(0.42, -0.36, -2)
 
 ViewmodelConfig.FILL_LIGHT = {
 	enabled = true,

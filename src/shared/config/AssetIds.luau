@@ -80,7 +80,7 @@ local AssetIds = {
 			wind = 115486628564450,
 		},
 		range = {
-			gong = 126015144651781,
+			gong = 0,
 		},
 		ui = {
 			click = 133624826489555,

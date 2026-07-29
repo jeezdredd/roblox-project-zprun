@@ -33,7 +33,8 @@ only, no synthesis, no invented ids.
 
 | Slot | Used by | What to look for | Priority | Status |
 | --- | --- | --- | --- | --- |
+| `audio/range/gong` | Shooting range — gong hit feedback | Freesound CC0: metal gong hit / steel target ping | blocker | rejected |
 | `audio/unused/siren_police_rejected` | — | — | polish | rejected |
-| `audio/weapons/shell_03` | — | — | polish | rejected |
+| `audio/weapons/shell_03` | Weapon shell casing variation 3 | Kenney CC0 impact sounds: small metal drop | polish | rejected |
 
-**9 blockers, 10 polish items.**
+**10 blockers, 10 polish items.**

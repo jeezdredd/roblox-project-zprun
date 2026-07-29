@@ -56,6 +56,11 @@ local function applyTexture(part: BasePart, textureId: number, studsPerTile: num
 	end
 end
 
+local function scaled(rest: CFrame): CFrame
+	local scale = ViewmodelConfig.SCALE
+	return CFrame.new(rest.Position * scale) * (rest - rest.Position)
+end
+
 local function addNode(
 	rig: Rig,
 	className: string,
@@ -69,7 +74,8 @@ local function addNode(
 ): BasePart
 	local part = Instance.new(className) :: BasePart
 	part.Name = name
-	part.Size = size
+	part.Size = size * ViewmodelConfig.SCALE
+	rest = scaled(rest)
 	part.Color = color
 	part.Material = material
 	if material == Enum.Material.Metal then
@@ -161,12 +167,12 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 
 	local slideTopY = bodyHeight / 2 + 0.09
 	if isPistol then
-		rig.slideTravel = 0.3
+		rig.slideTravel = 0.3 * ViewmodelConfig.SCALE
 		addNode(rig, "Part", "Slide", Vector3.new(0.26, 0.18, bodyLength + 0.1), COLOR_STEEL, Enum.Material.Metal, CFrame.new(0, bodyHeight / 2 + 0.05, 0), "weaponRoot", "slide")
 	else
 		addNode(rig, "Part", "TopRail", Vector3.new(0.14, 0.08, bodyLength * 0.8), COLOR_STEEL, Enum.Material.Metal, CFrame.new(0, bodyHeight / 2 + 0.04, 0), "weaponRoot")
 		if class == "Rifle" or class == "SMG" then
-			rig.slideTravel = 0.22
+			rig.slideTravel = 0.22 * ViewmodelConfig.SCALE
 			addNode(rig, "Part", "BoltHandle", Vector3.new(0.12, 0.08, 0.16), COLOR_STEEL, Enum.Material.Metal, CFrame.new(0.17, 0.08, 0.2), "weaponRoot", "slide")
 		end
 	end
@@ -185,7 +191,7 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 	)
 
 	if isShotgun then
-		rig.pumpTravel = 0.28
+		rig.pumpTravel = 0.28 * ViewmodelConfig.SCALE
 		addNode(
 			rig,
 			"Part",
@@ -267,7 +273,7 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 		"weaponRoot"
 	)
 
-	buildArm(rig, 1, gripRest * CFrame.new(0.02, -0.04, 0.08), "handR", "weaponRoot", 26)
+	buildArm(rig, 1, gripRest * CFrame.new(0.02, -0.04, 0.08), "handR", "weaponRoot", 52)
 
 	local supportRest: CFrame
 	local supportParent = "weaponRoot"
@@ -275,17 +281,17 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 		supportRest = CFrame.new(-0.02, -0.1, 0)
 		supportParent = "pump"
 	elseif isPistol then
-		supportRest = gripRest * CFrame.new(-0.16, -0.02, 0.02) * CFrame.Angles(0, math.rad(10), 0)
+		supportRest = gripRest * CFrame.new(-0.24, -0.06, 0.04) * CFrame.Angles(0, math.rad(12), 0)
 	else
 		supportRest = CFrame.new(-0.04, -0.26, -(bodyLength / 2 + barrelLength * 0.3)) * CFrame.Angles(math.rad(6), 0, 0)
 	end
-	buildArm(rig, -1, supportRest, "handL", supportParent, 34)
+	buildArm(rig, -1, supportRest, "handL", supportParent, 46)
 
 	rig.muzzle.Name = "Muzzle"
-	rig.muzzle.Position = Vector3.new(0, 0, -barrelLength / 2)
+	rig.muzzle.Position = Vector3.new(0, 0, -barrelLength / 2 * ViewmodelConfig.SCALE)
 	rig.muzzle.Parent = barrel
 	rig.eject.Name = "Eject"
-	rig.eject.Position = Vector3.new(0.1, 0.05, 0)
+	rig.eject.Position = Vector3.new(0.1, 0.05, 0) * ViewmodelConfig.SCALE
 	rig.eject.Parent = ejectionPort
 
 	model.Parent = camera

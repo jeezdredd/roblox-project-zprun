@@ -12,6 +12,7 @@ local ExertionState = require(script.Parent.Parent.controllers.ExertionState)
 local InputController = require(script.Parent.Parent.controllers.InputController)
 local CameraEffectsController = require(script.Parent.Parent.controllers.CameraEffectsController)
 local ViewmodelBuilder = require(script.Parent.ViewmodelBuilder)
+local AnimationSequencer = require(script.Parent.AnimationSequencer)
 
 local Viewmodel = {}
 
@@ -19,6 +20,9 @@ local player = Players.LocalPlayer
 
 local rig: ViewmodelBuilder.Rig? = nil
 local isVisible = true
+local sequencer = AnimationSequencer.new("Pistol")
+local phaseListeners: { (string) -> () } = {}
+local sprintActive = false
 
 local function makeSpring(id: string)
 	local setting = ViewmodelConfig.spring(id)
@@ -95,6 +99,10 @@ function Viewmodel.setWeapon(weaponId: string)
 	equipOffset:SetTarget(Vector3.zero)
 	inspectOffset:Reset(Vector3.zero)
 	inspecting = false
+
+	sequencer:setClass(config.class)
+	sequencer:play("Equip")
+	sprintActive = false
 end
 
 function Viewmodel.onFired(config: WeaponsConfig.WeaponConfig)
@@ -120,25 +128,21 @@ function Viewmodel.onFired(config: WeaponsConfig.WeaponConfig)
 	end
 end
 
-function Viewmodel.playReload(duration: number)
-	magazineSpring:SetTarget(1)
-	task.delay(math.min(duration * 0.55, duration - 0.2), function()
-		magazineSpring:SetTarget(0)
-	end)
-	task.delay(math.max(duration - 0.25, 0.2), function()
-		local current = rig
-		if not current then
-			return
-		end
-		if current.class == "Shotgun" then
-			pumpSpring:Impulse(8)
-		else
-			slideSpring:Impulse(11)
-		end
-	end)
+-- The authored sequence drives the pose and the audio phases; the springs only add
+-- the mechanical travel on top, so nothing here runs on a wall-clock timer any more.
+function Viewmodel.playReload(_duration: number, magazineEmpty: boolean?)
+	sequencer:play(if magazineEmpty then "ReloadFull" else "ReloadShort")
+	sprintActive = false
+end
+
+function Viewmodel.onPhase(listener: (string) -> ())
+	table.insert(phaseListeners, listener)
 end
 
 function Viewmodel.toggleInspect()
+	if not inspecting then
+		sequencer:play("Inspect")
+	end
 	inspecting = not inspecting
 	inspectOffset:SetTarget(if inspecting then Vector3.one else Vector3.zero)
 	if inspecting then
@@ -321,15 +325,35 @@ local function step(deltaTime: number)
 		supportHand = CFrame.new(0, -magazineDrop * 0.55, magazineDrop * 0.22) * CFrame.Angles(math.rad(magazineDrop * 20), 0, 0)
 	end
 
+	-- Sprint is the only looping sequence, and it yields to anything the player
+	-- actively triggered: firing, reloading or inspecting.
+	local isRunning = ExertionState.isRunning()
+	if not sequencer:isPlaying() and isRunning then
+		sequencer:play("Sprint")
+		sprintActive = true
+	elseif sprintActive and not isRunning and sequencer:isPlaying("Sprint") then
+		sequencer:stop()
+		sprintActive = false
+	end
+
+	local authored = sequencer:update(deltaTime)
+
 	ViewmodelBuilder.pose(current, rootCFrame, {
 		slide = slideOffset,
 		pump = pumpOffset,
 		magazine = magazineOffset,
 		supportHand = supportHand,
+		bones = authored,
 	})
 end
 
 function Viewmodel.init()
+	sequencer:onPhase(function(name)
+		for _, listener in phaseListeners do
+			listener(name)
+		end
+	end)
+
 	Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
 		local weaponId = player:GetAttribute("WeaponId")
 		if typeof(weaponId) == "string" then

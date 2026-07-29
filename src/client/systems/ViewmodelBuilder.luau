@@ -31,6 +31,9 @@ export type PoseOverrides = {
 	pump: CFrame?,
 	magazine: CFrame?,
 	supportHand: CFrame?,
+	-- authored pose offsets from AnimationSequencer, keyed by bone name; they
+	-- multiply the bone's rest transform and stack with the mechanical overrides
+	bones: { [string]: CFrame }?,
 }
 
 local COLOR_METAL = Color3.fromRGB(78, 84, 94)
@@ -283,7 +286,7 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 		supportRest = CFrame.new(-0.02, -0.1, 0)
 		supportParent = "pump"
 	elseif isPistol then
-		supportRest = gripRest * CFrame.new(-0.24, -0.06, 0.04) * CFrame.Angles(0, math.rad(12), 0)
+		supportRest = gripRest * CFrame.new(-0.13, -0.02, 0.03) * CFrame.Angles(0, math.rad(14), 0)
 	else
 		supportRest = CFrame.new(-0.04, -0.26, -(bodyLength / 2 + barrelLength * 0.3)) * CFrame.Angles(math.rad(6), 0, 0)
 	end
@@ -325,6 +328,14 @@ function ViewmodelBuilder.pose(rig: Rig, rootCFrame: CFrame, overrides: PoseOver
 			offset = node.rest * overrides.magazine
 		elseif boneName == "handL" and overrides.supportHand then
 			offset = node.rest * overrides.supportHand
+		end
+
+		local bones = overrides.bones
+		local authored = if bones then bones[boneName] else nil
+		if authored then
+			-- PoseLibrary is authored in design units against the unscaled rig, so its
+			-- translations have to follow ViewmodelConfig.SCALE like every rest offset.
+			offset = offset * scaled(authored)
 		end
 		local result = parentCFrame * offset
 		resolved[boneName] = result

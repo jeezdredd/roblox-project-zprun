@@ -8,7 +8,7 @@ Code is good at *dynamics* — springs, phases, impulses, procedural layers. Cod
 
 ## Hard rules
 
-1. **Never author artistic keyframe animation in code.** Hand poses, reload choreography, gaits, zombie attacks, cinematic gestures come from external clips listed in the whitelist. Code may do: spring dynamics, single-part mechanical travel along one axis (slide, pump, magazine drop), procedural layers on top of clips (sway, lean, IK), and constant hold poses. One static pose is fine; motion *between* poses is not.
+1. **Authored poses are allowed for the viewmodel and zombies, under one condition: every pose is verified by screenshot before it counts as done.** The original ban existed because code could not see its own output. Studio MCP `screen_capture` closes that loop, so the ban is lifted for these two rigs. A pose that looks broken gets reworked, never shipped as-is. Everything else still comes from external clips: player body gaits, cinematic gestures, and anything on the R15 character outside the zombie set.
 2. **Never synthesise audio.** No tone generation, no noise shaping, no assembling a sound from primitives — in code or in tooling. Every audio slot is a real file from the whitelist, registered in `assets/manifest.json`.
 3. **Silence beats a bad placeholder.** No suitable file → leave the slot at `assetId = 0` (systems already guard on `> 0` and stay silent) and add a line to `assets/NEEDED.md`. Never plug a hole with a sound from an unrelated category, and never reuse one file across unrelated events.
 4. **Never invent an assetId.** Ids come only from a real upload through the manifest pipeline, or from the Creator Store after the owner has inserted the asset and provided the id.

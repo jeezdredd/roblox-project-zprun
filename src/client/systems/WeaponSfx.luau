@@ -223,14 +223,21 @@ function WeaponSfx.playDryfire()
 	playOneShot(AssetIds.audio.weapons.dryfire, 0.45, 1 + (math.random() - 0.5) * 0.08)
 end
 
-function WeaponSfx.playReload(reloadTime: number)
-	playOneShot(AssetIds.audio.weapons.mag_out, 0.5, 1)
-	task.delay(reloadTime * 0.55, function()
-		playOneShot(AssetIds.audio.weapons.mag_in, 0.5, 1)
-	end)
-	task.delay(math.max(reloadTime - 0.3, 0.2), function()
-		playOneShot(AssetIds.audio.weapons.bolt, 0.5, 1)
-	end)
+-- Driven by AnimationSequencer phase markers, so the sound lands on the animation
+-- beat rather than on a timer that drifts when the clip is interrupted.
+local PHASE_SOUNDS: { [string]: { id: number, volume: number } } = {
+	MagOut = { id = AssetIds.audio.weapons.mag_out, volume = 0.5 },
+	MagIn = { id = AssetIds.audio.weapons.mag_in, volume = 0.5 },
+	BoltBack = { id = AssetIds.audio.weapons.bolt, volume = 0.45 },
+	BoltForward = { id = AssetIds.audio.weapons.bolt, volume = 0.38 },
+}
+
+function WeaponSfx.playPhase(phase: string)
+	local entry = PHASE_SOUNDS[phase]
+	if not entry then
+		return
+	end
+	playOneShot(entry.id, entry.volume, 1 + (math.random() - 0.5) * 0.06)
 end
 
 local DISTANT_THRESHOLD = 40

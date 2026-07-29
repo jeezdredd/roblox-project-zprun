@@ -108,8 +108,7 @@ local function tryReload()
 	end
 	localReloadUntil = os.clock() + config.reloadTime
 	Remotes.getEvent(Remotes.Event.WeaponReload):FireServer()
-	WeaponSfx.playReload(config.reloadTime)
-	Viewmodel.playReload(config.reloadTime)
+	Viewmodel.playReload(config.reloadTime, predictedMag <= 0)
 end
 
 local function equipSlot(slot: number)
@@ -280,6 +279,7 @@ end
 
 function WeaponController.init()
 	Viewmodel.init()
+	Viewmodel.onPhase(WeaponSfx.playPhase)
 	buildHud()
 	task.spawn(WeaponSfx.preload)
 

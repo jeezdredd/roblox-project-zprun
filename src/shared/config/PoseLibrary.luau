@@ -33,9 +33,12 @@ PoseLibrary.pistol = {
 		handLForearm = angles(-4, 0, 0),
 	},
 
+	-- Kept deliberately small: see the note on ViewmodelConfig.sprint. The player
+	-- sprints for the entire run, so anything that takes the barrel off the crosshair
+	-- here is permanent rather than transient.
 	sprint = {
-		weaponRoot = offset(-0.12, -0.12, 0.06, -14, 26, -10),
-		handLForearm = angles(6, -10, 0),
+		weaponRoot = offset(-0.05, -0.05, 0.03, -4, 3, -3),
+		handLForearm = angles(3, -4, 0),
 	},
 
 	equip = {
@@ -107,7 +110,7 @@ PoseLibrary.rifle = {
 	},
 
 	sprint = {
-		weaponRoot = offset(-0.16, -0.14, 0.08, -12, 30, -12),
+		weaponRoot = offset(-0.06, -0.06, 0.04, -4, 3, -4),
 	},
 
 	equip = {
@@ -167,7 +170,7 @@ PoseLibrary.shotgun = {
 	},
 
 	sprint = {
-		weaponRoot = offset(-0.16, -0.14, 0.08, -12, 30, -12),
+		weaponRoot = offset(-0.06, -0.06, 0.04, -4, 3, -4),
 	},
 
 	equip = {

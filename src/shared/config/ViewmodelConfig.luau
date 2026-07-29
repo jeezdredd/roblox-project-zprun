@@ -73,9 +73,14 @@ ViewmodelConfig.impact = {
 	jukeScale = 0.35,
 }
 
+-- This is an endless runner: the player sprints for the whole run and has to shoot
+-- while sprinting. A conventional sprint pose lowers and yaws the weapon out of the
+-- fight, which measured 47 degrees off the crosshair and made hitting a zombie
+-- impossible. Sprint here may express weight and movement, but the barrel has to stay
+-- on target, so the yaw term in particular is kept near zero.
 ViewmodelConfig.sprint = {
-	position = Vector3.new(-0.25, -0.18, 0.12),
-	rotation = Vector3.new(-0.16, 0.28, -0.12),
+	position = Vector3.new(-0.10, -0.08, 0.06),
+	rotation = Vector3.new(-0.05, 0.03, -0.04),
 	blendRate = 5,
 }
 

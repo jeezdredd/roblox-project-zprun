@@ -126,6 +126,9 @@ function Viewmodel.onFired(config: WeaponsConfig.WeaponConfig)
 	else
 		slideSpring:Impulse(14)
 	end
+
+	sequencer:play("Fire")
+	sprintActive = false
 end
 
 -- The authored sequence drives the pose and the audio phases; the springs only add

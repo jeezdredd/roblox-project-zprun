@@ -140,6 +140,22 @@ Related: [[Architecture]], [[Performance]], [[Progress]], [[Roadmap]].
 
 **Consequence.** Recoil, sway, stride bob, breathing, the sprint pose, equip-in and the multi-stage reload are all authored as CFrame offsets composed per frame, which is more code but gives exact control over timing. It also means the viewmodel cannot reuse Roblox animation assets — every motion is procedural. The third-person weapon model other players see is a separate welded rig on the character and does not share this code path.
 
+### Poses are authored in design units; SCALE is applied by the rig, never by hand
+
+**Decision.** Every pose in `src/shared/config/PoseLibrary.luau` is written against the unscaled rig, in the same units as the rest offsets in `src/client/systems/ViewmodelBuilder.luau`. The builder multiplies the translation part of each authored offset by `ViewmodelConfig.SCALE` before composing it, in the `scaled()` helper. A pose author never writes a scale factor.
+
+**Reason.** The first pose set shipped without this and every authored translation was 39 % oversized, because `SCALE` is 0.72 and the poses were being composed raw against an already-scaled rig. Nothing errored — the gun simply moved too far, which reads as "the animation is bad" rather than as a bug with a cause. Rotations are deliberately left unscaled; only translations carry units.
+
+**Consequence.** Poses stay readable as physical distances and survive a change to `SCALE` without a rewrite. It also fixes the class of error to one place: if the viewmodel is ever rebuilt at a different size, `scaled()` is the only thing that has to be correct.
+
+### Sequence blend-in is per sequence, and recoil has none
+
+**Decision.** `AnimationTimings.BLEND_TIME` (0.12 s) is the default cross-fade when one sequence replaces another, but a sequence can override it with its own `blendTime`. `Fire` sets `blendTime = 0`.
+
+**Reason.** A blend longer than the sequence it is blending into silently attenuates that sequence. The `Fire` pose held for 0.05 s against a 0.12 s blend never got past roughly 45 % of its authored value, measured as 0.025 studs of slide travel where the pose asks for 0.187. Recoil has to snap and then decay; the blend was turning the snap into a nudge.
+
+**Consequence.** Any new short sequence must declare its own `blendTime`, and the check is arithmetic: if total duration is under `BLEND_TIME`, the default is wrong. Verification is numeric — measure the driven bone's travel relative to the receiver, not the camera, so the procedural sway layer is excluded.
+
 ### Weapon audio is per class with zone-driven reverb tails
 
 **Decision.** Each weapon class has its own shot layers, cut from CC0 recording packs, with a short close layer plus a tail whose character is chosen by the acoustic zone the shooter is standing in. Zones are plain parts carrying an `AcousticSpace` attribute (`"Interior"` inside the hangar and under the shooting-range canopy); `src/client/systems/WeaponSfx.luau` reads the attribute rather than doing any acoustic analysis.

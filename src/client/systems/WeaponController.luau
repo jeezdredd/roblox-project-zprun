@@ -277,10 +277,49 @@ local function onWeaponHit(kind: string, ...: any)
 	end
 end
 
+-- Studio-only hook so animation work can be driven and screenshotted without
+-- synthetic mouse input, which does not reach the client under a locked cursor.
+local function installDebugHook()
+	if not RunService:IsStudio() then
+		return
+	end
+	local existing = ReplicatedStorage:FindFirstChild("DebugWeapon")
+	if existing then
+		existing:Destroy()
+	end
+	local bindable = Instance.new("BindableEvent")
+	bindable.Name = "DebugWeapon"
+	bindable.Parent = ReplicatedStorage
+	bindable.Event:Connect(function(command: string)
+		if command == "fire" then
+			tryFire()
+		elseif command == "reload" then
+			tryReload()
+		elseif command == "inspect" then
+			Viewmodel.toggleInspect()
+		elseif command == "empty" then
+			predictedMag = 0
+		elseif command == "clearmodals" then
+			for _, id in { "GoreWarning", "Shop", "Settings", "SquadLobby", "DeathResults" } do
+				CursorMode.setModalOpen(id, false)
+			end
+		elseif command == "state" then
+			print(string.format(
+				"[DebugWeapon] modalOpen=%s alive=%s reloading=%s predictedMag=%d weapon=%s",
+				tostring(CursorMode.isAnyOpen()),
+				tostring(isAlive()),
+				tostring(player:GetAttribute("Reloading")),
+				predictedMag,
+				tostring(player:GetAttribute("WeaponId"))))
+		end
+	end)
+end
+
 function WeaponController.init()
 	Viewmodel.init()
 	Viewmodel.onPhase(WeaponSfx.playPhase)
 	buildHud()
+	installDebugHook()
 	task.spawn(WeaponSfx.preload)
 
 	UserInputService.InputBegan:Connect(function(input, processed)

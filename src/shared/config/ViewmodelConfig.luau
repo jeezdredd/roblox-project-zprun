@@ -15,8 +15,8 @@ ViewmodelConfig.BASE_OFFSET = CFrame.new(0.42, -0.36, -2)
 
 ViewmodelConfig.FILL_LIGHT = {
 	enabled = true,
-	brightness = 1.4,
-	range = 9,
+	brightness = 0.35,
+	range = 6,
 	color = Color3.fromRGB(255, 246, 226),
 }
 

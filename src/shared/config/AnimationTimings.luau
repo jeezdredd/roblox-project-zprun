@@ -17,10 +17,14 @@ export type Sequence = {
 	steps: { Step },
 	priority: number,
 	looped: boolean,
+	blendTime: number?,
 }
 
 local AnimationTimings = {}
 
+-- Default blend-in for a sequence that replaces another. A sequence shorter than this
+-- must set its own `blendTime`, otherwise the blend is still ramping in while the pose
+-- is already easing out and the authored offsets only ever render at a fraction.
 AnimationTimings.BLEND_TIME = 0.12
 
 AnimationTimings.sequences = {
@@ -34,13 +38,15 @@ AnimationTimings.sequences = {
 		},
 	},
 
+	-- Recoil snaps and decays: no blend-in at all, otherwise the kick reads as a nudge.
 	Fire = {
 		id = "Fire",
 		priority = 3,
 		looped = false,
+		blendTime = 0,
 		steps = {
-			{ pose = "fire", duration = 0.05, easing = "outQuad" },
-			{ pose = "idle", duration = 0.16, easing = "outCubic" },
+			{ pose = "fire", duration = 0.02, easing = "linear" },
+			{ pose = "idle", duration = 0.18, easing = "outCubic" },
 		},
 	},
 

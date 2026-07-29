@@ -37,7 +37,7 @@ export type PoseOverrides = {
 }
 
 local COLOR_METAL = Color3.fromRGB(78, 84, 94)
-local COLOR_STEEL = Color3.fromRGB(158, 164, 174)
+local COLOR_STEEL = Color3.fromRGB(104, 110, 121)
 local COLOR_GRIP = Color3.fromRGB(58, 54, 50)
 local COLOR_WOOD = Color3.fromRGB(158, 116, 70)
 local COLOR_SLEEVE = Color3.fromRGB(112, 124, 96)

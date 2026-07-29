@@ -18,6 +18,7 @@ export type Sequencer = {
 	fromPose: PoseLibrary.Pose,
 	blendClock: number,
 	blendFrom: PoseLibrary.Pose,
+	blendTime: number,
 	phaseListeners: { (string) -> () },
 }
 
@@ -66,6 +67,7 @@ function AnimationSequencer.new(class: string): Sequencer
 		fromPose = {},
 		blendClock = 1,
 		blendFrom = {},
+		blendTime = AnimationTimings.BLEND_TIME,
 		phaseListeners = {},
 	}, AnimationSequencer)
 	return (self :: any) :: Sequencer
@@ -104,7 +106,8 @@ function AnimationSequencer:play(id: string)
 	end
 
 	self.blendFrom = self.current
-	self.blendClock = 0
+	self.blendTime = sequence.blendTime or AnimationTimings.BLEND_TIME
+	self.blendClock = if self.blendTime > 0 then 0 else 1
 	self.activeId = id
 	self.stepIndex = 1
 	self.stepClock = 0
@@ -121,6 +124,7 @@ function AnimationSequencer:stop()
 		return
 	end
 	self.blendFrom = self.current
+	self.blendTime = AnimationTimings.BLEND_TIME
 	self.blendClock = 0
 	self.activeId = nil
 	self.stepIndex = 0
@@ -166,7 +170,7 @@ function AnimationSequencer:update(deltaTime: number): PoseLibrary.Pose
 	end
 
 	if self.blendClock < 1 then
-		self.blendClock = math.min(self.blendClock + deltaTime / AnimationTimings.BLEND_TIME, 1)
+		self.blendClock = math.min(self.blendClock + deltaTime / math.max(self.blendTime, 0.0001), 1)
 		target = blendPoses(self.blendFrom, target, self.blendClock)
 	end
 

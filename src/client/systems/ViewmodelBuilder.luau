@@ -13,10 +13,13 @@ export type Node = {
 	parent: string?,
 	rest: CFrame,
 	bone: string?,
+	motor: Motor6D?,
 }
 
 export type Rig = {
 	model: Model,
+	root: BasePart,
+	animator: Animator,
 	nodes: { Node },
 	byBone: { [string]: Node },
 	muzzle: Attachment,
@@ -84,18 +87,43 @@ local function addNode(
 	if material == Enum.Material.Metal then
 		part.Reflectance = 0.12
 	end
-	part.Anchored = true
+	-- Only the root is anchored. A joint cannot move an anchored part, so every
+	-- other piece hangs off the root through the joint chain.
+	part.Anchored = false
+	part.Massless = true
 	part.CanCollide = false
 	part.CanQuery = false
 	part.CanTouch = false
 	part.CastShadow = false
 	part.Parent = rig.model
 
+	local parentNode = if parentBone then rig.byBone[parentBone] else nil
+	local parentPart: BasePart = if parentNode then parentNode.part else rig.root
+	part.CFrame = parentPart.CFrame * rest
+
 	local node: Node = { part = part, parent = parentBone, rest = rest, bone = bone }
-	table.insert(rig.nodes, node)
+
 	if bone then
+		-- Animatable joints are Motor6D and carry the bone name, so a published
+		-- Roblox animation targeting the same names drives this rig unchanged.
+		local motor = Instance.new("Motor6D")
+		motor.Name = bone
+		motor.Part0 = parentPart
+		motor.Part1 = part
+		motor.C0 = rest
+		motor.Parent = parentPart
+		node.motor = motor
 		rig.byBone[bone] = node
+	else
+		local weld = Instance.new("Weld")
+		weld.Name = name
+		weld.Part0 = parentPart
+		weld.Part1 = part
+		weld.C0 = rest
+		weld.Parent = parentPart
 	end
+
+	table.insert(rig.nodes, node)
 	return part
 end
 
@@ -131,8 +159,27 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 	local model = Instance.new("Model")
 	model.Name = "Viewmodel"
 
+	local root = Instance.new("Part")
+	root.Name = "Root"
+	root.Size = Vector3.new(0.1, 0.1, 0.1)
+	root.Transparency = 1
+	root.Anchored = true
+	root.CanCollide = false
+	root.CanQuery = false
+	root.CanTouch = false
+	root.CastShadow = false
+	root.Parent = model
+	model.PrimaryPart = root
+
+	local controller = Instance.new("AnimationController")
+	controller.Parent = model
+	local animator = Instance.new("Animator")
+	animator.Parent = controller
+
 	local rig: Rig = {
 		model = model,
+		root = root,
+		animator = animator,
 		nodes = {},
 		byBone = {},
 		muzzle = Instance.new("Attachment"),
@@ -303,52 +350,36 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 	return rig
 end
 
+-- The root carries the whole procedural layer; every other piece follows through its
+-- joint. Bone offsets go into Motor6D.Transform, which is the same channel an Animator
+-- writes, so authored poses and a published clip cannot fight over the rest transform.
 function ViewmodelBuilder.pose(rig: Rig, rootCFrame: CFrame, overrides: PoseOverrides)
-	local resolved: { [string]: CFrame } = {}
+	rig.root.CFrame = rootCFrame
 
-	local function boneCFrame(boneName: string?): CFrame
-		if not boneName then
-			return rootCFrame
+	local bones = overrides.bones
+	for boneName, node in rig.byBone do
+		local motor = node.motor
+		if not motor then
+			continue
 		end
-		local cached = resolved[boneName]
-		if cached then
-			return cached
-		end
-		local node = rig.byBone[boneName]
-		if not node then
-			return rootCFrame
-		end
-		local parentCFrame = boneCFrame(node.parent)
-		local offset = node.rest
+		local offset = CFrame.identity
 		if boneName == "slide" and overrides.slide then
-			offset = node.rest * overrides.slide
+			offset = overrides.slide
 		elseif boneName == "pump" and overrides.pump then
-			offset = node.rest * overrides.pump
+			offset = overrides.pump
 		elseif boneName == "magazine" and overrides.magazine then
-			offset = node.rest * overrides.magazine
+			offset = overrides.magazine
 		elseif boneName == "handL" and overrides.supportHand then
-			offset = node.rest * overrides.supportHand
+			offset = overrides.supportHand
 		end
 
-		local bones = overrides.bones
 		local authored = if bones then bones[boneName] else nil
 		if authored then
 			-- PoseLibrary is authored in design units against the unscaled rig, so its
 			-- translations have to follow ViewmodelConfig.SCALE like every rest offset.
 			offset = offset * scaled(authored)
 		end
-		local result = parentCFrame * offset
-		resolved[boneName] = result
-		return result
-	end
-
-	for _, node in rig.nodes do
-		local parentCFrame = boneCFrame(node.parent)
-		if node.bone then
-			node.part.CFrame = boneCFrame(node.bone)
-		else
-			node.part.CFrame = parentCFrame * node.rest
-		end
+		motor.Transform = offset
 	end
 end
 

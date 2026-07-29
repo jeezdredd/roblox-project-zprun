@@ -23,6 +23,10 @@ Animation and audio follow permanent rules recorded in [docs/asset-policy.md](do
 - Run `selene src/`, `python3 tools/validate_api.py` and `rojo build` before committing.
 - Commits are authored by the user only — no co-author trailer, no mention of Claude.
 
+## Studio MCP
+
+`.mcp.json` registers Roblox Studio's built-in MCP server (`Roblox_Studio`, stdio, `/Applications/RobloxStudio.app/Contents/MacOS/StudioMCP`). It only responds while Studio is open with **Assistant → … → Manage MCP Servers → Enable Studio as MCP server** turned on; without that the proxy starts but returns no tools. Once connected it exposes script read/edit/search, data model exploration, Luau execution, playtest control and input simulation against the live session.
+
 ## Layout
 
 - `src/shared/config/` — data-only config modules, one per system

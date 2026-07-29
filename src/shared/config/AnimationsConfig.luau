@@ -59,6 +59,57 @@ AnimationsConfig.clips = {
 	},
 } :: { [string]: ClipConfig }
 
+AnimationsConfig.weaponClips = {
+	Fire = {
+		id = "Fire",
+		assetId = AssetIds.animation.weapon.fire,
+		priority = Enum.AnimationPriority.Action,
+		looped = false,
+		weight = 1,
+		speed = 1,
+	},
+	Reload = {
+		id = "Reload",
+		assetId = AssetIds.animation.weapon.reload,
+		priority = Enum.AnimationPriority.Action,
+		looped = false,
+		weight = 1,
+		speed = 1,
+	},
+	Equip = {
+		id = "Equip",
+		assetId = AssetIds.animation.weapon.equip,
+		priority = Enum.AnimationPriority.Action,
+		looped = false,
+		weight = 1,
+		speed = 1,
+	},
+	Inspect = {
+		id = "Inspect",
+		assetId = AssetIds.animation.weapon.inspect,
+		priority = Enum.AnimationPriority.Action,
+		looped = false,
+		weight = 1,
+		speed = 1,
+	},
+	Sprint = {
+		id = "Sprint",
+		assetId = AssetIds.animation.weapon.sprint,
+		priority = Enum.AnimationPriority.Movement,
+		looped = true,
+		weight = 1,
+		speed = 1,
+	},
+} :: { [string]: ClipConfig }
+
+function AnimationsConfig.weaponClip(id: string): ClipConfig?
+	local clip = AnimationsConfig.weaponClips[id]
+	if clip and clip.assetId > 0 then
+		return clip
+	end
+	return nil
+end
+
 AnimationsConfig.RUN_SPEED_REFERENCE = 34
 AnimationsConfig.RUN_SPEED_MIN = 0.8
 AnimationsConfig.RUN_SPEED_MAX = 1.45

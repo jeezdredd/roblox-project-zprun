@@ -782,5 +782,96 @@
     "file": "assets/audio/weapons/tail_interior.wav",
     "assetId": "105323708354342",
     "status": "reviewing"
+  },
+  "audio/weapons/close_pistol_02": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/close_pistol_02.wav",
+    "assetId": "95057167104811",
+    "status": "reviewing"
+  },
+  "audio/weapons/close_pistol_03": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/close_pistol_03.wav",
+    "assetId": "104162930240953",
+    "status": "reviewing"
+  },
+  "audio/weapons/close_rifle_02": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/close_rifle_02.wav",
+    "assetId": "83354177139368",
+    "status": "reviewing"
+  },
+  "audio/weapons/close_rifle_03": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/close_rifle_03.wav",
+    "assetId": "74726287934893",
+    "status": "reviewing"
+  },
+  "audio/weapons/close_smg_02": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/close_smg_02.wav",
+    "assetId": "113891967382551",
+    "status": "reviewing"
+  },
+  "audio/weapons/close_smg_03": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/close_smg_03.wav",
+    "assetId": "133963121189870",
+    "status": "reviewing"
+  },
+  "audio/weapons/close_shotgun_02": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/close_shotgun_02.wav",
+    "assetId": "104315440827993",
+    "status": "reviewing"
+  },
+  "audio/weapons/close_shotgun_03": {
+    "source": "https://opengameart.org/content/gunshot-sounds",
+    "license": "CC BY 3.0 (Vincent Sevedge)",
+    "file": "assets/audio/weapons/close_shotgun_03.wav",
+    "assetId": "89094909367132",
+    "status": "reviewing"
+  },
+  "animation/weapon/fire": {
+    "source": "authored in Blender (pending)",
+    "license": "Sole Proprietor Sevastyan (jeezdredd)",
+    "file": "assets/animations/weapon_fire.rbxm",
+    "assetId": "0",
+    "status": "pending"
+  },
+  "animation/weapon/reload": {
+    "source": "authored in Blender (pending)",
+    "license": "Sole Proprietor Sevastyan (jeezdredd)",
+    "file": "assets/animations/weapon_reload.rbxm",
+    "assetId": "0",
+    "status": "pending"
+  },
+  "animation/weapon/equip": {
+    "source": "authored in Blender (pending)",
+    "license": "Sole Proprietor Sevastyan (jeezdredd)",
+    "file": "assets/animations/weapon_equip.rbxm",
+    "assetId": "0",
+    "status": "pending"
+  },
+  "animation/weapon/inspect": {
+    "source": "authored in Blender (pending)",
+    "license": "Sole Proprietor Sevastyan (jeezdredd)",
+    "file": "assets/animations/weapon_inspect.rbxm",
+    "assetId": "0",
+    "status": "pending"
+  },
+  "animation/weapon/sprint": {
+    "source": "authored in Blender (pending)",
+    "license": "Sole Proprietor Sevastyan (jeezdredd)",
+    "file": "assets/animations/weapon_sprint.rbxm",
+    "assetId": "0",
+    "status": "pending"
   }
 }

@@ -153,12 +153,29 @@ local function weaponSoundId(key: string): number
 	return (AssetIds.audio.weapons :: { [string]: number })[key] or 0
 end
 
+local lastVariation: { [string]: number } = {}
+
 local function shotSoundId(config: WeaponsConfig.WeaponConfig): number
-	local closeId = weaponSoundId(config.closeSound)
-	if closeId > 0 then
-		return closeId
+	local ids: { number } = {}
+	for _, key in config.closeSounds do
+		local id = weaponSoundId(key)
+		if id > 0 then
+			table.insert(ids, id)
+		end
 	end
-	return weaponSoundId(config.shotSound)
+	if #ids == 0 then
+		return weaponSoundId(config.shotSound)
+	end
+	if #ids == 1 then
+		return ids[1]
+	end
+	local previous = lastVariation[config.id]
+	local index = math.random(1, #ids)
+	if ids[index] == previous then
+		index = index % #ids + 1
+	end
+	lastVariation[config.id] = ids[index]
+	return ids[index]
 end
 
 local TAIL_COOLDOWN = 0.55

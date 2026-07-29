@@ -102,7 +102,13 @@ ViewmodelConfig.MODE = {
 	reload = "procedural",
 	inspect = "procedural",
 	equip = "procedural",
+	fire = "procedural",
+	sprint = "procedural",
 }
+
+function ViewmodelConfig.usesClip(id: string, clipAvailable: boolean): boolean
+	return clipAvailable and ViewmodelConfig.MODE[id] == "clip"
+end
 
 function ViewmodelConfig.spring(id: string): SpringSetting
 	return ViewmodelConfig.springs[id] or { stiffness = 100, damping = 15 }

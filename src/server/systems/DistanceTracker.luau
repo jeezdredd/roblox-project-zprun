@@ -7,6 +7,8 @@ local RunService = game:GetService("RunService")
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local MissionState = require(script.Parent.MissionState)
 local SkillEffects = require(script.Parent.SkillEffects)
+local MissionConfig = require(script.Parent.MissionConfig)
+local RewardMultiplier = require(ReplicatedStorage.Shared.util.RewardMultiplier)
 
 local DistanceTracker = {}
 
@@ -54,6 +56,8 @@ local function step()
 			best = traveled
 			distances[player] = traveled
 			updateLeaderstats(player, traveled)
+			local multiplier = RewardMultiplier.compute(MissionConfig.getDifficulty().id, MissionState.getModifiers())
+			player:SetAttribute("RunCredits", math.floor(traveled / 10 * multiplier))
 		end
 
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")

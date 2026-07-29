@@ -53,6 +53,25 @@ local function build()
 	unit.TextTransparency = 0.35
 	unit.Parent = screen
 
+	local earnings = Instance.new("TextLabel")
+	earnings.Name = "RunEarnings"
+	earnings.AnchorPoint = Vector2.new(0.5, 1)
+	earnings.Position = UDim2.new(0.5, 0, 1, -100)
+	earnings.Size = UDim2.fromOffset(320, 18)
+	earnings.BackgroundTransparency = 1
+	earnings.TextSize = 14
+	earnings.Text = ""
+	UiTheme.styleText(earnings, true)
+	earnings.TextColor3 = Color3.fromRGB(168, 178, 132)
+	earnings.Parent = screen
+
+	local function refreshEarnings()
+		local runCredits = Players.LocalPlayer:GetAttribute("RunCredits")
+		earnings.Text = if typeof(runCredits) == "number" then string.format("+%d CR THIS RUN", runCredits) else ""
+	end
+	Players.LocalPlayer:GetAttributeChangedSignal("RunCredits"):Connect(refreshEarnings)
+	refreshEarnings()
+
 	healthBack = Instance.new("Frame")
 	healthBack.AnchorPoint = Vector2.new(0.5, 1)
 	healthBack.Position = UDim2.new(0.5, 0, 1, -20)

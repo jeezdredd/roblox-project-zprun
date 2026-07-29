@@ -132,13 +132,15 @@ Related: [[Architecture]], [[Performance]], [[Progress]], [[Roadmap]].
 
 ## Presentation
 
-### The viewmodel is posed by direct CFrame writes, not welds
+### The viewmodel is a jointed rig with a single anchored root
 
-**Decision.** `src/client/systems/Viewmodel.luau` builds an anchored part rig parented under the Camera and writes `piece.part.CFrame = rootCFrame * offset` for every piece on RenderStepped. There are no Motor6Ds and no weld-driven animation.
+**Decision.** `src/client/systems/ViewmodelBuilder.luau` builds a model under the Camera in which only the `Root` part is anchored. Every other piece is unanchored and massless and hangs off the root through a joint chain: `Motor6D` for the animatable bones, `Weld` for static decoration. `pose()` writes `Root.CFrame` for the procedural layer and `Motor6D.Transform` for each bone, and lets the engine resolve the chain.
 
-**Reason.** This was a real bug, not a style preference: `Weld.C0` does not move anchored parts. Parts parented to the Camera have to be anchored to avoid falling, so the natural weld-rig approach silently produced a rigid, unanimated gun.
+**Reason.** The rig was originally all-anchored and posed by writing every part's world `CFrame` each frame, because an early attempt at weld-driven animation did nothing at all. The observation behind that was correct — a joint cannot move an anchored part — but the conclusion drawn from it was too broad. The fix is not to abandon joints; it is to anchor only the root, which is what the reference first-person rigs do. Anchoring everything closed off the entire animation path.
 
-**Consequence.** Recoil, sway, stride bob, breathing, the sprint pose, equip-in and the multi-stage reload are all authored as CFrame offsets composed per frame, which is more code but gives exact control over timing. It also means the viewmodel cannot reuse Roblox animation assets — every motion is procedural. The third-person weapon model other players see is a separate welded rig on the character and does not share this code path.
+**Consequence.** The rig now carries an `AnimationController` and an `Animator`, and each `Motor6D` is named after its bone, so a published Roblox animation targeting the same joint names drives this rig with no further work. Authored poses from `PoseLibrary` and a future external clip both write the same channel — `Transform` — so neither can corrupt the rest transform in `C0`. Static pieces are welded rather than jointed specifically so the Animation Editor lists only the eleven bones worth keyframing instead of every part.
+
+**Verification.** The conversion was checked against the numbers measured before it, which are unchanged: fire slide travel 0.212 studs, reload slide 0.216, magazine drop 0.368, idle 0.000. Motor `Transform` and the resolved part transform agree to two decimals on every frame, and welded pieces sit at 0.0000 offset from their bone.
 
 ### Poses are authored in design units; SCALE is applied by the rig, never by hand
 

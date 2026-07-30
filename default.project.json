@@ -13,12 +13,6 @@
     "ReplicatedStorage": {
       "Shared": {
         "$path": "src/shared"
-      },
-      "ViewModels": {
-        "$className": "Folder",
-        "Pistol": {
-          "$path": "assets/viewmodels/pistol.model.json"
-        }
       }
     },
     "ReplicatedFirst": {

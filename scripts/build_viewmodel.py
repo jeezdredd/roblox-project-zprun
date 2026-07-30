@@ -102,9 +102,10 @@ def main():
         print("dump has no `Main` part; it is the PrimaryPart and is required")
         return 1
 
+    # No Name here on purpose. Rojo takes the root instance's name from the project key
+    # that mounts this file, and a Name inside `properties` is ignored with a warning.
     model = {
         "className": "Model",
-        "properties": {"Name": name.capitalize()},
         "children": [build_part(p) for p in parts],
     }
 

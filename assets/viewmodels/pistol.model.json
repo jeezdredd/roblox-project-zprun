@@ -1,8 +1,5 @@
 {
   "className": "Model",
-  "properties": {
-    "Name": "Pistol"
-  },
   "children": [
     {
       "className": "MeshPart",

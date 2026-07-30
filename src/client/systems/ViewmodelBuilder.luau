@@ -127,6 +127,112 @@ local function addNode(
 	return part
 end
 
+-- Adopts a part that already exists, rather than creating one. This is the only way to
+-- get mesh geometry into the rig: MeshPart.MeshId cannot be written by a script, so the
+-- meshes arrive as instances mounted by Rojo and we join them here.
+local function adoptNode(rig: Rig, part: BasePart, rest: CFrame, parentBone: string?, bone: string?)
+	part.Anchored = false
+	part.Massless = true
+	part.CanCollide = false
+	part.CanQuery = false
+	part.CanTouch = false
+	part.CastShadow = false
+	part.Parent = rig.model
+
+	local parentNode = if parentBone then rig.byBone[parentBone] else nil
+	local parentPart: BasePart = if parentNode then parentNode.part else rig.root
+	part.CFrame = parentPart.CFrame * rest
+
+	local node: Node = { part = part, parent = parentBone, rest = rest, bone = bone }
+	if bone then
+		local motor = Instance.new("Motor6D")
+		motor.Name = bone
+		motor.Part0 = parentPart
+		motor.Part1 = part
+		motor.C0 = rest
+		motor.Parent = parentPart
+		node.motor = motor
+		rig.byBone[bone] = node
+	else
+		local weld = Instance.new("Weld")
+		weld.Name = part.Name
+		weld.Part0 = parentPart
+		weld.Part1 = part
+		weld.C0 = rest
+		weld.Parent = parentPart
+	end
+	table.insert(rig.nodes, node)
+end
+
+-- Mesh geometry for a class, if Rojo has mounted any. `Main` is the hub the rest hangs
+-- off, and the three moving pieces take the same bone names the procedural rig used, so
+-- PoseLibrary and the spring layer carry over untouched.
+local MESH_BONES: { [string]: string } = {
+	Main = "weaponRoot",
+	Slide = "slide",
+	Magazine = "magazine",
+	Barrel = "barrel",
+	Grip = "grip",
+}
+
+local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): boolean
+	local folder = ReplicatedStorage:FindFirstChild("ViewModels")
+	local template = if folder then folder:FindFirstChild(class) else nil
+	if not template or not template:IsA("Model") then
+		return false
+	end
+
+	local clone = template:Clone()
+	local main = clone:FindFirstChild("Main")
+	if not main or not main:IsA("BasePart") then
+		clone:Destroy()
+		return false
+	end
+	local mainCFrame = main.CFrame
+
+	-- weaponRoot first, so every other piece can hang off it
+	adoptNode(rig, main, CFrame.identity, nil, "weaponRoot")
+
+	for _, child in clone:GetChildren() do
+		if child:IsA("BasePart") then
+			local rest = mainCFrame:ToObjectSpace(child.CFrame)
+			adoptNode(rig, child, rest, "weaponRoot", MESH_BONES[child.Name])
+		end
+	end
+	clone:Destroy()
+
+	local muzzle = rig.byBone.barrel
+	local eject = rig.byBone.weaponRoot
+	for _, node in rig.nodes do
+		if node.part.Name == "Muzzle" then
+			muzzle = node
+		elseif node.part.Name == "CasingEject" then
+			eject = node
+		end
+	end
+
+	rig.muzzle.Name = "Muzzle"
+	rig.muzzle.Parent = muzzle.part
+	rig.eject.Name = "Eject"
+	rig.eject.Parent = eject.part
+	rig.slideTravel = 0.3
+	rig.pumpTravel = 0.3
+
+	local fill = ViewmodelConfig.FILL_LIGHT
+	if fill.enabled then
+		local light = Instance.new("PointLight")
+		light.Name = "ViewmodelFill"
+		light.Brightness = fill.brightness
+		light.Range = fill.range
+		light.Color = fill.color
+		light.Shadows = false
+		light.Parent = main
+	end
+
+	local _ = camera
+	return true
+end
+
 local function buildArm(rig: Rig, side: number, handRest: CFrame, handBone: string, parentBone: string?, elbowPitch: number)
 	addNode(rig, "Part", "Hand", Vector3.new(0.34, 0.26, 0.4), COLOR_GLOVE, Enum.Material.Fabric, handRest, parentBone, handBone)
 	addNode(rig, "Part", "Thumb", Vector3.new(0.1, 0.1, 0.22), COLOR_GLOVE, Enum.Material.Fabric, CFrame.new(-side * 0.18, 0.1, 0.04), handBone)
@@ -198,6 +304,20 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 	local barrelLength = if isPistol then 0.34 else 1.15
 	if isShotgun then
 		barrelLength = 1.35
+	end
+
+	-- Prefer real mesh geometry when Rojo has mounted some for this class; the procedural
+	-- box weapon below stays as the fallback for classes that have no mesh yet.
+	local usedMesh = buildMeshWeapon(rig, class, camera)
+	local gripRest = if usedMesh
+		then CFrame.new(0, -0.1, 0.05) * CFrame.Angles(math.rad(-12), 0, 0)
+		else CFrame.new(0, -bodyHeight / 2 - 0.26, bodyLength / 2 - 0.18) * CFrame.Angles(math.rad(-18), 0, 0)
+
+	if usedMesh then
+		buildArm(rig, 1, gripRest * CFrame.new(0.02, -0.04, 0.08), "handR", "weaponRoot", 52)
+		buildArm(rig, -1, gripRest * CFrame.new(-0.13, -0.02, 0.03) * CFrame.Angles(0, math.rad(14), 0), "handL", "weaponRoot", 46)
+		model.Parent = camera
+		return rig
 	end
 
 	local weaponRoot = addNode(rig, "Part", "WeaponRoot", Vector3.new(0.05, 0.05, 0.05), COLOR_METAL, Enum.Material.Metal, CFrame.identity, nil, "weaponRoot")
@@ -286,7 +406,6 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 		addNode(rig, "Part", "SightPost", Vector3.new(0.04, 0.14, 0.04), COLOR_METAL, Enum.Material.Metal, CFrame.new(0, barrelY + 0.1, frontSightZ), "weaponRoot")
 	end
 
-	local gripRest = CFrame.new(0, -bodyHeight / 2 - 0.26, bodyLength / 2 - 0.18) * CFrame.Angles(math.rad(-18), 0, 0)
 	addNode(rig, "Part", "Grip", Vector3.new(0.24, 0.58, 0.28), COLOR_GRIP, Enum.Material.SmoothPlastic, gripRest, "weaponRoot", "grip")
 	addNode(rig, "Part", "TriggerGuard", Vector3.new(0.06, 0.05, 0.34), COLOR_METAL, Enum.Material.Metal, CFrame.new(0, -bodyHeight / 2 - 0.12, bodyLength / 2 - 0.42), "weaponRoot")
 

@@ -20,6 +20,14 @@ DevConfig.QUICK_RUN = {
 -- pure friction and it also blocks input until dismissed.
 DevConfig.SKIP_GORE_WARNING = true
 
+-- Hold the run still. The forward sprint is what you want when tuning feel, and what
+-- gets in the way when tuning how something looks: the corridor drags you off the thing
+-- you are inspecting within a second. With this on you spawn into the run with the
+-- weapon live, but stand still and steer with the normal WASD controls, so you can walk
+-- around a prop and look at it. The freeze/unfreeze debug commands still override it at
+-- runtime.
+DevConfig.FREEZE_RUN = true
+
 -- A row of stationary dummies at fixed distances, for time-to-kill and spread checks
 -- that a moving zombie cannot give you. Distances are in studs from the player spawn.
 DevConfig.TARGET_RANGE = {

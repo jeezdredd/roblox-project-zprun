@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
+local DevConfig = require(ReplicatedStorage.Shared.config.DevConfig)
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local SettingsService = require(script.Parent.Parent.systems.SettingsService)
 
@@ -117,6 +118,19 @@ local function updateCamera(deltaTime: number)
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	if not humanoid or humanoid.Health <= 0 then
 		unhideCharacter()
+		return
+	end
+
+	-- With the run frozen for inspection, the fixed runner camera would leave you staring
+	-- down the corridor with no way to look at anything, since it has no mouse look at
+	-- all. Hand the camera back to Roblox's own first-person controller and keep only the
+	-- body hiding. The viewmodel tracks whatever drives camera.CFrame, so it follows.
+	if RunService:IsStudio() and DevConfig.FREEZE_RUN then
+		if camera.CameraType ~= Enum.CameraType.Custom then
+			camera.CameraType = Enum.CameraType.Custom
+		end
+		Players.LocalPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
+		hideCharacter(character)
 		return
 	end
 

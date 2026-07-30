@@ -10,6 +10,14 @@ Before, testing one viewmodel change cost a scripted walk to the helicopter, a p
 
 `QUICK_RUN.relaunchAfterDeath` also re-launches a run after you die, so a death-and-retry loop needs no input at all.
 
+## FREEZE_RUN — for looking at things rather than feeling them
+
+The forward sprint is what you want when tuning feel and exactly what gets in the way when tuning how something looks: the corridor drags you off whatever you are inspecting within a second.
+
+With `FREEZE_RUN` on you still spawn into a live run with the weapon working, but you stand still and steer with the ordinary WASD controls. The runner camera is handed back to Roblox's own first-person controller for this, because it has no mouse look of its own — frozen under the runner camera you would be stuck staring down the corridor, unable to look at the thing you froze the game to look at. Your own body stays hidden either way.
+
+The `freeze` / `unfreeze` debug commands still work and override the switch at runtime, so you can start frozen, look at a prop, then unfreeze and check the same change at speed without editing config or restarting.
+
 ## Commands
 
 Two command channels, and they are not interchangeable — a `BindableEvent` does not cross the client/server boundary, so each one only responds in the VM that created it.

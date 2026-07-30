@@ -309,7 +309,7 @@ local function installDebugHook()
 			-- Without this the runner leaves the dummies behind within a second.
 			RunController.stop()
 		elseif command == "unfreeze" then
-			RunController.start()
+			RunController.start(true)
 		elseif command == "state" then
 			print(string.format(
 				"[DebugWeapon] modalOpen=%s alive=%s reloading=%s predictedMag=%d weapon=%s",

@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local DevConfig = require(ReplicatedStorage.Shared.config.DevConfig)
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local InputController = require(script.Parent.InputController)
 
@@ -42,8 +43,14 @@ local function clampToField(root: BasePart)
 	root.CFrame = root.CFrame + Vector3.new(targetX - offsetX, 0, 0)
 end
 
-function RunController.start()
+function RunController.start(force: boolean?)
 	if connection then
+		return
+	end
+	-- Frozen: leave the default controls enabled instead of taking them over, so you can
+	-- actually walk around and look at things rather than being rooted in place. `force`
+	-- is how the unfreeze debug command overrides the switch without editing config.
+	if not force and RunService:IsStudio() and DevConfig.FREEZE_RUN then
 		return
 	end
 	getControls():Disable()

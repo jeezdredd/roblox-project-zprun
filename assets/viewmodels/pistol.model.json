@@ -1,0 +1,554 @@
+{
+  "className": "Model",
+  "properties": {
+    "Name": "Pistol"
+  },
+  "children": [
+    {
+      "className": "MeshPart",
+      "name": "Slide",
+      "properties": {
+        "Size": [
+          0.242243,
+          0.24139,
+          1.414443
+        ],
+        "CFrame": [
+          0.002235,
+          0.549194,
+          -0.408522,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://133749184392151",
+        "TextureID": "rbxassetid://97602710177542"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "Magazine",
+      "properties": {
+        "Size": [
+          0.201306,
+          0.79854,
+          0.396824
+        ],
+        "CFrame": [
+          -0.008682,
+          -0.094513,
+          -0.006591,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://73650456068482",
+        "TextureID": "rbxassetid://117170186415306"
+      }
+    },
+    {
+      "className": "Part",
+      "name": "UnderbarrelMount",
+      "properties": {
+        "Size": [
+          0.020071,
+          0.020071,
+          0.020071
+        ],
+        "CFrame": [
+          0.0,
+          0.013763,
+          -0.638328,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 1.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "Grip",
+      "properties": {
+        "Size": [
+          0.270292,
+          0.736891,
+          0.563959
+        ],
+        "CFrame": [
+          -0.008606,
+          -0.114166,
+          -0.014038,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://81993308555977",
+        "TextureID": "rbxassetid://107712295229915"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "Trigger",
+      "properties": {
+        "Size": [
+          0.069499,
+          0.215271,
+          0.16978
+        ],
+        "CFrame": [
+          -0.00766,
+          0.2164,
+          -0.477758,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://130863249189150",
+        "TextureID": "rbxassetid://108298424870998"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "Frame",
+      "properties": {
+        "Size": [
+          0.252744,
+          0.432346,
+          1.427066
+        ],
+        "CFrame": [
+          0.0,
+          0.25,
+          -0.4,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://98403167749030",
+        "TextureID": "rbxassetid://139017157028813"
+      }
+    },
+    {
+      "className": "Part",
+      "name": "SightMount",
+      "properties": {
+        "Size": [
+          0.020071,
+          0.020071,
+          0.020071
+        ],
+        "CFrame": [
+          0.002235,
+          0.677917,
+          0.015811,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 1.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "Barrel",
+      "properties": {
+        "Size": [
+          0.131664,
+          0.212237,
+          0.06744
+        ],
+        "CFrame": [
+          -0.007675,
+          0.541809,
+          -1.105726,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://74352701338938",
+        "TextureID": "rbxassetid://80978457334626"
+      }
+    },
+    {
+      "className": "Part",
+      "name": "MuzzleMount",
+      "properties": {
+        "Size": [
+          0.020071,
+          0.020071,
+          0.020071
+        ],
+        "CFrame": [
+          -0.007675,
+          0.541809,
+          -1.159517,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 1.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "RearSight",
+      "properties": {
+        "Size": [
+          0.072025,
+          0.0528,
+          0.113258
+        ],
+        "CFrame": [
+          -0.008217,
+          0.684082,
+          0.215619,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://107557905898433",
+        "TextureID": "rbxassetid://100180289410953"
+      }
+    },
+    {
+      "className": "Part",
+      "name": "Main",
+      "properties": {
+        "Size": [
+          0.05,
+          0.05,
+          0.05
+        ],
+        "CFrame": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 1.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true
+      }
+    },
+    {
+      "className": "Part",
+      "name": "AimPart",
+      "properties": {
+        "Size": [
+          0.05,
+          0.05,
+          0.05
+        ],
+        "CFrame": [
+          0.0,
+          0.709991,
+          0.22,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 1.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true
+      }
+    },
+    {
+      "className": "Part",
+      "name": "CasingEject",
+      "properties": {
+        "Size": [
+          0.05,
+          0.05,
+          0.05
+        ],
+        "CFrame": [
+          0.089996,
+          0.630005,
+          -0.3,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 1.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true
+      }
+    },
+    {
+      "className": "Part",
+      "name": "Muzzle",
+      "properties": {
+        "Size": [
+          0.05,
+          0.05,
+          0.05
+        ],
+        "CFrame": [
+          0.0,
+          0.541992,
+          -1.18,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 1.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true
+      }
+    }
+  ]
+}

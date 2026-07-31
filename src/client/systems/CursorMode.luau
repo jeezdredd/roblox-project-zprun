@@ -93,11 +93,75 @@ function CursorMode.focus(button: GuiButton?)
 	end
 end
 
+-- A menu only frees the cursor if it remembers to announce itself, and anything built
+-- outside this codebase never will - which leaves the player staring at a menu they
+-- cannot click. So rather than trusting every panel to call setModalOpen, watch for one
+-- that looks modal: an enabled ScreenGui holding a solid frame over a good part of the
+-- screen. Panels that do announce themselves are unaffected; the id is separate.
+local EXTERNAL_ID = "ExternalMenu"
+local MODAL_FRACTION = 0.3
+
+-- GuiObject.Visible reports only its own flag, and a hidden parent still leaves children
+-- flagged visible with a real AbsoluteSize. Checking the chain is what separates an open
+-- menu from a closed one whose panels were never individually hidden.
+local function shownOnScreen(object: GuiObject, gui: ScreenGui): boolean
+	local current: Instance? = object
+	while current and current ~= gui do
+		if current:IsA("GuiObject") and not current.Visible then
+			return false
+		end
+		current = current.Parent
+	end
+	return true
+end
+
+local function looksModal(gui: ScreenGui, viewport: Vector2): boolean
+	for _, descendant in gui:GetDescendants() do
+		if descendant:IsA("GuiObject") and descendant.BackgroundTransparency < 0.9 and shownOnScreen(descendant, gui) then
+			local size = descendant.AbsoluteSize
+			if size.X > viewport.X * MODAL_FRACTION and size.Y > viewport.Y * MODAL_FRACTION then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+local function scanForExternalMenu()
+	local camera = Workspace.CurrentCamera
+	if not camera then
+		return
+	end
+	local viewport = camera.ViewportSize
+	local playerGui = Players.LocalPlayer:FindFirstChildOfClass("PlayerGui")
+	if not playerGui then
+		return
+	end
+	local found = false
+	for _, gui in playerGui:GetChildren() do
+		if gui:IsA("ScreenGui") and gui.Enabled and looksModal(gui, viewport) then
+			found = true
+			break
+		end
+	end
+	CursorMode.setModalOpen(EXTERNAL_ID, found)
+end
+
 function CursorMode.init()
 	lockFirstPerson()
 	Players.LocalPlayer.CharacterAdded:Connect(function()
 		if modalCount == 0 then
 			lockFirstPerson()
+		end
+	end)
+
+	task.spawn(function()
+		while true do
+			task.wait(0.25)
+			local ok, err = pcall(scanForExternalMenu)
+			if not ok then
+				warn("[CursorMode] menu scan failed: " .. tostring(err))
+			end
 		end
 	end)
 end

@@ -7,6 +7,7 @@ local Workspace = game:GetService("Workspace")
 
 local DevConfig = require(ReplicatedStorage.Shared.config.DevConfig)
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
+local CursorMode = require(script.Parent.Parent.systems.CursorMode)
 local SettingsService = require(script.Parent.Parent.systems.SettingsService)
 
 local CameraController = {}
@@ -129,7 +130,11 @@ local function updateCamera(deltaTime: number)
 		if camera.CameraType ~= Enum.CameraType.Custom then
 			camera.CameraType = Enum.CameraType.Custom
 		end
-		Players.LocalPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
+		-- Not while a menu is open: this runs every frame, so forcing the lock here
+		-- overrode CursorMode releasing the cursor and left menus unclickable.
+		if not CursorMode.isAnyOpen() then
+			Players.LocalPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
+		end
 		hideCharacter(character)
 		return
 	end

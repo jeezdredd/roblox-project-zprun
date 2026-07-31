@@ -37,6 +37,11 @@ export type PoseOverrides = {
 	-- authored pose offsets from AnimationSequencer, keyed by bone name; they
 	-- multiply the bone's rest transform and stack with the mechanical overrides
 	bones: { [string]: CFrame }?,
+	-- An Animator drives Motor6D.Transform, and so do we. Writing both in the same frame
+	-- means the later write wins and the clip appears to do nothing. When a clip owns the
+	-- bones, we keep the root - which carries sway, bob and recoil - and leave the joints
+	-- to it.
+	animated: boolean?,
 }
 
 local COLOR_METAL = Color3.fromRGB(78, 84, 94)
@@ -474,6 +479,10 @@ end
 -- writes, so authored poses and a published clip cannot fight over the rest transform.
 function ViewmodelBuilder.pose(rig: Rig, rootCFrame: CFrame, overrides: PoseOverrides)
 	rig.root.CFrame = rootCFrame
+
+	if overrides.animated then
+		return
+	end
 
 	local bones = overrides.bones
 	for boneName, node in rig.byBone do

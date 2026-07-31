@@ -11,7 +11,11 @@ local ViewmodelConfig = {}
 -- height, roughly double a normal first-person framing.
 ViewmodelConfig.SCALE = 0.72
 
-ViewmodelConfig.BASE_OFFSET = CFrame.new(0.42, -0.36, -2)
+-- Tuned against measured screen coverage rather than by eye. At (0.42, -0.36, -2) the
+-- mesh weapon sat with its slide at 43% of screen height, straddling the crosshair, and
+-- the grip and magazine each covered a third of the frame. Lower and further out puts
+-- the weapon in the bottom right where it belongs and leaves the sight line clear.
+ViewmodelConfig.BASE_OFFSET = CFrame.new(0.38, -0.80, -2.5)
 
 ViewmodelConfig.FILL_LIGHT = {
 	enabled = true,

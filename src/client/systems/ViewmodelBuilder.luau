@@ -188,6 +188,16 @@ local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): boolean
 	end
 
 	local clone = template:Clone()
+	-- The mounted template ships its own joints so it reads correctly in Studio. We
+	-- rebuild them here against this rig's root, and leaving the originals in place
+	-- would put two Motor6Ds on the same part - which over-constrains the rig and stops
+	-- an Animator driving it at all.
+	for _, descendant in clone:GetDescendants() do
+		if descendant:IsA("Motor6D") or descendant:IsA("Weld") or descendant:IsA("WeldConstraint") then
+			descendant:Destroy()
+		end
+	end
+
 	local main = clone:FindFirstChild("Main")
 	if not main or not main:IsA("BasePart") then
 		clone:Destroy()
@@ -238,13 +248,17 @@ local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): boolean
 	return true
 end
 
+-- An Animator matches a clip's poses to parts by name, so two parts sharing a name
+-- across the left and right arm stops the whole clip driving anything. Every part here
+-- carries its side.
 local function buildArm(rig: Rig, side: number, handRest: CFrame, handBone: string, parentBone: string?, elbowPitch: number)
-	addNode(rig, "Part", "Hand", Vector3.new(0.34, 0.26, 0.4), COLOR_GLOVE, Enum.Material.Fabric, handRest, parentBone, handBone)
-	addNode(rig, "Part", "Thumb", Vector3.new(0.1, 0.1, 0.22), COLOR_GLOVE, Enum.Material.Fabric, CFrame.new(-side * 0.18, 0.1, 0.04), handBone)
+	local suffix = if side > 0 then "R" else "L"
+	addNode(rig, "Part", "Hand" .. suffix, Vector3.new(0.34, 0.26, 0.4), COLOR_GLOVE, Enum.Material.Fabric, handRest, parentBone, handBone)
+	addNode(rig, "Part", "Thumb" .. suffix, Vector3.new(0.1, 0.1, 0.22), COLOR_GLOVE, Enum.Material.Fabric, CFrame.new(-side * 0.18, 0.1, 0.04), handBone)
 	addNode(
 		rig,
 		"Part",
-		"Fingers",
+		"Fingers" .. suffix,
 		Vector3.new(0.3, 0.12, 0.14),
 		COLOR_GLOVE,
 		Enum.Material.Fabric,
@@ -253,17 +267,17 @@ local function buildArm(rig: Rig, side: number, handRest: CFrame, handBone: stri
 	)
 
 	local wristBone = handBone .. "Wrist"
-	addNode(rig, "Part", "Wrist", Vector3.new(0.28, 0.22, 0.24), COLOR_SKIN, Enum.Material.SmoothPlastic, CFrame.new(side * 0.06, -0.08, 0.2), handBone, wristBone)
+	addNode(rig, "Part", "Wrist" .. suffix, Vector3.new(0.28, 0.22, 0.24), COLOR_SKIN, Enum.Material.SmoothPlastic, CFrame.new(side * 0.06, -0.08, 0.2), handBone, wristBone)
 
 	-- Only the forearm stub is ever inside a first-person frame; an upper arm would
 	-- chain behind the camera and render as nothing.
 	local forearmBone = handBone .. "Forearm"
 	local forearmRest = CFrame.Angles(math.rad(elbowPitch), math.rad(side * 12), 0)
-	addNode(rig, "Part", "ForearmPivot", Vector3.new(0.05, 0.05, 0.05), COLOR_SLEEVE, Enum.Material.Fabric, forearmRest, wristBone, forearmBone).Transparency = 1
-	addNode(rig, "Part", "SleeveCuff", Vector3.new(0.3, 0.3, 0.16), COLOR_SLEEVE:Lerp(Color3.new(), 0.25), Enum.Material.Fabric, CFrame.new(0, 0, 0.08), forearmBone)
+	addNode(rig, "Part", "ForearmPivot" .. suffix, Vector3.new(0.05, 0.05, 0.05), COLOR_SLEEVE, Enum.Material.Fabric, forearmRest, wristBone, forearmBone).Transparency = 1
+	addNode(rig, "Part", "SleeveCuff" .. suffix, Vector3.new(0.3, 0.3, 0.16), COLOR_SLEEVE:Lerp(Color3.new(), 0.25), Enum.Material.Fabric, CFrame.new(0, 0, 0.08), forearmBone)
 	-- a short stub: measured in Studio, a 0.95-long forearm sat 1.1 studs from the
 	-- camera and covered 60% of screen height on its own
-	applyTexture(addNode(rig, "Part", "Forearm", Vector3.new(0.28, 0.28, 0.5), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 0.3), forearmBone), TexturesConfig.FABRIC, 0.7)
+	applyTexture(addNode(rig, "Part", "Forearm" .. suffix, Vector3.new(0.28, 0.28, 0.5), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 0.3), forearmBone), TexturesConfig.FABRIC, 0.7)
 end
 
 function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Camera): Rig

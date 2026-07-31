@@ -31,17 +31,19 @@ export type ProfileData = {
 }
 
 local TEMPLATE: ProfileData = {
-	Version = 2,
+	Version = 3,
 	Credits = 0,
 	XP = 0,
 	WeaponsOwned = {
+		Rifle = { level = 1, xp = 0 },
 		Pistol = { level = 1, xp = 0 },
 	},
 	SkillLevels = {},
 	SkinsOwned = { Recruit = true },
 	EquippedSkin = "Recruit",
 	PurchaseHistory = {},
-	Loadout = { "Pistol" },
+	-- Slot 1 primary, slot 2 sidearm; the 1 and 2 keys read these directly.
+	Loadout = { "Rifle", "Pistol" },
 	Settings = {},
 	StatsLifetime = {
 		Distance = 0,
@@ -80,6 +82,17 @@ local function migrate(data: ProfileData)
 			data.Loadout = { "Pistol" }
 		end
 		data.Version = 2
+	end
+	if data.Version < 3 then
+		-- Everyone starts with a primary as well as a sidearm, so existing profiles get
+		-- the rifle and a second slot rather than being stuck on the pistol alone.
+		if not data.WeaponsOwned.Rifle then
+			data.WeaponsOwned.Rifle = { level = 1, xp = 0 }
+		end
+		if #data.Loadout < 2 then
+			data.Loadout = { "Rifle", "Pistol" }
+		end
+		data.Version = 3
 	end
 end
 

@@ -1,6 +1,7 @@
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local ViewmodelConfig = require(ReplicatedStorage.Shared.config.ViewmodelConfig)
@@ -65,6 +66,43 @@ local function applyTexture(part: BasePart, textureId: number, studsPerTile: num
 		texture.Transparency = 0.35
 		texture.Parent = part
 	end
+end
+
+local NIGHT_ATTRIBUTE = "NightMission"
+
+-- One helper for both build paths. The fill is what makes the weapon readable against a
+-- bright desert sky, but under the Night modifier it lights the player permanently and
+-- the flashlight beam stops registering, so it tracks the mission attribute live rather
+-- than being decided once at equip time.
+local function attachFillLight(part: BasePart)
+	local fill = ViewmodelConfig.FILL_LIGHT
+	if not fill.enabled then
+		return
+	end
+
+	local light = Instance.new("PointLight")
+	light.Name = "ViewmodelFill"
+	light.Brightness = fill.brightness
+	light.Range = fill.range
+	light.Color = fill.color
+	light.Shadows = false
+
+	local function refresh()
+		light.Enabled = not (fill.disableAtNight and Workspace:GetAttribute(NIGHT_ATTRIBUTE) == true)
+	end
+	refresh()
+	light.Parent = part
+
+	local connection: RBXScriptConnection? = nil
+	connection = Workspace:GetAttributeChangedSignal(NIGHT_ATTRIBUTE):Connect(function()
+		if light.Parent == nil then
+			if connection then
+				connection:Disconnect()
+			end
+			return
+		end
+		refresh()
+	end)
 end
 
 local function scaled(rest: CFrame): CFrame
@@ -205,44 +243,56 @@ local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): boolean
 	end
 	local mainCFrame = main.CFrame
 
+	-- The procedural path runs every size and rest offset through ViewmodelConfig.SCALE,
+	-- and so do the arms below. Adopting the mesh at its authored size left a full-size
+	-- weapon in hands shrunk to 0.72, and made the authored pose translations - which
+	-- ViewmodelBuilder.pose also scales - land short.
+	local scale = ViewmodelConfig.SCALE
+	main.Size = main.Size * scale
+
 	-- weaponRoot first, so every other piece can hang off it
 	adoptNode(rig, main, CFrame.identity, nil, "weaponRoot")
 
 	for _, child in clone:GetChildren() do
 		if child:IsA("BasePart") then
-			local rest = mainCFrame:ToObjectSpace(child.CFrame)
+			local rest = scaled(mainCFrame:ToObjectSpace(child.CFrame))
+			child.Size = child.Size * scale
 			adoptNode(rig, child, rest, "weaponRoot", MESH_BONES[child.Name])
 		end
 	end
 	clone:Destroy()
 
-	local muzzle = rig.byBone.barrel
-	local eject = rig.byBone.weaponRoot
+	-- A template without a Barrel bone and without a Muzzle marker used to leave these
+	-- nil and then index them, taking the client down at equip time. weaponRoot is always
+	-- present by this point, so it is the floor.
+	local rootNode = rig.byBone.weaponRoot
+	local muzzle: Node? = rig.byBone.barrel
+	local eject: Node? = nil
+	local muzzleIsMarker = false
 	for _, node in rig.nodes do
 		if node.part.Name == "Muzzle" then
 			muzzle = node
+			muzzleIsMarker = true
 		elseif node.part.Name == "CasingEject" then
 			eject = node
 		end
 	end
 
-	rig.muzzle.Name = "Muzzle"
-	rig.muzzle.Parent = muzzle.part
-	rig.eject.Name = "Eject"
-	rig.eject.Parent = eject.part
-	rig.slideTravel = 0.3
-	rig.pumpTravel = 0.3
+	local muzzlePart = if muzzle then muzzle.part else rootNode.part
+	local ejectPart = if eject then eject.part else rootNode.part
 
-	local fill = ViewmodelConfig.FILL_LIGHT
-	if fill.enabled then
-		local light = Instance.new("PointLight")
-		light.Name = "ViewmodelFill"
-		light.Brightness = fill.brightness
-		light.Range = fill.range
-		light.Color = fill.color
-		light.Shadows = false
-		light.Parent = main
-	end
+	rig.muzzle.Name = "Muzzle"
+	-- A dedicated Muzzle marker already sits at the barrel tip, so it needs no offset.
+	-- Falling back to the barrel itself means the attachment would otherwise sit at the
+	-- part's centre and spawn the flash halfway down the weapon.
+	rig.muzzle.Position = if muzzleIsMarker then Vector3.zero else Vector3.new(0, 0, -muzzlePart.Size.Z / 2)
+	rig.muzzle.Parent = muzzlePart
+	rig.eject.Name = "Eject"
+	rig.eject.Parent = ejectPart
+	rig.slideTravel = 0.3 * scale
+	rig.pumpTravel = 0.3 * scale
+
+	attachFillLight(main)
 
 	local _ = camera
 	return true
@@ -342,16 +392,7 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 	local weaponRoot = addNode(rig, "Part", "WeaponRoot", Vector3.new(0.05, 0.05, 0.05), COLOR_METAL, Enum.Material.Metal, CFrame.identity, nil, "weaponRoot")
 	weaponRoot.Transparency = 1
 
-	local fill = ViewmodelConfig.FILL_LIGHT
-	if fill.enabled then
-		local light = Instance.new("PointLight")
-		light.Name = "ViewmodelFill"
-		light.Brightness = fill.brightness
-		light.Range = fill.range
-		light.Color = fill.color
-		light.Shadows = false
-		light.Parent = weaponRoot
-	end
+	attachFillLight(weaponRoot)
 
 	local receiver = addNode(rig, "Part", "Receiver", Vector3.new(0.24, bodyHeight, bodyLength), COLOR_METAL, Enum.Material.Metal, CFrame.identity, "weaponRoot")
 	applyTexture(receiver, TexturesConfig.METAL_PLATES, 0.9)

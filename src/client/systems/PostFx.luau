@@ -77,7 +77,9 @@ local function step(deltaTime: number)
 	damageEffect.TintColor = Color3.fromRGB(255, 255 - math.floor(damagePulse * 90), 255 - math.floor(damagePulse * 90))
 	damageEffect.Brightness = -damagePulse * 0.06
 	local biome = Workspace:GetAttribute("Biome")
-	local sunInFrame = biome == "Forest" and Workspace:GetAttribute("Night") ~= true
+	-- MissionService writes NightMission, never Night, so this read was always nil and
+	-- the forest kept its daylight bloom through every night run.
+	local sunInFrame = biome == "Forest" and Workspace:GetAttribute("NightMission") ~= true
 	bloom.Intensity = (if sunInFrame then 0.62 else 0.34) + deathFade * 1.6 + damagePulse * 0.5
 	bloom.Threshold = if sunInFrame then 1 else 1.25
 

@@ -52,6 +52,14 @@ local slideSpring = Spring.number(mechanismSetting.stiffness, mechanismSetting.d
 local pumpSpring = Spring.number(mechanismSetting.stiffness, mechanismSetting.damping)
 local magazineSpring = Spring.number(mechanismSetting.stiffness, mechanismSetting.damping)
 
+local recoilRotScale = ViewmodelConfig.RECOIL_ROTATION_SCALE_DEFAULT
+
+-- When a published clip drives the Animator it owns Motor6D.Transform. The procedural
+-- layer writes the same channel every RenderStepped, so both writing in one frame means
+-- the later write wins and the clip silently does nothing. This flag hands the joints
+-- over; the root keeps carrying sway, bob and recoil either way.
+local clipDriven = false
+
 local cameraHistory: { CFrame } = {}
 local historyCursor = 0
 local sprintBlend = 0
@@ -83,6 +91,7 @@ local function destroyRig()
 	end
 	rig = nil
 	sprintActive = false
+	clipDriven = false
 	sequencer:stop()
 end
 
@@ -105,6 +114,7 @@ function Viewmodel.setWeapon(weaponId: string)
 	rig = ViewmodelBuilder.build(config, camera)
 	isVisible = true
 
+	recoilRotScale = ViewmodelConfig.recoilRotScale(config.class)
 	recoilPos:SetProperties(config.recoilStiffness, config.recoilDamping)
 	recoilRot:SetProperties(config.recoilStiffness * 1.1, config.recoilDamping)
 	recoilPos:Reset(Vector3.zero)
@@ -120,6 +130,18 @@ function Viewmodel.setWeapon(weaponId: string)
 	sequencer:setClass(config.class)
 	sequencer:play("Equip")
 	sprintActive = false
+end
+
+-- Call this with true for as long as an AnimationTrack is driving rig.animator, and
+-- false the moment it stops. While it is true the procedural bone offsets stand down
+-- and the clip owns every joint.
+function Viewmodel.setClipDriven(value: boolean)
+	clipDriven = value
+end
+
+function Viewmodel.getAnimator(): Animator?
+	local current = rig
+	return if current then current.animator else nil
 end
 
 function Viewmodel.setActive(value: boolean)
@@ -326,11 +348,15 @@ local function step(deltaTime: number)
 	local equipValue = equipOffset.value
 	local equipTilt = -equipValue.Y / math.max(ViewmodelConfig.equip.drop, 0.001) * ViewmodelConfig.equip.tilt
 
+	-- tiltRoll packs two different units into one spring: X is a lateral shift in studs,
+	-- Z is a roll in radians. Adding the whole vector here fed the roll back in as a
+	-- depth translation, so strafing shoved the weapon towards and away from the camera.
+	-- Only X belongs in the position sum; Z is applied in the rotation sum below.
 	local position = swayPosValue
 		+ movePos.value
 		+ breathe.value
 		+ impactPos.value
-		+ tiltRoll.value
+		+ Vector3.new(tiltRoll.value.X, 0, 0)
 		+ equipValue
 		+ recoilPos.value * -1
 		+ sprint.position * sprintBlend
@@ -339,7 +365,7 @@ local function step(deltaTime: number)
 	local rotation = swayRot.value
 		+ lagRot.value
 		+ moveRot.value
-		+ recoilRot.value * 0.02
+		+ recoilRot.value * recoilRotScale
 		+ Vector3.new(equipTilt, 0, 0)
 		+ sprint.rotation * sprintBlend
 		+ inspectSetting.rotation * inspectBlend
@@ -379,6 +405,7 @@ local function step(deltaTime: number)
 		magazine = magazineOffset,
 		supportHand = supportHand,
 		bones = authored,
+		animated = clipDriven,
 	})
 end
 

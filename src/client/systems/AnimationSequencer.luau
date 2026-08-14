@@ -158,8 +158,16 @@ function AnimationSequencer:update(deltaTime: number): PoseLibrary.Pose
 							self:firePhase(nextStep.phase)
 						end
 					elseif sequence.looped then
-						self.stepIndex = #sequence.steps
-						self.stepClock = duration
+						-- Restart from the top. Pointing the index back at the last step
+						-- left its clock already spent, so alpha hit 1 again on the very
+						-- next frame, this branch re-fired every frame and the pose froze
+						-- on the final step instead of cycling.
+						self.stepIndex = 1
+						self.stepClock = 0
+						local firstStep = sequence.steps[1]
+						if firstStep and firstStep.phase then
+							self:firePhase(firstStep.phase)
+						end
 					else
 						self.activeId = nil
 						self.stepIndex = 0

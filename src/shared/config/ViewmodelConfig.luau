@@ -17,12 +17,34 @@ ViewmodelConfig.SCALE = 0.72
 -- the weapon in the bottom right where it belongs and leaves the sight line clear.
 ViewmodelConfig.BASE_OFFSET = CFrame.new(0.38, -0.80, -2.5)
 
+-- A constant light welded to the weapon means the player is never actually in the dark.
+-- Under the Night modifier that cancels the flashlight outright: the beam lands on
+-- geometry that is already lit, so it reads as having no effect. The fill stays for
+-- daylight framing and switches off whenever Workspace.NightMission is set.
 ViewmodelConfig.FILL_LIGHT = {
 	enabled = true,
+	disableAtNight = true,
 	brightness = 0.35,
 	range = 6,
 	color = Color3.fromRGB(255, 246, 226),
 }
+
+-- recoilRot holds the angular kick in radians. The raw spring peak is around 2.3 degrees
+-- for the rifle, which is the right order of magnitude for a viewmodel but too much for
+-- a sidearm and far too little for the shotgun, so the trim is per class instead of the
+-- single hard-coded constant that used to sit in the render path.
+ViewmodelConfig.RECOIL_ROTATION_SCALE_DEFAULT = 0.30
+
+ViewmodelConfig.recoilRotationScale = {
+	Pistol = 0.30,
+	SMG = 0.22,
+	Rifle = 0.28,
+	Shotgun = 0.45,
+} :: { [string]: number }
+
+function ViewmodelConfig.recoilRotScale(class: string): number
+	return ViewmodelConfig.recoilRotationScale[class] or ViewmodelConfig.RECOIL_ROTATION_SCALE_DEFAULT
+end
 
 ViewmodelConfig.springs = {
 	sway = { stiffness = 130, damping = 22 },

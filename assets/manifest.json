@@ -496,9 +496,9 @@
   "animation/player/run": {
     "source": "pending",
     "license": "Original work (project owner)",
-    "file": "assets/animation/player/run.rbxm",
-    "assetId": 0,
-    "status": "pending",
+    "file": "assets/animation/player/run.rbxmx",
+    "assetId": "130134481942797",
+    "status": "approved",
     "note": "Heavy tired forward run cycle"
   },
   "animation/player/strafe_left": {
@@ -518,76 +518,76 @@
     "note": "Additive lean while strafing right"
   },
   "animation/player/stumble": {
-    "source": "pending",
-    "license": "Original work (project owner)",
-    "file": "assets/animation/player/stumble.rbxm",
-    "assetId": 0,
-    "status": "pending",
-    "note": "Trip on obstacle contact"
+    "source": "Quaternius Universal Animation Library 2 (CC0), https://quaternius.com/packs/universalanimationlibrary2.html",
+    "license": "CC0 1.0 Universal",
+    "file": "assets/animation/player/stumble.rbxmx",
+    "assetId": "78964987584801",
+    "status": "approved",
+    "note": "Hit_Knockback: Knockback hit reaction, one-shot, retargeted to R15"
   },
   "animation/player/death": {
-    "source": "pending",
-    "license": "Original work (project owner)",
-    "file": "assets/animation/player/death.rbxm",
-    "assetId": 0,
-    "status": "pending",
-    "note": "Fall backwards on death"
+    "source": "Quaternius Universal Animation Library (CC0), https://quaternius.com/packs/universalanimationlibrary.html",
+    "license": "CC0 1.0 Universal",
+    "file": "assets/animation/player/death.rbxmx",
+    "assetId": "125643944598525",
+    "status": "approved",
+    "note": "Death01: Falls backwards and lies supine, one-shot, retargeted to R15"
   },
   "animation/zombie/idle_a": {
-    "source": "pending",
-    "license": "Original work (project owner)",
-    "file": "assets/animation/zombie/idle_a.rbxm",
-    "assetId": 0,
-    "status": "pending",
-    "note": "Zombie idle sway variation A"
+    "source": "Quaternius Universal Animation Library 2 (CC0), https://quaternius.com/packs/universalanimationlibrary2.html",
+    "license": "CC0 1.0 Universal",
+    "file": "assets/animation/zombie/idle_a.rbxmx",
+    "assetId": "78144916069873",
+    "status": "approved",
+    "note": "Zombie_Idle_Loop: Zombie idle sway, retargeted to R15 via tools/animation_pipeline/glb_to_keyframes.py; torso rotation scaled 0.4 / pelvis 0.6 / head 0.8 so the shuffle reads as a lean, not a fold"
   },
   "animation/zombie/idle_b": {
-    "source": "pending",
-    "license": "Original work (project owner)",
-    "file": "assets/animation/zombie/idle_b.rbxm",
-    "assetId": 0,
-    "status": "pending",
-    "note": "Zombie idle sway variation B"
+    "source": "Quaternius Universal Animation Library (CC0), https://quaternius.com/packs/universalanimationlibrary.html",
+    "license": "CC0 1.0 Universal",
+    "file": "assets/animation/zombie/idle_b.rbxmx",
+    "assetId": "126230082036253",
+    "status": "approved",
+    "note": "Idle_Loop: Calm idle variation, retargeted to R15"
   },
   "animation/zombie/idle_c": {
-    "source": "pending",
-    "license": "Original work (project owner)",
-    "file": "assets/animation/zombie/idle_c.rbxm",
-    "assetId": 0,
-    "status": "pending",
-    "note": "Zombie idle sway variation C"
+    "source": "Quaternius Universal Animation Library 2 (CC0), https://quaternius.com/packs/universalanimationlibrary2.html",
+    "license": "CC0 1.0 Universal",
+    "file": "assets/animation/zombie/idle_c.rbxmx",
+    "assetId": "83006674705671",
+    "status": "approved",
+    "note": "LayToIdle: Rise from the ground, one-shot, retargeted to R15"
   },
   "animation/zombie/walk_shuffle": {
-    "source": "pending",
-    "license": "Original work (project owner)",
-    "file": "assets/animation/zombie/walk_shuffle.rbxm",
-    "assetId": 0,
-    "status": "pending",
-    "note": "Walker shuffling gait"
+    "source": "Quaternius Universal Animation Library 2 (CC0), https://quaternius.com/packs/universalanimationlibrary2.html",
+    "license": "CC0 1.0 Universal",
+    "file": "assets/animation/zombie/walk_shuffle.rbxmx",
+    "assetId": "103621128406622",
+    "status": "approved",
+    "note": "Zombie_Walk_Fwd_Loop: Hunched shuffle, in place, retargeted to R15; torso rotation scaled 0.4 / pelvis 0.6 / head 0.8 so the shuffle reads as a lean, not a fold"
   },
   "animation/zombie/run_ragged": {
-    "source": "pending",
-    "license": "Original work (project owner)",
-    "file": "assets/animation/zombie/run_ragged.rbxm",
-    "assetId": 0,
-    "status": "pending",
-    "note": "Runner ragged sprint"
+    "source": "Quaternius Universal Animation Library (CC0), https://quaternius.com/packs/universalanimationlibrary.html",
+    "license": "CC0 1.0 Universal",
+    "file": "assets/animation/zombie/run_ragged.rbxmx",
+    "assetId": "74797059325286",
+    "status": "approved",
+    "note": "Jog_Fwd_Loop: Jog loop used as the runner gait, retargeted to R15"
   },
   "animation/zombie/attack_lunge": {
-    "source": "pending",
-    "license": "Original work (project owner)",
-    "file": "assets/animation/zombie/attack_lunge.rbxm",
-    "assetId": 0,
-    "status": "pending",
-    "note": "Zombie lunge attack"
+    "source": "Quaternius Universal Animation Library 2 (CC0), https://quaternius.com/packs/universalanimationlibrary2.html",
+    "license": "CC0 1.0 Universal",
+    "file": "assets/animation/zombie/attack_lunge.rbxmx",
+    "assetId": "125369822675270",
+    "status": "approved",
+    "note": "Zombie_Scratch: Scratch attack, one-shot, retargeted to R15; torso rotation scaled 0.4 / pelvis 0.6 / head 0.8 so the shuffle reads as a lean, not a fold"
   },
   "animation/zombie/feeding": {
-    "source": "pending",
-    "license": "Original work (project owner)",
-    "file": "assets/animation/zombie/feeding.rbxm",
-    "assetId": 0,
-    "status": "pending",
-    "note": "Zombie feeding on corpse"
+    "source": "Quaternius Universal Animation Library (CC0), https://quaternius.com/packs/universalanimationlibrary.html",
+    "license": "CC0 1.0 Universal",
+    "file": "assets/animation/zombie/feeding.rbxmx",
+    "assetId": "120876649206221",
+    "status": "approved",
+    "note": "Fixing_Kneeling: Kneeling hands-down loop used as corpse feeding, retargeted to R15"
   },
   "audio/zombie/bite_01": {
     "source": "https://kenney.nl/assets/impact-sounds",
@@ -919,5 +919,327 @@
     "file": "assets/audio/zombie/bone_rattle_02.ogg",
     "assetId": "116306680002799",
     "status": "reviewing"
+  },
+  "viewmodel/rifle/mesh_main": {
+    "source": "Cube 3D (Roblox GenerationService), generated in Studio for this project",
+    "license": "Roblox generative AI output (project owner)",
+    "file": "assets/viewmodels/source/rifle/rifle_Main.glb",
+    "assetId": 78407136143951,
+    "status": "approved"
+  },
+  "viewmodel/rifle/mesh_slide": {
+    "source": "Cube 3D (Roblox GenerationService), generated in Studio for this project",
+    "license": "Roblox generative AI output (project owner)",
+    "file": "assets/viewmodels/source/rifle/rifle_Slide.glb",
+    "assetId": 87462343759435,
+    "status": "approved"
+  },
+  "viewmodel/rifle/mesh_magazine": {
+    "source": "Cube 3D (Roblox GenerationService), generated in Studio for this project",
+    "license": "Roblox generative AI output (project owner)",
+    "file": "assets/viewmodels/source/rifle/rifle_Magazine.glb",
+    "assetId": 106991838266142,
+    "status": "approved"
+  },
+  "viewmodel/rifle/mesh_barrel": {
+    "source": "Cube 3D (Roblox GenerationService), generated in Studio for this project",
+    "license": "Roblox generative AI output (project owner)",
+    "file": "assets/viewmodels/source/rifle/rifle_Barrel.glb",
+    "assetId": 138647947156830,
+    "status": "approved"
+  },
+  "viewmodel/rifle/mesh_grip": {
+    "source": "Cube 3D (Roblox GenerationService), generated in Studio for this project",
+    "license": "Roblox generative AI output (project owner)",
+    "file": "assets/viewmodels/source/rifle/rifle_Grip.glb",
+    "assetId": 100661930051242,
+    "status": "approved"
+  },
+  "viewmodel/rifle/tex_main": {
+    "source": "Cube 3D (Roblox GenerationService), generated in Studio for this project",
+    "license": "Roblox generative AI output (project owner)",
+    "file": "assets/viewmodels/source/rifle/rifle_Main_tex.png",
+    "assetId": 86347151304351,
+    "status": "approved"
+  },
+  "viewmodel/rifle/tex_slide": {
+    "source": "Cube 3D (Roblox GenerationService), generated in Studio for this project",
+    "license": "Roblox generative AI output (project owner)",
+    "file": "assets/viewmodels/source/rifle/rifle_Slide_tex.png",
+    "assetId": 136658706504639,
+    "status": "approved"
+  },
+  "viewmodel/rifle/tex_magazine": {
+    "source": "Cube 3D (Roblox GenerationService), generated in Studio for this project",
+    "license": "Roblox generative AI output (project owner)",
+    "file": "assets/viewmodels/source/rifle/rifle_Magazine_tex.png",
+    "assetId": 116284514539934,
+    "status": "approved"
+  },
+  "viewmodel/rifle/tex_barrel": {
+    "source": "Cube 3D (Roblox GenerationService), generated in Studio for this project",
+    "license": "Roblox generative AI output (project owner)",
+    "file": "assets/viewmodels/source/rifle/rifle_Barrel_tex.png",
+    "assetId": 86372494812294,
+    "status": "approved"
+  },
+  "viewmodel/rifle/tex_grip": {
+    "source": "Cube 3D (Roblox GenerationService), generated in Studio for this project",
+    "license": "Roblox generative AI output (project owner)",
+    "file": "assets/viewmodels/source/rifle/rifle_Grip_tex.png",
+    "assetId": 123975130681789,
+    "status": "approved"
+  },
+  "texture/pbr/metal_plates_normal": {
+    "source": "https://ambientcg.com/view?id=MetalPlates006",
+    "license": "CC0",
+    "file": "assets/textures/metal_plates_normal.jpg",
+    "assetId": "76376681655541",
+    "status": "approved"
+  },
+  "texture/pbr/metal_plates_roughness": {
+    "source": "https://ambientcg.com/view?id=MetalPlates006",
+    "license": "CC0",
+    "file": "assets/textures/metal_plates_roughness.jpg",
+    "assetId": "111632135736950",
+    "status": "approved"
+  },
+  "texture/pbr/metal_plates_metalness": {
+    "source": "https://ambientcg.com/view?id=MetalPlates006",
+    "license": "CC0",
+    "file": "assets/textures/metal_plates_metalness.jpg",
+    "assetId": "103199857726692",
+    "status": "approved"
+  },
+  "texture/pbr/rust_normal": {
+    "source": "https://ambientcg.com/view?id=Metal063",
+    "license": "CC0",
+    "file": "assets/textures/rust_normal.jpg",
+    "assetId": "113378877562967",
+    "status": "approved"
+  },
+  "texture/pbr/rust_roughness": {
+    "source": "https://ambientcg.com/view?id=Metal063",
+    "license": "CC0",
+    "file": "assets/textures/rust_roughness.jpg",
+    "assetId": "123291079159239",
+    "status": "approved"
+  },
+  "texture/pbr/rust_metalness": {
+    "source": "https://ambientcg.com/view?id=Metal063",
+    "license": "CC0",
+    "file": "assets/textures/rust_metalness.jpg",
+    "assetId": "138768964262119",
+    "status": "approved"
+  },
+  "texture/surface/steel": {
+    "source": "https://ambientcg.com/view?id=Metal038",
+    "license": "CC0",
+    "file": "assets/textures/steel_color.jpg",
+    "assetId": "123364641130573",
+    "status": "approved"
+  },
+  "texture/pbr/steel_normal": {
+    "source": "https://ambientcg.com/view?id=Metal038",
+    "license": "CC0",
+    "file": "assets/textures/steel_normal.jpg",
+    "assetId": "116682735024998",
+    "status": "approved"
+  },
+  "texture/pbr/steel_roughness": {
+    "source": "https://ambientcg.com/view?id=Metal038",
+    "license": "CC0",
+    "file": "assets/textures/steel_roughness.jpg",
+    "assetId": "139397806568473",
+    "status": "approved"
+  },
+  "texture/pbr/steel_metalness": {
+    "source": "https://ambientcg.com/view?id=Metal038",
+    "license": "CC0",
+    "file": "assets/textures/steel_metalness.jpg",
+    "assetId": "108131792609335",
+    "status": "approved"
+  },
+  "texture/surface/iron_rust": {
+    "source": "https://ambientcg.com/view?id=Metal041C",
+    "license": "CC0",
+    "file": "assets/textures/iron_rust_color.jpg",
+    "assetId": "77970655793392",
+    "status": "approved"
+  },
+  "texture/pbr/iron_rust_normal": {
+    "source": "https://ambientcg.com/view?id=Metal041C",
+    "license": "CC0",
+    "file": "assets/textures/iron_rust_normal.jpg",
+    "assetId": "88403924964970",
+    "status": "approved"
+  },
+  "texture/pbr/iron_rust_roughness": {
+    "source": "https://ambientcg.com/view?id=Metal041C",
+    "license": "CC0",
+    "file": "assets/textures/iron_rust_roughness.jpg",
+    "assetId": "108331362367108",
+    "status": "approved"
+  },
+  "texture/pbr/iron_rust_metalness": {
+    "source": "https://ambientcg.com/view?id=Metal041C",
+    "license": "CC0",
+    "file": "assets/textures/iron_rust_metalness.jpg",
+    "assetId": "89139010037381",
+    "status": "approved"
+  },
+  "texture/pbr/wood_normal": {
+    "source": "https://ambientcg.com/view?id=WoodFloor064",
+    "license": "CC0",
+    "file": "assets/textures/wood_normal.jpg",
+    "assetId": "87122802704754",
+    "status": "approved"
+  },
+  "texture/pbr/wood_roughness": {
+    "source": "https://ambientcg.com/view?id=WoodFloor064",
+    "license": "CC0",
+    "file": "assets/textures/wood_roughness.jpg",
+    "assetId": "94318055238924",
+    "status": "approved"
+  },
+  "texture/pbr/grass_normal": {
+    "source": "https://ambientcg.com/view?id=Grass005",
+    "license": "CC0",
+    "file": "assets/textures/grass_normal.jpg",
+    "assetId": "130742643213430",
+    "status": "approved"
+  },
+  "texture/pbr/grass_roughness": {
+    "source": "https://ambientcg.com/view?id=Grass005",
+    "license": "CC0",
+    "file": "assets/textures/grass_roughness.jpg",
+    "assetId": "83310799378913",
+    "status": "approved"
+  },
+  "texture/pbr/fabric_normal": {
+    "source": "https://ambientcg.com/view?id=Fabric061",
+    "license": "CC0",
+    "file": "assets/textures/fabric_normal.jpg",
+    "assetId": "85487768801620",
+    "status": "approved"
+  },
+  "texture/pbr/fabric_roughness": {
+    "source": "https://ambientcg.com/view?id=Fabric061",
+    "license": "CC0",
+    "file": "assets/textures/fabric_roughness.jpg",
+    "assetId": "87131457197907",
+    "status": "approved"
+  },
+  "zombie/mesh/head": {
+    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "license": "Original work (project owner)",
+    "file": "assets/zombies/source/head.glb",
+    "assetId": "95712390166129",
+    "status": "approved",
+    "note": "Reduced R15 zombie part head: low-poly gaunt body, Roblox material and colour applied at build time"
+  },
+  "zombie/mesh/uppertorso": {
+    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "license": "Original work (project owner)",
+    "file": "assets/zombies/source/uppertorso.glb",
+    "assetId": "114830023596782",
+    "status": "approved",
+    "note": "Reduced R15 zombie part uppertorso: low-poly gaunt body, Roblox material and colour applied at build time"
+  },
+  "zombie/mesh/lowertorso": {
+    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "license": "Original work (project owner)",
+    "file": "assets/zombies/source/lowertorso.glb",
+    "assetId": "88177840359535",
+    "status": "approved",
+    "note": "Reduced R15 zombie part lowertorso: low-poly gaunt body, Roblox material and colour applied at build time"
+  },
+  "zombie/mesh/leftupperarm": {
+    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "license": "Original work (project owner)",
+    "file": "assets/zombies/source/leftupperarm.glb",
+    "assetId": "80940480427866",
+    "status": "approved",
+    "note": "Reduced R15 zombie part leftupperarm: low-poly gaunt body, Roblox material and colour applied at build time"
+  },
+  "zombie/mesh/rightupperarm": {
+    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "license": "Original work (project owner)",
+    "file": "assets/zombies/source/rightupperarm.glb",
+    "assetId": "86624069201074",
+    "status": "approved",
+    "note": "Reduced R15 zombie part rightupperarm: low-poly gaunt body, Roblox material and colour applied at build time"
+  },
+  "zombie/mesh/leftupperleg": {
+    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "license": "Original work (project owner)",
+    "file": "assets/zombies/source/leftupperleg.glb",
+    "assetId": "128590082509641",
+    "status": "approved",
+    "note": "Reduced R15 zombie part leftupperleg: low-poly gaunt body, Roblox material and colour applied at build time"
+  },
+  "zombie/mesh/rightupperleg": {
+    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "license": "Original work (project owner)",
+    "file": "assets/zombies/source/rightupperleg.glb",
+    "assetId": "124381019901683",
+    "status": "approved",
+    "note": "Reduced R15 zombie part rightupperleg: low-poly gaunt body, Roblox material and colour applied at build time"
+  },
+  "zombie/meshid/head": {
+    "source": "Mesh id inside zombie/mesh/head (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10",
+    "license": "Original work (project owner)",
+    "file": "",
+    "assetId": 86428352678119,
+    "status": "approved",
+    "note": "consumed by scripts/build_zombie_model.py"
+  },
+  "zombie/meshid/uppertorso": {
+    "source": "Mesh id inside zombie/mesh/uppertorso (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10",
+    "license": "Original work (project owner)",
+    "file": "",
+    "assetId": 97129439874173,
+    "status": "approved",
+    "note": "consumed by scripts/build_zombie_model.py"
+  },
+  "zombie/meshid/lowertorso": {
+    "source": "Mesh id inside zombie/mesh/lowertorso (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10",
+    "license": "Original work (project owner)",
+    "file": "",
+    "assetId": 115889055869127,
+    "status": "approved",
+    "note": "consumed by scripts/build_zombie_model.py"
+  },
+  "zombie/meshid/leftupperarm": {
+    "source": "Mesh id inside zombie/mesh/leftupperarm (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10",
+    "license": "Original work (project owner)",
+    "file": "",
+    "assetId": 105578321404455,
+    "status": "approved",
+    "note": "consumed by scripts/build_zombie_model.py"
+  },
+  "zombie/meshid/rightupperarm": {
+    "source": "Mesh id inside zombie/mesh/rightupperarm (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10",
+    "license": "Original work (project owner)",
+    "file": "",
+    "assetId": 105578321404455,
+    "status": "approved",
+    "note": "consumed by scripts/build_zombie_model.py"
+  },
+  "zombie/meshid/leftupperleg": {
+    "source": "Mesh id inside zombie/mesh/leftupperleg (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10",
+    "license": "Original work (project owner)",
+    "file": "",
+    "assetId": 120627592212491,
+    "status": "approved",
+    "note": "consumed by scripts/build_zombie_model.py"
+  },
+  "zombie/meshid/rightupperleg": {
+    "source": "Mesh id inside zombie/mesh/rightupperleg (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10",
+    "license": "Original work (project owner)",
+    "file": "",
+    "assetId": 120627592212491,
+    "status": "approved",
+    "note": "consumed by scripts/build_zombie_model.py"
   }
 }

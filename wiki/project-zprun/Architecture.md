@@ -37,7 +37,7 @@ The two anchors are 4300 studs apart. Every hub builder places geometry relative
 
 `RUN_DIRECTION` is `(0, 0, -1)`. Two consequences worth remembering:
 
-- `RunController` clamps the player's X against `RUN_ORIGIN.X` plus or minus `LANE_WIDTH / 2 - 2`, so lane clamping is origin-relative.
+- `RunController` clamps the player's X against `RUN_ORIGIN.X` plus or minus `PLAYABLE_HALF_WIDTH` (45), so lane clamping is origin-relative and narrower than the 240-stud geometry.
 - `DistanceTracker` measures progress as `root.Position:Dot(RUN_DIRECTION)`, which is absolute world space. That works only because `RUN_ORIGIN.Z` is 0. Moving the run world along Z would silently offset every distance reading and every distance-based goal.
 
 `TrackBuilder` is the one exception and is currently inconsistent: it pivots the start platform to `CFrame.new(RUN_DIRECTION * (length / 2))`, which is absolute `(0, 0, -32)` and therefore 4000 studs away from where the squad actually spawns.
@@ -55,7 +55,8 @@ All under `src/server/systems/`.
 | `DesertBase.luau` | Desert ground plane, the road out to the city, and the outdoor shooting range with gong targets behind the hangar |
 | `CityDiorama.luau` | Non-collidable burning-city backdrop plus four orbiting patrol helicopters driven on Heartbeat |
 | `ChunkFactory.luau` | Pure geometry factory for a single run chunk: floor and PBR surface, side barriers, aprons, road markings, edge props, obstacles, and the cross-fade toward the next biome |
-| `ChunkSpawner.luau` | The streaming director: plans the biome route from `LocationsConfig`, spawns ahead of `DistanceTracker.getMaxDistance()`, pools non-blended chunks, culls behind, sets `Workspace.Biome`, forwards zombie and ammo spawning |
+| `ChunkSpawner.luau` | The streaming director: builds chunks along the route from `RoutePlan`, spawns ahead of `DistanceTracker.getMaxDistance()`, pools non-blended chunks, culls behind, sets `Workspace.Biome`, forwards ammo spawning (zombies no longer spawn per chunk) |
+| `RoutePlan.luau` | The seeded biome route extracted from `ChunkSpawner`: `entryAt`, `entryForDistance`, `locationForDistance`, and `sectionAt(distance, sections)` which maps a run distance onto a spawn section and its 0..1 progress; shared by `ChunkSpawner` and `ZombieAI` without a require cycle |
 | `TrackBuilder.luau` | The fixed start platform |
 | `AmmoCrates.luau` | Per-chunk ammo crates and the proximity poll that grants reserve rounds |
 
@@ -70,7 +71,7 @@ All under `src/server/systems/`.
 | `MissionState.luau` | In-memory run state: active flag, participant set, modifier ids |
 | `MissionConfig.luau` | The active difficulty, mirrored to the `Workspace.Difficulty` attribute |
 | `MissionGoals.luau` | Per-run objective tracking and bonus credits |
-| `DistanceTracker.luau` | Run distance per player, the `leaderstats.Distance` mirror, and speed ramping |
+| `DistanceTracker.luau` | Run distance per player as a `RunState`, the `leaderstats.Distance` mirror, the constant-by-default speed model with per-location time ramps and `applySlow`, and the anti-stuck watchdog (sideways relocation, then death) |
 | `DeathService.luau` | The whole death flow: corpse pose, zombie lure, reward computation, `DeathBegan`, and the return/continue choice |
 
 ### Combat
@@ -79,9 +80,9 @@ All under `src/server/systems/`.
 | --- | --- |
 | `WeaponService.luau` | Authoritative gunplay: per-player magazine and reserve state, per-weapon ammo snapshots across swaps, fire-intent validation, raycast damage with headshots, kill XP, token-guarded reload |
 | `WorldWeapon.luau` | The third-person weapon model welded onto the character, rebuilt whenever the `WeaponId` attribute changes |
-| `ZombieAI.luau` | The horde brain on a 0.2s tick: weighted spawning, server-pinned network ownership, touch damage, aggro gating, delayed-position chasing, corpse lure and feeding |
-| `ZombieFactory.luau` | Building the part-based zombie rig from a `ZombiesConfig` entry |
-| `ZombieAnimator.luau` | Loading and cross-fading zombie AnimationTracks, degrading silently when asset ids are 0 |
+| `ZombieAI.luau` | The horde brain on a 0.2s tick: distance-driven section spawner (`spawnStep`), model pool with distance reaping, `Idle/Aware/Alert/Attack` mode machine with LOD, server-pinned network ownership, death/glance/miss collision bands, delayed-position chasing, corpse lure and feeding |
+| `ZombieFactory.luau` | Building the reduced-R15 zombie rig (R15 joint names, `Hitbox`, `HipHeight` 2.35) from a `ZombiesConfig` entry |
+| `ZombieAnimator.luau` | Loading zombie AnimationTracks from seeded variant arrays with per-zombie phase and speed jitter, `setMode` cross-fades, degrading silently when asset ids are 0 |
 
 ### Economy
 
@@ -106,7 +107,7 @@ All under `src/server/systems/`.
 ### Flow, camera and motion
 
 - `FlowController.luau` mirrors the `FlowPhase` attribute into client mode, starting and stopping the run controllers.
-- `RunController.luau` drives auto-run with `Humanoid:Move` and clamps the lane; `InputController.luau` is the only run input, a ContextAction-bound lateral axis.
+- `RunController.luau` drives auto-run with `Humanoid:Move`, clamps the lane, and applies the decaying lateral shove and input lock from `applyGlance`; `InputController.luau` is the only run input, a ContextAction-bound lateral axis. `GlanceController.luau` listens for `PlayerGlanced` and fans it out to `RunController`, camera, body and animation reactions.
 - `CameraController.luau` is the mission camera; `CameraEffectsController.luau` layers FOV, shake, bob, sway, tilt and breathing on top of it.
 - `ExertionState.luau` is the shared movement clock. Speed, grounded state, a 0-1 exertion accumulator and a stride phase that fires step listeners twice per cycle. Footsteps, breathing, dust and camera bob all read from it rather than recomputing speed.
 - `BodyMotionController.luau`, `FootPlanting.luau` and `AnimationController.luau` pose the character; `FirstPersonController.luau` is a bootstrap that starts `CursorMode` and disables the reset button.
@@ -131,11 +132,11 @@ All under `src/server/systems/`.
 
 ## Shared modules
 
-`src/shared/config/` is data only, one module per system, mostly `table.freeze`d. Tuning happens here, not in the systems that read it. The set covers world constants (`GameConstants`, `HangarConfig`), content tables (`LocationsConfig`, `MapsConfig`, `ZombiesConfig`, `WeaponsConfig`, `SkillsConfig`, `SkinsConfig`, `VendorsConfig`, `ModifiersConfig`, `MissionGoalsConfig`, `DifficultyConfig`, `ProductsConfig`), and presentation tuning (`AudioConfig`, `SfxConfig`, `VfxConfig`, `CameraConfig`, `LightingConfig`, `FootstepConfig`, `BreathingConfig`, `AnimationsConfig`, `TexturesConfig`, `SettingsConfig`).
+`src/shared/config/` is data only, one module per system, mostly `table.freeze`d. Tuning happens here, not in the systems that read it. The set covers world constants (`GameConstants`, `HangarConfig`), content tables (`LocationsConfig`, `MapsConfig`, `ZombiesConfig`, `ZombieSpawnConfig` (spawn sections: density and difficulty tiers, clump presets, `Ramp` curves), `WeaponsConfig`, `SkillsConfig`, `SkinsConfig`, `VendorsConfig`, `ModifiersConfig`, `MissionGoalsConfig`, `DifficultyConfig`, `ProductsConfig`), and presentation tuning (`AudioConfig`, `SfxConfig`, `VfxConfig`, `CameraConfig`, `LightingConfig`, `FootstepConfig`, `BreathingConfig`, `AnimationsConfig`, `TexturesConfig`, `SettingsConfig`).
 
 Two config modules are special. `AssetIds.luau` is generated by `scripts/sync_configs.py` from `assets/manifest.json` and must not be hand edited; every consumer guards on `id > 0` so an unuploaded asset is silence, not an error. `VfxConfig.luau` is deliberately not frozen, because `SettingsApply` mutates `VfxConfig.DENSITY` at runtime through `setDensity`.
 
-The remaining shared trees are small: `net/Remotes.luau`, `types/Flow.luau` and `types/Squad.luau` (type-only modules that return an empty table), and `util/` with `LaneSectionFactory` (lane geometry shared by the start platform and chunks), `MaterialUtil` (registers the `TFZ_Asphalt`, `TFZ_Concrete` and `TFZ_Sand` MaterialVariants), `TextureUtil` (face texture application) and `RewardMultiplier` (difficulty multiplier composed with de-duplicated modifier multipliers, used by both the lobby readout and the server payout so the number the player is shown is the number they get).
+The remaining shared trees are small: `net/Remotes.luau`, `types/Flow.luau` and `types/Squad.luau` (type-only modules that return an empty table), and `util/` with `LaneSectionFactory` (lane geometry shared by the start platform and chunks), `MaterialUtil` (registers the `TFZ_Asphalt`, `TFZ_Concrete`, `TFZ_Sand`, `TFZ_Metal`, `TFZ_Rust`, `TFZ_MetalPlates` and `TFZ_DarkRust` MaterialVariants and sets the Metal and CorrodedMetal base-material overrides), `TextureUtil` (face texture application), `ZombieRig` (the only sanctioned way to find a zombie's torso or neck, so no consumer hardcodes a part name) and `RewardMultiplier` (difficulty multiplier composed with de-duplicated modifier multipliers, used by both the lobby readout and the server payout so the number the player is shown is the number they get).
 
 ## Networking
 

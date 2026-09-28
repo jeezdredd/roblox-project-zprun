@@ -18,6 +18,18 @@
         "$className": "Folder",
         "Pistol": {
           "$path": "assets/viewmodels/pistol.model.json"
+        },
+        "Rifle": {
+          "$path": "assets/viewmodels/rifle.model.json"
+        }
+      },
+      "AnimationClips": {
+        "$path": "assets/animation"
+      },
+      "ZombieMeshes": {
+        "$className": "Folder",
+        "Walker": {
+          "$path": "assets/zombies/walker.model.json"
         }
       }
     },
@@ -44,6 +56,11 @@
       "StarterPlayerScripts": {
         "Client": {
           "$path": "src/client"
+        }
+      },
+      "StarterCharacterScripts": {
+        "Health": {
+          "$path": "src/startercharacter/Health.server.luau"
         }
       }
     },
@@ -77,6 +94,90 @@
           "NormalMap": "rbxassetid://134675717486844",
           "RoughnessMap": "rbxassetid://93857502534136",
           "StudsPerTile": 8
+        }
+      },
+      "TFZ_Metal": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Metal",
+          "ColorMap": "rbxassetid://123364641130573",
+          "NormalMap": "rbxassetid://116682735024998",
+          "RoughnessMap": "rbxassetid://139397806568473",
+          "MetalnessMap": "rbxassetid://108131792609335",
+          "StudsPerTile": 6
+        }
+      },
+      "TFZ_Rust": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "CorrodedMetal",
+          "ColorMap": "rbxassetid://77970655793392",
+          "NormalMap": "rbxassetid://88403924964970",
+          "RoughnessMap": "rbxassetid://108331362367108",
+          "MetalnessMap": "rbxassetid://89139010037381",
+          "StudsPerTile": 6
+        }
+      },
+      "TFZ_Wood": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Wood",
+          "ColorMap": "rbxassetid://136206214410343",
+          "NormalMap": "rbxassetid://87122802704754",
+          "RoughnessMap": "rbxassetid://94318055238924",
+          "StudsPerTile": 6
+        }
+      },
+      "TFZ_WoodPlanks": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "WoodPlanks",
+          "ColorMap": "rbxassetid://136206214410343",
+          "NormalMap": "rbxassetid://87122802704754",
+          "RoughnessMap": "rbxassetid://94318055238924",
+          "StudsPerTile": 8
+        }
+      },
+      "TFZ_Grass": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Grass",
+          "ColorMap": "rbxassetid://81024087358603",
+          "NormalMap": "rbxassetid://130742643213430",
+          "RoughnessMap": "rbxassetid://83310799378913",
+          "StudsPerTile": 6
+        }
+      },
+      "TFZ_Fabric": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Fabric",
+          "ColorMap": "rbxassetid://85689029803224",
+          "NormalMap": "rbxassetid://85487768801620",
+          "RoughnessMap": "rbxassetid://87131457197907",
+          "StudsPerTile": 3
+        }
+      },
+      "TFZ_MetalPlates": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Metal",
+          "ColorMap": "rbxassetid://138794326612928",
+          "NormalMap": "rbxassetid://76376681655541",
+          "RoughnessMap": "rbxassetid://111632135736950",
+          "MetalnessMap": "rbxassetid://103199857726692",
+          "StudsPerTile": 4
+        }
+      },
+      "TFZ_DarkRust": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "CorrodedMetal",
+          "ColorMap": "rbxassetid://85963499931816",
+          "NormalMap": "rbxassetid://113378877562967",
+          "RoughnessMap": "rbxassetid://123291079159239",
+          "MetalnessMap": "rbxassetid://138768964262119",
+          "StudsPerTile": 6
         }
       }
     }

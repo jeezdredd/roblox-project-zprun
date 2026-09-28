@@ -5,6 +5,12 @@
       "command": "/Applications/RobloxStudio.app/Contents/MacOS/StudioMCP",
       "args": [],
       "env": {}
+    },
+    "Blender": {
+      "type": "stdio",
+      "command": "/Users/sevastyan0107/.local/bin/blender-mcp",
+      "args": [],
+      "env": {}
     }
   }
 }

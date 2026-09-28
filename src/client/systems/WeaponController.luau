@@ -14,6 +14,7 @@ local WeaponSfx = require(script.Parent.WeaponSfx)
 local WeaponVfx = require(script.Parent.WeaponVfx)
 local CursorMode = require(script.Parent.CursorMode)
 local RunController = require(script.Parent.Parent.controllers.RunController)
+local HipAim = require(script.Parent.HipAim)
 local AimAssist = require(script.Parent.AimAssist)
 local UiSfx = require(script.Parent.UiSfx)
 local UiTheme = require(script.Parent.Parent.ui.UiTheme)
@@ -85,7 +86,7 @@ local function tryFire()
 	lastBurstAt = now
 	local camera = Workspace.CurrentCamera
 	local origin = camera.CFrame.Position
-	local direction = AimAssist.adjustFireDirection(origin, camera.CFrame.LookVector)
+	local direction = HipAim.fireDirection(origin) or AimAssist.adjustFireDirection(origin, camera.CFrame.LookVector)
 
 	Remotes.getEvent(Remotes.Event.WeaponFire):FireServer(origin, direction)
 
@@ -168,6 +169,7 @@ local function buildHud()
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(1, 0)
 	corner.Parent = crosshair
+	HipAim.bindCrosshair(crosshair)
 end
 
 local function syncPredictedAmmo()

@@ -1,0 +1,14 @@
+--!strict
+
+local ZombieBehaviourConfig = {
+	SPEED_CURVE_DEADZONE = 0.05,
+	SPEED_CURVE_FLOOR = 0.6,
+	ALERT_ACCELERATION_DURATION = 1,
+	LEAD_SECONDS = 0.5,
+	GLANCE_POWER_REFERENCE = 3,
+	EATING_ALERT_MODIFIER = 0.5,
+	STAND_UP_DISTANCE = 160,
+	AWARE_TURN_RATE = 60,
+}
+
+return table.freeze(ZombieBehaviourConfig)

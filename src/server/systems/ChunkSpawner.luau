@@ -8,18 +8,12 @@ local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local LocationsConfig = require(ReplicatedStorage.Shared.config.LocationsConfig)
 local ChunkFactory = require(script.Parent.ChunkFactory)
 local DistanceTracker = require(script.Parent.DistanceTracker)
-local ZombieAI = require(script.Parent.ZombieAI)
+local RoutePlan = require(script.Parent.RoutePlan)
 local AmmoCrates = require(script.Parent.AmmoCrates)
 local MissionState = require(script.Parent.MissionState)
 local MissionConfig = require(script.Parent.MissionConfig)
 
 local ChunkSpawner = {}
-
-type PlanEntry = {
-	locationId: string,
-	startIndex: number,
-	endIndex: number,
-}
 
 type ActiveChunk = {
 	model: Model,
@@ -33,8 +27,6 @@ local runDirection = GameConstants.RUN_DIRECTION
 local transitionChunks = GameConstants.TRANSITION_CHUNKS
 
 local random = Random.new()
-local routePool: { string } = table.clone(LocationsConfig.order)
-local plan: { PlanEntry } = {}
 local pools: { [string]: { Model } } = {}
 local active: { [number]: ActiveChunk } = {}
 local chunksFolder: Folder? = nil
@@ -45,32 +37,8 @@ for _, id in LocationsConfig.order do
 	pools[id] = {}
 end
 
-local function extendPlan(upToIndex: number)
-	while #plan == 0 or plan[#plan].endIndex < upToIndex do
-		local last = plan[#plan]
-		local startIndex = if last then last.endIndex + 1 else 0
-		local id = routePool[random:NextInteger(1, #routePool)]
-		if last and #routePool > 1 and id == last.locationId then
-			id = routePool[random:NextInteger(1, #routePool)]
-		end
-		local location = LocationsConfig.get(id) :: LocationsConfig.LocationConfig
-		local length = random:NextInteger(location.lengthChunksMin, location.lengthChunksMax)
-		table.insert(plan, { locationId = id, startIndex = startIndex, endIndex = startIndex + length - 1 })
-	end
-end
-
-local function entryAt(index: number): (PlanEntry, PlanEntry?)
-	extendPlan(index + transitionChunks + 1)
-	for i, entry in plan do
-		if index >= entry.startIndex and index <= entry.endIndex then
-			return entry, plan[i + 1]
-		end
-	end
-	return plan[#plan], nil
-end
-
 local function spawnChunk(index: number)
-	local entry, nextEntry = entryAt(index)
+	local entry, nextEntry = RoutePlan.entryAt(index)
 	local location = LocationsConfig.get(entry.locationId) :: LocationsConfig.LocationConfig
 
 	local blend: ChunkFactory.Blend? = nil
@@ -104,8 +72,6 @@ local function spawnChunk(index: number)
 	model.Parent = chunksFolder
 	active[index] = { model = model, locationId = entry.locationId, pooled = pooled }
 
-	local zombieCount = random:NextInteger(location.zombiesMin, location.zombiesMax)
-	ZombieAI.spawnForChunk(index, model:GetPivot(), chunkLength, zombieCount)
 	AmmoCrates.spawnForChunk(index, model:GetPivot(), chunkLength, MissionConfig.getDifficulty().ammoCrateChance)
 end
 
@@ -121,7 +87,6 @@ local function despawnChunk(index: number)
 		chunk.model:Destroy()
 	end
 	active[index] = nil
-	ZombieAI.clearChunk(index)
 	AmmoCrates.clearChunk(index)
 end
 
@@ -133,8 +98,7 @@ local function despawnAll()
 end
 
 local function updateBiomeAttribute(distance: number)
-	local index = math.max(0, math.floor((distance - startOffset) / chunkLength))
-	local entry = entryAt(index)
+	local entry = RoutePlan.entryForDistance(distance)
 	if entry and entry.locationId ~= currentBiomeId then
 		currentBiomeId = entry.locationId
 		Workspace:SetAttribute("Biome", entry.locationId)
@@ -165,38 +129,26 @@ local function step()
 end
 
 function ChunkSpawner.configure(seed: number, locationIds: { string }?)
-	random = Random.new(seed)
-	plan = {}
+	random = Random.new(seed + 1)
+	RoutePlan.configure(seed, locationIds)
 	for id, pool in pools do
 		for _, model in pool do
 			model:Destroy()
 		end
 		pools[id] = {}
 	end
-	if locationIds == nil then
-		routePool = table.clone(LocationsConfig.order)
-		return
-	end
-	local validated: { string } = {}
-	for _, id in locationIds do
-		if LocationsConfig.isValid(id) then
-			table.insert(validated, id)
-		end
-	end
-	routePool = if #validated > 0 then validated else table.clone(LocationsConfig.order)
 end
 
 function ChunkSpawner.reset()
 	despawnAll()
-	plan = {}
+	RoutePlan.reset()
 	currentBiomeId = nil
 end
 
 function ChunkSpawner.clear()
 	despawnAll()
-	plan = {}
+	RoutePlan.clear()
 	currentBiomeId = nil
-	routePool = table.clone(LocationsConfig.order)
 end
 
 function ChunkSpawner.init()

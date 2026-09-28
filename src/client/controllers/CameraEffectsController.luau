@@ -6,6 +6,7 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local CameraConfig = require(ReplicatedStorage.Shared.config.CameraConfig)
+local ViewmodelConfig = require(ReplicatedStorage.Shared.config.ViewmodelConfig)
 local BodyMotionController = require(script.Parent.BodyMotionController)
 local ExertionState = require(script.Parent.ExertionState)
 local InputController = require(script.Parent.InputController)
@@ -26,6 +27,8 @@ local adrenaline = 0
 
 local shakeOffsetX, shakeOffsetY, shakeOffsetZ = 0, 0, 0
 local shakeVelocityX, shakeVelocityY, shakeVelocityZ = 0, 0, 0
+local recoilPitch, recoilPitchVelocity = 0, 0
+local recoilYaw, recoilYawVelocity = 0, 0
 
 local function approach(current: number, target: number, speed: number, deltaTime: number): number
 	local alpha = 1 - math.exp(-speed * deltaTime)
@@ -49,6 +52,14 @@ local function updateShake(deltaTime: number)
 	shakeOffsetX += shakeVelocityX * deltaTime
 	shakeOffsetY += shakeVelocityY * deltaTime
 	shakeOffsetZ += shakeVelocityZ * deltaTime
+end
+
+local function updateRecoil(deltaTime: number)
+	local settings = ViewmodelConfig.cameraRecoil
+	recoilPitchVelocity -= (settings.stiffness * recoilPitch + settings.damping * recoilPitchVelocity) * deltaTime
+	recoilYawVelocity -= (settings.stiffness * recoilYaw + settings.damping * recoilYawVelocity) * deltaTime
+	recoilPitch += recoilPitchVelocity * deltaTime
+	recoilYaw += recoilYawVelocity * deltaTime
 end
 
 local function update(deltaTime: number)
@@ -77,6 +88,7 @@ local function update(deltaTime: number)
 	camera.FieldOfView = fov + fovKick
 
 	updateShake(deltaTime)
+	updateRecoil(deltaTime)
 
 	if camera.CameraType ~= Enum.CameraType.Scriptable or not isAlive() then
 		bobWeight = approach(bobWeight, 0, CameraConfig.BOB_AMPLITUDE_LERP_SPEED, deltaTime)
@@ -119,8 +131,8 @@ local function update(deltaTime: number)
 	camera.CFrame = camera.CFrame
 		* CFrame.new(offsetX, offsetY, offsetZ)
 		* CFrame.Angles(
-			breathPitch + shakeOffsetY * rotationScale,
-			shakeOffsetX * rotationScale,
+			breathPitch + shakeOffsetY * rotationScale + recoilPitch,
+			shakeOffsetX * rotationScale + recoilYaw,
 			math.rad(tilt * intensity) + bobRoll
 		)
 end
@@ -134,6 +146,12 @@ end
 
 function CameraEffectsController.fovKick(amount: number)
 	fovKick += amount
+end
+
+function CameraEffectsController.recoil(kick: number)
+	local settings = ViewmodelConfig.cameraRecoil
+	recoilPitchVelocity += kick * settings.pitch
+	recoilYawVelocity += (math.random() - 0.5) * 2 * kick * settings.yawJitter
 end
 
 function CameraEffectsController.init()
@@ -151,7 +169,7 @@ function CameraEffectsController.init()
 		end
 		local lastHealth = humanoid.Health
 		humanoid.HealthChanged:Connect(function(health)
-			if health < lastHealth - 0.001 then
+			if health < lastHealth - 0.001 and health > 0 then
 				CameraEffectsController.impulse(Vector3.new(0.4, -1, 0.2), 3.2)
 				BodyMotionController.impulse(-4.5, 2.5)
 			end

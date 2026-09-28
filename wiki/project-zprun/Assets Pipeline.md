@@ -1,5 +1,7 @@
 # Assets Pipeline
 
+> Status 2026-09-28: the notes below about all 12 `animation/*` entries sitting at id `0` are out of date. 10 of 12 are live (see [[Progress]] and [[Roadmap]]); only the two player strafe loops remain.
+
 Every texture, sound and animation in Task Force Z goes through one path: a manifest entry, an Open Cloud upload, and a generated config module. No Roblox asset id is ever typed into gameplay code by hand.
 
 ```
@@ -31,7 +33,7 @@ Current state: 110 entries — 83 `approved`, 13 `reviewing`, 12 `pending`, 2 `r
 | Category | Entries |
 | --- | --- |
 | `audio/*` | 79 (footsteps 21, weapons 17, zombie 8, player 6, foley 6, city 5, ui 5, world 4, unused 4, music 2, range 1) |
-| `texture/*` | 19 (surface 13, pbr 6) |
+| `texture/*` | 33 (surface 15, pbr 18) |
 | `animation/*` | 12 (player 5, zombie 7) |
 
 The binaries themselves are not tracked. `.gitignore` excludes `assets/textures/*.jpg`, `assets/textures/*.png` and `assets/audio/**/*.ogg|mp3|wav`, so the repository carries only `manifest.json`, the generated `LICENSES.md` and the generated `AssetIds.luau`. A fresh clone can build and run the game — every asset resolves from its uploaded id — but re-uploading requires re-downloading the source files.
@@ -96,15 +98,23 @@ The last row is the one deliberate exception to the alias rule: `WeaponsConfig` 
 
 `src/shared/util/MaterialUtil.luau` turns the PBR texture triples into real Roblox materials. `MaterialUtil.register()` runs once at boot from `src/server/init.server.luau` under `runStage("Materials", ...)`.
 
-Three sets are defined, each a colour + normal + roughness triple over a base material:
+Eleven sets are defined, each a colour + normal + roughness (+ optional metalness) set over a base material. Six of them carry `override = true`: `register()` calls `MaterialService:SetBaseMaterialOverride(baseMaterial, name)` for those, so every part in the world that uses `Enum.Material.Metal`, `CorrodedMetal`, `Wood`, `WoodPlanks`, `Grass` or `Fabric` renders through the PBR set without any per-part `apply` call (`DiamondPlate` is untouched). The zombie rig relies on the Fabric override: its parts carry no `Texture` at all, so `part.Color` tints the cloth. The override replicates to clients (verified with `GetBaseMaterialOverride` on the client in a playtest, 2026-08-29).
 
-| Variant | Base material | Textures | StudsPerTile |
-| --- | --- | --- | --- |
-| `TFZ_Asphalt` | `Enum.Material.Asphalt` | ambientCG Asphalt033 | 12 |
-| `TFZ_Concrete` | `Enum.Material.Concrete` | ambientCG Concrete034 | 6 |
-| `TFZ_Sand` | `Enum.Material.Sand` | ambientCG Ground080 | 8 |
+| Variant | Base material | Textures | StudsPerTile | Override |
+| --- | --- | --- | --- | --- |
+| `TFZ_Asphalt` | `Enum.Material.Asphalt` | ambientCG Asphalt033 | 12 | no |
+| `TFZ_Concrete` | `Enum.Material.Concrete` | ambientCG Concrete034 | 6 | no |
+| `TFZ_Sand` | `Enum.Material.Sand` | ambientCG Ground080 | 8 | no |
+| `TFZ_Metal` | `Enum.Material.Metal` | ambientCG Metal038 (galvanised scratched steel, neutral so `part.Color` tints it) | 6 | yes |
+| `TFZ_Rust` | `Enum.Material.CorrodedMetal` | ambientCG Metal041C (rusted iron with bare patches) | 6 | yes |
+| `TFZ_MetalPlates` | `Enum.Material.Metal` | ambientCG MetalPlates006 (dark scale-armour plates, decorative; per-part only) | 4 | no |
+| `TFZ_DarkRust` | `Enum.Material.CorrodedMetal` | ambientCG Metal063 (dark oxidised steel; per-part only) | 6 | no |
+| `TFZ_Wood` | `Enum.Material.Wood` | ambientCG WoodFloor064 | 6 | yes |
+| `TFZ_WoodPlanks` | `Enum.Material.WoodPlanks` | ambientCG WoodFloor064 | 8 | yes |
+| `TFZ_Grass` | `Enum.Material.Grass` | ambientCG Grass005 | 6 | yes |
+| `TFZ_Fabric` | `Enum.Material.Fabric` | ambientCG Fabric061 | 3 | yes |
 
-`register()` skips a set whose colour, normal or roughness id is `<= 0`, skips one already present in `MaterialService`, and records what it registered. `MaterialUtil.apply(part, setName)` then sets `part.Material` to the base material and `part.MaterialVariant` to the name, returning `false` if the variant was never registered — callers use that return value as their fallback branch:
+All normal maps are ambientCG `NormalGL` (OpenGL, Y+), which is what Roblox expects; the Asphalt033 normal in the repo is byte-identical to that file, so the convention is settled. `register()` skips a set already present in `MaterialService` and records what it registered. `MaterialUtil.apply(part, setName)` then sets `part.Material` to the base material and `part.MaterialVariant` to the name, returning `false` if the variant was never registered — callers use that return value as their fallback branch:
 
 - `src/server/systems/ChunkFactory.luau` falls back to a plain tiled `Texture` for the lane floor.
 - `src/server/systems/HangarBuilder.luau` (hangar floor, `TFZ_Concrete`), `src/server/systems/DesertBase.luau` (ground `TFZ_Sand`, road `TFZ_Asphalt`).
@@ -154,7 +164,7 @@ The remaining weapon sounds (`mag_out`, `mag_in`, `bolt`, `dryfire`, `shell_01`.
 5. `python3 scripts/upload_assets.py --only <prefix>` — it uploads, polls moderation and writes back `assetId` and `status`.
 6. `python3 scripts/sync_configs.py` to regenerate `AssetIds.luau` and `LICENSES.md`. Never hand-edit either file.
 7. Add a named alias in the relevant config (`TexturesConfig`, `SfxConfig`, `AudioConfig`, `FootstepConfig`, ...) — except for weapon sounds, which are resolved by string key from `WeaponsConfig`.
-8. If it is a PBR triple, add a set to `MaterialUtil.sets` with a `TFZ_` name and a sensible `StudsPerTile`, and give every call site a non-variant fallback.
+8. If it is a PBR set, add it to `MaterialUtil.sets` with a `TFZ_` name and a sensible `StudsPerTile`, mirror the block under `MaterialService` in `default.project.json`, and give every call site a non-variant fallback (or mark it `override = true` when it should replace a base material everywhere). Studio bakes each variant's maps into a TexturePack on save and logs `Failed to upload TexturePack ... HTTP StatusCode: -1` when its network is flaky; re-set `ColorMap` to retry. Freshly uploaded image ids can take a few minutes before Studio can fetch them; `ContentProvider:PreloadAsync` reports `Success` once they are live.
 9. Consume it with an `id > 0` guard so the game still runs while moderation is pending.
 10. Run the gate: `selene src/`, `python3 tools/validate_api.py`, `rojo build`. Commit the manifest, `LICENSES.md`, `AssetIds.luau` and your config change — the binary itself stays untracked.
 
@@ -163,3 +173,9 @@ If an asset comes back `rejected`, leave the entry in place with the rejection r
 ---
 
 See also: [[Overview]], [[Architecture]], [[Gameplay Systems]], [[Performance]], [[Decisions]].
+
+## Animation clips from CC0 libraries
+
+The 2026-09-07 policy revision judges results instead of methods, and the first thing it unlocked was filling the animation slots without waiting for Mixamo downloads. `tools/animation_pipeline/glb_to_keyframes.py` runs headless in Blender 5.2, imports a glTF library, samples a named action at 30 fps and writes a Roblox `KeyframeSequence` `.rbxmx` per slot. Retargeting is a change of basis, not authoring: every R15 joint's pose is the child bone's world rotation relative to the parent bone's, taken against the rest pose, then converted from Blender Z-up to Roblox Y-up with `X -> -X, Y -> Z, Z -> Y` (the mirror that also maps Blender's -Y facing onto Roblox's -Z). Only `LowerTorso` carries translation (pelvis travel, scaled at 3.2 studs per metre); loops keep the vertical bob and drop horizontal drift, one-shots keep everything so a death clip can put the body on the ground. Bone names are resolved from candidate lists, so the Unreal mannequin set (UAL2), Rigify `DEF-*` (UAL1) and Mixamo `mixamorig:*` all map onto the same 15 parts.
+
+Source: Quaternius Universal Animation Library 1 and 2, CC0 1.0, from OpenGameArt (`universal_animation_librarystandard.zip`, `universal_animation_library_2standard.zip`). Nine slots were filled from them (see the table in `tools/animation_pipeline/README.md`); the two strafe loops stay open because the free tiers carry no strafes. `default.project.json` mirrors `assets/animation` into `ReplicatedStorage.AnimationClips`, so any clip can be checked in Edit mode before upload by registering the `KeyframeSequence` with `KeyframeSequenceProvider` and stepping an `Animator`; that is how the zombie shuffle, the reduced-rig fit and the supine end pose of `Death01` were verified by screenshot before the Open Cloud upload.

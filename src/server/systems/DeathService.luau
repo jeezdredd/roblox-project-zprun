@@ -3,6 +3,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
 
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local RewardMultiplier = require(ReplicatedStorage.Shared.util.RewardMultiplier)
@@ -14,6 +15,7 @@ local ProfileManager = require(script.Parent.ProfileManager)
 local MissionGoals = require(script.Parent.MissionGoals)
 local MonetizationService = require(script.Parent.MonetizationService)
 local ProductsConfig = require(ReplicatedStorage.Shared.config.ProductsConfig)
+local AssetIds = require(ReplicatedStorage.Shared.config.AssetIds)
 local ZombieAI = require(script.Parent.ZombieAI)
 
 local DeathService = {}
@@ -94,9 +96,22 @@ local function poseCorpse(player: Player)
 		return
 	end
 	root.Anchored = true
+	if AssetIds.animation.player.death > 0 then
+		return
+	end
 	local position = root.Position
 	local _, yaw = root.CFrame:ToOrientation()
-	local lying = CFrame.new(position.X, 1.15, position.Z)
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	local exclude: { Instance } = { character :: Instance }
+	local zombiesFolder = Workspace:FindFirstChild("Zombies")
+	if zombiesFolder then
+		table.insert(exclude, zombiesFolder)
+	end
+	params.FilterDescendantsInstances = exclude
+	local hit = Workspace:Raycast(position, Vector3.new(0, -40, 0), params)
+	local groundY = if hit then hit.Position.Y else position.Y - 3
+	local lying = CFrame.new(position.X, groundY + 1.15, position.Z)
 		* CFrame.Angles(0, yaw, 0)
 		* CFrame.Angles(math.pi / 2, 0, 0)
 	TweenService:Create(root, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
@@ -166,8 +181,16 @@ local function onChoice(player: Player, choice: any)
 	grantContinue(player)
 end
 
+local function disableRegen(character: Model)
+	local healthScript = character:WaitForChild("Health", 3)
+	if healthScript and healthScript:IsA("BaseScript") then
+		healthScript.Enabled = false
+	end
+end
+
 local function watchHubDeaths(player: Player)
 	player.CharacterAdded:Connect(function(character)
+		task.spawn(disableRegen, character)
 		local humanoid = character:WaitForChild("Humanoid", 10)
 		if not humanoid or not humanoid:IsA("Humanoid") then
 			return

@@ -1,0 +1,222 @@
+{
+  "className": "Model",
+  "children": [
+    {
+      "className": "MeshPart",
+      "name": "Head",
+      "properties": {
+        "Size": [
+          1.1,
+          1.15,
+          1.1
+        ],
+        "CFrame": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://86428352678119",
+        "Material": "Fabric"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "UpperTorso",
+      "properties": {
+        "Size": [
+          2.0,
+          1.6,
+          1.0
+        ],
+        "CFrame": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://97129439874173",
+        "Material": "Fabric"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "LowerTorso",
+      "properties": {
+        "Size": [
+          2.0,
+          0.9,
+          1.0
+        ],
+        "CFrame": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://115889055869127",
+        "Material": "Fabric"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftUpperArm",
+      "properties": {
+        "Size": [
+          0.55,
+          1.8,
+          0.55
+        ],
+        "CFrame": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://105578321404455",
+        "Material": "Fabric"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightUpperArm",
+      "properties": {
+        "Size": [
+          0.55,
+          1.8,
+          0.55
+        ],
+        "CFrame": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://105578321404455",
+        "Material": "Fabric"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftUpperLeg",
+      "properties": {
+        "Size": [
+          0.65,
+          1.9,
+          0.65
+        ],
+        "CFrame": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://120627592212491",
+        "Material": "Fabric"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightUpperLeg",
+      "properties": {
+        "Size": [
+          0.65,
+          1.9,
+          0.65
+        ],
+        "CFrame": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://120627592212491",
+        "Material": "Fabric"
+      }
+    }
+  ]
+}

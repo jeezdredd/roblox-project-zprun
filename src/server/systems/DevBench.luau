@@ -44,7 +44,7 @@ local function launchSolo(player: Player)
 		return
 	end
 	launching[player] = true
-	MissionService.startSquad({ player }, benchConfig(), Random.new():NextInteger(1, 2147483646))
+	MissionService.startSquad({ player }, benchConfig(), DevConfig.QUICK_RUN.seed or Random.new():NextInteger(1, 2147483646))
 	task.delay(2, function()
 		launching[player] = nil
 	end)

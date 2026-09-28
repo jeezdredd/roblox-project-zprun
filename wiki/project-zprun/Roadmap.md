@@ -59,10 +59,14 @@ Repeat runs play a compressed ~5s version with skip voting. The crash is faked e
 
 A Pack-a-Punch-style station reachable mid-run that upgrades the carried weapon for run credits, with an announcer voice on use. The weapon level ladder it drives already exists (`WeaponsConfig.MAX_LEVEL = 5`, `upgradePrice`, `damageAt`), so the work is the station, the in-run spend path and the audio. Announcer lines are **owner-blocked**: `CLAUDE.md` requires real licensed audio files through the manifest pipeline, never generated speech.
 
+## Planned: Route forks
+
+Branching route choice at biome boundaries: the squad votes with their feet between two entrances (Sewer, Forest, Metro with a burning train hazard, more to come), each branch trades a cost for a reward, and run modifiers stack on top. Full design and the live status board are in [[Route Forks]]. First step is a fork between two existing biomes to prove voting and route insertion before any new art.
+
 ## Later
 
 - **Robux product and pass ids** — `src/shared/config/ProductsConfig.luau` still ships `productId = 0` and `passId = 0` for Continue, VIP and Supporter Pack. Every call site checks `ProductsConfig.isConfigured(...)` first, so the game runs with them at 0 and falls back to a free Continue. **Owner-blocked**: the items have to be created in the Creator Dashboard and the numeric ids pasted in. Test procedure is written up in `docs/monetization-test-plan.md`.
-- **Animation clips** — all 12 animation entries in `assets/manifest.json` (5 player, 7 zombie) are still at asset id `0`, so `src/client/controllers/AnimationController.luau` and `src/server/systems/ZombieAnimator.luau` degrade silently and the game currently runs on procedural motion only. There are no weapon animation clips at all — the viewmodel is posed by direct CFrame writes each frame. **Owner-blocked**: animations must be authored and published from Studio.
+- **Animation clips** (updated 2026-09-28): 10 of 12 body clips are live (player run, death, stumble; all 7 zombie clips). Open: `player/strafe_left` and `player/strafe_right` (no strafe loops in the CC0 library; Mixamo `Rifle Strafe Left/Right` through the retarget pipeline is the planned source) and all five viewmodel clips (the viewmodel is posed procedurally by direct CFrame writes each frame).
 - **Spectating** — on death in a squad, watch surviving teammates until the run ends instead of returning to the hub immediately. Nothing in `src/` implements this yet.
 - **More biomes and zombie types** — both are data-driven; a biome is an entry in `LocationsConfig` plus a `laneStyle`/prop set in `ChunkFactory`, a zombie is an entry in `ZombiesConfig`.
 - **TeleportService** — only if the hub and the run ever split into separate places. Today they share one DataModel, 4300 studs apart (`HangarConfig.HUB_CENTER` vs `GameConstants.RUN_ORIGIN`), which `StreamingEnabled` handles; transport is already abstracted behind `FlowService` phases, so the split would be contained.
@@ -73,7 +77,7 @@ A Pack-a-Punch-style station reachable mid-run that upgrades the carried weapon 
 | Item | Why it cannot move in code | What unblocks it |
 | --- | --- | --- |
 | Continue product, VIP and Supporter passes | Ids must exist in the Creator Dashboard | Create the items, paste ids into `ProductsConfig` |
-| Player and zombie animation clips | Animations are authored and published from Studio, not uploadable through the asset script | Author the 12 clips, run the manifest pipeline |
+| Player strafe clips | No strafe loop in the CC0 library | Download Mixamo `Rifle Strafe Left/Right`, run the retarget pipeline, upload |
 | Upgrade station announcer voice | Audio must be a real licensed file; generated speech is banned by `CLAUDE.md` | Source or record licensed lines, add them to `assets/manifest.json` |
 | Real receipt testing | Studio purchase testing does not exercise the live receipt pipeline | Publish the place and re-run the cases in `docs/monetization-test-plan.md` with a non-owner account |
 | Maturity questionnaire | Stylised blood and dismemberment need the experience rated before wider release | Complete the questionnaire at publish time |

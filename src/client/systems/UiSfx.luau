@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+local ZombieRig = require(ReplicatedStorage.Shared.util.ZombieRig)
 
 local SfxConfig = require(ReplicatedStorage.Shared.config.SfxConfig)
 local MusicController = require(script.Parent.MusicController)
@@ -36,7 +37,7 @@ local function chaseActive(): boolean
 		return false
 	end
 	for _, model in zombies:GetChildren() do
-		local body = model:IsA("Model") and model:FindFirstChild("Body")
+		local body = model:IsA("Model") and ZombieRig.torso(model)
 		if body and body:IsA("BasePart") and (body.Position - root.Position).Magnitude <= SfxConfig.MUSIC_DUCK_RANGE then
 			return true
 		end

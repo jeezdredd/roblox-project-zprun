@@ -80,3 +80,46 @@ Every `Animator:LoadAnimation` in the codebase reads its id from `AssetIds`, so 
 ## 6. Licensing note
 
 Mixamo animations are free to use in games under Adobe's licence, including commercial ones, with no attribution required. Record `https://www.mixamo.com/` as the manifest source and `Mixamo (Adobe) free licence` as the licence so `LICENSES.md` stays accurate.
+
+## 7. CC0 libraries without Mixamo: `glb_to_keyframes.py`
+
+Since the 2026-09-07 policy revision the zombie and player clips come from the
+Quaternius Universal Animation Library 1 and 2 (CC0), downloaded from OpenGameArt
+as `universal_animation_librarystandard.zip` and
+`universal_animation_library_2standard.zip`. Their GLB files carry every clip as a
+named action on one Unreal-mannequin (UAL2) or Rigify (UAL1) rig. The script samples an
+action at 30 fps, expresses each R15 joint as the child bone's world rotation relative
+to its parent's, converts Blender Z-up to Roblox Y-up (`X -> -X`, `Y -> Z`, `Z -> Y`,
+which also turns Blender's -Y facing into Roblox's -Z) and writes a `KeyframeSequence`
+`.rbxmx` straight into `assets/animation/<slot>.rbxmx`, ready for `upload_assets.py`.
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender -b --python tools/animation_pipeline/glb_to_keyframes.py -- \
+  --library "path/to/UAL2_Standard.glb" --output assets/animation \
+  --clip "Zombie_Walk_Fwd_Loop=zombie/walk_shuffle:loop" \
+  --clip "Zombie_Scratch=zombie/attack_lunge:once"
+```
+
+Flags per clip: `loop` (seamless, horizontal pelvis travel stripped, `Priority`
+Movement), `once` (root translation kept, Priority Action), `priority=idle|movement|
+action|action2|action3|action4`. `--scale` is studs per metre (3.2 fits the 1.65 m
+mannequin to a 5.3-stud R15). `ReplicatedStorage.AnimationClips` mirrors the folder
+through Rojo, so a clip can be previewed in Edit mode before upload with
+`KeyframeSequenceProvider:RegisterKeyframeSequence` plus `Animator:StepAnimations`.
+
+Slot to clip map used on 2026-09-07:
+
+| Slot | Library | Action |
+| --- | --- | --- |
+| `zombie/idle_a` | UAL2 | `Zombie_Idle_Loop` |
+| `zombie/idle_b` | UAL1 | `Idle_Loop` |
+| `zombie/idle_c` | UAL2 | `LayToIdle` (one-shot, not in the idle rotation) |
+| `zombie/walk_shuffle` | UAL2 | `Zombie_Walk_Fwd_Loop` |
+| `zombie/run_ragged` | UAL1 | `Jog_Fwd_Loop` |
+| `zombie/attack_lunge` | UAL2 | `Zombie_Scratch` |
+| `zombie/feeding` | UAL1 | `Fixing_Kneeling` |
+| `player/death` | UAL1 | `Death01` |
+| `player/stumble` | UAL2 | `Hit_Knockback` |
+
+The standard tiers carry no strafe loops, so `player/strafe_left` and
+`player/strafe_right` stay open.

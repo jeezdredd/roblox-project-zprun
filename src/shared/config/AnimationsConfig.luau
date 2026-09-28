@@ -110,7 +110,7 @@ function AnimationsConfig.weaponClip(id: string): ClipConfig?
 	return nil
 end
 
-AnimationsConfig.RUN_SPEED_REFERENCE = 34
+AnimationsConfig.RUN_SPEED_REFERENCE = 24
 AnimationsConfig.RUN_SPEED_MIN = 0.8
 AnimationsConfig.RUN_SPEED_MAX = 1.45
 

@@ -122,6 +122,26 @@ local function updateCamera(deltaTime: number)
 		return
 	end
 
+	-- Reviewing animation on the third-person body: give the camera back to Roblox's
+	-- orbit controller, keep the character visible and open up the zoom clamp that
+	-- CursorMode uses to hold first person. Checked before FREEZE_RUN because both are
+	-- inspection modes and this one wants the stock camera either way.
+	if RunService:IsStudio() and DevConfig.THIRD_PERSON_VIEW then
+		if camera.CameraType ~= Enum.CameraType.Custom then
+			camera.CameraType = Enum.CameraType.Custom
+		end
+		local localPlayer = Players.LocalPlayer
+		if localPlayer.CameraMode ~= Enum.CameraMode.Classic then
+			localPlayer.CameraMode = Enum.CameraMode.Classic
+		end
+		if localPlayer.CameraMaxZoomDistance < 24 then
+			localPlayer.CameraMinZoomDistance = 6
+			localPlayer.CameraMaxZoomDistance = 24
+		end
+		unhideCharacter()
+		return
+	end
+
 	-- With the run frozen for inspection, the fixed runner camera would leave you staring
 	-- down the corridor with no way to look at anything, since it has no mouse look at
 	-- all. Hand the camera back to Roblox's own first-person controller and keep only the

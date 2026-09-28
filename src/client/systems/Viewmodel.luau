@@ -13,6 +13,7 @@ local InputController = require(script.Parent.Parent.controllers.InputController
 local CameraEffectsController = require(script.Parent.Parent.controllers.CameraEffectsController)
 local ViewmodelBuilder = require(script.Parent.ViewmodelBuilder)
 local AnimationSequencer = require(script.Parent.AnimationSequencer)
+local HipAim = require(script.Parent.HipAim)
 
 local Viewmodel = {}
 
@@ -46,6 +47,8 @@ local impactPos = makeSpring("impactPos")
 local breathe = makeSpring("breathe")
 local equipOffset = makeSpring("equip")
 local inspectOffset = makeSpring("inspect")
+local aimRot = makeSpring("aim")
+local driftRot = makeSpring("drift")
 
 local mechanismSetting = ViewmodelConfig.spring("mechanism")
 local slideSpring = Spring.number(mechanismSetting.stiffness, mechanismSetting.damping)
@@ -64,6 +67,8 @@ local cameraHistory: { CFrame } = {}
 local historyCursor = 0
 local sprintBlend = 0
 local breathClock = 0
+local driftClock = 0
+local lastAxis = 0
 local lastCameraCFrame: CFrame? = nil
 local lastVerticalVelocity = 0
 local inspecting = false
@@ -161,19 +166,19 @@ end
 
 function Viewmodel.onFired(config: WeaponsConfig.WeaponConfig)
 	recoilPos:Impulse(Vector3.new(
-		(math.random() - 0.5) * config.recoilSnap * 0.35,
-		config.recoilKick * 0.5,
-		config.recoilKick * 1.7
+		(math.random() - 0.5) * config.recoilSnap * 0.2,
+		config.recoilKick * 0.4,
+		config.recoilKick * 1.5
 	))
 	recoilRot:Impulse(Vector3.new(
-		config.recoilSnap * 2.6,
-		(math.random() - 0.5) * config.recoilSnap * 1.1,
-		(math.random() - 0.5) * config.recoilSnap * 1.6
+		config.recoilSnap * 2.2,
+		(math.random() - 0.5) * config.recoilSnap * 0.5,
+		(math.random() - 0.5) * config.recoilSnap * 0.7
 	))
 
 	local kick = config.cameraKick
-	CameraEffectsController.impulse(Vector3.new((math.random() - 0.5) * 0.6, 1, 0.25), kick * 6)
-	CameraEffectsController.fovKick(kick * 0.6)
+	CameraEffectsController.recoil(kick)
+	CameraEffectsController.fovKick(kick * ViewmodelConfig.cameraRecoil.fovKick)
 
 	if config.class == "Shotgun" then
 		pumpSpring:Impulse(9)
@@ -284,6 +289,27 @@ local function updateChannels(deltaTime: number, cameraCFrame: CFrame)
 
 	local axis = InputController.getLateralAxis()
 	tiltRoll:SetTarget(Vector3.new(ViewmodelConfig.tilt.lateralShift * axis, 0, -ViewmodelConfig.tilt.roll * axis))
+	if axis ~= lastAxis then
+		local juke = ViewmodelConfig.juke
+		local kick = axis - lastAxis
+		swayRot:Impulse(Vector3.new(0, -kick * juke.yaw, kick * juke.roll))
+		swayPos:Impulse(Vector3.new(kick * juke.shift, 0, 0))
+		lastAxis = axis
+	end
+
+	local drift = ViewmodelConfig.drift
+	driftClock += deltaTime
+	driftRot:SetTarget(Vector3.new(
+		math.sin(driftClock * drift.rates.X) * drift.amplitude,
+		math.sin(driftClock * drift.rates.Y + 1.3) * drift.amplitude * 0.8,
+		math.sin(driftClock * drift.rates.Z + 0.7) * drift.amplitude * 0.5
+	))
+
+	HipAim.update(deltaTime, cameraCFrame)
+	local current = rig
+	local weaponPosition = if current then current.root.Position else cameraCFrame.Position
+	local aimYaw, aimPitch = HipAim.angles(cameraCFrame, weaponPosition)
+	aimRot:SetTarget(Vector3.new(aimPitch, aimYaw, -aimYaw * ViewmodelConfig.hipAim.rollCouple))
 
 	local sprint = ViewmodelConfig.sprint
 	local running = ExertionState.isRunning()
@@ -299,6 +325,8 @@ local function updateChannels(deltaTime: number, cameraCFrame: CFrame)
 	tiltRoll:Update(deltaTime)
 	impactPos:Update(deltaTime)
 	breathe:Update(deltaTime)
+	aimRot:Update(deltaTime)
+	driftRot:Update(deltaTime)
 	equipOffset:Update(deltaTime)
 	inspectOffset:Update(deltaTime)
 	slideSpring:Update(deltaTime)
@@ -352,7 +380,9 @@ local function step(deltaTime: number)
 	-- Z is a roll in radians. Adding the whole vector here fed the roll back in as a
 	-- depth translation, so strafing shoved the weapon towards and away from the camera.
 	-- Only X belongs in the position sum; Z is applied in the rotation sum below.
+	local hipAim = ViewmodelConfig.hipAim
 	local position = swayPosValue
+		+ Vector3.new(aimRot.value.Y * hipAim.shift, -math.abs(aimRot.value.Y) * hipAim.dip, 0)
 		+ movePos.value
 		+ breathe.value
 		+ impactPos.value
@@ -363,6 +393,8 @@ local function step(deltaTime: number)
 		+ inspectSetting.position * inspectBlend
 
 	local rotation = swayRot.value
+		+ aimRot.value
+		+ driftRot.value
 		+ lagRot.value
 		+ moveRot.value
 		+ recoilRot.value * recoilRotScale

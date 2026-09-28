@@ -34,6 +34,7 @@ local function blend(from: LightingConfig.LightingPreset, to: LightingConfig.Lig
 		fogStart = approach(from.fogStart, to.fogStart, alpha),
 		fogEnd = approach(from.fogEnd, to.fogEnd, alpha),
 		atmosphereDensity = approach(from.atmosphereDensity, to.atmosphereDensity, alpha),
+		atmosphereOffset = approach(from.atmosphereOffset, to.atmosphereOffset, alpha),
 		atmosphereHaze = approach(from.atmosphereHaze, to.atmosphereHaze, alpha),
 		atmosphereGlare = approach(from.atmosphereGlare, to.atmosphereGlare, alpha),
 		atmosphereColor = from.atmosphereColor:Lerp(to.atmosphereColor, alpha),
@@ -55,6 +56,7 @@ local function apply(preset: LightingConfig.LightingPreset)
 	Lighting.FogEnd = preset.fogEnd
 
 	atmosphere.Density = preset.atmosphereDensity
+	atmosphere.Offset = preset.atmosphereOffset
 	atmosphere.Haze = preset.atmosphereHaze
 	atmosphere.Glare = preset.atmosphereGlare
 	atmosphere.Color = preset.atmosphereColor

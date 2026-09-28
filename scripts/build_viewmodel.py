@@ -10,6 +10,10 @@ runtime instead, for two reasons:
     and Part1 are. Creating joints from a script works fine, so the joint layout lives in
     src/shared/config/ViewmodelRigConfig.luau where it stays readable.
 
+A `SURFACE|part|colorMap|normalMap|roughnessMap|metalnessMap|alphaMode` line attaches
+a SurfaceAppearance child to that part and drops its TextureID, which the appearance
+would override anyway.
+
 Usage:
     python3 scripts/build_viewmodel.py pistol
 """
@@ -22,22 +26,27 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VIEWMODELS = os.path.join(ROOT, "assets", "viewmodels")
 
 
+SURFACE_MAPS = ("ColorMap", "NormalMap", "RoughnessMap", "MetalnessMap")
+
+
 def parse_dump(path):
-    parts, joints = [], []
+    parts, joints, surfaces = [], [], {}
     with open(path, encoding="utf-8") as handle:
         for line in handle:
             line = line.strip()
-            if not line.startswith(("PART|", "JOINT|")):
+            if not line.startswith(("PART|", "JOINT|", "SURFACE|")):
                 continue
             fields = line.split("|")
             # the header rows spell their own column names, so skip them
-            if fields[1] == "name" or fields[1] == "class":
+            if fields[1] in ("name", "class", "part"):
                 continue
             if fields[0] == "PART":
                 parts.append(fields[1:])
+            elif fields[0] == "SURFACE":
+                surfaces[fields[1]] = fields[2:]
             else:
                 joints.append(fields[1:])
-    return parts, joints
+    return parts, joints, surfaces
 
 
 def cframe(values):
@@ -47,7 +56,17 @@ def cframe(values):
     return numbers
 
 
-def build_part(fields):
+def build_surface(fields):
+    properties = {}
+    for map_name, asset_id in zip(SURFACE_MAPS, fields[:4]):
+        if asset_id:
+            properties[map_name] = f"rbxassetid://{asset_id}"
+    alpha_mode = fields[4] if len(fields) > 4 and fields[4] else "Overlay"
+    properties["AlphaMode"] = alpha_mode
+    return {"className": "SurfaceAppearance", "name": "SurfaceAppearance", "properties": properties}
+
+
+def build_part(fields, surface=None):
     (
         name,
         size_x,
@@ -81,10 +100,13 @@ def build_part(fields):
     }
     if mesh_id:
         properties["MeshId"] = f"rbxassetid://{mesh_id}"
-        if texture_id:
+        if texture_id and not surface:
             properties["TextureID"] = f"rbxassetid://{texture_id}"
 
-    return {"className": class_name, "name": name, "properties": properties}
+    instance = {"className": class_name, "name": name, "properties": properties}
+    if surface and mesh_id:
+        instance["children"] = [build_surface(surface)]
+    return instance
 
 
 def main():
@@ -97,7 +119,7 @@ def main():
         print(f"no dump at {dump_path}")
         return 1
 
-    parts, joints = parse_dump(dump_path)
+    parts, joints, surfaces = parse_dump(dump_path)
     if not any(p[0] == "Main" for p in parts):
         print("dump has no `Main` part; it is the PrimaryPart and is required")
         return 1
@@ -106,7 +128,7 @@ def main():
     # that mounts this file, and a Name inside `properties` is ignored with a warning.
     model = {
         "className": "Model",
-        "children": [build_part(p) for p in parts],
+        "children": [build_part(p, surfaces.get(p[0])) for p in parts],
     }
 
     out_path = os.path.join(VIEWMODELS, f"{name}.model.json")
@@ -117,7 +139,7 @@ def main():
     meshes = sum(1 for p in parts if p[4])
     motors = sum(1 for j in joints if j[0] == "Motor6D")
     print(f"wrote {out_path}")
-    print(f"  {len(parts)} parts ({meshes} with meshes)")
+    print(f"  {len(parts)} parts ({meshes} with meshes, {len(surfaces)} with SurfaceAppearance)")
     print(f"  {len(joints)} joints recorded in the dump ({motors} Motor6D), created at runtime")
     return 0
 

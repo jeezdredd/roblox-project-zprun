@@ -11,7 +11,9 @@ export type PbrSet = {
 	color: number,
 	normal: number,
 	roughness: number,
+	metalness: number?,
 	studsPerTile: number,
+	override: boolean?,
 }
 
 local MaterialUtil = {}
@@ -43,6 +45,80 @@ MaterialUtil.sets = {
 		roughness = TexturesConfig.SAND_ROUGHNESS,
 		studsPerTile = 8,
 	},
+	{
+		name = "TFZ_Metal",
+		baseMaterial = Enum.Material.Metal,
+		color = TexturesConfig.STEEL,
+		normal = TexturesConfig.STEEL_NORMAL,
+		roughness = TexturesConfig.STEEL_ROUGHNESS,
+		metalness = TexturesConfig.STEEL_METALNESS,
+		studsPerTile = 6,
+		override = true,
+	},
+	{
+		name = "TFZ_Rust",
+		baseMaterial = Enum.Material.CorrodedMetal,
+		color = TexturesConfig.IRON_RUST,
+		normal = TexturesConfig.IRON_RUST_NORMAL,
+		roughness = TexturesConfig.IRON_RUST_ROUGHNESS,
+		metalness = TexturesConfig.IRON_RUST_METALNESS,
+		studsPerTile = 6,
+		override = true,
+	},
+	{
+		name = "TFZ_Wood",
+		baseMaterial = Enum.Material.Wood,
+		color = TexturesConfig.WOOD,
+		normal = TexturesConfig.WOOD_NORMAL,
+		roughness = TexturesConfig.WOOD_ROUGHNESS,
+		studsPerTile = 6,
+		override = true,
+	},
+	{
+		name = "TFZ_WoodPlanks",
+		baseMaterial = Enum.Material.WoodPlanks,
+		color = TexturesConfig.WOOD,
+		normal = TexturesConfig.WOOD_NORMAL,
+		roughness = TexturesConfig.WOOD_ROUGHNESS,
+		studsPerTile = 8,
+		override = true,
+	},
+	{
+		name = "TFZ_Grass",
+		baseMaterial = Enum.Material.Grass,
+		color = TexturesConfig.GRASS,
+		normal = TexturesConfig.GRASS_NORMAL,
+		roughness = TexturesConfig.GRASS_ROUGHNESS,
+		studsPerTile = 6,
+		override = true,
+	},
+	{
+		name = "TFZ_Fabric",
+		baseMaterial = Enum.Material.Fabric,
+		color = TexturesConfig.FABRIC,
+		normal = TexturesConfig.FABRIC_NORMAL,
+		roughness = TexturesConfig.FABRIC_ROUGHNESS,
+		studsPerTile = 3,
+		override = true,
+	},
+	{
+		name = "TFZ_MetalPlates",
+		baseMaterial = Enum.Material.Metal,
+		color = TexturesConfig.METAL_PLATES,
+		normal = TexturesConfig.METAL_PLATES_NORMAL,
+		roughness = TexturesConfig.METAL_PLATES_ROUGHNESS,
+		metalness = TexturesConfig.METAL_PLATES_METALNESS,
+		studsPerTile = 4,
+	},
+	{
+		name = "TFZ_DarkRust",
+		baseMaterial = Enum.Material.CorrodedMetal,
+		color = TexturesConfig.RUST,
+		normal = TexturesConfig.RUST_NORMAL,
+		roughness = TexturesConfig.RUST_ROUGHNESS,
+		metalness = TexturesConfig.RUST_METALNESS,
+		studsPerTile = 6,
+	},
 } :: { PbrSet }
 
 local registered: { [string]: boolean } = {}
@@ -61,6 +137,9 @@ function MaterialUtil.register()
 		local existing = MaterialService:FindFirstChild(set.name)
 		if existing and existing:IsA("MaterialVariant") then
 			registered[set.name] = true
+			if set.override then
+				MaterialService:SetBaseMaterialOverride(set.baseMaterial, set.name)
+			end
 		else
 			warn(`[TaskForceZ] MaterialVariant "{set.name}" missing from MaterialService, falling back to flat textures`)
 		end

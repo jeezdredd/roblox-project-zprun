@@ -235,3 +235,89 @@ Related: [[Architecture]], [[Performance]], [[Progress]], [[Roadmap]].
 **Reason.** A single bad `Instance.new` used to take the whole server down — the crash that motivated `tools/validate_api.py`, which statically checks every constructed class and assigned property against the downloaded API dump. Isolating stages turns a hard crash into a missing subsystem.
 
 **Consequence.** A broken system is easy to miss because the game still boots, so the server output has to be read after any world-builder change. The validation tool only catches static property and class errors, not logic ones.
+
+### Zombies on a reduced R15 rig
+
+**Decision.** `src/server/systems/ZombieFactory.luau` builds zombies as an 11-part model using the exact R15 joint names — `Root`, `Waist`, `Neck`, `LeftShoulder`, `RightShoulder`, `LeftHip`, `RightHip` — with `Humanoid.RigType = R15` and `HipHeight = 2.35`, but without elbows, wrists, knees or ankles. Part lookups moved behind `src/shared/util/ZombieRig.luau` (`torso`, `waitForTorso`, `neck`) so `ZombieAudio`, `ZombieVfx`, `UiSfx` and `ZombieAI` no longer hardcode a part named `Body`.
+
+**Reason.** The old rig was a 2x3x1 slab with a head and a single `Neck` Motor6D. `assets/NEEDED.md` already specced all seven zombie clips as Mixamo R15 retargets, and `docs/asset-policy.md` rule 3 demands R15 — but an R15 clip drives `Waist`, `LeftHip` and `RightShoulder`, none of which existed. `LoadAnimation` and `Play` would both have succeeded while nothing moved, so the retarget would have been paid for and thrown away. A full R15 was rejected because it roughly triples part and joint count per zombie, and the spawn-section work deliberately raises density several-fold.
+
+**Consequence.** Unmodified R15 clips play as-is; Roblox drops tracks for the missing joints. Limbs swing as rigid segments with no knee or elbow break, which reads acceptably at silhouette distance and not at all in a close-up. Anything that wants a zombie's torso must go through `ZombieRig`, not `FindFirstChild("Body")`. All seven zombie animation ids are still `0`, so nothing animates yet — the rig is ready, the clips are not.
+
+### Easy is a slow chase, not a diorama
+
+**Decision.** `DifficultyConfig.Easy` is `zombiesChase = true`, `zombieSpeedMultiplier = 0.45`, `damageMultiplier = 0.6`, `aggroDistance = 800`. Before the ITD2 pass it was `zombiesChase = false`, speed `0`, aggro `math.huge`.
+
+**Reason.** With speed `0` the horde was scenery that still bit on touch, and `damageMultiplier` had no lever to pull because nothing ever reached the player. The three-radius state machine only calls `Humanoid:MoveTo` in `Alert`/`Attack`, and those are gated by `zombiesChase`, so a speed multiplier alone changes nothing; the gate has to open for Easy to differ from Medium by degree rather than by kind. 0.45x makes a Walker close at 6.3 studs/s against a 24 studs/s runner, which is a threat you can always outrun but cannot ignore. The section tier shift of -1 already thins the spawns.
+
+**Consequence.** Easy players now meet moving zombies after 800 studs. Anyone relying on Easy as a no-pressure tour needs a new mode; nothing in the code provides one. Reverting is four numbers in `DifficultyConfig`.
+
+### Fog is Atmosphere, never classic fog
+
+**Decision.** `LightingConfig` presets carry `atmosphereDensity` and `atmosphereOffset` (0.8..0.95 and 0.42..0.8 in the run biomes) and `LightingDirector` writes both every Heartbeat. The `fogStart` / `fogEnd` fields stay in the presets but do nothing while an `Atmosphere` exists.
+
+**Reason.** Roblox ignores `Lighting.Fog*` whenever an `Atmosphere` instance is present, so the old presets (density 0.28..0.5, offset 0) produced no fog at all and the run read as a clear evening. Classic fog without an Atmosphere was tried on a pillar stand: it darkens geometry but leaves the sky bright, so silhouettes stand against a clear backdrop instead of dissolving into haze. Only Density plus Offset gives the Into the Dead wall where pillars vanish between 120 and 160 studs and the sky remains.
+
+**Consequence.** Fog is tuned by two numbers per biome and cannot be tuned by distance in studs; `ZOMBIE_SPAWN_AHEAD` 200 was checked to stay behind the wall. Anyone who deletes the Atmosphere to "fix" lighting silently switches the game to the ignored classic values.
+
+### Hip aim owns the fire direction on the client
+
+**Decision.** `src/client/systems/HipAim.luau` selects the nearest zombie in a 42° cone up to 70 studs, swings the viewmodel toward it (clamped ±38°/±22°) and moves the crosshair with it. `WeaponController.tryFire` fires along `HipAim.fireDirection` once the lock passes 0.55 and falls back to `AimAssist` otherwise.
+
+**Reason.** The camera is forward-locked, so the player cannot aim by turning. Into the Dead resolves this by pointing the gun at the nearest threat from the hip; once the gun visibly points at a zombie, the only honest reading is that the shot goes where the gun points. Firing along the camera while the gun aims elsewhere would look broken.
+
+**Consequence.** No server change: the existing 100° validation cone already accepts the ±38° clamp. A zombie in the cone but behind cover fails the line-of-sight raycast and the aim returns to centre, so cover cannot be shot through. The 42° cone is narrower than the 54° horizontal half-FOV at the 74° vertical FOV, so the crosshair never leaves the screen; widening the cone past the half-FOV would need a screen clamp.
+
+### A frontal collision is a grab, not a bite
+
+**Decision.** `ZombieAI.onTouched` treats a hit inside `collisionDeathDistance` as a grab: lethal on Medium and Hard (`DifficultyConfig.grabLethal`), triple touch damage on Easy. Hits in the glance band and bites from behind keep the old health damage.
+
+**Reason.** The ITD2 teardown and the implementation plan both describe the centre band as death and the outer band as a slide. The first implementation dealt 15 damage there instead, so running head-on into a clump produced several bites inside one second, the bite flash and the death cinematic at the same time, and no readable difference between "I clipped it" and "I ran into it". Health still matters for the rear bites of a chasing Runner and for Easy.
+
+**Consequence.** Medium and Hard players die on the first frontal collision, which is the reference's rule and the reason the glance band exists. `DeathCause` is only set on grabs today; other causes can be added without touching the client.
+
+
+## 2026-09-07 — Asset policy judges results, not methods
+
+The original policy banned code-authored animation and any synthesised audio because
+nothing could be checked while it was being made. With the Studio screenshot loop,
+Blender/RBXMonkey and usable AI generation in place, the ban was producing stiff
+stock-Roblox motion and empty audio slots. The policy now allows any technique for any
+rig (clips, mocap, AI motion, Luau poses, procedural layers, generated audio) gated by a
+playtest, and widens sources to CC-BY, licensed packs and AI output with commercial
+rights. Provenance stays strict: manifest entry and licence for everything, ids only
+from real uploads, and nothing extracted from other games. See `docs/asset-policy.md`.
+
+### Animation clips are retargeted from CC0 libraries by script
+
+**Decision.** Zombie and player body clips come from the Quaternius Universal Animation Library (CC0) through `tools/animation_pipeline/glb_to_keyframes.py`, which writes `KeyframeSequence` files directly; Mixamo and the Blender add-on path in the same folder remain available but are no longer the blocker.
+
+**Reason.** The Mixamo route needs an Adobe login, manual FBX exports and the Roblox Blender add-on, so every slot sat at `assetId = 0` for weeks. The revised asset policy allows any technique with recorded provenance; a CC0 library with a GLB per tier can be fetched and converted headlessly, and the output is the same XML the player run clip was uploaded as. Retargeting by relative world rotation sidesteps bone-roll conventions entirely, which is what made the old FBX bone-rename approach fragile.
+
+**Consequence.** Clip quality is bounded by what the free tiers contain: the runner uses a human jog, feeding uses a kneeling repair loop, and no strafe loops exist. The reduced zombie rig drops elbow, wrist, knee and ankle tracks, so limbs stay straight. The baked hunch in `ZombieFactory` was cut to a third so the clip's own posture leads.
+
+### Spawn events are formations, not dice rolls
+
+**Decision.** `ZombieAI.spawnEvent` picks a named pattern (wall, diagonal, column, clump, single, loiter, risers, feast) from the section's `patternSet` and lays zombies out geometrically; sleepers (`Dormant`, `Feeding`) wake by distance.
+
+**Reason.** Uniform random lateral placement produced noise the player could not read: no gates, no flanks, nothing to weave. Into the Dead's corridor is legible because its groups have shape and its dormant zombies react to you. A wall with one gap is a decision; a scatter is not.
+
+**Consequence.** The seeded RNG stream changes, so an old seed gives a different world. Walls can only be as wide as the playable band, so the gap is always inside ±45. Dormant and feeding zombies need the rise and feeding clips; without them the pattern degrades to ordinary idle zombies.
+
+### Zombie behaviour and spawn tiers use ITD2's measured values
+
+**Decision.** `ZombiesConfig`, `ZombieBehaviourConfig`, `ZombieSpawnConfig` and `DifficultyConfig.aggroDistance` carry the numbers read out of Into the Dead 2's shipped data (section medians per tier, zombie and movement definitions from the zombie bundle), converted at 4 studs per metre. The corridor is ±30 studs with natural boundaries.
+
+**Reason.** The first ITD2 pass copied the structure but kept invented radii, speeds and a 240-stud lane bounded by an invisible wall, which read as an empty plain with lamps. The reference's feel comes from a 7.5 m corridor, zombies that spawn within 8 m of your line and react from 30 m, walkers that never outrun you and hunters that do, and boundaries you can see.
+
+**Consequence.** Medium is harder in the first 500 studs than before because zombies chase immediately. A runner who never steers dies between 120 and 260 studs; steering is the game. Spawn seeds changed again. `reactionDelay` and the position history are gone; any future juke tuning goes through `facingUpdateFreq` and `maxRotation`.
+
+## 2026-09-28: Route forks
+
+### Route choice is a physical vote at biome boundaries
+
+**Decision.** Near the end of a biome the corridor splits into two entrances; the entrance holding more living players when the timer ends decides the next stretch, and `ChunkSpawner` inserts that location at the head of the route queue. Branches (Sewer, Forest, Metro) carry their own rules through new `LocationConfig` fields, and run modifiers keep applying on top with multiplied rewards.
+
+**Reason.** Runs were a fixed shuffled sequence of biomes with no player agency. A physical vote keeps the run moving (no menu pause) and works the same for solo and a squad of three.
+
+**Consequence.** Every branch must have both a cost and a reward or it becomes dead content. The sewer explosives ban depends on grenades existing, which they do not yet. **Provisional**: frequency, telegraph distance and the funnel back from the losing entrance are unsettled. See [[Route Forks]].

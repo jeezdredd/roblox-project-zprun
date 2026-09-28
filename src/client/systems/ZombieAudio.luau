@@ -7,6 +7,7 @@ local SoundService = game:GetService("SoundService")
 local Workspace = game:GetService("Workspace")
 
 local AudioConfig = require(ReplicatedStorage.Shared.config.AudioConfig)
+local ZombieRig = require(ReplicatedStorage.Shared.util.ZombieRig)
 local SfxConfig = require(ReplicatedStorage.Shared.config.SfxConfig)
 local MusicController = require(script.Parent.MusicController)
 local SfxPlayer = require(script.Parent.SfxPlayer)
@@ -45,7 +46,7 @@ local function nearbyZombies(origin: Vector3, range: number, limit: number): { B
 		if #result >= limit then
 			break
 		end
-		local body = model:IsA("Model") and model:FindFirstChild("Body")
+		local body = model:IsA("Model") and ZombieRig.torso(model)
 		if body and body:IsA("BasePart") and (body.Position - origin).Magnitude <= range then
 			table.insert(result, body)
 		end
@@ -60,7 +61,7 @@ local function countNearby(origin: Vector3, range: number): number
 	end
 	local count = 0
 	for _, model in zombies:GetChildren() do
-		local body = model:IsA("Model") and model:FindFirstChild("Body")
+		local body = model:IsA("Model") and ZombieRig.torso(model)
 		if body and body:IsA("BasePart") and (body.Position - origin).Magnitude <= range then
 			count += 1
 		end
@@ -72,8 +73,12 @@ local function attachGrowl(model: Model)
 	if AudioConfig.ZOMBIE_GROWL_ID <= 0 then
 		return
 	end
-	local body = model:WaitForChild("Body", 5)
+	local body = ZombieRig.waitForTorso(model, 5)
 	if not body or not body:IsA("BasePart") then
+		return
+	end
+
+	if body:FindFirstChild("Growl") then
 		return
 	end
 

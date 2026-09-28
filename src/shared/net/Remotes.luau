@@ -24,6 +24,7 @@ Remotes.Event = table.freeze({
 	ShopSync = "ShopSync",
 	PromptPurchase = "PromptPurchase",
 	AmmoPickup = "AmmoPickup",
+	PlayerGlanced = "PlayerGlanced",
 })
 
 Remotes.Function = table.freeze({

@@ -10,9 +10,16 @@ local InputController = require(script.Parent.InputController)
 
 local RunController = {}
 
+local GLANCE_DECAY = 3.4
+local GLANCE_LATERAL = 1.9
+local GLANCE_LOCK = 0.22
+
+local glanceLateral = 0
+local controlLockUntil = 0
+
 local runDirection = GameConstants.RUN_DIRECTION
 local rightDirection = runDirection:Cross(Vector3.yAxis)
-local wrapThreshold = GameConstants.LANE_WIDTH / 2 - GameConstants.WALL_WRAP_MARGIN
+local wrapThreshold = GameConstants.PLAYABLE_HALF_WIDTH
 
 local connection: RBXScriptConnection? = nil
 
@@ -55,7 +62,7 @@ function RunController.start(force: boolean?)
 	end
 	getControls():Disable()
 
-	connection = RunService.RenderStepped:Connect(function()
+	connection = RunService.RenderStepped:Connect(function(deltaTime: number)
 		local humanoid = getAliveHumanoid()
 		if not humanoid then
 			return
@@ -66,9 +73,17 @@ function RunController.start(force: boolean?)
 			clampToField(root)
 		end
 
-		local axis = InputController.getLateralAxis()
-		local direction = (runDirection + rightDirection * axis * GameConstants.LATERAL_SPEED_WEIGHT).Unit
-		humanoid:Move(direction)
+		local now = os.clock()
+		local axis = if now < controlLockUntil then 0 else InputController.getLateralAxis()
+		if glanceLateral ~= 0 then
+			glanceLateral *= math.exp(-GLANCE_DECAY * deltaTime)
+			if math.abs(glanceLateral) < 0.01 then
+				glanceLateral = 0
+			end
+		end
+		local lateral = axis * GameConstants.LATERAL_SPEED_WEIGHT + glanceLateral
+		local direction = runDirection + rightDirection * lateral
+		humanoid:Move(if direction.Magnitude > 0 then direction.Unit else runDirection)
 	end)
 end
 
@@ -78,6 +93,11 @@ function RunController.stop()
 		connection = nil
 	end
 	getControls():Enable()
+end
+
+function RunController.applyGlance(side: number, power: number)
+	glanceLateral = math.clamp(side * power * GLANCE_LATERAL, -3, 3)
+	controlLockUntil = os.clock() + GLANCE_LOCK * power
 end
 
 return RunController

@@ -1,5 +1,6 @@
 --!strict
 
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -16,6 +17,10 @@ local ashEmitter: ParticleEmitter? = nil
 local ashPart: Part? = nil
 local emberCount = 0
 local started = false
+local FLICKER_TAG = "TFZ_Flicker"
+local FLICKER_RANGE = 220
+local FLICKER_INTERVAL = 0.09
+local flickerRandom = Random.new()
 
 local function buildAshLayer()
 	local part = Instance.new("Part")
@@ -209,6 +214,31 @@ local function step()
 		or Workspace:GetAttribute("Biome") == "City"
 end
 
+local function stepFlicker()
+	local camera = Workspace.CurrentCamera
+	if not camera then
+		return
+	end
+	local eye = camera.CFrame.Position
+	for _, light in CollectionService:GetTagged(FLICKER_TAG) do
+		local host = light.Parent
+		if not light:IsA("Light") or not host or not host:IsA("BasePart") then
+			continue
+		end
+		if (host.Position - eye).Magnitude > FLICKER_RANGE then
+			continue
+		end
+		local roll = flickerRandom:NextNumber()
+		if light.Enabled then
+			if roll < 0.12 then
+				light.Enabled = false
+			end
+		elseif roll < 0.55 then
+			light.Enabled = true
+		end
+	end
+end
+
 function WorldVfx.init()
 	if started or not VfxConfig.ENABLED then
 		return
@@ -216,6 +246,13 @@ function WorldVfx.init()
 	started = true
 
 	buildAshLayer()
+
+	task.spawn(function()
+		while true do
+			task.wait(FLICKER_INTERVAL)
+			stepFlicker()
+		end
+	end)
 
 	task.spawn(function()
 		local diorama = Workspace:WaitForChild("CityDiorama", 30)

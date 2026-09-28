@@ -132,7 +132,7 @@ function PostFx.init()
 		local lastHealth = humanoid.Health
 		humanoid.HealthChanged:Connect(function(health)
 			local delta = lastHealth - health
-			if delta > 0.001 then
+			if delta > 0.001 and health > 0 then
 				PostFx.damage(math.clamp(delta / math.max(1, humanoid.MaxHealth) * 3.5, 0.12, 0.9))
 			end
 			lastHealth = health

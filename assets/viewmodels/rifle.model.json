@@ -1,0 +1,357 @@
+{
+  "className": "Model",
+  "children": [
+    {
+      "className": "MeshPart",
+      "name": "Main",
+      "properties": {
+        "Size": [
+          0.387294,
+          0.886989,
+          2.756251
+        ],
+        "CFrame": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://78407136143951",
+        "TextureID": "rbxassetid://86347151304351"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "Slide",
+      "properties": {
+        "Size": [
+          0.112737,
+          0.058395,
+          0.70841
+        ],
+        "CFrame": [
+          0.007788,
+          0.118199,
+          -0.806509,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://87462343759435",
+        "TextureID": "rbxassetid://136658706504639"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "Magazine",
+      "properties": {
+        "Size": [
+          0.14707,
+          0.967766,
+          0.431763
+        ],
+        "CFrame": [
+          0.006169,
+          -0.51272,
+          -0.288555,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://106991838266142",
+        "TextureID": "rbxassetid://116284514539934"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "Barrel",
+      "properties": {
+        "Size": [
+          0.172594,
+          0.204398,
+          0.696983
+        ],
+        "CFrame": [
+          0.006003,
+          0.04214,
+          -1.535511,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://138647947156830",
+        "TextureID": "rbxassetid://86372494812294"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "Grip",
+      "properties": {
+        "Size": [
+          0.217899,
+          0.626644,
+          0.451027
+        ],
+        "CFrame": [
+          0.004862,
+          -0.38617,
+          0.391145,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://100661930051242",
+        "TextureID": "rbxassetid://123975130681789"
+      }
+    },
+    {
+      "className": "Part",
+      "name": "Muzzle",
+      "properties": {
+        "Size": [
+          0.05,
+          0.05,
+          0.05
+        ],
+        "CFrame": [
+          0.006003,
+          0.04214,
+          -1.918003,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 1.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true
+      }
+    },
+    {
+      "className": "Part",
+      "name": "CasingEject",
+      "properties": {
+        "Size": [
+          0.05,
+          0.05,
+          0.05
+        ],
+        "CFrame": [
+          0.210647,
+          -0.000801,
+          -0.254555,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 1.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true
+      }
+    },
+    {
+      "className": "Part",
+      "name": "HandRMount",
+      "properties": {
+        "Size": [
+          0.05,
+          0.05,
+          0.05
+        ],
+        "CFrame": [
+          0.004862,
+          -0.42017,
+          0.425144,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 1.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true
+      }
+    },
+    {
+      "className": "Part",
+      "name": "HandLMount",
+      "properties": {
+        "Size": [
+          0.05,
+          0.05,
+          0.05
+        ],
+        "CFrame": [
+          0.0,
+          -0.11086,
+          -1.059511,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 1.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true
+      }
+    }
+  ]
+}

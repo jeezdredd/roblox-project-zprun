@@ -110,6 +110,7 @@ function MissionService.startSquad(players: { Player }, config: Squad.SquadConfi
 
 	local map = MapsConfig.get(config.mapId)
 	ChunkSpawner.configure(seed, if map then map.locationIds else nil)
+	ZombieAI.configure(seed + 2)
 	TrackBuilder.build()
 	ChunkSpawner.reset()
 	applyEnvironment(config.modifierIds)

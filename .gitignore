@@ -14,3 +14,9 @@ assets/textures/*.png
 assets/audio/**/*.ogg
 assets/audio/**/*.mp3
 assets/audio/**/*.wav
+assets/viewmodels/source/**/*.png
+assets/viewmodels/source/**/*.obj
+assets/viewmodels/source/**/*.rgba*
+assets/viewmodels/source/**/*_meshids.json
+docs/research/ITD2_*.json
+docs/research/ITD2_*.txt

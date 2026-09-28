@@ -41,7 +41,7 @@ VfxConfig.stepDust = {
 	[Enum.Material.Water] = { color = Color3.fromRGB(196, 216, 226), size = 1.6, count = 8, speed = 5.5, lifetime = 0.6 },
 } :: { [Enum.Material]: StepDust }
 
-VfxConfig.JUKE_MIN_SPEED = 26
+VfxConfig.JUKE_MIN_SPEED = 20
 VfxConfig.JUKE_COOLDOWN = 0.4
 VfxConfig.JUKE_PARTICLES = 10
 

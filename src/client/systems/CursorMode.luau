@@ -116,12 +116,22 @@ local function shownOnScreen(object: GuiObject, gui: ScreenGui): boolean
 end
 
 local function looksModal(gui: ScreenGui, viewport: Vector2): boolean
+	local hasPanel = false
+	local hasControl = false
 	for _, descendant in gui:GetDescendants() do
-		if descendant:IsA("GuiObject") and descendant.BackgroundTransparency < 0.9 and shownOnScreen(descendant, gui) then
+		if not descendant:IsA("GuiObject") or not shownOnScreen(descendant, gui) then
+			continue
+		end
+		if descendant:IsA("GuiButton") or descendant:IsA("TextBox") then
+			hasControl = true
+		elseif descendant.BackgroundTransparency < 0.9 then
 			local size = descendant.AbsoluteSize
 			if size.X > viewport.X * MODAL_FRACTION and size.Y > viewport.Y * MODAL_FRACTION then
-				return true
+				hasPanel = true
 			end
+		end
+		if hasPanel and hasControl then
+			return true
 		end
 	end
 	return false

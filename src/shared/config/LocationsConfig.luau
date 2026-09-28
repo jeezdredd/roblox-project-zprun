@@ -15,10 +15,13 @@ export type LocationConfig = {
 	apronTextureId: number,
 	edgeProps: string,
 	laneStyle: string,
-	lanePropChance: number,
 	roadMarkings: boolean,
 	zombiesMin: number,
 	zombiesMax: number,
+	spawnSections: { string }?,
+	runSpeedInitial: number?,
+	runSpeedMax: number?,
+	runSpeedRampTime: number?,
 }
 
 local LocationsConfig = {}
@@ -39,10 +42,10 @@ LocationsConfig.locations = {
 		apronTextureId = TexturesConfig.CONCRETE,
 		edgeProps = "buildings",
 		laneStyle = "road",
-		lanePropChance = 0.75,
 		roadMarkings = true,
 		zombiesMin = 2,
 		zombiesMax = 4,
+		spawnSections = { "Steady_Mixed", "Pressure_Mixed", "Pressure_Clumped" },
 	},
 	Forest = {
 		id = "Forest",
@@ -57,10 +60,10 @@ LocationsConfig.locations = {
 		apronTextureId = TexturesConfig.GRASS,
 		edgeProps = "trees",
 		laneStyle = "field",
-		lanePropChance = 0.55,
 		roadMarkings = false,
 		zombiesMin = 2,
 		zombiesMax = 5,
+		spawnSections = { "Calm_Open", "Steady_Walkers", "Pressure_Mixed" },
 	},
 	Wasteland = {
 		id = "Wasteland",
@@ -75,10 +78,10 @@ LocationsConfig.locations = {
 		apronTextureId = TexturesConfig.GROUND,
 		edgeProps = "ruins",
 		laneStyle = "road",
-		lanePropChance = 0.6,
 		roadMarkings = false,
 		zombiesMin = 3,
 		zombiesMax = 5,
+		spawnSections = { "Steady_Mixed", "Heavy_Clumped" },
 	},
 	Farmstead = {
 		id = "Farmstead",
@@ -93,10 +96,10 @@ LocationsConfig.locations = {
 		apronTextureId = TexturesConfig.GRASS,
 		edgeProps = "farm",
 		laneStyle = "field",
-		lanePropChance = 0.5,
 		roadMarkings = false,
 		zombiesMin = 2,
 		zombiesMax = 5,
+		spawnSections = { "Steady_Walkers", "Steady_Mixed", "Pressure_Clumped" },
 	},
 	Cornfield = {
 		id = "Cornfield",
@@ -111,10 +114,10 @@ LocationsConfig.locations = {
 		apronTextureId = TexturesConfig.GRASS,
 		edgeProps = "corn",
 		laneStyle = "field",
-		lanePropChance = 0.3,
 		roadMarkings = false,
 		zombiesMin = 2,
 		zombiesMax = 4,
+		spawnSections = { "Calm_Open", "Pressure_Clumped" },
 	},
 } :: { [string]: LocationConfig }
 

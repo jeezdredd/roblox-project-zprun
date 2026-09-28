@@ -40,3 +40,4 @@ The project is built with Rojo + Wally + Selene in Luau `--!strict`. Server code
 - [[Performance]] — streaming, chunk pooling, emitter caps, VFX density.
 - [[Decisions]] — recorded technical decisions and the reasoning behind them.
 - [[Roadmap]] — what is done, in progress and planned.
+- [[Route Forks]]: branching route choice, branches, hazards, status board.

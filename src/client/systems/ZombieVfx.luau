@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local VfxConfig = require(ReplicatedStorage.Shared.config.VfxConfig)
+local ZombieRig = require(ReplicatedStorage.Shared.util.ZombieRig)
 local SettingsService = require(script.Parent.SettingsService)
 
 local ZombieVfx = {}
@@ -58,7 +59,7 @@ local function nearbyZombieBodies(origin: Vector3, range: number, limit: number)
 		if #result >= limit then
 			break
 		end
-		local body = model:IsA("Model") and model:FindFirstChild("Body")
+		local body = model:IsA("Model") and ZombieRig.torso(model)
 		if body and body:IsA("BasePart") and (body.Position - origin).Magnitude <= range then
 			table.insert(result, body)
 		end

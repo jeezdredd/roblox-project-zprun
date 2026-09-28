@@ -6,23 +6,23 @@ Anything marked **CC-BY** obliges us to credit the named author in the shipped g
 
 | Asset | License | Source | Asset ID | Status |
 | --- | --- | --- | --- | --- |
-| `animation/player/death` | Original work (project owner) | pending | — | pending |
-| `animation/player/run` | Original work (project owner) | pending | — | pending |
+| `animation/player/death` | CC0 1.0 Universal | Quaternius Universal Animation Library (CC0), https://quaternius.com/packs/universalanimationlibrary.html | 125643944598525 | approved |
+| `animation/player/run` | Original work (project owner) | pending | 130134481942797 | approved |
 | `animation/player/strafe_left` | Original work (project owner) | pending | — | pending |
 | `animation/player/strafe_right` | Original work (project owner) | pending | — | pending |
-| `animation/player/stumble` | Original work (project owner) | pending | — | pending |
+| `animation/player/stumble` | CC0 1.0 Universal | Quaternius Universal Animation Library 2 (CC0), https://quaternius.com/packs/universalanimationlibrary2.html | 78964987584801 | approved |
 | `animation/weapon/equip` | Sole Proprietor Sevastyan (jeezdredd) | authored in Blender (pending) | 0 | pending |
 | `animation/weapon/fire` | Sole Proprietor Sevastyan (jeezdredd) | authored in Blender (pending) | 0 | pending |
 | `animation/weapon/inspect` | Sole Proprietor Sevastyan (jeezdredd) | authored in Blender (pending) | 0 | pending |
 | `animation/weapon/reload` | Sole Proprietor Sevastyan (jeezdredd) | authored in Blender (pending) | 0 | pending |
 | `animation/weapon/sprint` | Sole Proprietor Sevastyan (jeezdredd) | authored in Blender (pending) | 0 | pending |
-| `animation/zombie/attack_lunge` | Original work (project owner) | pending | — | pending |
-| `animation/zombie/feeding` | Original work (project owner) | pending | — | pending |
-| `animation/zombie/idle_a` | Original work (project owner) | pending | — | pending |
-| `animation/zombie/idle_b` | Original work (project owner) | pending | — | pending |
-| `animation/zombie/idle_c` | Original work (project owner) | pending | — | pending |
-| `animation/zombie/run_ragged` | Original work (project owner) | pending | — | pending |
-| `animation/zombie/walk_shuffle` | Original work (project owner) | pending | — | pending |
+| `animation/zombie/attack_lunge` | CC0 1.0 Universal | Quaternius Universal Animation Library 2 (CC0), https://quaternius.com/packs/universalanimationlibrary2.html | 125369822675270 | approved |
+| `animation/zombie/feeding` | CC0 1.0 Universal | Quaternius Universal Animation Library (CC0), https://quaternius.com/packs/universalanimationlibrary.html | 120876649206221 | approved |
+| `animation/zombie/idle_a` | CC0 1.0 Universal | Quaternius Universal Animation Library 2 (CC0), https://quaternius.com/packs/universalanimationlibrary2.html | 78144916069873 | approved |
+| `animation/zombie/idle_b` | CC0 1.0 Universal | Quaternius Universal Animation Library (CC0), https://quaternius.com/packs/universalanimationlibrary.html | 126230082036253 | approved |
+| `animation/zombie/idle_c` | CC0 1.0 Universal | Quaternius Universal Animation Library 2 (CC0), https://quaternius.com/packs/universalanimationlibrary2.html | 83006674705671 | approved |
+| `animation/zombie/run_ragged` | CC0 1.0 Universal | Quaternius Universal Animation Library (CC0), https://quaternius.com/packs/universalanimationlibrary.html | 74797059325286 | approved |
+| `animation/zombie/walk_shuffle` | CC0 1.0 Universal | Quaternius Universal Animation Library 2 (CC0), https://quaternius.com/packs/universalanimationlibrary2.html | 103621128406622 | approved |
 | `audio/city/helicopter` | Public domain | [link](https://commons.wikimedia.org/wiki/File:Helicopter_over_quiet_neighbourhood.ogg) | 140722208536221 | approved |
 | `audio/city/siren_ambulance` |  |  | — | needed |
 | `audio/city/siren_civil` | Public domain | [link](https://commons.wikimedia.org/wiki/File:Civil-defense-siren-waver.ogg) | 125737593545616 | approved |
@@ -119,8 +119,26 @@ Anything marked **CC-BY** obliges us to credit the named author in the shipped g
 | `texture/pbr/asphalt_roughness` | CC0 | [link](https://ambientcg.com/view?id=Asphalt033) | 74110318979899 | approved |
 | `texture/pbr/concrete_normal` | CC0 | [link](https://ambientcg.com/view?id=Concrete034) | 87774611487630 | approved |
 | `texture/pbr/concrete_roughness` | CC0 | [link](https://ambientcg.com/view?id=Concrete034) | 114110568469344 | approved |
+| `texture/pbr/fabric_normal` | CC0 | [link](https://ambientcg.com/view?id=Fabric061) | 85487768801620 | approved |
+| `texture/pbr/fabric_roughness` | CC0 | [link](https://ambientcg.com/view?id=Fabric061) | 87131457197907 | approved |
+| `texture/pbr/grass_normal` | CC0 | [link](https://ambientcg.com/view?id=Grass005) | 130742643213430 | approved |
+| `texture/pbr/grass_roughness` | CC0 | [link](https://ambientcg.com/view?id=Grass005) | 83310799378913 | approved |
+| `texture/pbr/iron_rust_metalness` | CC0 | [link](https://ambientcg.com/view?id=Metal041C) | 89139010037381 | approved |
+| `texture/pbr/iron_rust_normal` | CC0 | [link](https://ambientcg.com/view?id=Metal041C) | 88403924964970 | approved |
+| `texture/pbr/iron_rust_roughness` | CC0 | [link](https://ambientcg.com/view?id=Metal041C) | 108331362367108 | approved |
+| `texture/pbr/metal_plates_metalness` | CC0 | [link](https://ambientcg.com/view?id=MetalPlates006) | 103199857726692 | approved |
+| `texture/pbr/metal_plates_normal` | CC0 | [link](https://ambientcg.com/view?id=MetalPlates006) | 76376681655541 | approved |
+| `texture/pbr/metal_plates_roughness` | CC0 | [link](https://ambientcg.com/view?id=MetalPlates006) | 111632135736950 | approved |
+| `texture/pbr/rust_metalness` | CC0 | [link](https://ambientcg.com/view?id=Metal063) | 138768964262119 | approved |
+| `texture/pbr/rust_normal` | CC0 | [link](https://ambientcg.com/view?id=Metal063) | 113378877562967 | approved |
+| `texture/pbr/rust_roughness` | CC0 | [link](https://ambientcg.com/view?id=Metal063) | 123291079159239 | approved |
 | `texture/pbr/sand_normal` | CC0 | [link](https://ambientcg.com/view?id=Ground080) | 134675717486844 | approved |
 | `texture/pbr/sand_roughness` | CC0 | [link](https://ambientcg.com/view?id=Ground080) | 93857502534136 | approved |
+| `texture/pbr/steel_metalness` | CC0 | [link](https://ambientcg.com/view?id=Metal038) | 108131792609335 | approved |
+| `texture/pbr/steel_normal` | CC0 | [link](https://ambientcg.com/view?id=Metal038) | 116682735024998 | approved |
+| `texture/pbr/steel_roughness` | CC0 | [link](https://ambientcg.com/view?id=Metal038) | 139397806568473 | approved |
+| `texture/pbr/wood_normal` | CC0 | [link](https://ambientcg.com/view?id=WoodFloor064) | 87122802704754 | approved |
+| `texture/pbr/wood_roughness` | CC0 | [link](https://ambientcg.com/view?id=WoodFloor064) | 94318055238924 | approved |
 | `texture/surface/asphalt` | CC0 | [link](https://ambientcg.com/view?id=Asphalt033) | 115224776116295 | approved |
 | `texture/surface/bricks` | CC0 | [link](https://ambientcg.com/view?id=Bricks104) | 136193205189503 | approved |
 | `texture/surface/concrete` | CC0 | [link](https://ambientcg.com/view?id=Concrete034) | 117864665807575 | approved |
@@ -129,10 +147,38 @@ Anything marked **CC-BY** obliges us to credit the named author in the shipped g
 | `texture/surface/fence_chainlink` | CC0 | [link](https://ambientcg.com/view?id=Fence007A) | 73508631092381 | approved |
 | `texture/surface/grass` | CC0 | [link](https://ambientcg.com/view?id=Grass005) | 81024087358603 | approved |
 | `texture/surface/ground` | CC0 | [link](https://ambientcg.com/view?id=Ground054) | 125991468588773 | approved |
+| `texture/surface/iron_rust` | CC0 | [link](https://ambientcg.com/view?id=Metal041C) | 77970655793392 | approved |
 | `texture/surface/metal_plates` | CC0 | [link](https://ambientcg.com/view?id=MetalPlates006) | 138794326612928 | approved |
 | `texture/surface/rust` | CC0 | [link](https://ambientcg.com/view?id=Metal063) | 85963499931816 | approved |
 | `texture/surface/sand` | CC0 | [link](https://ambientcg.com/view?id=Ground080) | 115395312730505 | approved |
+| `texture/surface/steel` | CC0 | [link](https://ambientcg.com/view?id=Metal038) | 123364641130573 | approved |
 | `texture/surface/tiles` | CC0 | [link](https://ambientcg.com/view?id=Tiles141) | 99758356540000 | approved |
 | `texture/surface/wood` | CC0 | [link](https://ambientcg.com/view?id=WoodFloor064) | 136206214410343 | approved |
+| `viewmodel/rifle/mesh_barrel` | Roblox generative AI output (project owner) | Cube 3D (Roblox GenerationService), generated in Studio for this project | 138647947156830 | approved |
+| `viewmodel/rifle/mesh_grip` | Roblox generative AI output (project owner) | Cube 3D (Roblox GenerationService), generated in Studio for this project | 100661930051242 | approved |
+| `viewmodel/rifle/mesh_magazine` | Roblox generative AI output (project owner) | Cube 3D (Roblox GenerationService), generated in Studio for this project | 106991838266142 | approved |
+| `viewmodel/rifle/mesh_main` | Roblox generative AI output (project owner) | Cube 3D (Roblox GenerationService), generated in Studio for this project | 78407136143951 | approved |
+| `viewmodel/rifle/mesh_slide` | Roblox generative AI output (project owner) | Cube 3D (Roblox GenerationService), generated in Studio for this project | 87462343759435 | approved |
+| `viewmodel/rifle/tex_barrel` | Roblox generative AI output (project owner) | Cube 3D (Roblox GenerationService), generated in Studio for this project | 86372494812294 | approved |
+| `viewmodel/rifle/tex_grip` | Roblox generative AI output (project owner) | Cube 3D (Roblox GenerationService), generated in Studio for this project | 123975130681789 | approved |
+| `viewmodel/rifle/tex_magazine` | Roblox generative AI output (project owner) | Cube 3D (Roblox GenerationService), generated in Studio for this project | 116284514539934 | approved |
+| `viewmodel/rifle/tex_main` | Roblox generative AI output (project owner) | Cube 3D (Roblox GenerationService), generated in Studio for this project | 86347151304351 | approved |
+| `viewmodel/rifle/tex_slide` | Roblox generative AI output (project owner) | Cube 3D (Roblox GenerationService), generated in Studio for this project | 136658706504639 | approved |
+| `zombie/mesh/head` | Original work (project owner) | Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend) | 95712390166129 | approved |
+| `zombie/mesh/leftupperarm` | Original work (project owner) | Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend) | 80940480427866 | approved |
+| `zombie/mesh/leftupperleg` | Original work (project owner) | Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend) | 128590082509641 | approved |
+| `zombie/mesh/lowertorso` | Original work (project owner) | Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend) | 88177840359535 | approved |
+| `zombie/mesh/rightupperarm` | Original work (project owner) | Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend) | 86624069201074 | approved |
+| `zombie/mesh/rightupperleg` | Original work (project owner) | Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend) | 124381019901683 | approved |
+| `zombie/mesh/uppertorso` | Original work (project owner) | Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend) | 114830023596782 | approved |
+| `zombie/meshid/head` | Original work (project owner) | Mesh id inside zombie/mesh/head (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10 | 86428352678119 | approved |
+| `zombie/meshid/leftupperarm` | Original work (project owner) | Mesh id inside zombie/mesh/leftupperarm (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10 | 105578321404455 | approved |
+| `zombie/meshid/leftupperleg` | Original work (project owner) | Mesh id inside zombie/mesh/leftupperleg (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10 | 120627592212491 | approved |
+| `zombie/meshid/lowertorso` | Original work (project owner) | Mesh id inside zombie/mesh/lowertorso (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10 | 115889055869127 | approved |
+| `zombie/meshid/rightupperarm` | Original work (project owner) | Mesh id inside zombie/mesh/rightupperarm (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10 | 105578321404455 | approved |
+| `zombie/meshid/rightupperleg` | Original work (project owner) | Mesh id inside zombie/mesh/rightupperleg (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10 | 120627592212491 | approved |
+| `zombie/meshid/uppertorso` | Original work (project owner) | Mesh id inside zombie/mesh/uppertorso (Open Cloud Model upload), read back with InsertService:LoadAsset on 2026-09-10 | 97129439874173 | approved |
 
 Generated audio and textures marked `Original work (project owner)` were synthesised for this project.
+
+Entries marked `Roblox generative AI output (project owner)` are Cube 3D meshes and albedo maps produced by Roblox's GenerationService inside this project's own place and uploaded under the project owner's account; Roblox grants the generating creator the rights to use that output.

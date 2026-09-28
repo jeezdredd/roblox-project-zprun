@@ -14,6 +14,7 @@ DevConfig.QUICK_RUN = {
 	delay = 1,
 	relaunchAfterDeath = true,
 	relaunchDelay = 1.5,
+	seed = nil,
 }
 
 -- The content warning is a one-time player-facing gate; re-reading it every Play is
@@ -26,7 +27,13 @@ DevConfig.SKIP_GORE_WARNING = true
 -- weapon live, but stand still and steer with the normal WASD controls, so you can walk
 -- around a prop and look at it. The freeze/unfreeze debug commands still override it at
 -- runtime.
-DevConfig.FREEZE_RUN = true
+DevConfig.FREEZE_RUN = false
+
+-- Watch the third-person body instead of playing through the viewmodel: hands the
+-- camera to Roblox's stock orbit controller, keeps the character visible and frees
+-- the zoom clamp, so animation clips can be reviewed on the real character during a
+-- run. Wins over FREEZE_RUN's camera handling; movement freezing still applies.
+DevConfig.THIRD_PERSON_VIEW = false
 
 -- A row of stationary dummies at fixed distances, for time-to-kill and spread checks
 -- that a moving zombie cannot give you. Distances are in studs from the player spawn.

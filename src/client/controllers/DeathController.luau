@@ -9,8 +9,11 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local AudioConfig = require(ReplicatedStorage.Shared.config.AudioConfig)
+local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local ProductsConfig = require(ReplicatedStorage.Shared.config.ProductsConfig)
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
+local AnimationController = require(script.Parent.AnimationController)
+local CameraEffectsController = require(script.Parent.CameraEffectsController)
 local CursorMode = require(script.Parent.Parent.systems.CursorMode)
 local UiSfx = require(script.Parent.Parent.systems.UiSfx)
 local DeathGore = require(script.Parent.Parent.systems.DeathGore)
@@ -20,6 +23,15 @@ local DeathController = {}
 
 local DEATH_CAM = "DeathCam"
 local CONFIRM_ACTION = "DeathConfirm"
+local IMPACT_END = 0.22
+local SIDE_END = 0.95
+local ROLL_END = 1.75
+local FALL_PITCH = math.rad(64)
+local EYE_HEIGHT = 1.05
+local SIDE_EYE_HEIGHT = 0.85
+local HEAD_TRACK_WEIGHT = 0.22
+local HEAD_TRACK_RATE = 2.5
+local IMPACT_FOV_KICK = 6
 
 local showResultsCursor: (() -> ())? = nil
 
@@ -35,6 +47,9 @@ local active = false
 local chosen = false
 local lastCorpsePos = Vector3.new(0, 5, 0)
 local deathStartedAt = 0
+local fallStart: CFrame? = nil
+local groundY = 0
+local trackedLook: CFrame? = nil
 
 local function corner(instance: Instance, radius: number)
 	local c = Instance.new("UICorner")
@@ -213,6 +228,32 @@ local function findNearestZombieHead(origin: Vector3): Vector3?
 	return nearest
 end
 
+local function groundBelow(position: Vector3): number
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.RespectCanCollide = true
+	local exclude: { Instance } = {}
+	local character = Players.LocalPlayer.Character
+	if character then
+		table.insert(exclude, character)
+	end
+	local zombies = Workspace:FindFirstChild("Zombies")
+	if zombies then
+		table.insert(exclude, zombies)
+	end
+	params.FilterDescendantsInstances = exclude
+	local hit = Workspace:Raycast(position + Vector3.new(0, 2, 0), Vector3.new(0, -40, 0), params)
+	return if hit then hit.Position.Y else position.Y - 3
+end
+
+local function easeOutCubic(alpha: number): number
+	return 1 - (1 - alpha) ^ 3
+end
+
+local function easeInQuad(alpha: number): number
+	return alpha * alpha
+end
+
 local function updateDeathCam(deltaTime: number)
 	if not active then
 		return
@@ -221,24 +262,51 @@ local function updateDeathCam(deltaTime: number)
 	if not camera then
 		return
 	end
-	local character = Players.LocalPlayer.Character
-	local root = character and character:FindFirstChild("HumanoidRootPart")
-	if root and root:IsA("BasePart") then
-		lastCorpsePos = root.Position
-	end
 	camera.CameraType = Enum.CameraType.Scriptable
+	if not fallStart then
+		fallStart = camera.CFrame
+	end
+	local start = fallStart :: CFrame
 
 	local elapsed = os.clock() - deathStartedAt
-	local eyePosition = lastCorpsePos + Vector3.new(0, 1.1, 0)
-	local target = findNearestZombieHead(eyePosition) or (eyePosition + Vector3.new(0, 6, -2))
-	local shake = Vector3.new(
-		math.sin(elapsed * 11) * 0.13,
-		math.sin(elapsed * 7.3) * 0.1,
-		math.cos(elapsed * 9.1) * 0.13
-	)
-	local desired = CFrame.lookAt(eyePosition + shake, target) * CFrame.Angles(0, 0, math.rad(math.sin(elapsed * 1.6) * 7 - 12))
-	local alpha = 1 - math.exp(-6 * deltaTime)
-	camera.CFrame = camera.CFrame:Lerp(desired, alpha)
+	local runDirection = GameConstants.RUN_DIRECTION
+	local right = runDirection:Cross(Vector3.yAxis)
+	local corpseFlat = Vector3.new(lastCorpsePos.X, groundY, lastCorpsePos.Z) - runDirection * 0.6
+
+	local impact = start * CFrame.new(0.15, -0.12, 0.45) * CFrame.Angles(math.rad(-12), math.rad(6), math.rad(9))
+
+	local sideEye = corpseFlat + Vector3.new(0, SIDE_EYE_HEIGHT, 0) + right * 0.35
+	local sideLook = (CFrame.fromAxisAngle(Vector3.yAxis, math.rad(-60)) * runDirection)
+	local side = CFrame.lookAt(sideEye, sideEye + sideLook) * CFrame.Angles(math.rad(-8), 0, math.rad(-78))
+
+	local eyePosition = corpseFlat + Vector3.new(0, EYE_HEIGHT, 0)
+	local lying = CFrame.lookAt(eyePosition, eyePosition + runDirection) * CFrame.Angles(FALL_PITCH, 0, 0)
+
+	if elapsed >= ROLL_END then
+		local head = findNearestZombieHead(eyePosition)
+		local target = if head then lying:Lerp(CFrame.lookAt(eyePosition, head), HEAD_TRACK_WEIGHT) else lying
+		local trackAlpha = 1 - math.exp(-HEAD_TRACK_RATE * deltaTime)
+		trackedLook = if trackedLook then (trackedLook :: CFrame):Lerp(target, trackAlpha) else target
+		lying = trackedLook :: CFrame
+	else
+		trackedLook = lying
+	end
+
+	local settled = math.max(elapsed - ROLL_END, 0)
+	local bounce = math.exp(-settled * 6) * math.sin(settled * 22) * 0.1
+	local breath = math.sin(elapsed * 2.1) * 0.05
+	local roll = math.rad(math.sin(elapsed * 1.3) * 4 + 5)
+	local resting = lying * CFrame.new(0, bounce + breath, 0) * CFrame.Angles(math.rad(math.sin(elapsed * 1.7) * 2), 0, roll)
+
+	if elapsed < IMPACT_END then
+		camera.CFrame = start:Lerp(impact, easeOutCubic(elapsed / IMPACT_END))
+	elseif elapsed < SIDE_END then
+		camera.CFrame = impact:Lerp(side, easeInQuad((elapsed - IMPACT_END) / (SIDE_END - IMPACT_END)))
+	elseif elapsed < ROLL_END then
+		camera.CFrame = side:Lerp(resting, easeOutCubic((elapsed - SIDE_END) / (ROLL_END - SIDE_END)))
+	else
+		camera.CFrame = resting
+	end
 end
 
 local function playScream()
@@ -276,6 +344,8 @@ local function onDeathBegan(rewards: any)
 	active = true
 	chosen = false
 	deathStartedAt = os.clock()
+	fallStart = nil
+	trackedLook = nil
 
 	blackout.BackgroundTransparency = 1
 	diedLabel.TextTransparency = 1
@@ -289,6 +359,9 @@ local function onDeathBegan(rewards: any)
 	if root and root:IsA("BasePart") then
 		lastCorpsePos = root.Position
 	end
+	groundY = groundBelow(lastCorpsePos)
+	AnimationController.playOneShot("Death")
+	CameraEffectsController.fovKick(IMPACT_FOV_KICK)
 	DeathGore.render(lastCorpsePos)
 	playScream()
 
@@ -357,6 +430,8 @@ function DeathController.init()
 	Remotes.getEvent(Remotes.Event.DeathBegan).OnClientEvent:Connect(onDeathBegan)
 	Players.LocalPlayer.CharacterAdded:Connect(function()
 		active = false
+		fallStart = nil
+		trackedLook = nil
 		RunService:UnbindFromRenderStep(DEATH_CAM)
 		ContextActionService:UnbindAction(CONFIRM_ACTION)
 		CursorMode.setModalOpen("DeathResults", false)

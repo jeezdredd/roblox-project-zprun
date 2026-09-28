@@ -213,12 +213,19 @@ end
 local MESH_BONES: { [string]: string } = {
 	Main = "weaponRoot",
 	Slide = "slide",
+	Pump = "pump",
 	Magazine = "magazine",
 	Barrel = "barrel",
 	Grip = "grip",
 }
 
-local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): boolean
+type HandMounts = {
+	handR: CFrame?,
+	handL: CFrame?,
+	handLParent: string,
+}
+
+local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): HandMounts?
 	local folder = ReplicatedStorage:FindFirstChild("ViewModels")
 	local template = if folder then folder:FindFirstChild(class) else nil
 	if not template or not template:IsA("Model") then
@@ -239,9 +246,25 @@ local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): boolean
 	local main = clone:FindFirstChild("Main")
 	if not main or not main:IsA("BasePart") then
 		clone:Destroy()
-		return false
+		return nil
 	end
 	local mainCFrame = main.CFrame
+
+	local mounts: HandMounts = { handR = nil, handL = nil, handLParent = "weaponRoot" }
+	local rightMount = clone:FindFirstChild("HandRMount")
+	if rightMount and rightMount:IsA("BasePart") then
+		mounts.handR = mainCFrame:ToObjectSpace(rightMount.CFrame)
+	end
+	local leftMount = clone:FindFirstChild("HandLMount")
+	if leftMount and leftMount:IsA("BasePart") then
+		local pump = clone:FindFirstChild("Pump")
+		if class == "Shotgun" and pump and pump:IsA("BasePart") then
+			mounts.handL = pump.CFrame:ToObjectSpace(leftMount.CFrame)
+			mounts.handLParent = "pump"
+		else
+			mounts.handL = mainCFrame:ToObjectSpace(leftMount.CFrame)
+		end
+	end
 
 	-- The procedural path runs every size and rest offset through ViewmodelConfig.SCALE,
 	-- and so do the arms below. Adopting the mesh at its authored size left a full-size
@@ -295,7 +318,7 @@ local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): boolean
 	attachFillLight(main)
 
 	local _ = camera
-	return true
+	return mounts
 end
 
 -- An Animator matches a clip's poses to parts by name, so two parts sharing a name
@@ -377,14 +400,22 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 
 	-- Prefer real mesh geometry when Rojo has mounted some for this class; the procedural
 	-- box weapon below stays as the fallback for classes that have no mesh yet.
-	local usedMesh = buildMeshWeapon(rig, class, camera)
-	local gripRest = if usedMesh
+	local mounts = buildMeshWeapon(rig, class, camera)
+	local gripRest = if mounts
 		then CFrame.new(0, -0.1, 0.05) * CFrame.Angles(math.rad(-12), 0, 0)
 		else CFrame.new(0, -bodyHeight / 2 - 0.26, bodyLength / 2 - 0.18) * CFrame.Angles(math.rad(-18), 0, 0)
 
-	if usedMesh then
-		buildArm(rig, 1, gripRest * CFrame.new(0.02, -0.04, 0.08), "handR", "weaponRoot", 52)
-		buildArm(rig, -1, gripRest * CFrame.new(-0.13, -0.02, 0.03) * CFrame.Angles(0, math.rad(14), 0), "handL", "weaponRoot", 46)
+	if mounts then
+		local rightRest = gripRest * CFrame.new(0.02, -0.04, 0.08)
+		local leftRest = gripRest * CFrame.new(-0.13, -0.02, 0.03) * CFrame.Angles(0, math.rad(14), 0)
+		if mounts.handR then
+			rightRest = mounts.handR * rightRest.Rotation
+		end
+		if mounts.handL then
+			leftRest = mounts.handL * leftRest.Rotation
+		end
+		buildArm(rig, 1, rightRest, "handR", "weaponRoot", 52)
+		buildArm(rig, -1, leftRest, "handL", mounts.handLParent, 46)
 		model.Parent = camera
 		return rig
 	end

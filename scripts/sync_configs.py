@@ -84,6 +84,13 @@ def render_licenses(manifest):
         )
     rows.append("")
     rows.append("Generated audio and textures marked `Original work (project owner)` were synthesised for this project.")
+    if any(entry.get("license", "").startswith("Roblox generative AI output") for entry in manifest.values()):
+        rows.append("")
+        rows.append(
+            "Entries marked `Roblox generative AI output (project owner)` are Cube 3D meshes and albedo maps "
+            "produced by Roblox's GenerationService inside this project's own place and uploaded under the "
+            "project owner's account; Roblox grants the generating creator the rights to use that output."
+        )
     rows.append("")
     return "\n".join(rows)
 

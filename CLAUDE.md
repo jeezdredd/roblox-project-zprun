@@ -13,13 +13,13 @@ Co-op endless runner set in a zombie apocalypse (1-3 players). Roblox, Rojo + Wa
 
 ## Asset policy
 
-Animation and audio follow permanent rules recorded in [docs/asset-policy.md](docs/asset-policy.md). The short version: never author artistic keyframe animation in code, never synthesise audio, leave a slot silent at `assetId = 0` and log it in `assets/NEEDED.md` rather than filling it with something unsuitable, and never invent an assetId. Unreal (Fab) and Unity Asset Store packs are forbidden even when free.
+Animation, audio and models follow [docs/asset-policy.md](docs/asset-policy.md). Since 2026-09-07 it judges results, not methods: any technique is allowed (clips, mocap, AI generation, Luau-authored poses, procedural layers, generated audio) as long as it passes a look or a listen in a Studio playtest. What stays fixed is provenance: every asset has a manifest entry with a source and a licence, ids only come from real uploads, and nothing extracted from another game ever enters the project. Placeholders are allowed only when marked `"status": "placeholder"` and listed in `assets/NEEDED.md`.
 
 ## Hard rules
 
 - Server is authoritative for ammo, damage, credits and purchase grants. Every remote validates its arguments.
 - No pay-to-win. Credits, weapons, weapon upgrades, skills and perk slots are never sold for Robux — only cosmetics and the post-death Continue.
-- Every new asset goes through `assets/manifest.json` → `scripts/upload_assets.py` → `scripts/sync_configs.py`, and is listed in `assets/LICENSES.md`. Audio must be real CC0/licensed files, never generated.
+- Every new asset goes through `assets/manifest.json` → `scripts/upload_assets.py` → `scripts/sync_configs.py`, and is listed in `assets/LICENSES.md` with a licence we can show. Extracted third-party game assets are never allowed.
 - Run `selene src/`, `python3 tools/validate_api.py` and `rojo build` before committing.
 - Commits are authored by the user only — no co-author trailer, no mention of Claude.
 

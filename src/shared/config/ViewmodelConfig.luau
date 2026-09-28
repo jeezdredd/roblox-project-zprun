@@ -60,7 +60,34 @@ ViewmodelConfig.springs = {
 	equip = { stiffness = 100, damping = 16 },
 	mechanism = { stiffness = 320, damping = 22 },
 	inspect = { stiffness = 55, damping = 12 },
+	aim = { stiffness = 28, damping = 10 },
+	drift = { stiffness = 14, damping = 6 },
 } :: { [string]: SpringSetting }
+
+ViewmodelConfig.hipAim = {
+	range = 70,
+	coneDegrees = 42,
+	maxYawDegrees = 24,
+	maxPitchDegrees = 14,
+	hold = 0.35,
+	blendRate = 4,
+	centreBias = 0.8,
+	rollCouple = 0.15,
+	shift = 0.1,
+	dip = 0.03,
+	fireLock = 0.55,
+}
+
+ViewmodelConfig.drift = {
+	amplitude = 0.012,
+	rates = Vector3.new(0.9, 0.55, 0.7),
+}
+
+ViewmodelConfig.juke = {
+	yaw = 0.16,
+	roll = 0.22,
+	shift = 0.12,
+}
 
 ViewmodelConfig.sway = {
 	yawImpulse = 10,
@@ -75,16 +102,16 @@ ViewmodelConfig.lag = {
 }
 
 ViewmodelConfig.bob = {
-	horizontal = 0.022,
-	vertical = 0.028,
-	roll = 0.012,
-	pitch = 0.008,
+	horizontal = 0.042,
+	vertical = 0.05,
+	roll = 0.028,
+	pitch = 0.018,
 	speedReference = 16,
 }
 
 ViewmodelConfig.breathe = {
-	amplitude = 0.014,
-	rollAmplitude = 0.008,
+	amplitude = 0.024,
+	rollAmplitude = 0.014,
 	rate = 1.4,
 }
 
@@ -129,8 +156,11 @@ ViewmodelConfig.mechanism = {
 }
 
 ViewmodelConfig.cameraRecoil = {
-	positionScale = 0.35,
-	rotationScale = 0.4,
+	pitch = 0.55,
+	yawJitter = 0.08,
+	stiffness = 70,
+	damping = 17,
+	fovKick = 0.25,
 }
 
 ViewmodelConfig.MODE = {

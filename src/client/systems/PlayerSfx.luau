@@ -69,7 +69,7 @@ local function watchCharacter(character: Model)
 
 	local lastHealth = humanoid.Health
 	humanoid.HealthChanged:Connect(function(health)
-		if health < lastHealth - 0.001 then
+		if health < lastHealth - 0.001 and health > 0 then
 			concussionUntil = os.clock() + SfxConfig.CONCUSSION_DURATION
 		end
 		lastHealth = health

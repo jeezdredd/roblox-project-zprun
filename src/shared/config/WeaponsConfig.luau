@@ -53,7 +53,7 @@ WeaponsConfig.weapons = {
 		recoilKick = 0.7,
 		recoilSnap = 0.35,
 		recoilStiffness = 240,
-		recoilDamping = 22,
+		recoilDamping = 28,
 		cameraKick = 0.3,
 	},
 	SMG = {
@@ -78,7 +78,7 @@ WeaponsConfig.weapons = {
 		recoilKick = 0.45,
 		recoilSnap = 0.22,
 		recoilStiffness = 260,
-		recoilDamping = 24,
+		recoilDamping = 29,
 		cameraKick = 0.2,
 	},
 	Shotgun = {
@@ -103,7 +103,7 @@ WeaponsConfig.weapons = {
 		recoilKick = 1.5,
 		recoilSnap = 0.7,
 		recoilStiffness = 150,
-		recoilDamping = 16,
+		recoilDamping = 22,
 		cameraKick = 0.75,
 	},
 	Rifle = {
@@ -128,7 +128,7 @@ WeaponsConfig.weapons = {
 		recoilKick = 0.75,
 		recoilSnap = 0.4,
 		recoilStiffness = 200,
-		recoilDamping = 19,
+		recoilDamping = 25,
 		cameraKick = 0.4,
 	},
 } :: { [string]: WeaponConfig }

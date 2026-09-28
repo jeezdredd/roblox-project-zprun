@@ -11,23 +11,13 @@ only, no synthesis, no invented ids.
 
 | Slot | Used by | What to look for | Priority | Status |
 | --- | --- | --- | --- | --- |
-| `animation/player/death` | DeathService / DeathController — supine death pose | Mixamo: Falling Back Death | blocker | pending |
-| `animation/player/run` | AnimationController — run cycle | Mixamo: Running (in place, rifle carry) | blocker | pending |
 | `animation/player/strafe_left` | AnimationController — lateral dodge | Mixamo: Left Strafe (in place) | blocker | pending |
 | `animation/player/strafe_right` | AnimationController — lateral dodge | Mixamo: Right Strafe (in place) | blocker | pending |
-| `animation/player/stumble` | AnimationController — obstacle clip | Mixamo: Stumble Backwards | polish | pending |
 | `animation/weapon/equip` | Viewmodel — replaces procedural raise | Universal Viewmodel Template: raise/equip | polish | pending |
 | `animation/weapon/fire` | Viewmodel — clip layer over spring recoil | Universal Viewmodel Template: fire | polish | pending |
 | `animation/weapon/inspect` | Viewmodel — F key inspect | Universal Viewmodel Template: inspect | polish | pending |
 | `animation/weapon/reload` | Viewmodel — replaces procedural reload | Universal Viewmodel Template: reload | polish | pending |
 | `animation/weapon/sprint` | Viewmodel — sprint carry pose | Universal Viewmodel Template: sprint/run | polish | pending |
-| `animation/zombie/attack_lunge` | ZombieAI — touch attack | Mixamo: Zombie Attack | blocker | pending |
-| `animation/zombie/feeding` | DeathService — corpse feeding loop | Mixamo: Zombie Feeding | blocker | pending |
-| `animation/zombie/idle_a` | ZombieAnimator — idle variation | Mixamo: Zombie Idle | blocker | pending |
-| `animation/zombie/idle_b` | ZombieAnimator — idle variation | Mixamo: Zombie Neck Bite (idle part) | polish | pending |
-| `animation/zombie/idle_c` | ZombieAnimator — rise from ground | Mixamo: Zombie Stand Up | polish | pending |
-| `animation/zombie/run_ragged` | ZombieAnimator — runner gait | Mixamo: Zombie Running (in place) | blocker | pending |
-| `animation/zombie/walk_shuffle` | ZombieAnimator — walker gait | Mixamo: Zombie Walk (in place) | blocker | pending |
 
 ## Audio
 
@@ -39,4 +29,4 @@ only, no synthesis, no invented ids.
 | `audio/unused/siren_police_rejected` | — | — | polish | rejected |
 | `audio/weapons/shell_03` | Weapon shell casing variation 3 | Kenney CC0 impact sounds: small metal drop | polish | rejected |
 
-**10 blockers, 12 polish items.**
+**3 blockers, 9 polish items.**

@@ -34,6 +34,9 @@ CONTENT_TYPES = {
     ".png": "image/png",
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
+    ".glb": "model/gltf-binary",
+    ".rbxm": "model/x-rbxm",
+    ".rbxmx": "model/x-rbxm",
 }
 
 POLL_ATTEMPTS = 30
@@ -64,6 +67,8 @@ def asset_type_for(key, path):
         return "Audio"
     if extension in (".png", ".jpg", ".jpeg"):
         return "Image"
+    if extension == ".glb":
+        return "Model"
     if key.startswith("animation/"):
         return "Animation"
     return None
@@ -72,11 +77,11 @@ def asset_type_for(key, path):
 def curl_json(args):
     result = subprocess.run(args, capture_output=True, text=True)
     if result.returncode != 0:
-        return None, result.stderr.strip()
+        return None, result.stderr.strip() or f"curl exited {result.returncode}"
     try:
         return json.loads(result.stdout), None
     except json.JSONDecodeError:
-        return None, result.stdout[:300]
+        return None, result.stdout[:300] or "empty response"
 
 
 def upload(key, name, path, asset_type):

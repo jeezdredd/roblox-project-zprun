@@ -7,15 +7,20 @@
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local AudioBus = require(script.Parent.AudioBus)
 local AudioEngine = require(script.Parent.AudioEngine)
 local AudioEnvironment = require(script.Parent.AudioEnvironment)
+local AudioReflections = require(script.Parent.AudioReflections)
 
 local AudioDebug = {}
 
 local REFRESH = 0.1
 local MAX_ROWS = 40
+-- the test shot lands this far ahead of the camera
+local TEST_SHOT_DISTANCE = 30
+local TEST_SHOT_KEY = "weapons.close_rifle"
 
 local screen: ScreenGui? = nil
 local label: TextLabel? = nil
@@ -131,6 +136,20 @@ end
 
 function AudioDebug.toggle()
 	AudioDebug.setVisible(not AudioDebug.isVisible())
+end
+
+-- A remote rifle shot 30 studs ahead of the camera with its reflection fan, so the
+-- reflections and the distance delay can be heard in the yard before WeaponSfx moves
+-- onto the engine (test plan item 3).
+function AudioDebug.fireTestShot()
+	local camera = Workspace.CurrentCamera
+	if not camera or not AudioEngine.enabled() then
+		return
+	end
+	local id = AudioEngine.resolveId(TEST_SHOT_KEY)
+	local position = camera.CFrame.Position + camera.CFrame.LookVector * TEST_SHOT_DISTANCE
+	AudioEngine.play({ id = id, class = "GunshotRemote", position = position, volume = 1 })
+	AudioReflections.fire(position, id, "weapons", 1, 1, AudioEngine.reflectionRays())
 end
 
 return AudioDebug

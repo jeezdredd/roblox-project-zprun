@@ -1,5 +1,10 @@
 --!strict
 
+-- Interface sounds and the chase duck. With the spatial audio engine on the clicks are
+-- UI-class voices on the ui bus, which joins the mix after the duck compressor so a
+-- menu never dips under gunfire; the chase duck still goes through
+-- MusicController.setDuck, which scales the music fader.
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -7,6 +12,7 @@ local Workspace = game:GetService("Workspace")
 local ZombieRig = require(ReplicatedStorage.Shared.util.ZombieRig)
 
 local SfxConfig = require(ReplicatedStorage.Shared.config.SfxConfig)
+local AudioEngine = require(script.Parent.Parent.audio.AudioEngine)
 local MusicController = require(script.Parent.MusicController)
 local SfxPlayer = require(script.Parent.SfxPlayer)
 
@@ -55,24 +61,32 @@ local function step(deltaTime: number)
 	MusicController.setDuck(duckLevel * (1 - SfxConfig.MUSIC_DUCK_DB))
 end
 
+local function play(soundId: number, volume: number, pitchJitter: number)
+	if AudioEngine.enabled() then
+		AudioEngine.play({ id = soundId, class = "UI", volume = volume, pitchJitter = pitchJitter })
+		return
+	end
+	SfxPlayer.play2D(soundId, volume, pitchJitter)
+end
+
 function UiSfx.hover()
-	SfxPlayer.play2D(SfxConfig.UI_HOVER_ID, SfxConfig.UI_VOLUME * 0.6, 0.04)
+	play(SfxConfig.UI_HOVER_ID, SfxConfig.UI_VOLUME * 0.6, 0.04)
 end
 
 function UiSfx.click()
-	SfxPlayer.play2D(SfxConfig.UI_CLICK_ID, SfxConfig.UI_VOLUME, 0.04)
+	play(SfxConfig.UI_CLICK_ID, SfxConfig.UI_VOLUME, 0.04)
 end
 
 function UiSfx.countdownTick()
-	SfxPlayer.play2D(SfxConfig.UI_COUNTDOWN_TICK_ID, SfxConfig.UI_VOLUME, 0)
+	play(SfxConfig.UI_COUNTDOWN_TICK_ID, SfxConfig.UI_VOLUME, 0)
 end
 
 function UiSfx.countdownGo()
-	SfxPlayer.play2D(SfxConfig.UI_COUNTDOWN_GO_ID, SfxConfig.UI_VOLUME, 0)
+	play(SfxConfig.UI_COUNTDOWN_GO_ID, SfxConfig.UI_VOLUME, 0)
 end
 
 function UiSfx.rewardTick()
-	SfxPlayer.play2D(SfxConfig.UI_REWARD_TICK_ID, SfxConfig.UI_VOLUME * 0.7, 0.08)
+	play(SfxConfig.UI_REWARD_TICK_ID, SfxConfig.UI_VOLUME * 0.7, 0.08)
 end
 
 function UiSfx.bindButton(button: GuiButton)

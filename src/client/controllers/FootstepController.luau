@@ -1,5 +1,11 @@
 --!strict
 
+-- Footsteps for the local character (on ExertionState's stride) and for teammates (a
+-- stride phase advanced from their velocity), chosen by the material under foot. With
+-- the spatial audio engine on each step is a PlayerFootstep or TeammateFootstep voice
+-- following the root part, cut at MAX_SLICE with a short fade; with it off the pooled
+-- Sounds from before stay.
+
 local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -8,6 +14,7 @@ local Workspace = game:GetService("Workspace")
 
 local FootstepConfig = require(ReplicatedStorage.Shared.config.FootstepConfig)
 local ExertionState = require(script.Parent.ExertionState)
+local AudioEngine = require(script.Parent.Parent.audio.AudioEngine)
 local MusicController = require(script.Parent.Parent.systems.MusicController)
 
 local FootstepController = {}
@@ -19,9 +26,14 @@ type TeammateState = {
 	lastVariation: number,
 }
 
+local SLICE_FADE = 0.04
+
 local random = Random.new()
 local localPool: { Sound } = {}
 local localPoolIndex = 0
+local localRoot: BasePart? = nil
+local localHandles: { AudioEngine.Handle } = {}
+local localHandleIndex = 0
 local lastLocalVariation = 0
 local teammates: { [Player]: TeammateState } = {}
 local rayParams = RaycastParams.new()
@@ -80,6 +92,25 @@ local function materialUnder(character: Model, humanoid: Humanoid): Enum.Materia
 	return Enum.Material.Air
 end
 
+-- A step through the engine: a short voice on the root part, cut at MAX_SLICE.
+local function playEngineStep(root: BasePart, class: string, soundId: number, volume: number, pitch: number): AudioEngine.Handle?
+	if not isPlayableId(soundId) then
+		return nil
+	end
+	local handle = AudioEngine.play({
+		id = soundId,
+		class = class,
+		follow = root,
+		volume = volume * (1 + random:NextNumber(-FootstepConfig.VOLUME_JITTER, FootstepConfig.VOLUME_JITTER)),
+		pitch = pitch,
+		pitchJitter = FootstepConfig.PITCH_JITTER,
+	})
+	task.delay(FootstepConfig.MAX_SLICE, function()
+		handle:stop(SLICE_FADE)
+	end)
+	return handle
+end
+
 local function playFrom(pool: { Sound }, poolIndex: number, soundId: number, volume: number, pitch: number): number
 	if #pool == 0 or not isPlayableId(soundId) then
 		return poolIndex
@@ -104,11 +135,14 @@ local function playFrom(pool: { Sound }, poolIndex: number, soundId: number, vol
 	return nextIndex
 end
 
-local function silencePool(pool: { Sound })
-	for _, sound in pool do
+local function silenceLocal()
+	for _, sound in localPool do
 		if sound.Parent and sound.IsPlaying then
 			sound:Stop()
 		end
+	end
+	for _, handle in localHandles do
+		handle:stop(SLICE_FADE)
 	end
 end
 
@@ -125,6 +159,17 @@ local function onLocalStep()
 	local entry = FootstepConfig.get(material)
 	local soundId, variationIndex = pickVariation(entry.ids, lastLocalVariation)
 	lastLocalVariation = variationIndex
+	if AudioEngine.enabled() then
+		local root = localRoot
+		if root and root.Parent then
+			local handle = playEngineStep(root, "PlayerFootstep", soundId, entry.volume, entry.pitch)
+			if handle then
+				localHandleIndex = (localHandleIndex % FootstepConfig.POOL_SIZE) + 1
+				localHandles[localHandleIndex] = handle
+			end
+		end
+		return
+	end
 	localPoolIndex = playFrom(localPool, localPoolIndex, soundId, entry.volume, entry.pitch)
 end
 
@@ -133,17 +178,20 @@ local function setupLocalCharacter(character: Model)
 	if not root or not root:IsA("BasePart") then
 		return
 	end
-	localPool = createPool(root, FootstepConfig.POOL_SIZE, FootstepConfig.ROLLOFF_MAX)
+	localRoot = root
+	if not AudioEngine.enabled() then
+		localPool = createPool(root, FootstepConfig.POOL_SIZE, FootstepConfig.ROLLOFF_MAX)
+	end
 end
 
 local function teammateState(player: Player, root: BasePart): TeammateState
 	local state = teammates[player]
-	if state and state.pool[1] and state.pool[1].Parent == root then
+	if state and (AudioEngine.enabled() or (state.pool[1] and state.pool[1].Parent == root)) then
 		return state
 	end
 	state = {
 		phase = 0,
-		pool = createPool(root, 3, FootstepConfig.TEAMMATE_ROLLOFF_MAX),
+		pool = if AudioEngine.enabled() then {} else createPool(root, 3, FootstepConfig.TEAMMATE_ROLLOFF_MAX),
 		poolIndex = 0,
 		lastVariation = 0,
 	}
@@ -176,7 +224,11 @@ local function stepTeammates(deltaTime: number)
 			local entry = FootstepConfig.get(materialUnder(character, humanoid))
 			local soundId, variationIndex = pickVariation(entry.ids, state.lastVariation)
 			state.lastVariation = variationIndex
-			state.poolIndex = playFrom(state.pool, state.poolIndex, soundId, entry.volume, entry.pitch)
+			if AudioEngine.enabled() then
+				playEngineStep(root, "TeammateFootstep", soundId, entry.volume, entry.pitch)
+			else
+				state.poolIndex = playFrom(state.pool, state.poolIndex, soundId, entry.volume, entry.pitch)
+			end
 		end
 		if state.phase > math.pi * 4096 then
 			state.phase -= math.pi * 4096
@@ -223,7 +275,7 @@ function FootstepController.init()
 	RunService.Heartbeat:Connect(function()
 		local isRunning = ExertionState.isRunning()
 		if wasRunning and not isRunning then
-			silencePool(localPool)
+			silenceLocal()
 		end
 		wasRunning = isRunning
 	end)

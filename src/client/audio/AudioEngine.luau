@@ -704,6 +704,11 @@ function AudioEngine.profileName(): string
 	return profileName
 end
 
+-- Rays a reflection fan casts on this platform.
+function AudioEngine.reflectionRays(): number
+	return profile.reflectionRays
+end
+
 function AudioEngine.listenerPosition(): Vector3
 	return listenerPosition
 end

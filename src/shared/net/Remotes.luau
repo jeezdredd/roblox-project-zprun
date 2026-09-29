@@ -35,6 +35,12 @@ Remotes.Function = table.freeze({
 	ShopPurchase = "ShopPurchase",
 })
 
+-- Lossy, unordered, for values that change every frame and are replaced by the next
+-- packet: the third-person aim (pitch, yaw offset) relayed at most 20 times a second.
+Remotes.Unreliable = table.freeze({
+	BodyAim = "BodyAim",
+})
+
 local folder: Folder? = nil
 
 local function getFolder(): Folder
@@ -89,12 +95,30 @@ function Remotes.getFunction(name: string): RemoteFunction
 	return parent:WaitForChild(name) :: RemoteFunction
 end
 
+function Remotes.getUnreliableEvent(name: string): UnreliableRemoteEvent
+	local parent = getFolder()
+	if RunService:IsServer() then
+		local existing = parent:FindFirstChild(name)
+		if existing and existing:IsA("UnreliableRemoteEvent") then
+			return existing
+		end
+		local remote = Instance.new("UnreliableRemoteEvent")
+		remote.Name = name
+		remote.Parent = parent
+		return remote
+	end
+	return parent:WaitForChild(name) :: UnreliableRemoteEvent
+end
+
 function Remotes.init()
 	for _, name in Remotes.Event do
 		Remotes.getEvent(name)
 	end
 	for _, name in Remotes.Function do
 		Remotes.getFunction(name)
+	end
+	for _, name in Remotes.Unreliable do
+		Remotes.getUnreliableEvent(name)
 	end
 end
 

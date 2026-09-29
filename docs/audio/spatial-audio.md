@@ -77,7 +77,6 @@ action. This is the speed-of-sound delay mechanism: no `task.delay`, no frame ji
 | `AudioEcho` | `DelayTime` 0.001..5 s, `Feedback` 0..1, `DryLevel`, `WetLevel` -80..10 dB, `RampTime` | street-canyon slapback on the weapons and sfx buses |
 | `AudioCompressor` | `Threshold` -60..0 dB, `Ratio` 1..50, `Attack` 0.0001..0.5 s, `Release` 0.01..5 s, `MakeupGain`; extra `Sidechain` input pin: "the threshold analyses those streams instead of Input, enabling volume ducking of one stream based on another" | ducking ambience and music under gunfire |
 | `AudioLimiter` | `MaxLevel` -12..0 dB, `Release` 0.001..1 s | master limiter |
-| `AudioAnalyzer` | `PeakLevel`, `RmsLevel`, `GetSpectrum` (client only) | debug overlay meters |
 
 **Built-in acoustic simulation.** `SoundService.AcousticSimulationEnabled`,
 `AudioEmitter` / `AudioListener` `AcousticSimulationEnabled` plus per-object
@@ -93,8 +92,9 @@ roadmap (`https://create.roblox.com/roadmap`) lists "Acoustic Simulation for Sou
 late 2026. `SimulationFidelity` is already deprecated. The task rule is to prefer an
 engine feature only when it is out of beta, so the engine implements its own occlusion
 and environment path, and exposes `SfxConfig.ACOUSTIC_SIMULATION` (default `false`) to
-switch the built-in simulation on instead: with it on the engine skips its own rays and
-bus reverb and sets the flags above. That switch is a Studio listen for the owner (test
+switch the built-in simulation on instead: with it on the engine skips its own occlusion
+rays, doorway loss and bus reverb and sets the flags above; the discrete reflections
+(section 3.4) and the slapback stay, since the beta simulates reverb, not slaps. That switch is a Studio listen for the owner (test
 plan item 8).
 
 **Limits and cost (forum excerpts, unverified here).** One DevForum thread reports a cap
@@ -141,7 +141,6 @@ engine uses a member that is absent from either source. Members used, all presen
 | `AudioEcho` | `DelayTime`, `Feedback`, `DryLevel`, `WetLevel`, `RampTime` |
 | `AudioCompressor` | `Threshold`, `Ratio`, `Attack`, `Release`, `MakeupGain`, `Sidechain` pin |
 | `AudioLimiter` | `MaxLevel`, `Release` |
-| `AudioAnalyzer` | `RmsLevel`, `PeakLevel` |
 | `Wire` | `SourceInstance`, `SourceName`, `TargetInstance`, `TargetName` |
 | `SoundService` | `GetMixerTime`, `AcousticSimulationEnabled`, `AmbientReverb` (legacy path) |
 | `Attachment` | `WorldPosition` (emitter position hosts) |
@@ -149,7 +148,9 @@ engine uses a member that is absent from either source. Members used, all presen
 
 Not used on purpose: `SoundService.DefaultListenerLocation` (plugin security),
 `VolumetricAudio` (not scriptable), `AudioEmitter.SimulationFidelity` (deprecated),
-`AudioPlayer.AssetId` (deprecated, `Asset` instead).
+`AudioPlayer.AssetId` (deprecated, `Asset` instead), `AudioAnalyzer` (it has no output
+pin, so metering a bus would need a second wire off a fader's output; the overlay shows
+the engine's own per-bus activity instead).
 
 ### 1.3 How the reference shooters do it
 
@@ -245,11 +246,14 @@ excerpt); Unreal's air absorption is a plain low-pass interpolated between two d
 (`https://dev.epicgames.com/documentation/en-us/unreal-engine/sound-attenuation-in-unreal-engine`);
 Godot ships a 5 kHz, -24 dB distance low-pass by default
 (`https://raw.githubusercontent.com/godotengine/godot-docs/master/classes/class_audiostreamplayer3d.rst`).
-**Engine constant:** the 8 kHz band at 6x ISO, that is 0.63 dB per 10 m, drives a
-single 12 dB/octave low-pass whose cutoff is where the exaggerated attenuation reaches
--6 dB; the curve gives 22 kHz under 20 studs, about 8 kHz at 110 studs (30 m), 4 kHz at
-250 studs (70 m) and a floor of 1.2 kHz past 700 studs, which reproduces Hunt's schedule.
-The class `air` strength scales the exponent.
+**Engine constant** (`AudioMath.absorptionCutoff`, `SpatialAudioConfig.ABSORPTION`): past a
+25 m knee the 8 kHz band loses 6x its ISO figure (0.63 dB per metre), absorption at other
+frequencies scales as (f / 8 kHz)^1.7, and the cutoff of a single 12 dB/octave low-pass is
+the frequency that has lost 6 dB. The schedule this gives: 22 kHz to 90 studs (25 m),
+11.7 kHz at 107 studs (30 m), 5.7 kHz at 150, 4.5 kHz at 180 studs (50 m), 3.2 kHz at
+250 studs (70 m), 2.2 kHz at 400 studs, 1.5 kHz at 700 and the 1.2 kHz floor from 1000
+studs on: Hunt's "none, light, strong" bands. The class `air` strength scales the
+exaggeration, so a footstep (0.2) barely dulls and a distant shot (1.0) reads as far.
 
 **Distance law.** Spherical spreading is -6 dB per doubling, a line source -3 dB
 (`https://www.sfu.ca/sonic-studio-webdav/handbook/Sound_Propagation.html`, excerpt).
@@ -395,7 +399,7 @@ and material, plus the platform budgets), tests under `tests/audio/`.
 | `AudioEnvironment.luau` | `AcousticSpace` zone cache, biome and phase, the environment id and material profile for a position, occlusion raycasts with the per-frame budget. |
 | `AudioEngine.luau` | The voice pool and the one play API, the per-frame propagation update, priorities and voice limits, distance layers, the `enabled()` flag. |
 | `AudioReflections.luau` | Ray fan for gunshots and explosions, spawns delayed filtered reflection voices from the hit points. |
-| `AudioDebug.luau` | The overlay: active voices with class, distance, delay, occlusion, cutoff and bus meters. |
+| `AudioDebug.luau` | The overlay: active voices with class, distance, delay, occlusion, cutoff and per-bus activity; `fireTestShot()` plays a remote rifle shot with its reflection fan 30 studs ahead of the camera. |
 
 ### 3.1 Bus graph
 
@@ -597,11 +601,20 @@ weapon code can adopt them without a config change.
 ## 6. Studio test plan
 
 Run in the Studio test yard (`DevConfig.SANDBOX.enabled = true`, Play spawns in it).
-The main session adds one key for the overlay: in `SandboxInput`,
-`elseif input.KeyCode == Enum.KeyCode.N then AudioDebug.toggle()`. The overlay lists
-every live voice with class, bus, distance, delay, occlusion, cutoff and volume, plus
-the bus meters and the listener environment. Every item names what to hear, the knob if
-it is wrong, and what the overlay should show.
+The main session adds two keys in `SandboxInput` (it owns that file):
+
+```lua
+elseif input.KeyCode == Enum.KeyCode.N then AudioDebug.toggle()
+elseif input.KeyCode == Enum.KeyCode.M then AudioDebug.fireTestShot()
+```
+
+with `local AudioDebug = require(script.Parent.Parent.audio.AudioDebug)` at the top
+(M is free again: mute moved off it). The overlay lists every live voice with class,
+bus, distance, delay, occlusion, cutoff and volume, plus per-bus activity and the
+listener environment. The sound lane (B) plays through `SfxPlayer.play3D`, so it
+exercises the `Generic3D` class: distance curve, air, occlusion and delay, no
+reflections; the test shot (M) exercises `GunshotRemote` with reflections. Every item
+names what to hear, the knob if it is wrong, and what the overlay should show.
 
 1. **Sound lane, distance (key B on the listening pad).** Speakers at 25, 50, 100, 200
    and 400 studs each play a rifle shot, a bark and a boom. Hear: the shot arrives
@@ -616,10 +629,11 @@ it is wrong, and what the overlay should show.
    sideways until the wall clears the line and the sound opens up over a quarter second
    with no click. Knobs: `materials.Concrete.loss` and `.cutoff`, `OCCLUSION.attack` and
    `.release`. Overlay: occlusion 1.0 behind the wall, 0.0 beside it, moving smoothly.
-3. **Sound lane, reflections.** Stand on the pad; the yard's low walls and the material
-   walls are within reflection range. Hear: after each shot one or two short slaps from
-   the direction of the nearest walls, later than the shot; walk into the open middle
-   of the yard and they disappear. Knobs: `REFLECTIONS.range`, `.rays`, `.gain`,
+3. **Reflections (key M).** Stand near the material walls or the room and fire the test
+   shot; it lands 30 studs ahead of the camera. Hear: after the shot one or two short
+   slaps from the direction of the nearest walls, later than the shot, dull off wood and
+   bright off metal; walk into the open middle of the yard and they disappear. Knobs:
+   `REFLECTIONS.range`, `.gain`, `.minDelay`, `profiles.<p>.reflectionRays`,
    `materials.<m>.reflect`. Overlay: `Reflection` voices with their delay in ms, none in
    the open.
 4. **Interior room.** Walk into the concrete room; the seventh speaker inside plays last.
@@ -643,9 +657,9 @@ it is wrong, and what the overlay should show.
    gallery walkers) get quieter and duller with distance and are occluded by the room
    walls. Knobs: `classes.PlayerFootstep`, `TeammateFootstep`, `ZombieFootstep`.
 8. **Built-in simulation A/B.** Set `SfxConfig.ACOUSTIC_SIMULATION = true`, repeat
-   items 2 to 4. Hear: Roblox's own occlusion and reverb instead of ours; note which
-   reads better and whether the beta costs frames on the FPS counter. Overlay: the
-   occlusion column reads `engine`.
+   items 2 to 4. Hear: Roblox's own occlusion and reverb instead of ours (our slaps
+   stay); note which reads better and whether the beta costs frames on the FPS
+   counter. Overlay: the header reads `occlusion engine`.
 9. **Mix.** Fire a magazine next to the fire anchors of the diorama (hub) or with the
    siren patrols playing. Hear: ambience and music dip about 6 dB under fire and come
    back over half a second; UI clicks in the settings menu are never dipped; nothing

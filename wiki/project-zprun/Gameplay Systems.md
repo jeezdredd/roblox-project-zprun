@@ -394,7 +394,31 @@ Every `loadTrack` returns `nil` when the asset id is 0, and every consumer is ni
 
 `src/client/systems/UiSfx.luau` also watches the horde: its `Heartbeat` loop ducks the music whenever an aggro'd zombie is within `MUSIC_DUCK_RANGE`.
 
+With `SfxConfig.SPATIAL_AUDIO` on (2026-09-29) the growl is a `ZombieLoop` voice and the moans, barks and bites are `ZombieVocal` / `Bite` voices of the spatial audio engine, following the torso: they get the class curve (140 studs for vocals, 90 for the growl), air absorption, an occlusion ray, the doorway loss across an `AcousticSpace` boundary and the speed-of-sound delay; the walla is a 2D ambience bed. See [Spatial audio](#spatial-audio).
+
 ---
+
+## Spatial audio
+
+Files: `src/client/audio/` (`AudioMath`, `AudioBus`, `AudioEnvironment`, `AudioEngine`, `AudioReflections`, `AudioDebug`), config `src/shared/config/SpatialAudioConfig.luau`, tests `tests/audio/run.luau`, design and Studio test plan `docs/audio/spatial-audio.md`, weapon-side changes `docs/audio/weapons-integration.md`. Flag `SfxConfig.SPATIAL_AUDIO` (default on since branch `cloud/spatial-audio`); `SfxConfig.ACOUSTIC_SIMULATION` swaps the engine's own occlusion and reverb for Roblox's client-beta simulation.
+
+Every non-weapon sound is played through `AudioEngine.play({ key or id, class, position or follow, volume, pitch, delay, loop })`, which returns a handle (`stop(fade)`, `setVolume`, `setPitch`, `fade`, `setPosition`, `isPlaying`). A voice is `AudioPlayer -> AudioFilter (Lowpass12dB) -> AudioEmitter` for 3D, or the bus fader for 2D, from a fixed pool (48 desktop, 24 mobile; steals by priority, then by distance and age, class limits first). Per class (`SpatialAudioConfig.classes`): bus, audible range and hold radius, curve shape (`natural` inverse with taper, `power` for loud sources, `linear` for loops), air absorption strength, occlusion strength, reflections, priority, voice limit, speed-of-sound delay, duck send, jitter, and optional close / mid / far layer bands.
+
+What a 3D voice gets every update (near voices every frame, far every fourth; mobile every second and sixth):
+
+| Effect | Mechanism | Numbers |
+| --- | --- | --- |
+| Distance | `AudioEmitter:SetDistanceAttenuation` with the class curve, 13 points | e.g. `ZombieVocal` 140 studs, hold 8; `GunshotRemote` 1400, hold 24; `Explosion` 2600, hold 60 |
+| Air absorption | filter cutoff from ISO 9613-1 at 6x, 25 m knee, scaled by the class `air` | 22 kHz to 90 studs, 11.7 kHz at 107, 4.5 kHz at 180, 3.2 kHz at 250, 1.2 kHz floor |
+| Occlusion | one ray listener to source (two for gunshots and explosions), material table, smoothed (open 0.12 s, close 0.25 s) | stone -30 dB / 600 Hz, metal -26 / 900, wood -18 / 1500, glass -16 / 3000, soft -10 / 2500 |
+| Doorway | source and listener in different `AcousticSpace` zones | -9 dB, 2.5 kHz, 0.3 s glide |
+| Delay | `AudioPlayer:Play(SoundService:GetMixerTime() + distance / 1225)` on one-shots | 36 studs 29 ms, 154 studs 125 ms, 357 studs 292 ms |
+| Layers | equal-power crossfade of close / mid / far keys; a missing key falls back to the nearest one | `GunshotRemote` 0..60 / 40..350 / 250..1400 |
+| Reflections | a 6-ray fan (3 mobile) from gunshots and explosions, one `Reflection` voice per hit, delayed by the extra path, filtered by the surface, taps under 40 ms dropped, at most two indoors | range 140, gain 0.55, live cap 12 (6 mobile) |
+| Environment | listener zone, biome and phase pick `Hangar`, `Interior`, `Street`, `Forest` or `Open`; the bus reverb and slapback glide to the preset in 0.5 s | Street: decay 0.9 s, wet -20 dB, slap 85 ms; Interior: 1.4 s, -12 dB; Open: 0.3 s, -30 dB |
+| Mix | ambience and music duck under weapons and explosions through a sidechain compressor (threshold -24 dB, ratio 4, 5 ms / 600 ms); ui joins after it; master limiter -1 dB | settings drive the master and music faders through `MusicController` |
+
+The per-frame budget: 8 occlusion rays (4 mobile), no allocations, at most one filter and one volume write per updated voice. `AudioDebug.toggle()` (key N once the main session binds it in `SandboxInput`) lists every voice with its distance, delay, occlusion, cutoff and volume; `AudioDebug.fireTestShot()` (key M) plays a remote rifle shot with its reflection fan 30 studs ahead.
 
 ## Weapons
 
@@ -574,6 +598,8 @@ Other layers (2026-09-29):
 - `playDistantShot` for other players' fire more than 40 studs away, played as a 3D sound at the replicated origin at 80% volume with 30-400 stud rolloff; and `playGong` for range hits (the gong recording was rejected by moderation, so it is silent until replaced).
 
 To add a new acoustic space, create a part, set `AcousticSpace = "Interior"`, and parent it into the Workspace: no code change needed.
+
+The spatial audio engine reads the same zones (`AudioEnvironment.zoneAt`, with `HangarInteriorZone` mapped to the `Hangar` preset and any other zone to `Interior`); `docs/audio/weapons-integration.md` lists how `WeaponSfx` moves onto it, after which the `Weapons` SoundGroup and its `ReverbSoundEffect` go.
 
 ### Weapon VFX
 

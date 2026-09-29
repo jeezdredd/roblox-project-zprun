@@ -99,6 +99,19 @@ Related: [[Overview]], [[Roadmap]], [[Decisions]].
 | uncommitted (2026-09-29) | Audio: 32 CC0 recordings from The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey): gunshots from the AK-47, Walther PPQ, Benelli Nova and Carl Gustav M45, plus handling foley, uploaded via manifest -> `upload_assets.py` -> `refresh_status.py` -> `sync_configs.py` |
 | uncommitted (2026-09-29) | Test aids: temporary `WeaponsConfig.ALL_WEAPONS_UNLOCKED` flag (keys 1-4 pick from `WeaponsConfig.order`, Q returns to the previous weapon); `DistanceTracker` honours the `DevFreezeRun` workspace attribute in Studio; `_to_delete/` (git-ignored) holds files the session could not delete |
 
+## Spatial audio (branch `cloud/spatial-audio`, 2026-09-29)
+
+Cloud session work, not yet merged; the main session verifies it in Studio.
+
+| Commit | What landed |
+| --- | --- |
+| `1ce4fb5` | `docs/audio/spatial-audio.md`: research (audio API, acoustic-simulation beta, MW2019 / Battlefield / Hunt techniques, ISO 9613-1 absorption, rolloff laws, slapback timings, occlusion figures), the sound-consumer map, the bus graph, the per-class table, budgets, the flag, the migration plan and the Studio test plan |
+| `9b3ee93` | Engine under `src/client/audio/` (`AudioMath`, `AudioBus`, `AudioEnvironment`, `AudioEngine`, `AudioReflections`, `AudioDebug`), `SpatialAudioConfig`, `SfxConfig.SPATIAL_AUDIO` / `ACOUSTIC_SIMULATION`, `tests/audio/run.luau` (8 groups, `luau` CLI) |
+| `4496817` | `ZombieAudio`, `WorldSfx`, `PlayerSfx`, `CityAmbience`, `FootstepController`, `BreathingController`, `DeathController`, `UiSfx`, `MusicController` on the engine with the legacy path kept; `SfxPlayer.play2D` / `play3D` as thin wrappers; `AudioEngine.init()` in `init.client.luau` |
+| docs follow-up | `docs/audio/weapons-integration.md` (exact `WeaponSfx` changes, yard hooks, the recordings still needed with CC0 candidates), vault pages |
+
+Checks in the cloud container: `selene src/` clean against a std built from `@rbxts/types` (the dump host is blocked there; run `selene generate-roblox-std` locally), `python3 tools/validate_api.py` OK against a dump-shaped JSON from the same typings, `rojo build` OK with an empty `ServerPackages` (wally cannot reach GitHub there), `luau tests/audio/run.luau` passing.
+
 ## Open after 2026-09-29
 
 - The AK and pistol tactical cut points (`to` 0.55 and 0.76 in `ViewmodelPackConfig`) are estimates; check them frame by frame against the Reload clips.
@@ -109,6 +122,7 @@ Related: [[Overview]], [[Roadmap]], [[Decisions]].
 - Skinned zombies have no rise or feeding clips, so riser and feast formations spawn as ordinary idle zombies and corpse feeders in the death sequence stand still (the procedural chew needs `Waist` / `Neck` Motor6Ds the skinned rig does not have). The Hazmat has no death clip.
 - `WeaponsConfig.ALL_WEAPONS_UNLOCKED` must go back to false before shipping.
 - Gate: `rojo build` passes; `selene src/` was not run in the cloud session (no API dump there) and is still owed locally.
+- Spatial audio: needs the Studio test plan (`docs/audio/spatial-audio.md` section 6) run by the owner, the two `SandboxInput` keys (N overlay, M test shot), then `WeaponSfx` per `docs/audio/weapons-integration.md`; open calls (our rays vs the acoustic-simulation beta, duck depth, absorption exaggeration, mobile pool) are listed in the design doc section 8.
 
 ## Known gaps
 

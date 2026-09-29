@@ -128,7 +128,17 @@ All under `src/server/systems/`.
 
 ### Audio
 
-`MusicController.luau` owns the SoundGroup tree and the mute/duck/volume controls everything else routes through. `PlayerSfx.luau`, `FootstepController.luau`, `BreathingController.luau`, `WorldSfx.luau`, `CityAmbience.luau`, `ZombieAudio.luau` and `UiSfx.luau` are the per-domain layers; `SfxPlayer.luau` is the shared pooled playback helper; `DefaultSoundMuter.luau` silences Roblox's stock character sounds so the custom layer is the only one heard.
+`src/client/audio/` is the spatial audio engine (branch `cloud/spatial-audio`, 2026-09-29; design in `docs/audio/spatial-audio.md`), built on the Roblox audio API (`AudioPlayer`, `AudioEmitter`, `AudioListener`, `Wire`, the `Audio*` effects) behind `SfxConfig.SPATIAL_AUDIO`:
+
+- `AudioMath.luau` is the pure propagation math (attenuation curves, air-absorption cutoff, speed-of-sound delay, layer crossfades, occlusion smoothing, reflection timing), with no Roblox services so `luau tests/audio/run.luau` runs it outside Studio.
+- `AudioBus.luau` builds the bus graph once under `SoundService.TFZ_Audio`: one `AudioListener` per 3D bus (weapons, sfx, voices, ambience; interaction groups `TFZ_<bus>`), faders, environment reverb and street slapback on the weapons, sfx and voices buses, a shared duck group for ambience and music under a sidechain `AudioCompressor`, the ui bus after it, a master fader and `AudioLimiter` into one `AudioDeviceOutput`.
+- `AudioEnvironment.luau` resolves a position into `Hangar`, `Interior`, `Street`, `Forest` or `Open` from the `AcousticSpace` zones, the biome and the flow phase, holds the material table, and runs the occlusion raycasts inside a per-frame budget.
+- `AudioEngine.luau` owns the voice pool (48 desktop, 24 mobile; each voice is `AudioPlayer -> AudioFilter -> AudioEmitter` or the bus fader), the one play API (`AudioEngine.play(spec): Handle`), priorities and class limits, distance layers, and the per-frame propagation update (curve, absorption, occlusion, doorway loss, delay via `AudioPlayer:Play(mixerTime + delay)`).
+- `AudioReflections.luau` casts a ray fan from gunshots and explosions and plays delayed, filtered reflections from the hit points; `AudioDebug.luau` is the overlay and the yard test shot.
+
+Classes, environments, materials and platform budgets are data in `src/shared/config/SpatialAudioConfig.luau`.
+
+`MusicController.luau` still owns the legacy SoundGroup tree (which `WeaponSfx` plays through until the main session moves it) and mirrors every volume, mute and duck change onto the engine's buses. `PlayerSfx.luau`, `FootstepController.luau`, `BreathingController.luau`, `WorldSfx.luau`, `CityAmbience.luau`, `ZombieAudio.luau`, `DeathController.luau` and `UiSfx.luau` are the per-domain layers, each playing through the engine when the flag is on and through its old `Sound`s when it is off; `SfxPlayer.luau` is the shared helper whose `play2D` / `play3D` forward to the engine's `Generic2D` / `Generic3D` classes; `DefaultSoundMuter.luau` silences Roblox's stock character sounds so the custom layer is the only one heard.
 
 ### VFX and post
 
@@ -236,7 +246,7 @@ Two ordering facts matter. `ProfileManager` is first among the services because 
 
 `src/client/init.client.luau` blocks on `BootState.awaitReady(BootConfig.READY_TIMEOUT)` (8 seconds) and then initialises in a fixed order:
 
-1. Settings and audio foundation: `SettingsService`, `MusicController`, `FpsCounter`, `SettingsApply`, then `GoreController`, `DefaultSoundMuter`, `LightingDirector`, `CityAmbience`, `ZombieAudio`, `FlashlightController`, `FirstPersonController`.
+1. Settings and audio foundation: `SettingsService`, `AudioEngine` (the bus graph and voice pool, before anything plays), `MusicController`, `FpsCounter`, `SettingsApply`, then `GoreController`, `DefaultSoundMuter`, `LightingDirector`, `CityAmbience`, `ZombieAudio`, `FlashlightController`, `FirstPersonController`.
 2. Feel layer: `ExertionState` first, because `BodyMotionController`, `FootPlanting`, `CameraEffectsController`, `MotionVfx`, `WorldVfx`, `PostFx`, `PlayerSfx`, `WorldSfx`, `UiSfx`, `ZombieVfx`, `AnimationController`, `FootstepController` and `BreathingController` all read from it.
 3. Features: `GlanceController`, `FlowController`, `SquadController`, `DeathController`, `WeaponController`, `ShopGui`, `VendorInteraction`.
 4. HUD: `HudGui`, `RunHud`, `ForkHud`, then `GoreWarningGui.showOnce()` last so the content warning sits above everything already on screen (skipped in Studio while `DevConfig.SKIP_GORE_WARNING` is on).

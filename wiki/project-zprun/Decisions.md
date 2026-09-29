@@ -371,3 +371,38 @@ from real uploads, and nothing extracted from other games. See `docs/asset-polic
 **Reason.** It skips an Animation upload and moderation round per clip (the zombie route needs one per slot), and cuts, stretching and cross-fades are plain code. Roblox's importer drops unweighted bones and folds their transforms into the children, so baked local transforms would not match the imported rig; storing each bone's model-space change against its own rest pose does.
 
 **Consequence.** About 2.3 MB of clip data ships in `ReplicatedStorage.Shared`. The five `animation/weapon/*` manifest slots are unused. A pack with a broken shared skin (the Uzi) needs a solved skin fix before either its rig or its clips are usable, and the same fix file has to be used for both.
+
+## 2026-09-29: Spatial audio
+
+### The audio API, not Sound, for every propagated voice
+
+**Decision.** The spatial audio engine (`src/client/audio/`) plays through `AudioPlayer`, `AudioEmitter`, `AudioListener`, `Wire` and the `Audio*` effects. `Sound` and `SoundGroup` stay only on the legacy path behind `SfxConfig.SPATIAL_AUDIO` and under `WeaponSfx` until the main session moves it.
+
+**Reason.** Natural propagation needs things `Sound` cannot do per voice: a custom distance curve (`SetDistanceAttenuation`, up to 400 points), a low-pass that follows distance and occlusion (`AudioFilter`), a sample-accurate delayed start for the speed of sound (`Play(GetMixerTime() + delay)`), and a sidechain compressor and a limiter on the buses. Roblox marks `Sound` as the older set and the audio API as the one to build on.
+
+**Consequence.** Two mixes coexist until the weapons move: `MusicController` mirrors every volume, mute and duck change onto both trees. Scripts cannot set `SoundService.DefaultListenerLocation` (plugin security), so the engine makes its own listeners under the camera and keeps every emitter in a `TFZ_<bus>` interaction group, which also gives one listener per bus.
+
+### Our own rays and bus reverb, with the acoustic-simulation beta behind a switch
+
+**Decision.** Occlusion is a budgeted raycast per voice with a material table and attack / release smoothing; the environment is an id from the `AcousticSpace` zones, the biome and the phase, driving an `AudioReverb` and `AudioEcho` per bus; reflections are a ray fan that replays the shot from each hit point. `SfxConfig.ACOUSTIC_SIMULATION` turns Roblox's simulation on instead (emitter and listener flags, `SoundService.AcousticSimulationEnabled`) and the engine then skips its rays, doorway loss and bus reverb.
+
+**Reason.** The task rule prefers an engine feature only once it is out of beta, and the simulation is a client beta (DevForum threads 3634265 and 4307121); the public roadmap puts the `Sound` version in late 2026. A hand-rolled path also gives the MW2019 discrete slaps and per-class occlusion strength the beta does not expose.
+
+**Consequence.** The occlusion cost is bounded (8 rays a frame desktop, 4 mobile) and readable in the overlay; the beta is one flag away for an A/B in the yard, and if it wins, the material table and the environment presets stay useful for the reflections.
+
+### Per-class curves and an exaggerated air absorption
+
+**Decision.** Every sound class has its own range, hold radius, curve shape, absorption strength and occlusion strength (`SpatialAudioConfig.classes`). Air absorption is a single low-pass whose cutoff follows ISO 9613-1 at six times the physical figure past a 25 m knee, so shots stay bright to 25 m, soften to 4.5 kHz at 50 m and read as a thump at 3 kHz past 70 m.
+
+**Reason.** One rolloff for everything was the "muffled, as if indoors" complaint; real air removes 2 dB at 4 kHz over 70 m, which is inaudible in a map that is 56 m across at 200 studs, and Hunt: Showdown's "none, light, strong" bands and Wwise's and Unreal's distance low-pass all depart from physics for readability. The numbers and their sources are in `docs/audio/spatial-audio.md` section 1.4.
+
+**Consequence.** Tuning is per class in one table; the schedule is testable in `tests/audio/run.luau`, and the yard's sound lane plays it at 25 to 400 studs.
+
+### Many-to-one wiring only, and reflections reuse the shot
+
+**Decision.** No source pin in the bus graph feeds two wires: ambience and music sum into one duck group under one sidechain compressor, and the duck sidechain is a per-voice send from classes marked `duck`. Reflections play the event's own recording, pitched down 4 % and low-passed by the surface, until dedicated slap recordings exist.
+
+**Reason.** The audio guides document fan-in (several players through one effect); fan-out from one output pin is not documented, and a graph that depended on it would fail silently. The shot recording already contains the transient a slap needs, and the asset policy forbids inventing ids.
+
+**Consequence.** Ducking reacts to the voice's pre-spatialisation level, so a far remote shot ducks as much as a near one (weapons and explosions only, for at most 600 ms); `AudioAnalyzer` meters are not wired for the same reason and the overlay shows computed activity instead.
+

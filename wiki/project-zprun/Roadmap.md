@@ -36,7 +36,7 @@ Open items from the skinned-zombie and MW2019 weapon work, roughly in order:
 | Props and textures batch | In progress |
 | Moderation | All 32 Free Firearm Sound Library entries are `reviewing`; run `scripts/refresh_status.py`, then `sync_configs.py`, once they clear |
 | Skinned zombie gaps | No rise or feeding clips, so riser and feast formations spawn as idle zombies and corpse feeders stand still; the Hazmat has no death clip. Needs clips per skin |
-| Remaining MW spec items | Mech, punch and sub shot layers; reflection raycasts with slap delays; sidechain ducking and a master limiter; teammate distance layers; hit and kill markers; wall pull-back; the first raise |
+| Remaining MW spec items | Mech, punch and sub shot layers; hit and kill markers; wall pull-back; the first raise. Reflection raycasts with slap delays, sidechain ducking, the master limiter and teammate distance layers are built in the spatial audio engine on `cloud/spatial-audio`; the weapon side follows `docs/audio/weapons-integration.md` |
 | In-game credits | Every Sketchfab asset is CC BY 4.0 and the footsteps and the OpenGameArt shots are CC BY 3.0; `assets/LICENSES.md` says the credits belong in the settings panel before release |
 | Ship switches and gate | Set `WeaponsConfig.ALL_WEAPONS_UNLOCKED` back to false; run `selene src/` locally (it was not run in the cloud session); `rojo build` passes |
 | Shotgun pack | Stays the Saps-12: teenjust500's 870 has the same broken shared skin and no idle or walk clips; revisit if a clean pump pack turns up |

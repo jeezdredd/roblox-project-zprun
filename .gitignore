@@ -32,3 +32,6 @@ _to_delete/
 # local tool state
 .claude/settings.local.json
 __pycache__/
+
+# selene std generated locally (selene generate-roblox-std)
+roblox.yml

@@ -1,0 +1,226 @@
+{
+  "audio/weapons/pistol_mag_out": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_3.wav (0.780-1.220 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/pistol_mag_out.ogg",
+    "status": "pending",
+    "note": "Walther PPQ \"Detach mag\": mag catch click + mag sliding out of the grip; 403 ms, mono 44.1 kHz, peak -6.0 dBFS, main transient at 8 ms"
+  },
+  "audio/weapons/pistol_mag_in": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_2.wav (0.747-1.020 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/pistol_mag_in.ogg",
+    "status": "pending",
+    "note": "Walther PPQ \"Insert mag\": end of the slide-in + hard seat click; 273 ms, mono 44.1 kHz, peak -8.0 dBFS, main transient at 17 ms"
+  },
+  "audio/weapons/pistol_slide_back": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_6.wav (0.680-1.060 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/pistol_slide_back.ogg",
+    "status": "pending",
+    "note": "Walther PPQ \"Pull back slide\" (take 1); 249 ms, mono 44.1 kHz, peak -8.6 dBFS, main transient at 17 ms"
+  },
+  "audio/weapons/pistol_slide_release": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_16.wav (0.880-1.160 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/pistol_slide_release.ogg",
+    "status": "pending",
+    "note": "Walther PPQ \"Drop slide empty mag\": slide stop released, slide slams home; 260 ms, mono 44.1 kHz, peak -8.0 dBFS, main transient at 21 ms"
+  },
+  "audio/weapons/rifle_mag_out": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_11.wav (0.285-0.640 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/rifle_mag_out.ogg",
+    "status": "pending",
+    "note": "AK-47 \"Detach empty mag\": paddle release click + mag rocked out; 344 ms, mono 44.1 kHz, peak -6.0 dBFS, main transient at 4 ms"
+  },
+  "audio/weapons/rifle_mag_in": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_10.wav (0.288-0.520 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/rifle_mag_in.ogg",
+    "status": "pending",
+    "note": "AK-47 \"Insert empty mag\": last part of the rock-in + seat clack; 217 ms, mono 44.1 kHz, peak -6.9 dBFS, main transient at 5 ms"
+  },
+  "audio/weapons/rifle_bolt_back": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_12.wav (0.140-0.470 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/rifle_bolt_back.ogg",
+    "status": "pending",
+    "note": "AK-47 \"Pull slide empty mag\": charging handle pulled back (take 1); 263 ms, mono 44.1 kHz, peak -11.6 dBFS, main transient at 71 ms"
+  },
+  "audio/weapons/rifle_bolt_forward": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_13.wav (0.185-0.420 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/rifle_bolt_forward.ogg",
+    "status": "pending",
+    "note": "AK-47 \"Release slide empty mag\": charging handle released, bolt slams forward; 235 ms, mono 44.1 kHz, peak -10.2 dBFS, main transient at 32 ms"
+  },
+  "audio/weapons/shotgun_pump_back": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Benelli Nova master track O_0.wav (1.385-1.620 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/shotgun_pump_back.ogg",
+    "status": "pending",
+    "note": "Benelli Nova \"Open action empty mag\": pump racked back, last ~80 ms of travel + rear clack (take 1); 235 ms, mono 44.1 kHz, peak -7.9 dBFS, main transient at 80 ms"
+  },
+  "audio/weapons/shotgun_pump_forward": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Benelli Nova master track O_1.wav (1.515-1.760 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/shotgun_pump_forward.ogg",
+    "status": "pending",
+    "note": "Benelli Nova \"Close action empty mag\": pump driven forward, last ~75 ms of travel + lock clack; 245 ms, mono 44.1 kHz, peak -13.9 dBFS, main transient at 68 ms"
+  },
+  "audio/weapons/shotgun_shell_in": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Benelli Nova master track O_3.wav (1.525-1.980 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/shotgun_shell_in.ogg",
+    "status": "pending",
+    "note": "Benelli Nova \"Load mag\": one shell pushed past the carrier into the tube and latched (take 1, second half); 432 ms, mono 44.1 kHz, peak -9.0 dBFS, main transient at 3 ms"
+  },
+  "audio/weapons/smg_mag_out": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Carl Gustav M45 master track G_9.wav (0.425-0.760 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/smg_mag_out.ogg",
+    "status": "pending",
+    "note": "Carl Gustav M45 \"Detach empty mag\": catch press + mag pulled from well; 294 ms, mono 44.1 kHz, peak -6.3 dBFS, main transient at 3 ms"
+  },
+  "audio/weapons/smg_mag_in": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Carl Gustav M45 master track G_8.wav (0.505-0.700 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/smg_mag_in.ogg",
+    "status": "pending",
+    "note": "Carl Gustav M45 \"Insert empty mag\": end of the slide-in + seat click (take 1); 183 ms, mono 44.1 kHz, peak -6.0 dBFS, main transient at 8 ms"
+  },
+  "audio/weapons/smg_bolt": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Carl Gustav M45 master track G_10.wav (0.890-1.340 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/smg_bolt.ogg",
+    "status": "pending",
+    "note": "Carl Gustav M45 \"Lock back bolt empty mag\": bolt pulled back and caught on the sear (take 2); 382 ms, mono 44.1 kHz, peak -7.0 dBFS, main transient at 88 ms"
+  },
+  "audio/weapons/dryfire": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_7.wav (0.310-0.470 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/dryfire.ogg",
+    "status": "pending",
+    "note": "AK-47 \"Dry fire\": hammer falls on empty chamber; 142 ms, mono 44.1 kHz, peak -9.0 dBFS, main transient at 11 ms"
+  },
+  "audio/weapons/last_round": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_13.wav (0.985-1.062 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/last_round.ogg",
+    "status": "pending",
+    "note": "Walther PPQ \"Lock back slide empty mag\": the slide-lock clack only; 73 ms, mono 44.1 kHz, peak -7.4 dBFS, main transient at 9 ms"
+  },
+  "audio/weapons/low_ammo_click": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_15.wav (0.540-0.640 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 1.2 kHz 4th-order high-pass (keeps only the metallic tink), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/low_ammo_click.ogg",
+    "status": "pending",
+    "note": "AK-47 \"Load round into mag\": one cartridge snapping under the feed lips (metal spring tink), HPF 1.2 kHz; 95 ms, mono 44.1 kHz, peak -8.5 dBFS, main transient at 7 ms"
+  },
+  "audio/weapons/weapon_draw": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Carl Gustav M45 master track G_0.wav (0.465-0.700 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/weapon_draw.ogg",
+    "status": "pending",
+    "note": "Carl Gustav M45 \"Open stock\": stock snaps open, short metal rattle; 220 ms, mono 44.1 kHz, peak -6.1 dBFS, main transient at 10 ms"
+  },
+  "audio/weapons/weapon_holster": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Carl Gustav M45 master track G_1.wav (0.790-0.980 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/weapon_holster.ogg",
+    "status": "pending",
+    "note": "Carl Gustav M45 \"Close stock\": stock folds and latches; 166 ms, mono 44.1 kHz, peak -6.5 dBFS, main transient at 3 ms"
+  },
+  "audio/weapons/close_pistol": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_39.wav (1.400-1.900 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: stereo pair time-aligned (cross-correlation) and summed to mono, 28 Hz high-pass, cut 1 ms before the transient, tanh soft clip (+20 dB drive, at 192 kHz), resampled to 44.1 kHz (polyphase), cosine fade-out, peak-normalized to -1 dBFS, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_pistol.ogg",
+    "status": "pending",
+    "note": "Walther PPQ 9mm, near distance single shot, take 1 of 3; 494 ms, mono 44.1 kHz, peak -1.0 dBFS, main transient at 2 ms"
+  },
+  "audio/weapons/close_pistol_02": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_39.wav (6.435-6.935 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: stereo pair time-aligned (cross-correlation) and summed to mono, 28 Hz high-pass, cut 1 ms before the transient, tanh soft clip (+20 dB drive, at 192 kHz), resampled to 44.1 kHz (polyphase), cosine fade-out, peak-normalized to -1 dBFS, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_pistol_02.ogg",
+    "status": "pending",
+    "note": "Walther PPQ 9mm, near distance single shot, take 2 of 3; 491 ms, mono 44.1 kHz, peak -0.9 dBFS, main transient at 2 ms"
+  },
+  "audio/weapons/close_pistol_03": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_39.wav (10.652-11.152 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: stereo pair time-aligned (cross-correlation) and summed to mono, 28 Hz high-pass, cut 1 ms before the transient, tanh soft clip (+20 dB drive, at 192 kHz), resampled to 44.1 kHz (polyphase), cosine fade-out, peak-normalized to -1 dBFS, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_pistol_03.ogg",
+    "status": "pending",
+    "note": "Walther PPQ 9mm, near distance single shot, take 3 of 3; 492 ms, mono 44.1 kHz, peak -1.2 dBFS, main transient at 2 ms"
+  },
+  "audio/weapons/close_rifle": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_28.wav (1.080-1.640 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: stereo pair time-aligned (cross-correlation) and summed to mono, 28 Hz high-pass, cut 1 ms before the transient, tanh soft clip (+20 dB drive, at 192 kHz), resampled to 44.1 kHz (polyphase), cosine fade-out, peak-normalized to -1 dBFS, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_rifle.ogg",
+    "status": "pending",
+    "note": "AK-47 7.62x39, near distance single shot, take 1 of 5; 550 ms, mono 44.1 kHz, peak -1.0 dBFS, main transient at 2 ms"
+  },
+  "audio/weapons/close_rifle_02": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_28.wav (9.900-10.460 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: stereo pair time-aligned (cross-correlation) and summed to mono, 28 Hz high-pass, cut 1 ms before the transient, tanh soft clip (+20 dB drive, at 192 kHz), resampled to 44.1 kHz (polyphase), cosine fade-out, peak-normalized to -1 dBFS, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_rifle_02.ogg",
+    "status": "pending",
+    "note": "AK-47 7.62x39, near distance single shot, take 4 of 5; 547 ms, mono 44.1 kHz, peak -1.1 dBFS, main transient at 2 ms"
+  },
+  "audio/weapons/close_rifle_03": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_28.wav (7.140-7.700 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: stereo pair time-aligned (cross-correlation) and summed to mono, 28 Hz high-pass, cut 1 ms before the transient, tanh soft clip (+20 dB drive, at 192 kHz), resampled to 44.1 kHz (polyphase), cosine fade-out, peak-normalized to -1 dBFS, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_rifle_03.ogg",
+    "status": "pending",
+    "note": "AK-47 7.62x39, near distance single shot, take 3 of 5; 550 ms, mono 44.1 kHz, peak -0.8 dBFS, main transient at 2 ms"
+  },
+  "audio/weapons/close_shotgun": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Benelli Nova master track O_21.wav (1.680-2.340 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: stereo pair time-aligned (cross-correlation) and summed to mono, 28 Hz high-pass, cut 1 ms before the transient, tanh soft clip (+20 dB drive, at 192 kHz), resampled to 44.1 kHz (polyphase), cosine fade-out, peak-normalized to -1 dBFS, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_shotgun.ogg",
+    "status": "pending",
+    "note": "Benelli Nova 12ga, near distance single shot, take 1 of 2; 651 ms, mono 44.1 kHz, peak -1.1 dBFS, main transient at 2 ms"
+  },
+  "audio/weapons/close_shotgun_02": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Benelli Nova master track O_21.wav (17.530-18.190 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: stereo pair time-aligned (cross-correlation) and summed to mono, 28 Hz high-pass, cut 1 ms before the transient, tanh soft clip (+20 dB drive, at 192 kHz), resampled to 44.1 kHz (polyphase), cosine fade-out, peak-normalized to -1 dBFS, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_shotgun_02.ogg",
+    "status": "pending",
+    "note": "Benelli Nova 12ga, near distance single shot, take 2 of 2; 649 ms, mono 44.1 kHz, peak -1.2 dBFS, main transient at 2 ms"
+  },
+  "audio/weapons/close_shotgun_03": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Benelli Nova master track O_19.wav (1.195-1.855 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: stereo pair time-aligned (cross-correlation) and summed to mono, 28 Hz high-pass, cut 1 ms before the transient, tanh soft clip (+20 dB drive, at 192 kHz), resampled to 44.1 kHz (polyphase), cosine fade-out, peak-normalized to -1 dBFS, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_shotgun_03.ogg",
+    "status": "pending",
+    "note": "Benelli Nova 12ga, near distance single shot (second near track), take 1 of 2; 653 ms, mono 44.1 kHz, peak -0.8 dBFS, main transient at 3 ms"
+  },
+  "audio/weapons/close_smg": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Carl Gustav M45 master track G_25.wav (0.185-0.525 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: stereo pair time-aligned (cross-correlation) and summed to mono, 28 Hz high-pass, cut 1 ms before the transient, tanh soft clip (+20 dB drive, at 192 kHz), resampled to 44.1 kHz (polyphase), cosine fade-out, peak-normalized to -1 dBFS, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_smg.ogg",
+    "status": "pending",
+    "note": "Carl Gustav M45 9mm open bolt, near distance single shot incl. bolt catching on the sear ~80 ms later, take 1 of 3; 335 ms, mono 44.1 kHz, peak -1.1 dBFS, main transient at 1 ms"
+  },
+  "audio/weapons/close_smg_02": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Carl Gustav M45 master track G_31.wav (3.495-3.835 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: stereo pair time-aligned (cross-correlation) and summed to mono, 28 Hz high-pass, cut 1 ms before the transient, tanh soft clip (+20 dB drive, at 192 kHz), resampled to 44.1 kHz (polyphase), cosine fade-out, peak-normalized to -1 dBFS, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_smg_02.ogg",
+    "status": "pending",
+    "note": "Carl Gustav M45 9mm open bolt, near distance single shot incl. bolt catch, take 2 of 3 (second near track); 334 ms, mono 44.1 kHz, peak -1.0 dBFS, main transient at 2 ms"
+  },
+  "audio/weapons/close_smg_03": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Carl Gustav M45 master track G_25.wav (6.825-7.165 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: stereo pair time-aligned (cross-correlation) and summed to mono, 28 Hz high-pass, cut 1 ms before the transient, tanh soft clip (+20 dB drive, at 192 kHz), resampled to 44.1 kHz (polyphase), cosine fade-out, peak-normalized to -1 dBFS, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_smg_03.ogg",
+    "status": "pending",
+    "note": "Carl Gustav M45 9mm open bolt, near distance single shot incl. bolt catch, take 3 of 3; 334 ms, mono 44.1 kHz, peak -1.1 dBFS, main transient at 2 ms"
+  },
+  "audio/weapons/tail_open": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_31.wav (0.395-2.600 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: stereo pair aligned and summed to mono, 35 Hz high-pass, direct blast cut (starts ~60 ms after the shot), 12 ms fade-in, 900 ms cosine fade-out, resampled to 44.1 kHz, normalized to -25 LUFS momentary max (peak -6.4 dBFS), OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/tail_open.ogg",
+    "status": "pending",
+    "note": "AK-47 mid distance single shot: outdoor reflection/echo tail only, starting ~60 ms after the direct blast; 2205 ms, mono 44.1 kHz, peak -6.4 dBFS, main transient at 47 ms"
+  }
+}

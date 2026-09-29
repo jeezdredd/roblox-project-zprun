@@ -1,0 +1,260 @@
+{
+  "className": "Model",
+  "children": [
+    {
+      "className": "MeshPart",
+      "name": "Head",
+      "properties": {
+        "Size": [
+          0.7985,
+          0.9428,
+          0.866
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://133385134893189",
+        "TextureID": "rbxassetid://123411036223355"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "LowerTorso",
+      "properties": {
+        "Size": [
+          1.1455,
+          0.84,
+          0.969
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://80749319919910",
+        "TextureID": "rbxassetid://102376334298218"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "UpperTorso",
+      "properties": {
+        "Size": [
+          1.3855,
+          2.0155,
+          1.0078
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://101561252630533",
+        "TextureID": "rbxassetid://102376334298218"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftUpperArm",
+      "properties": {
+        "Size": [
+          0.5563,
+          1.3122,
+          0.6656
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://74380886753860",
+        "TextureID": "rbxassetid://129031685388804"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftLowerArm",
+      "properties": {
+        "Size": [
+          0.5549,
+          1.1821,
+          0.6508
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://85723264940749",
+        "TextureID": "rbxassetid://129031685388804"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftHand",
+      "properties": {
+        "Size": [
+          0.3972,
+          0.4756,
+          0.4996
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://98657256935084",
+        "TextureID": "rbxassetid://129031685388804"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightUpperArm",
+      "properties": {
+        "Size": [
+          0.5703,
+          1.3485,
+          0.6738
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://84130433501127",
+        "TextureID": "rbxassetid://95645269106570"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightLowerArm",
+      "properties": {
+        "Size": [
+          0.5689,
+          1.1049,
+          0.6503
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://112735815706535",
+        "TextureID": "rbxassetid://95645269106570"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightHand",
+      "properties": {
+        "Size": [
+          0.4094,
+          0.5695,
+          0.5041
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://77217611853490",
+        "TextureID": "rbxassetid://95645269106570"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftFoot",
+      "properties": {
+        "Size": [
+          0.4855,
+          0.649,
+          0.8995
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://131349290150427",
+        "TextureID": "rbxassetid://77285867318789"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftLowerLeg",
+      "properties": {
+        "Size": [
+          0.552,
+          1.4005,
+          0.6182
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://85423794306972",
+        "TextureID": "rbxassetid://77285867318789"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftUpperLeg",
+      "properties": {
+        "Size": [
+          0.6258,
+          2.071,
+          0.7002
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://91533094384739",
+        "TextureID": "rbxassetid://77285867318789"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightFoot",
+      "properties": {
+        "Size": [
+          0.4915,
+          0.5668,
+          0.9038
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://100408691108256",
+        "TextureID": "rbxassetid://71378250524248"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightLowerLeg",
+      "properties": {
+        "Size": [
+          0.5465,
+          1.3838,
+          0.6278
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://90043397383267",
+        "TextureID": "rbxassetid://71378250524248"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightUpperLeg",
+      "properties": {
+        "Size": [
+          0.7598,
+          2.3148,
+          0.7545
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://89710904920719",
+        "TextureID": "rbxassetid://71378250524248"
+      }
+    }
+  ]
+}

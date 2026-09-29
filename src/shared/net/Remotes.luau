@@ -20,6 +20,9 @@ Remotes.Event = table.freeze({
 	WeaponEquip = "WeaponEquip",
 	WeaponFire = "WeaponFire",
 	WeaponReload = "WeaponReload",
+	-- client -> server, no args: fire pressed during a shell reload. The shell in hand
+	-- is still counted, the loop stops and fire stays blocked for the fast exit.
+	WeaponReloadCancel = "WeaponReloadCancel",
 	WeaponHit = "WeaponHit",
 	ShopSync = "ShopSync",
 	PromptPurchase = "PromptPurchase",

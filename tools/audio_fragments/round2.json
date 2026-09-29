@@ -1,0 +1,93 @@
+{
+  "audio/weapons/casing_brass_01": {
+    "source": "BigSoundBank (Joseph Sardin), \"Cartridge case 9 mm on concrete #5\" (sound 1359, 48 kHz/24-bit mono FLAC original), https://bigsoundbank.com/s1359.html (0.050-0.470 s window), trimmed/normalized by tools: mono original, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/); BigSoundBank/LaSonotheque public-domain release, https://bigsoundbank.com/licenses.html",
+    "file": "assets/audio/weapons/casing_brass_01.ogg",
+    "status": "pending",
+    "note": "9 mm case on concrete (#5): bright ting + one bounce ~200 ms later; 407 ms, mono 44.1 kHz, peak -10.7 dBFS, L100 -28.1 LUFS, main transient at 4 ms"
+  },
+  "audio/weapons/casing_brass_02": {
+    "source": "BigSoundBank (Joseph Sardin), \"Cartridge case 7.62mm on concrete #3\" (sound 1369, 48 kHz/24-bit mono FLAC original), https://bigsoundbank.com/s1369.html (0.040-0.500 s window), trimmed/normalized by tools: mono original, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/); BigSoundBank/LaSonotheque public-domain release, https://bigsoundbank.com/licenses.html",
+    "file": "assets/audio/weapons/casing_brass_02.ogg",
+    "status": "pending",
+    "note": "7.62 mm case on concrete (#3): ting + bounce ~215 ms later + two tiny ticks, natural decay; 447 ms, mono 44.1 kHz, peak -18.0 dBFS, L100 -28.0 LUFS, main transient at 6 ms"
+  },
+  "audio/weapons/casing_brass_03": {
+    "source": "BigSoundBank (Joseph Sardin), \"Cartridge case 9 mm on concrete #1\" (sound 1355, 48 kHz/24-bit mono FLAC original), https://bigsoundbank.com/s1355.html (0.060-0.420 s window), trimmed/normalized by tools: mono original, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/); BigSoundBank/LaSonotheque public-domain release, https://bigsoundbank.com/licenses.html",
+    "file": "assets/audio/weapons/casing_brass_03.ogg",
+    "status": "pending",
+    "note": "9 mm case on concrete (#1): ting + two quick bounces (~130/235 ms), ring faded; 345 ms, mono 44.1 kHz, peak -14.5 dBFS, L100 -28.0 LUFS, main transient at 4 ms"
+  },
+  "audio/weapons/casing_shotgun_01": {
+    "source": "freesound \"Shotgun shell ejection.aif\" by JohnDelayniKIng (sound 147261; used shotgun shells dropped on a hard surface), https://freesound.org/people/JohnDelayniKIng/sounds/147261/, HQ Vorbis preview (original download needs a login) (20.130-20.590 s window), trimmed/normalized by tools: stereo preview aligned and summed to mono, 120 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/casing_shotgun_01.ogg",
+    "status": "pending",
+    "note": "empty 12 ga hull on a hard floor (drop 10): plastic thunk + bounce ~310 ms later; 432 ms, mono 44.1 kHz, peak -10.3 dBFS, L100 -28.1 LUFS, main transient at 10 ms; laptop-mic source with a little room decay, only the unclipped late drops of the take were used"
+  },
+  "audio/weapons/casing_shotgun_02": {
+    "source": "freesound \"Shotgun shell ejection.aif\" by JohnDelayniKIng (sound 147261; used shotgun shells dropped on a hard surface), https://freesound.org/people/JohnDelayniKIng/sounds/147261/, HQ Vorbis preview (original download needs a login) (18.170-18.520 s window), trimmed/normalized by tools: stereo preview aligned and summed to mono, 120 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/casing_shotgun_02.ogg",
+    "status": "pending",
+    "note": "empty 12 ga hull on a hard floor (drop 9): single thunk with short settle; 332 ms, mono 44.1 kHz, peak -10.6 dBFS, L100 -28.2 LUFS, main transient at 11 ms; laptop-mic source with a little room decay, only the unclipped late drops of the take were used"
+  },
+  "audio/weapons/mag_drop": {
+    "source": "freesound \"Drop mag 05.wav\" by GreenFireSound (sound 481071, pack \"Interact\", tags weapon/drop/magazine), https://freesound.org/people/GreenFireSound/sounds/481071/, HQ Vorbis preview (original download needs a login) (0.030-0.430 s window), trimmed/normalized by tools: dual-mono preview to mono, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/) - attribution required: \"Drop mag 05\" by GreenFireSound, https://freesound.org/s/481071/, modified (trimmed, filtered, normalized)",
+    "file": "assets/audio/weapons/mag_drop.ogg",
+    "status": "pending",
+    "note": "weapon magazine dropped on a hard floor: first impact + second clack ~150 ms later; 364 ms, mono 44.1 kHz, peak -9.9 dBFS, L100 -28.1 LUFS, main transient at 9 ms; CC BY: add the credit line to the game credits. Material (metal vs polymer mag) not stated by the uploader; no CC0 metal-mag ground drop was found"
+  },
+  "audio/foley/gear_rattle_01": {
+    "source": "freesound \"Metal rattling\" by dynamique (sound 617023; metal-on-metal rattle recorded for soldiers carrying metal weapons), https://freesound.org/people/dynamique/sounds/617023/, HQ Vorbis preview (original download needs a login) (3.030-3.290 s window), trimmed/normalized by tools: dual-mono preview to mono, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -31 LUFS (100 ms K-weighted max; 3 dB under the handling foley since it fires on every footstep) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/foley/gear_rattle_01.ogg",
+    "status": "pending",
+    "note": "kit metal rattle: one clink + two softer ticks; 242 ms, mono 44.1 kHz, peak -15.5 dBFS, L100 -31.1 LUFS, main transient at 4 ms"
+  },
+  "audio/foley/gear_rattle_02": {
+    "source": "freesound \"Metal rattling\" by dynamique (sound 617023; metal-on-metal rattle recorded for soldiers carrying metal weapons), https://freesound.org/people/dynamique/sounds/617023/, HQ Vorbis preview (original download needs a login) (4.985-5.260 s window), trimmed/normalized by tools: dual-mono preview to mono, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -31 LUFS (100 ms K-weighted max; 3 dB under the handling foley since it fires on every footstep) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/foley/gear_rattle_02.ogg",
+    "status": "pending",
+    "note": "kit metal rattle: firmer clink + two faint ticks; 258 ms, mono 44.1 kHz, peak -15.1 dBFS, L100 -31.1 LUFS, main transient at 4 ms"
+  },
+  "audio/foley/gear_rattle_03": {
+    "source": "freesound \"Metal rattling\" by dynamique (sound 617023; metal-on-metal rattle recorded for soldiers carrying metal weapons), https://freesound.org/people/dynamique/sounds/617023/, HQ Vorbis preview (original download needs a login) (21.090-21.370 s window), trimmed/normalized by tools: dual-mono preview to mono, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -31 LUFS (100 ms K-weighted max; 3 dB under the handling foley since it fires on every footstep) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/foley/gear_rattle_03.ogg",
+    "status": "pending",
+    "note": "kit metal rattle: double clink + late tick; 265 ms, mono 44.1 kHz, peak -13.7 dBFS, L100 -31.2 LUFS, main transient at 40 ms"
+  },
+  "audio/foley/gear_rattle_04": {
+    "source": "freesound \"AR15 M4 Gun Hardware Magazine Movement Sounds\" by jackthemurray (sound 393732), https://freesound.org/people/jackthemurray/sounds/393732/, HQ Vorbis preview (original download needs a login) (12.515-12.700 s window), trimmed/normalized by tools: stereo preview aligned and summed to mono, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -31 LUFS (100 ms K-weighted max; 3 dB under the handling foley since it fires on every footstep) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/foley/gear_rattle_04.ogg",
+    "status": "pending",
+    "note": "AR15 hardware rattle (sling/mag play) while moving the rifle: short 3-hit jingle; 161 ms, mono 44.1 kHz, peak -12.9 dBFS, L100 -31.1 LUFS, main transient at 30 ms"
+  },
+  "audio/weapons/tail_interior": {
+    "source": "freesound \"Small pistol gunshot indoors\" by acidsnowflake (sound 402789; 9 mm PAK pistol fired in a small room), https://freesound.org/people/acidsnowflake/sounds/402789/, HQ Vorbis preview (original download needs a login) (1.300-2.400 s window), trimmed/normalized by tools: dual-mono to mono, 35 Hz high-pass, direct blast cut (starts ~30 ms after the shot), 10 ms fade-in, 450 ms cosine fade-out, resampled to 44.1 kHz, normalized to -25 LUFS momentary max like tail_open, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/tail_interior.ogg",
+    "status": "pending",
+    "note": "small-room reverb tail of a pistol shot (RT60 ~0.9 s low / ~0.5 s at 8 kHz), starting ~30 ms after the direct blast; 1100 ms, mono 44.1 kHz, peak -8.0 dBFS, L100 -19.8 LUFS, main transient at 29 ms; small hard room, RT60 ~0.9 s at 250 Hz, ~0.5 s at 8 kHz; decays below -90 dB by ~1.05 s"
+  },
+  "audio/weapons/gunshot_sub_01": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_28.wav (near-distance single shots, 192 kHz/24-bit), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary (9.890-10.100 s window), trimmed/normalized by tools: stereo pair aligned and summed to mono, varispeed 16x slower (192 kHz master read at 12 kHz, 4 octaves down), 4th-order 110 Hz low-pass + 32 Hz high-pass, resampled to 44.1 kHz, 160 Hz low-pass, trimmed to <=1 ms before onset, 240 ms with 120 ms cosine fade-out, loudness-matched to -22 LUFS (100 ms K-weighted max, ~5 dB under close_rifle), OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/gunshot_sub_01.ogg",
+    "status": "pending",
+    "note": "AK-47 near shot (C_28 take 4) slowed 16x (4 octaves down), band-limited 32-110 Hz: ~58 Hz thump; 240 ms, mono 44.1 kHz, peak -5.6 dBFS, L100 -22.0 LUFS, main transient at 14 ms; derived from a real shot, not synthesized: a single shot only has a ~10 ms LF pulse, so the thump itself lasts ~60-100 ms (-30 dB at ~100 ms), the file runs 240 ms"
+  },
+  "audio/weapons/gunshot_sub_02": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_28.wav (near-distance single shots, 192 kHz/24-bit), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary (1.070-1.280 s window), trimmed/normalized by tools: stereo pair aligned and summed to mono, varispeed 12x slower (192 kHz master read at 16 kHz, ~3.6 octaves down), 4th-order 110 Hz low-pass + 32 Hz high-pass, resampled to 44.1 kHz, 160 Hz low-pass, trimmed to <=1 ms before onset, 240 ms with 120 ms cosine fade-out, loudness-matched to -22 LUFS (100 ms K-weighted max, ~5 dB under close_rifle), OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/gunshot_sub_02.ogg",
+    "status": "pending",
+    "note": "AK-47 near shot (C_28 take 1) slowed 12x (~3.6 octaves down), band-limited 32-110 Hz: ~65 Hz thump; 240 ms, mono 44.1 kHz, peak -5.4 dBFS, L100 -22.0 LUFS, main transient at 12 ms; derived from a real shot, not synthesized: a single shot only has a ~10 ms LF pulse, so the thump itself lasts ~60-100 ms (-30 dB at ~100 ms), the file runs 240 ms"
+  }
+}

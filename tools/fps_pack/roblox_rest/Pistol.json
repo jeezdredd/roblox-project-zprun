@@ -1,0 +1,110 @@
+{
+ "note": "Rest positions (RootPart space, studs) of arm bones as Roblox imported them, read in Studio 2026-09-29; gltf_anim.py bake --calibrate solves the file-bind to Roblox transform from these",
+ "bones": {
+  "DEF-upper_arm.L_054": [
+   -0.5178,
+   4.2013,
+   0.0708
+  ],
+  "DEF-upper_arm.L.001_055": [
+   -0.8076,
+   3.8931,
+   0.1218
+  ],
+  "DEF-forearm.L_056": [
+   -1.0973,
+   3.585,
+   0.1728
+  ],
+  "DEF-forearm.L.001_057": [
+   -1.3191,
+   3.4325,
+   -0.0485
+  ],
+  "DEF-hand.L_058": [
+   -1.5408,
+   3.2801,
+   -0.2698
+  ],
+  "DEF-f_index.01.L_060": [
+   -1.715,
+   3.1175,
+   -0.5087
+  ],
+  "DEF-thumb.01.L_063": [
+   -1.546,
+   3.1852,
+   -0.3916
+  ],
+  "DEF-shoulder.L_053": [
+   -0.0485,
+   4.2556,
+   -0.1813
+  ],
+  "DEF-upper_arm.R_084": [
+   0.5178,
+   4.2013,
+   0.0708
+  ],
+  "DEF-upper_arm.R.001_085": [
+   0.8076,
+   3.8931,
+   0.1218
+  ],
+  "DEF-forearm.R_086": [
+   1.0973,
+   3.585,
+   0.1728
+  ],
+  "DEF-forearm.R.001_087": [
+   1.3191,
+   3.4325,
+   -0.0485
+  ],
+  "DEF-hand.R_088": [
+   1.5408,
+   3.2801,
+   -0.2698
+  ],
+  "DEF-f_index.01.R_090": [
+   1.715,
+   3.1175,
+   -0.5087
+  ],
+  "DEF-thumb.01.R_093": [
+   1.546,
+   3.1852,
+   -0.3916
+  ],
+  "DEF-shoulder.R_083": [
+   0.0485,
+   4.2556,
+   -0.1813
+  ],
+  "Root_01": [
+   0,
+   0,
+   0
+  ],
+  "DEF_Cuerpo_02": [
+   0,
+   0,
+   0
+  ],
+  "DEF_Corredera_00": [
+   0,
+   0.0999,
+   0
+  ],
+  "DEF_Martillo_05": [
+   0,
+   0.0226,
+   0.2734
+  ],
+  "DEF_Cargador_07": [
+   0,
+   -0.1471,
+   0.2306
+  ]
+ }
+}

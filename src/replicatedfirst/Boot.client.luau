@@ -1,8 +1,10 @@
 --!strict
 
+local ContentProvider = game:GetService("ContentProvider")
 local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 
@@ -108,24 +110,138 @@ local function tween(instance: Instance, time: number, goals: { [string]: any })
 	TweenService:Create(instance, TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), goals):Play()
 end
 
+-- Everything visual the first run needs: the mesh templates and their textures in
+-- ReplicatedStorage, and every texture and mesh id in AssetIds (world props, PBR sets).
+-- Without this the textures arrive while the player is already running and visibly
+-- sharpen from a blurry first mip.
+local PRELOAD_FOLDERS = { "ViewModels", "ViewModelArms", "ZombieMeshes" }
+local PRELOAD_BRANCHES = { "texture", "mesh" }
+
+-- Returns what to hand PreloadAsync and how many assets that should come to. The asset
+-- folders go in as instances: SurfaceAppearance maps cannot be read from a game script
+-- (reading ColorMap needs the Plugin capability), but PreloadAsync fetches everything an
+-- instance references, so the folders load in full without reading them.
+local function collectContent(): ({ any }, number)
+	local seen: { [string]: boolean } = {}
+	local list: { any } = {}
+	local expected = 0
+	local function add(content: string?)
+		if content and content ~= "" and content ~= "rbxassetid://0" and not seen[content] then
+			seen[content] = true
+			table.insert(list, content)
+			expected += 1
+		end
+	end
+	for _, folderName in PRELOAD_FOLDERS do
+		local folder = ReplicatedStorage:FindFirstChild(folderName)
+		if folder then
+			table.insert(list, folder)
+			for _, item in folder:GetDescendants() do
+				if item:IsA("MeshPart") then
+					expected += if item.TextureID ~= "" then 2 else 1
+				elseif item:IsA("SurfaceAppearance") then
+					expected += 3
+				elseif item:IsA("Decal") then
+					expected += 1
+				end
+			end
+		end
+	end
+	local shared = ReplicatedStorage:FindFirstChild("Shared")
+	local config = shared and shared:FindFirstChild("config")
+	local module = config and config:FindFirstChild("AssetIds")
+	if module and module:IsA("ModuleScript") then
+		local ok, ids = pcall(require, module)
+		if ok and type(ids) == "table" then
+			local function walk(node: any)
+				if type(node) == "number" then
+					if node > 0 then
+						add("rbxassetid://" .. tostring(node))
+					end
+				elseif type(node) == "table" then
+					for _, child in node do
+						walk(child)
+					end
+				end
+			end
+			for _, branch in PRELOAD_BRANCHES do
+				walk((ids :: any)[branch])
+			end
+		end
+	end
+	return list, expected
+end
+
+type PreloadProgress = { total: number, loaded: number, done: boolean }
+
+-- Starts the preload in the background; the returned table fills in as assets arrive.
+local function startPreload(): PreloadProgress
+	local progress: PreloadProgress = { total = 0, loaded = 0, done = false }
+	task.spawn(function()
+		-- whatever goes wrong, the boot must not wait on a preload that died
+		local ok, err = pcall(function()
+			local list, expected = collectContent()
+			progress.total = math.max(expected, 1)
+			ContentProvider:PreloadAsync(list, function()
+				progress.loaded = math.min(progress.loaded + 1, progress.total)
+			end)
+		end)
+		if not ok then
+			warn("[TaskForceZ][Boot] preload failed: " .. tostring(err))
+		end
+		progress.done = true
+	end)
+	return progress
+end
+
+-- Share of the bar each phase fills: uplink, assets (driven by the real preload count),
+-- priming, deploying. The asset phase is the only one that waits on anything, and it
+-- shows its count so a slow first load reads as progress rather than a hang.
+local BAR_SPLIT = { 0.08, 0.8, 0.06, 0.06 }
+
 local function runLoadingPhase(gui: BootGui)
 	local steps = BootConfig.LOADING_STEPS
-	local count = #steps
 	local startClock = os.clock()
 
+	local function setBar(fraction: number, time: number?)
+		tween(gui.barFill, time or 0.15, { Size = UDim2.fromScale(math.clamp(fraction, 0, 1), 1) })
+	end
+
+	gui.statusLabel.Text = string.upper(steps[1] or "")
+	setBar(BAR_SPLIT[1], BootConfig.STEP_DURATION)
 	if not game:IsLoaded() then
 		local deadline = os.clock() + BootConfig.LOADED_WAIT_DEADLINE
 		while not game:IsLoaded() and os.clock() < deadline do
 			task.wait()
 		end
 	end
+	task.wait(BootConfig.STEP_DURATION)
 
-	for index, label in steps do
+	local progress = startPreload()
+	local assetLabel = string.upper(steps[2] or "")
+	local preloadDeadline = os.clock() + BootConfig.PRELOAD_DEADLINE
+	local hintAt = os.clock() + BootConfig.SKIP_HINT_AFTER
+	while not progress.done and not skipRequested and os.clock() < preloadDeadline do
+		local fraction = if progress.total > 0 then progress.loaded / progress.total else 0
+		local text = if progress.total > 0
+			then string.format("%s  %d / %d", assetLabel, progress.loaded, progress.total)
+			else assetLabel
+		if os.clock() > hintAt then
+			text ..= "   ·   SPACE TO SKIP"
+		end
+		gui.statusLabel.Text = text
+		setBar(BAR_SPLIT[1] + BAR_SPLIT[2] * fraction)
+		task.wait(0.1)
+	end
+
+	local reached = BAR_SPLIT[1] + BAR_SPLIT[2]
+	for index = 3, #steps do
 		if skipRequested then
 			break
 		end
-		gui.statusLabel.Text = string.upper(label)
-		tween(gui.barFill, BootConfig.STEP_DURATION, { Size = UDim2.fromScale(index / count, 1) })
+		reached += BAR_SPLIT[index] or 0
+		gui.statusLabel.Text = string.upper(steps[index])
+		setBar(reached, BootConfig.STEP_DURATION)
 		task.wait(BootConfig.STEP_DURATION)
 	end
 

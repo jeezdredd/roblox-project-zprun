@@ -23,17 +23,58 @@ local WeaponController = {}
 
 local player = Players.LocalPlayer
 
+-- Client-side reload, run on the same WeaponsConfig timeline as the server so the
+-- predicted count changes when the hands seat the magazine (or each shell), not a
+-- round trip later. The server runs its own copy of this and stays authoritative.
+type ReloadState = {
+	weaponId: string,
+	style: string,
+	startedAt: number,
+	empty: boolean,
+	scale: number,
+	endsAt: number,
+	-- magazine
+	ammoAddAt: number,
+	ammoAdded: boolean,
+	fill: number,
+	-- shell: shells planned, counted so far, and the most that will go in (fewer once
+	-- fire has cancelled the loop)
+	planned: number,
+	loaded: number,
+	limit: number,
+	cancelled: boolean,
+}
+
+-- A higher AmmoMag than predicted within this long of a shot or a reload end is an
+-- older update still in flight, not news. Past it the server's number wins.
+local ACK_WINDOW = 0.75
+
 local triggerHeld = false
+local dryClickedThisPress = false
 local lastShotAt = 0
-local lastDryfireAt = 0
 local predictedMag = 0
-local localReloadUntil = 0
+local reloadState: ReloadState? = nil
+local lastReloadEndedAt = 0
+-- a shot pressed during a shell reload fires once the fast exit is over
+local pendingShot = false
 local burstShots = 0
 local lastBurstAt = 0
 local tracerCounter = 0
+local lastWeaponId: string? = nil
+local previousWeaponId: string? = nil
+-- the Studio "empty" debug command fakes an empty mag; keep reconcile off it for a bit
+local holdPredictionUntil = 0
 
 local ammoLabel: TextLabel? = nil
 local weaponLabel: TextLabel? = nil
+
+local NUMBER_KEYS: { [Enum.KeyCode]: number } = {
+	[Enum.KeyCode.One] = 1,
+	[Enum.KeyCode.Two] = 2,
+	[Enum.KeyCode.Three] = 3,
+	[Enum.KeyCode.Four] = 4,
+	[Enum.KeyCode.Five] = 5,
+}
 
 local function currentConfig(): WeaponsConfig.WeaponConfig?
 	local weaponId = player:GetAttribute("WeaponId")
@@ -49,32 +90,136 @@ local function isAlive(): boolean
 	return humanoid ~= nil and humanoid.Health > 0
 end
 
-local function canFire(): boolean
-	if CursorMode.isAnyOpen() then
-		return false
-	end
-	if not isAlive() then
-		return false
-	end
-	if player:GetAttribute("Reloading") == true or os.clock() < localReloadUntil then
-		return false
-	end
-	return true
+local function canAct(): boolean
+	return not CursorMode.isAnyOpen() and isAlive()
 end
 
-local function tryFire()
+-- SkillEffects.reloadScale, replicated by the server so the client timeline matches.
+local function reloadScale(): number
+	local scale = player:GetAttribute("ReloadScale")
+	return if typeof(scale) == "number" and scale > 0 then scale else 1
+end
+
+local function reserveCount(): number
+	local reserve = player:GetAttribute("AmmoReserve")
+	return if typeof(reserve) == "number" then reserve else 0
+end
+
+local function carrierVelocity(): Vector3
+	local character = player.Character
+	local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
+	if root and root:IsA("BasePart") then
+		return root.AssemblyLinearVelocity
+	end
+	return Vector3.zero
+end
+
+local function ejectCasing(config: WeaponsConfig.WeaponConfig)
+	WeaponVfx.ejectCasing(Viewmodel.getEjectAttachment(), config.casing, carrierVelocity())
+end
+
+local function finishReload()
+	reloadState = nil
+	lastReloadEndedAt = os.clock()
+end
+
+-- Counts what the reload has seated by `now` and ends it when its time is up.
+local function advanceReload(now: number)
+	local reload = reloadState
+	if not reload then
+		return
+	end
+	local config = WeaponsConfig.get(reload.weaponId)
+	if not config then
+		finishReload()
+		return
+	end
+	if reload.style == "shell" then
+		while reload.loaded < reload.limit do
+			if now < reload.startedAt + WeaponsConfig.shellAddTime(config, reload.loaded + 1, reload.scale) then
+				break
+			end
+			reload.loaded += 1
+			predictedMag = math.min(predictedMag + 1, config.magSize)
+		end
+	elseif not reload.ammoAdded and now >= reload.ammoAddAt then
+		reload.ammoAdded = true
+		predictedMag = reload.fill
+	end
+	if now >= reload.endsAt then
+		finishReload()
+	end
+end
+
+-- Fire pressed during a shell reload: the shell in the hand still goes in, then a fast
+-- exit (plus the pump if nothing is chambered) and the buffered shot. Returns
+-- "cancelled", "late" when the loop is already over (ReloadToIdle playing), or "empty"
+-- when stopping now would leave nothing to fire.
+local function cancelShellReload(config: WeaponsConfig.WeaponConfig, reload: ReloadState, now: number): string
+	local shell = config.shellReload
+	if not shell then
+		return "late"
+	end
+	local limit, readyAfter = WeaponsConfig.shellCancel(config, now - reload.startedAt, reload.planned, reload.empty, reload.scale)
+	limit = math.clamp(limit, reload.loaded, reload.limit)
+	local readyAt = reload.startedAt + readyAfter
+	if readyAt >= reload.endsAt then
+		return "late"
+	end
+	if predictedMag + (limit - reload.loaded) <= 0 then
+		return "empty"
+	end
+	local finishShell = limit > reload.loaded
+	reload.cancelled = true
+	reload.limit = limit
+	reload.endsAt = readyAt
+	Remotes.getEvent(Remotes.Event.WeaponReloadCancel):FireServer()
+	Viewmodel.cancelReload({
+		exit = shell.exit * reload.scale,
+		chamber = if reload.empty then shell.chamber * reload.scale else nil,
+		finishShell = finishShell,
+	})
+	return "cancelled"
+end
+
+-- `pressed` is a fresh trigger press (not the auto-fire repeat): it can cancel a shell
+-- reload and it arms the one dry click per press.
+local function tryFire(pressed: boolean)
 	local config = currentConfig()
-	if not config or not canFire() then
+	if not config or not canAct() then
 		return
 	end
 	local now = os.clock()
+	if Viewmodel.drawElapsed() < config.drawTime then
+		return
+	end
+
+	local reload = reloadState
+	if reload then
+		local sameWeapon = reload.weaponId == config.id
+		if sameWeapon and reload.style == "shell" then
+			if pressed then
+				local result = if reload.cancelled then "cancelled" else cancelShellReload(config, reload, now)
+				if result ~= "empty" then
+					pendingShot = true
+				end
+			end
+			return
+		elseif sameWeapon and not reload.ammoAdded then
+			-- before ammo-add nothing fires and the old count stands
+			return
+		end
+		-- another weapon's reload, or the magazine is seated: the shot cuts the rest
+		finishReload()
+	end
+
 	if now - lastShotAt < 1 / config.fireRate then
 		return
 	end
 
 	if predictedMag <= 0 then
-		if now - lastDryfireAt > 0.28 then
-			lastDryfireAt = now
+		if not dryClickedThisPress then
+			dryClickedThisPress = true
 			WeaponSfx.playDryfire()
 		end
 		return
@@ -90,27 +235,77 @@ local function tryFire()
 
 	Remotes.getEvent(Remotes.Event.WeaponFire):FireServer(origin, direction)
 
-	WeaponSfx.playShot(config.id)
+	WeaponSfx.playShot(config.id, predictedMag)
 	Viewmodel.onFired(config)
 	WeaponVfx.muzzleFlash(Viewmodel.getMuzzleAttachment(), config.id)
-	WeaponVfx.shellEject(Viewmodel.getEjectAttachment())
+	-- the pump ejects its hull on the pump stroke instead (see the phase listener)
+	if config.ejectOnFire then
+		ejectCasing(config)
+	end
 end
 
 local function tryReload()
 	local config = currentConfig()
-	if not config or not canFire() then
+	if not config or not canAct() or reloadState then
 		return
 	end
-	local reserve = player:GetAttribute("AmmoReserve")
-	if predictedMag >= config.magSize then
+	local now = os.clock()
+	if Viewmodel.drawElapsed() < config.drawTime then
 		return
 	end
-	if typeof(reserve) == "number" and reserve <= 0 then
+	-- the action is still cycling (the pump after a shot): let it close first
+	if now - lastShotAt < 1 / config.fireRate then
 		return
 	end
-	localReloadUntil = os.clock() + config.reloadTime
+	local reserve = reserveCount()
+	if predictedMag >= config.magSize or reserve <= 0 then
+		return
+	end
+
+	local scale = reloadScale()
+	local empty = predictedMag <= 0
+	local reload: ReloadState = {
+		weaponId = config.id,
+		style = "magazine",
+		startedAt = now,
+		empty = empty,
+		scale = scale,
+		endsAt = now,
+		ammoAddAt = now,
+		ammoAdded = false,
+		fill = math.min(config.magSize, predictedMag + reserve),
+		planned = 0,
+		loaded = 0,
+		limit = 0,
+		cancelled = false,
+	}
+	if config.reloadStyle == "shell" and config.shellReload then
+		local shells = math.min(config.magSize - predictedMag, reserve)
+		reload.style = "shell"
+		reload.planned = shells
+		reload.limit = shells
+		reload.endsAt = now + WeaponsConfig.shellReloadTime(config, shells, empty, scale)
+	else
+		local ammoAdd, total = WeaponsConfig.magazineReload(config, empty, scale)
+		reload.ammoAddAt = now + ammoAdd
+		reload.endsAt = now + total
+	end
+	reloadState = reload
+	pendingShot = false
+
 	Remotes.getEvent(Remotes.Event.WeaponReload):FireServer()
-	Viewmodel.playReload(config.reloadTime, predictedMag <= 0)
+	Viewmodel.playReload({ config = config, empty = empty, shells = reload.planned, scale = scale })
+end
+
+local function requestEquip(weaponId: string)
+	if player:GetAttribute("WeaponId") == weaponId then
+		return
+	end
+	local current = currentConfig()
+	if current then
+		WeaponSfx.playPhase("Holster", current.class)
+	end
+	Remotes.getEvent(Remotes.Event.WeaponEquip):FireServer(weaponId)
 end
 
 local function equipSlot(slot: number)
@@ -118,7 +313,33 @@ local function equipSlot(slot: number)
 	if typeof(weaponId) ~= "string" or weaponId == "" then
 		return
 	end
-	Remotes.getEvent(Remotes.Event.WeaponEquip):FireServer(weaponId)
+	requestEquip(weaponId)
+end
+
+-- Number keys: loadout slots 1 and 2 normally. With the temporary
+-- WeaponsConfig.ALL_WEAPONS_UNLOCKED test flag, key N takes WeaponsConfig.order[N]
+-- whether it is owned or not (keys past the list do nothing).
+local function selectNumber(index: number)
+	if WeaponsConfig.ALL_WEAPONS_UNLOCKED then
+		local weaponId = WeaponsConfig.order[index]
+		if weaponId then
+			requestEquip(weaponId)
+		end
+	elseif index <= 2 then
+		equipSlot(index)
+	end
+end
+
+-- Q: back to the previous weapon when testing with every weapon unlocked, otherwise
+-- the loadout slot toggle.
+local function quickSwap()
+	local previous = previousWeaponId
+	if WeaponsConfig.ALL_WEAPONS_UNLOCKED and previous then
+		requestEquip(previous)
+		return
+	end
+	local current = player:GetAttribute("WeaponId")
+	equipSlot(if current == player:GetAttribute("LoadoutSlot1") then 2 else 1)
 end
 
 local function buildHud()
@@ -172,9 +393,26 @@ local function buildHud()
 	HipAim.bindCrosshair(crosshair)
 end
 
-local function syncPredictedAmmo()
+-- The server only lowers AmmoMag on a shot, so a lower value than predicted is news
+-- (a shot it rejected, a reload it refused). A higher one right after a shot is usually
+-- an older update still in flight; reconcileAmmo takes it once things are quiet. While
+-- a local reload runs the prediction owns the count.
+local function syncPredictedAmmo(force: boolean?)
 	local mag = player:GetAttribute("AmmoMag")
-	if typeof(mag) == "number" then
+	if typeof(mag) ~= "number" then
+		return
+	end
+	if force or (reloadState == nil and mag < predictedMag) then
+		predictedMag = mag
+	end
+end
+
+local function reconcileAmmo(now: number)
+	if reloadState or now < holdPredictionUntil or now - lastShotAt < ACK_WINDOW or now - lastReloadEndedAt < ACK_WINDOW then
+		return
+	end
+	local mag = player:GetAttribute("AmmoMag")
+	if typeof(mag) == "number" and mag ~= predictedMag then
 		predictedMag = mag
 	end
 end
@@ -185,9 +423,12 @@ local function refreshHud()
 	local label = ammoLabel
 	if label then
 		if typeof(mag) == "number" and typeof(reserve) == "number" then
+			local config = currentConfig()
+			local low = config ~= nil and mag <= config.lowAmmo
 			label.Text = string.format("%d / %d", mag, reserve)
 			label.TextColor3 = if mag == 0
 				then Color3.fromRGB(220, 90, 80)
+				elseif low then Color3.fromRGB(232, 176, 84)
 				else Color3.fromRGB(224, 224, 216)
 		else
 			label.Text = ""
@@ -236,12 +477,21 @@ end
 
 local function onWeaponChanged()
 	local weaponId = player:GetAttribute("WeaponId")
+	-- a swap cancels the reload (the server keeps whatever it had counted) and any
+	-- buffered shot; reset before setWeapon, which can yield while the rig loads
+	reloadState = nil
+	pendingShot = false
+	lastShotAt = 0
+	lastReloadEndedAt = 0
+	syncPredictedAmmo(true)
+	refreshHud()
 	if typeof(weaponId) == "string" then
+		if lastWeaponId and lastWeaponId ~= weaponId then
+			previousWeaponId = lastWeaponId
+		end
+		lastWeaponId = weaponId
 		Viewmodel.setWeapon(weaponId)
 	end
-	localReloadUntil = 0
-	syncPredictedAmmo()
-	refreshHud()
 end
 
 local function onWeaponHit(kind: string, ...: any)
@@ -295,13 +545,15 @@ local function installDebugHook()
 	bindable.Parent = ReplicatedStorage
 	bindable.Event:Connect(function(command: string)
 		if command == "fire" then
-			tryFire()
+			dryClickedThisPress = false
+			tryFire(true)
 		elseif command == "reload" then
 			tryReload()
 		elseif command == "inspect" then
 			Viewmodel.toggleInspect()
 		elseif command == "empty" then
 			predictedMag = 0
+			holdPredictionUntil = os.clock() + 5
 		elseif command == "clearmodals" then
 			for _, id in { "GoreWarning", "Shop", "Settings", "SquadLobby", "DeathResults" } do
 				CursorMode.setModalOpen(id, false)
@@ -313,20 +565,35 @@ local function installDebugHook()
 		elseif command == "unfreeze" then
 			RunController.start(true)
 		elseif command == "state" then
+			local reload = reloadState
 			print(string.format(
-				"[DebugWeapon] modalOpen=%s alive=%s reloading=%s predictedMag=%d weapon=%s",
+				"[DebugWeapon] modalOpen=%s alive=%s reloading=%s local=%s predictedMag=%d weapon=%s",
 				tostring(CursorMode.isAnyOpen()),
 				tostring(isAlive()),
 				tostring(player:GetAttribute("Reloading")),
+				if reload then reload.style else "none",
 				predictedMag,
 				tostring(player:GetAttribute("WeaponId"))))
 		end
 	end)
 end
 
+-- Clip markers: reload foley, and the pump's hull. BoltBack tagged "fire" is the pump
+-- stroke after a shot; the chambering pump after a reload ("chamber") ejects nothing.
+local function onPhase(phase: string, class: string, tag: string?)
+	WeaponSfx.playPhase(phase, class, tag)
+	if phase == "BoltBack" and tag == "fire" then
+		local config = currentConfig()
+		if config and config.class == class and not config.ejectOnFire then
+			ejectCasing(config)
+		end
+	end
+end
+
 function WeaponController.init()
 	Viewmodel.init()
-	Viewmodel.onPhase(WeaponSfx.playPhase)
+	Viewmodel.onPhase(onPhase)
+	WeaponVfx.onCasingLanded(WeaponSfx.playCasingLand)
 	buildHud()
 	installDebugHook()
 	task.spawn(WeaponSfx.preload)
@@ -335,20 +602,21 @@ function WeaponController.init()
 		if processed then
 			return
 		end
+		local slot = NUMBER_KEYS[input.KeyCode]
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			triggerHeld = true
-			tryFire()
+			dryClickedThisPress = false
+			tryFire(true)
 		elseif input.KeyCode == Enum.KeyCode.R then
 			tryReload()
-		elseif input.KeyCode == Enum.KeyCode.One then
-			equipSlot(1)
-		elseif input.KeyCode == Enum.KeyCode.Two then
-			equipSlot(2)
+		elseif slot then
+			selectNumber(slot)
 		elseif input.KeyCode == Enum.KeyCode.Q then
-			local current = player:GetAttribute("WeaponId")
-			equipSlot(if current == player:GetAttribute("LoadoutSlot1") then 2 else 1)
+			quickSwap()
 		elseif input.KeyCode == Enum.KeyCode.F then
-			Viewmodel.toggleInspect()
+			if not reloadState then
+				Viewmodel.toggleInspect()
+			end
 		end
 	end)
 	UserInputService.InputEnded:Connect(function(input)
@@ -358,10 +626,17 @@ function WeaponController.init()
 	end)
 
 	RunService.Heartbeat:Connect(function()
+		local now = os.clock()
+		advanceReload(now)
+		reconcileAmmo(now)
+		if pendingShot and not reloadState then
+			pendingShot = false
+			tryFire(false)
+		end
 		if triggerHeld then
 			local config = currentConfig()
 			if config and config.auto then
-				tryFire()
+				tryFire(false)
 			end
 			return
 		end
@@ -381,11 +656,6 @@ function WeaponController.init()
 		refreshHud()
 	end)
 	player:GetAttributeChangedSignal("AmmoReserve"):Connect(refreshHud)
-	player:GetAttributeChangedSignal("Reloading"):Connect(function()
-		if player:GetAttribute("Reloading") ~= true then
-			localReloadUntil = 0
-		end
-	end)
 
 	Remotes.getEvent(Remotes.Event.WeaponHit).OnClientEvent:Connect(onWeaponHit)
 	Remotes.getEvent(Remotes.Event.AmmoPickup).OnClientEvent:Connect(function(rounds, position)

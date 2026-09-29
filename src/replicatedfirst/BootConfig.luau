@@ -10,6 +10,12 @@ local BootConfig = {
 	LOADING_STEPS = { "Establishing uplink", "Loading assets", "Priming systems", "Deploying" },
 	STEP_DURATION = 0.35,
 	LOADED_WAIT_DEADLINE = 6,
+	-- textures and meshes fetched during the boot screen, so the first run does not start
+	-- with low-resolution textures sharpening as the player moves; the boot never waits
+	-- longer than this for them
+	PRELOAD_DEADLINE = 15,
+	-- seconds into the asset phase before the skip key is shown
+	SKIP_HINT_AFTER = 3,
 
 	INTRO_TITLE_TIME = 0.8,
 	INTRO_LINE_TIME = 0.5,

@@ -48,8 +48,10 @@ local function newRun(): RunState
 	}
 end
 
+-- Studio only: DevConfig.FREEZE_RUN, or the DevFreezeRun workspace attribute set from the
+-- server command bar while testing (the client's freeze debug command cannot reach here).
 local function freezeHeld(): boolean
-	return RunService:IsStudio() and DevConfig.FREEZE_RUN
+	return RunService:IsStudio() and (DevConfig.FREEZE_RUN or workspace:GetAttribute("DevFreezeRun") == true)
 end
 
 local function relocate(character: Model, root: BasePart): boolean

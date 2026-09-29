@@ -30,7 +30,16 @@
         "$className": "Folder",
         "Walker": {
           "$path": "assets/zombies/walker.model.json"
+        },
+        "Walker2": {
+          "$path": "assets/zombies/walker2.model.json"
         }
+      },
+      "ViewModelArms": {
+        "$path": "assets/viewmodels/arms.model.json"
+      },
+      "PropSurfaces": {
+        "$path": "assets/props/surfaces.model.json"
       }
     },
     "ReplicatedFirst": {
@@ -177,6 +186,87 @@
           "NormalMap": "rbxassetid://113378877562967",
           "RoughnessMap": "rbxassetid://123291079159239",
           "MetalnessMap": "rbxassetid://138768964262119",
+          "StudsPerTile": 6
+        }
+      },
+      "TFZ_AsphaltCracked": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Asphalt",
+          "ColorMap": "rbxassetid://129128032496808",
+          "NormalMap": "rbxassetid://89710024899225",
+          "RoughnessMap": "rbxassetid://121850910757878",
+          "StudsPerTile": 14
+        }
+      },
+      "TFZ_RoadWorn": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Asphalt",
+          "ColorMap": "rbxassetid://120924344936578",
+          "NormalMap": "rbxassetid://110210146596552",
+          "RoughnessMap": "rbxassetid://111566680127620",
+          "StudsPerTile": 60
+        }
+      },
+      "TFZ_ConcreteDirty": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Concrete",
+          "ColorMap": "rbxassetid://112752694762911",
+          "NormalMap": "rbxassetid://135087024371618",
+          "RoughnessMap": "rbxassetid://85178526164228",
+          "StudsPerTile": 10
+        }
+      },
+      "TFZ_GroundBurned": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Ground",
+          "ColorMap": "rbxassetid://75863816847957",
+          "NormalMap": "rbxassetid://91420481081827",
+          "RoughnessMap": "rbxassetid://112932909731260",
+          "StudsPerTile": 16
+        }
+      },
+      "TFZ_DirtDry": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Ground",
+          "ColorMap": "rbxassetid://102906269640591",
+          "NormalMap": "rbxassetid://86593365981751",
+          "RoughnessMap": "rbxassetid://90440200060377",
+          "StudsPerTile": 14
+        }
+      },
+      "TFZ_PlasterPeeling": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Plaster",
+          "ColorMap": "rbxassetid://92703204719878",
+          "NormalMap": "rbxassetid://110230733436968",
+          "RoughnessMap": "rbxassetid://89415037092804",
+          "StudsPerTile": 12
+        }
+      },
+      "TFZ_MetalRusty": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "CorrodedMetal",
+          "ColorMap": "rbxassetid://80340122137394",
+          "NormalMap": "rbxassetid://131260796078423",
+          "RoughnessMap": "rbxassetid://89816928212096",
+          "StudsPerTile": 6
+        }
+      },
+      "TFZ_PaintPeelingMetal": {
+        "$className": "MaterialVariant",
+        "$properties": {
+          "BaseMaterial": "Metal",
+          "ColorMap": "rbxassetid://94759207439627",
+          "NormalMap": "rbxassetid://98445382442491",
+          "RoughnessMap": "rbxassetid://78157909004945",
+          "MetalnessMap": "rbxassetid://138413819930772",
           "StudsPerTile": 6
         }
       }

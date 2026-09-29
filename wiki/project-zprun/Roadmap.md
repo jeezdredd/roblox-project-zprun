@@ -8,20 +8,38 @@ See [[Progress]] for what each shipped layer actually contains, [[Architecture]]
 
 Shipped layers, roughly in the order they landed:
 
-- **Prototype run** — auto-run driver (`src/client/controllers/RunController.luau`), A/D lateral input, lane clamp against `GameConstants.RUN_ORIGIN`, distance scored as `root.Position:Dot(RUN_DIRECTION)` in `src/server/systems/DistanceTracker.luau` with speed ramping from base to max.
-- **Procedural biomes** — five locations in `src/shared/config/LocationsConfig.luau` (City, Forest, Wasteland, Farmstead, Cornfield) built by the 240x128 chunk factory `src/server/systems/ChunkFactory.luau` and streamed by `src/server/systems/ChunkSpawner.luau`, which plans a route, pools chunks and cross-fades colour, material and props into the next biome.
-- **Zombies** — part-based rig factory, weighted spawning per chunk, difficulty-gated aggro and the juke mechanic (each zombie chases a delayed position sample, `reactionDelay` 0.35s for Runners and 0.75s for Walkers) in `src/server/systems/ZombieAI.luau`, plus a cross-fading animation layer in `src/server/systems/ZombieAnimator.luau`.
-- **Hub and squad lobby** — hangar, vendor rooms, burning-city diorama and three boardable helicopters; `src/server/systems/SquadService.luau` runs one squad record per pad with Solo/FriendsOnly/Public gating, leader-only map/difficulty/modifier config, snapshot fan-out and a countdown that hands a fresh seed to `src/server/systems/MissionService.luau`.
-- **Death sequence** — corpse pose, zombie lure and feeding ring, corpse-eye camera, YOU ARE DEAD, counted-up results and Return/Continue with one revive per run (`src/server/systems/DeathService.luau`, `src/client/controllers/DeathController.luau`, `src/client/systems/DeathGore.luau`).
-- **Settings and skins** — schema-driven settings panel built from `src/shared/config/SettingsConfig.luau`, server-side sanitising and persistence, gore content warning, and five HumanoidDescription skins applied on spawn by `src/server/systems/SkinService.luau`.
-- **Asset pipeline** — `assets/manifest.json` as the single source of truth (110 entries: 83 approved, 13 reviewing, 12 pending, 2 rejected), uploaded through Open Cloud by `scripts/upload_assets.py`, with `scripts/sync_configs.py` regenerating `src/shared/config/AssetIds.luau` and `assets/LICENSES.md`. Every consumer treats id `0` as "not uploaded" and no-ops.
-- **Audio, VFX and lighting detail pass** — foley and body-state audio, zombie voices, world ambience and reverb zones, step dust, juke bursts, breath vapour, embers and ash, event-driven post processing, and a lighting director that lerps presets per phase, night flag and biome.
-- **Profiles** — ProfileStore persistence with template, version migration, Credits/XP attributes and an automatic `store.Mock` fallback when DataStores are unavailable in Studio (`src/server/systems/ProfileManager.luau`).
-- **Desert base and range** — ground plane, road out to the burning city and an outdoor shooting range with gong targets behind the hangar (`src/server/systems/DesertBase.luau`).
-- **Weapons** — four classes in `src/shared/config/WeaponsConfig.luau` with five upgrade levels; `src/server/systems/WeaponService.luau` validates fire intent (rate tolerance, unit direction, muzzle origin within 5 studs of head/root plus a line-of-sight raycast), does raycast damage with headshots and per-weapon ammo state that survives swaps; procedural first-person viewmodel (`src/client/systems/Viewmodel.luau`), third-person world model (`src/server/systems/WorldWeapon.luau`), per-class gunshot audio with interior/open reverb tails driven by `AcousticSpace` zone attributes.
-- **Vendors and monetization** — authoritative catalogs and purchases over a RemoteFunction in `src/server/systems/ShopService.luau` (weapon unlock/upgrade, skills, skins, two loadout slots), and `src/server/systems/MonetizationService.luau` with an idempotent `ProcessReceipt` keyed on the profile's `PurchaseHistory` and a Robux Continue product.
-- **ITD run layer** — ammo crates with green smoke pillars, per-run mission goals with credit bonuses, loadout slots, and the Farmstead and Cornfield biomes.
-- **Anti-blur pass** — texel density normalised across surfaces, bloom limits and a sun-in-frame exception for the forest preset.
+- **Prototype run**: auto-run driver (`src/client/controllers/RunController.luau`), A/D lateral input, lane clamp against `GameConstants.RUN_ORIGIN`, distance scored as `root.Position:Dot(RUN_DIRECTION)` in `src/server/systems/DistanceTracker.luau` with speed ramping from base to max.
+- **Procedural biomes**: five locations in `src/shared/config/LocationsConfig.luau` (City, Forest, Wasteland, Farmstead, Cornfield) built by the 240x128 chunk factory `src/server/systems/ChunkFactory.luau` and streamed by `src/server/systems/ChunkSpawner.luau`, which plans a route, pools chunks and cross-fades colour, material and props into the next biome.
+- **Zombies**: part-based rig factory, weighted spawning per chunk, difficulty-gated aggro and the juke mechanic (each zombie chases a delayed position sample, `reactionDelay` 0.35s for Runners and 0.75s for Walkers) in `src/server/systems/ZombieAI.luau`, plus a cross-fading animation layer in `src/server/systems/ZombieAnimator.luau`.
+- **Hub and squad lobby**: hangar, vendor rooms, burning-city diorama and three boardable helicopters; `src/server/systems/SquadService.luau` runs one squad record per pad with Solo/FriendsOnly/Public gating, leader-only map/difficulty/modifier config, snapshot fan-out and a countdown that hands a fresh seed to `src/server/systems/MissionService.luau`.
+- **Death sequence**: corpse pose, zombie lure and feeding ring, corpse-eye camera, YOU ARE DEAD, counted-up results and Return/Continue with one revive per run (`src/server/systems/DeathService.luau`, `src/client/controllers/DeathController.luau`, `src/client/systems/DeathGore.luau`).
+- **Settings and skins**: schema-driven settings panel built from `src/shared/config/SettingsConfig.luau`, server-side sanitising and persistence, gore content warning, and five HumanoidDescription skins applied on spawn by `src/server/systems/SkinService.luau`.
+- **Asset pipeline**: `assets/manifest.json` as the single source of truth (302 entries on 2026-09-29: 247 approved, 43 reviewing, 7 pending, 4 rejected, 1 needed), uploaded through Open Cloud by `scripts/upload_assets.py`, re-checked by `scripts/refresh_status.py`, with `scripts/sync_configs.py` regenerating `src/shared/config/AssetIds.luau` and `assets/LICENSES.md`. Every consumer treats id `0` as "not uploaded" and no-ops.
+- **Audio, VFX and lighting detail pass**: foley and body-state audio, zombie voices, world ambience and reverb zones, step dust, juke bursts, breath vapour, embers and ash, event-driven post processing, and a lighting director that lerps presets per phase, night flag and biome.
+- **Profiles**: ProfileStore persistence with template, version migration, Credits/XP attributes and an automatic `store.Mock` fallback when DataStores are unavailable in Studio (`src/server/systems/ProfileManager.luau`).
+- **Desert base and range**: ground plane, road out to the burning city and an outdoor shooting range with gong targets behind the hangar (`src/server/systems/DesertBase.luau`).
+- **Weapons**: four classes in `src/shared/config/WeaponsConfig.luau` with five upgrade levels; `src/server/systems/WeaponService.luau` validates fire intent (rate tolerance, unit direction, muzzle origin within 5 studs of head/root plus a line-of-sight raycast), does raycast damage with headshots and per-weapon ammo state that survives swaps; procedural first-person viewmodel (`src/client/systems/Viewmodel.luau`), third-person world model (`src/server/systems/WorldWeapon.luau`), per-class gunshot audio with interior/open reverb tails driven by `AcousticSpace` zone attributes.
+- **Vendors and monetization**: authoritative catalogs and purchases over a RemoteFunction in `src/server/systems/ShopService.luau` (weapon unlock/upgrade, skills, skins, two loadout slots), and `src/server/systems/MonetizationService.luau` with an idempotent `ProcessReceipt` keyed on the profile's `PurchaseHistory` and a Robux Continue product.
+- **ITD run layer**: ammo crates with green smoke pillars, per-run mission goals with credit bonuses, loadout slots, and the Farmstead and Cornfield biomes.
+- **Anti-blur pass**: texel density normalised across surfaces, bloom limits and a sun-in-frame exception for the forest preset.
+- **Skinned zombies (2026-09-29, uncommitted)**: three CC BY 4.0 Sketchfab characters with 22 authored clips (`ZombieSkins`, `ZombieRigs`), bone-driven hit boxes and static torso blockers (`ZombieHitboxes`), walk/run choice by ground speed, attack swing, Hazmat scream, Ghoul flinch, held death poses and posed corpse props. See [[Gameplay Systems]].
+- **MW2019 weapon pass (2026-09-29, uncommitted)**: first-person packs for all four classes (`PackViewmodel`, `ViewmodelClipPlayer`), tactical and empty reloads with ammo-add, shell-by-shell shotgun with fire cancel, draw time, pooled visible casings with landing sounds, a new muzzle flash, marker-driven foley, the low-ammo layer, and 32 CC0 recordings from The Free Firearm Sound Library. See [[Gameplay Systems]] and [[Decisions]].
+
+## Now: finish the 2026-09-29 pass
+
+Open items from the skinned-zombie and MW2019 weapon work, roughly in order:
+
+| Item | Detail |
+| --- | --- |
+| Tactical cut points | The AK (`to` 0.55) and pistol (0.76) cuts in `ViewmodelPackConfig` are estimates; step the Reload clips frame by frame and move the cut and the ammo-add time together |
+| Casing drop and gear foley | In progress. The code already asks for `casing_brass_01..03`, `casing_shotgun_01..02` and `mag_drop`; sling and gear rattle on steps, landings and fast looks is still to add |
+| Props and textures batch | In progress |
+| Moderation | All 32 Free Firearm Sound Library entries are `reviewing`; run `scripts/refresh_status.py`, then `sync_configs.py`, once they clear |
+| Skinned zombie gaps | No rise or feeding clips, so riser and feast formations spawn as idle zombies and corpse feeders stand still; the Hazmat has no death clip. Needs clips per skin |
+| Remaining MW spec items | Mech, punch and sub shot layers; reflection raycasts with slap delays; sidechain ducking and a master limiter; teammate distance layers; hit and kill markers; wall pull-back; the first raise |
+| In-game credits | Every Sketchfab asset is CC BY 4.0 and the footsteps and the OpenGameArt shots are CC BY 3.0; `assets/LICENSES.md` says the credits belong in the settings panel before release |
+| Ship switches and gate | Set `WeaponsConfig.ALL_WEAPONS_UNLOCKED` back to false; run `selene src/` locally (it was not run in the cloud session); `rojo build` passes |
+| Shotgun pack | Stays the Saps-12: teenjust500's 870 has the same broken shared skin and no idle or walk clips; revisit if a clean pump pack turns up |
 
 ## Next: Zombies layer
 
@@ -29,17 +47,17 @@ The stage the owner has specified. Reference for it is Call of Duty: Zombies as 
 
 ### 1. Kill credits paid mid-run (`RunEconomy`)
 
-A new server service holding a per-run credit balance separate from the profile balance. Kills pay into it as they happen; the results screen banks it into the profile through `ProfileManager`. Dying without a Continue does **not** burn what was earned — penalties there were judged demotivating, and that call belongs in [[Decisions]]. The kill hook already exists: `src/server/systems/WeaponService.luau` awards weapon XP and reports the `Kills` metric to `MissionGoals` from the same place.
+A new server service holding a per-run credit balance separate from the profile balance. Kills pay into it as they happen; the results screen banks it into the profile through `ProfileManager`. Dying without a Continue does **not** burn what was earned: penalties there were judged demotivating, and that call belongs in [[Decisions]]. The kill hook already exists: `src/server/systems/WeaponService.luau` awards weapon XP and reports the `Kills` metric to `MissionGoals` from the same place.
 
 ### 2. Perks
 
-Six starter perks (Toughness, Sprinter, Fast Hands, Field Medic, Scavenger, Steady Aim), levels 1-3. Slot 1 is free, slots 2 and 3 are bought with Credits. Perks and slots are **Credits only, never Robux** — the no-pay-to-win rule in `CLAUDE.md`. Build order inside the item: config module → Perk Lab station in the hangar (a sixth vendor-style room, same `VendorPrompt` pattern as `src/server/systems/VendorRooms.luau`) → HUD readout.
+Six starter perks (Toughness, Sprinter, Fast Hands, Field Medic, Scavenger, Steady Aim), levels 1-3. Slot 1 is free, slots 2 and 3 are bought with Credits. Perks and slots are **Credits only, never Robux**: the no-pay-to-win rule in `CLAUDE.md`. Build order inside the item: config module → Perk Lab station in the hangar (a sixth vendor-style room, same `VendorPrompt` pattern as `src/server/systems/VendorRooms.luau`) → HUD readout.
 
 Open question to settle before writing the config: four of the six names overlap the persistent skills already in `src/shared/config/SkillsConfig.luau` (Toughness, Endurance, FastHands, Scavenger), which are applied through `src/server/systems/SkillEffects.luau`. Either perks subsume skills or perks are the per-run layer over them; shipping both under near-identical names would be confusing.
 
 ### 3. Diegetic weapon pickups
 
-No wall-buy. Weapons lie in the world as staged scenes defined by a new `PickupScenesConfig` — dead soldier, shotgun on a fence post, chainsaw at a sawmill, pistol by a police car, SMG on checkpoint sandbags — picked up by holding a key for 0.3s. Each scene carries a `Highlight` outline so it reads through fog, and highlights must be **pooled: Roblox only renders 31 `Highlight` instances at once**, so scenes beyond the budget hand their outline back as the player passes.
+No wall-buy. Weapons lie in the world as staged scenes defined by a new `PickupScenesConfig` (dead soldier, shotgun on a fence post, chainsaw at a sawmill, pistol by a police car, SMG on checkpoint sandbags) picked up by holding a key for 0.3s. Each scene carries a `Highlight` outline so it reads through fog, and highlights must be **pooled: Roblox only renders 31 `Highlight` instances at once**, so scenes beyond the budget hand their outline back as the player passes.
 
 The mystery box survives in reworked form: a crashed supply drop marked with red smoke. Green smoke stays reserved for ammo crates (`src/server/systems/AmmoCrates.luau`) so the two are never confused at distance.
 
@@ -50,10 +68,10 @@ Replaces the current instant hand-off, where `MissionService.startSquad` spawns 
 | Beat | Content |
 | --- | --- |
 | Cabin | Interactive helicopter interior: loadout and perk swap, ready check, 90s AFK timeout |
-| Crash cinematic | ~12-15s; the pilot turns, the copilot shoots him. No gore in this cutscene — everyone sees it and the Gore toggle does not apply |
+| Crash cinematic | ~12-15s; the pilot turns, the copilot shoots him. No gore in this cutscene: everyone sees it and the Gore toggle does not apply |
 | Wake-up | Player comes to at the wreck with a 6s aggro grace window and a "RUN" prompt |
 
-Repeat runs play a compressed ~5s version with skip voting. The crash is faked entirely with camera keyframes, light and sound — no real physics.
+Repeat runs play a compressed ~5s version with skip voting. The crash is faked entirely with camera keyframes, light and sound: no real physics.
 
 ### 5. Upgrade station
 
@@ -61,16 +79,16 @@ A Pack-a-Punch-style station reachable mid-run that upgrades the carried weapon 
 
 ## Planned: Route forks
 
-Branching route choice at biome boundaries: the squad votes with their feet between two entrances (Sewer, Forest, Metro with a burning train hazard, more to come), each branch trades a cost for a reward, and run modifiers stack on top. Full design and the live status board are in [[Route Forks]]. First step is a fork between two existing biomes to prove voting and route insertion before any new art.
+Branching route choice at biome boundaries: the squad votes with their feet between two entrances (Sewer, Forest, Metro with a burning train hazard, more to come), each branch trades a cost for a reward, and run modifiers stack on top. Full design and the live status board are in [[Route Forks]]. First step is a fork between two existing biomes to prove voting and route insertion before any new art. Step 1 is built and in playtest (2026-09-28).
 
 ## Later
 
-- **Robux product and pass ids** — `src/shared/config/ProductsConfig.luau` still ships `productId = 0` and `passId = 0` for Continue, VIP and Supporter Pack. Every call site checks `ProductsConfig.isConfigured(...)` first, so the game runs with them at 0 and falls back to a free Continue. **Owner-blocked**: the items have to be created in the Creator Dashboard and the numeric ids pasted in. Test procedure is written up in `docs/monetization-test-plan.md`.
-- **Animation clips** (updated 2026-09-28): 10 of 12 body clips are live (player run, death, stumble; all 7 zombie clips). Open: `player/strafe_left` and `player/strafe_right` (no strafe loops in the CC0 library; Mixamo `Rifle Strafe Left/Right` through the retarget pipeline is the planned source) and all five viewmodel clips (the viewmodel is posed procedurally by direct CFrame writes each frame).
-- **Spectating** — on death in a squad, watch surviving teammates until the run ends instead of returning to the hub immediately. Nothing in `src/` implements this yet.
-- **More biomes and zombie types** — both are data-driven; a biome is an entry in `LocationsConfig` plus a `laneStyle`/prop set in `ChunkFactory`, a zombie is an entry in `ZombiesConfig`.
-- **TeleportService** — only if the hub and the run ever split into separate places. Today they share one DataModel, 4300 studs apart (`HangarConfig.HUB_CENTER` vs `GameConstants.RUN_ORIGIN`), which `StreamingEnabled` handles; transport is already abstracted behind `FlowService` phases, so the split would be contained.
-- **Loose ends worth closing** — the `NoDamage500` goal is unreachable because nothing reports the `CleanDistance` metric to `MissionGoals.report`; `src/server/systems/TrackBuilder.luau` pivots the start platform in absolute world space instead of relative to `RUN_ORIGIN`, leaving it 4000 studs from where squads actually spawn; two separate ScreenGuis named `DamageVignette` draw the same red overlay.
+- **Robux product and pass ids**: `src/shared/config/ProductsConfig.luau` still ships `productId = 0` and `passId = 0` for Continue, VIP and Supporter Pack. Every call site checks `ProductsConfig.isConfigured(...)` first, so the game runs with them at 0 and falls back to a free Continue. **Owner-blocked**: the items have to be created in the Creator Dashboard and the numeric ids pasted in. Test procedure is written up in `docs/monetization-test-plan.md`.
+- **Animation clips** (updated 2026-09-29): player run, death and stumble are live, zombies use the 22 clips of their Sketchfab packs (the 7 Quaternius zombie clips remain for the fallback rigs), and the five viewmodel slots are obsolete because the pack clips are baked into Luau. Open: `player/strafe_left` and `player/strafe_right` (no strafe loops in the CC0 library; Mixamo `Rifle Strafe Left/Right` through the retarget pipeline is the planned source).
+- **Spectating**: on death in a squad, watch surviving teammates until the run ends instead of returning to the hub immediately. Nothing in `src/` implements this yet.
+- **More biomes and zombie types**: both are data-driven; a biome is an entry in `LocationsConfig` plus a `laneStyle`/prop set in `ChunkFactory`, a zombie is an entry in `ZombiesConfig`.
+- **TeleportService**: only if the hub and the run ever split into separate places. Today they share one DataModel, 4300 studs apart (`HangarConfig.HUB_CENTER` vs `GameConstants.RUN_ORIGIN`), which `StreamingEnabled` handles; transport is already abstracted behind `FlowService` phases, so the split would be contained.
+- **Loose ends worth closing**: the `NoDamage500` goal is unreachable because nothing reports the `CleanDistance` metric to `MissionGoals.report`; `src/server/systems/TrackBuilder.luau` pivots the start platform in absolute world space instead of relative to `RUN_ORIGIN`, leaving it 4000 studs from where squads actually spawn; two separate ScreenGuis named `DamageVignette` draw the same red overlay.
 
 ## Blocked on the owner
 

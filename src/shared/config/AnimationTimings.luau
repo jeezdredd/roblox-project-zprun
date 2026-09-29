@@ -10,6 +10,9 @@ export type Step = {
 	duration: number,
 	easing: string,
 	phase: string?,
+	-- pose used by classes whose library has no `pose` (the rifle has the full magazine
+	-- change; the other classes reuse their four reload poses)
+	fallback: string?,
 }
 
 export type Sequence = {
@@ -28,13 +31,18 @@ local AnimationTimings = {}
 AnimationTimings.BLEND_TIME = 0.12
 
 AnimationTimings.sequences = {
+	-- Draw: up from below, then the class's rack (rifle bolt catch, pistol slide,
+	-- shotgun pump), with the bolt phases driving the rack audio.
 	Equip = {
 		id = "Equip",
 		priority = 2,
 		looped = false,
 		steps = {
 			{ pose = "equip", duration = 0, easing = "linear" },
-			{ pose = "idle", duration = 0.34, easing = "outCubic" },
+			{ pose = "rackGrab", duration = 0.3, easing = "outCubic", fallback = "idle" },
+			{ pose = "rackPull", duration = 0.12, easing = "inOutQuad", phase = "BoltBack", fallback = "idle" },
+			{ pose = "rackRelease", duration = 0.1, easing = "outQuad", phase = "BoltForward", fallback = "idle" },
+			{ pose = "idle", duration = 0.22, easing = "outCubic" },
 		},
 	},
 
@@ -50,32 +58,41 @@ AnimationTimings.sequences = {
 		},
 	},
 
-	-- magazine still has rounds: no chambering pass
+	-- Magazine still has rounds: no chambering pass. Played stretched to the weapon's
+	-- reloadTime (Viewmodel.playReload), so these durations only set the proportions.
 	ReloadShort = {
 		id = "ReloadShort",
 		priority = 2,
 		looped = false,
 		steps = {
-			{ pose = "reloadStart", duration = 0.16, easing = "outQuad" },
-			{ pose = "magOut", duration = 0.22, easing = "inOutQuad", phase = "MagOut" },
-			{ pose = "magIn", duration = 0.28, easing = "outQuad", phase = "MagIn" },
-			{ pose = "reloadEnd", duration = 0.16, easing = "outQuad" },
-			{ pose = "idle", duration = 0.14, easing = "outCubic" },
+			{ pose = "reloadStart", duration = 0.18, easing = "outQuad" },
+			{ pose = "grabMag", duration = 0.2, easing = "inOutQuad", fallback = "reloadStart" },
+			{ pose = "magOut", duration = 0.18, easing = "inOutQuad", phase = "MagOut" },
+			{ pose = "magAway", duration = 0.3, easing = "inOutQuad", fallback = "magOut" },
+			{ pose = "magReturn", duration = 0.36, easing = "inOutQuad", fallback = "magOut" },
+			{ pose = "magIn", duration = 0.18, easing = "outQuad", phase = "MagIn" },
+			{ pose = "magSeat", duration = 0.08, easing = "outQuad", fallback = "magIn" },
+			{ pose = "reloadEnd", duration = 0.22, easing = "inOutQuad" },
+			{ pose = "idle", duration = 0.16, easing = "outCubic" },
 		},
 	},
 
-	-- magazine ran dry: adds the bolt/slide pass at the end
+	-- magazine ran dry: adds the bolt release at the end
 	ReloadFull = {
 		id = "ReloadFull",
 		priority = 2,
 		looped = false,
 		steps = {
 			{ pose = "reloadStart", duration = 0.16, easing = "outQuad" },
-			{ pose = "magOut", duration = 0.24, easing = "inOutQuad", phase = "MagOut" },
-			{ pose = "magIn", duration = 0.3, easing = "outQuad", phase = "MagIn" },
-			{ pose = "boltBack", duration = 0.16, easing = "outQuad", phase = "BoltBack" },
-			{ pose = "boltForward", duration = 0.12, easing = "outQuad", phase = "BoltForward" },
-			{ pose = "reloadEnd", duration = 0.14, easing = "outQuad" },
+			{ pose = "grabMag", duration = 0.18, easing = "inOutQuad", fallback = "reloadStart" },
+			{ pose = "magOut", duration = 0.16, easing = "inOutQuad", phase = "MagOut" },
+			{ pose = "magAway", duration = 0.28, easing = "inOutQuad", fallback = "magOut" },
+			{ pose = "magReturn", duration = 0.32, easing = "inOutQuad", fallback = "magOut" },
+			{ pose = "magIn", duration = 0.16, easing = "outQuad", phase = "MagIn" },
+			{ pose = "magSeat", duration = 0.08, easing = "outQuad", fallback = "magIn" },
+			{ pose = "boltBack", duration = 0.18, easing = "inOutQuad", phase = "BoltBack" },
+			{ pose = "boltForward", duration = 0.1, easing = "outQuad", phase = "BoltForward" },
+			{ pose = "reloadEnd", duration = 0.2, easing = "inOutQuad" },
 			{ pose = "idle", duration = 0.14, easing = "outCubic" },
 		},
 	},

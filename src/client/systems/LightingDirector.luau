@@ -72,6 +72,9 @@ local function resolveTargetId(): string
 	if Players.LocalPlayer:GetAttribute(PHASE_ATTRIBUTE) ~= "Mission" then
 		return "Hub"
 	end
+	if Workspace:GetAttribute("SandboxActive") == true then
+		return "Sandbox"
+	end
 	if Workspace:GetAttribute(NIGHT_ATTRIBUTE) == true then
 		return "Night"
 	end
@@ -132,6 +135,7 @@ function LightingDirector.init()
 	end)
 	Workspace:GetAttributeChangedSignal(NIGHT_ATTRIBUTE):Connect(refreshTarget)
 	Workspace:GetAttributeChangedSignal(BIOME_ATTRIBUTE):Connect(refreshTarget)
+	Workspace:GetAttributeChangedSignal("SandboxActive"):Connect(snapToTarget)
 	refreshTarget()
 
 	RunService.Heartbeat:Connect(step)

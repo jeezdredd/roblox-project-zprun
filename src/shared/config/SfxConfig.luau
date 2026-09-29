@@ -4,8 +4,20 @@ local AssetIds = require(script.Parent.AssetIds)
 
 local SfxConfig = {}
 
-SfxConfig.FOLEY_GEAR_IDS = { AssetIds.audio.foley.gear_01, AssetIds.audio.foley.gear_02, AssetIds.audio.foley.gear_03 }
-SfxConfig.FOLEY_GEAR_VOLUME = 0.18
+-- Webbing and sling rattle on every footstep: the recorded rattles (freesound CC0, see
+-- LICENSES) when they are live, else the older Kenney impacts.
+local foley = AssetIds.audio.foley :: { [string]: number }
+local gearRattles = {}
+for _, key in { "gear_rattle_01", "gear_rattle_02", "gear_rattle_03", "gear_rattle_04" } do
+	local id = foley[key]
+	if id and id > 0 then
+		table.insert(gearRattles, id)
+	end
+end
+SfxConfig.FOLEY_GEAR_IDS = if #gearRattles > 0
+	then gearRattles
+	else { AssetIds.audio.foley.gear_01, AssetIds.audio.foley.gear_02, AssetIds.audio.foley.gear_03 }
+SfxConfig.FOLEY_GEAR_VOLUME = if #gearRattles > 0 then 0.3 else 0.18
 SfxConfig.FOLEY_GEAR_PITCH_JITTER = 0.12
 
 SfxConfig.LAND_SOFT_ID = AssetIds.audio.foley.land_soft

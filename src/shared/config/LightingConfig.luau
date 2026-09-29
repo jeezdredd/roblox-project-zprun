@@ -26,6 +26,27 @@ LightingConfig.ENABLED = true
 LightingConfig.LERP_SPEED = 1.1
 
 LightingConfig.presets = {
+	-- Studio test yard (DevConfig.SANDBOX): clear afternoon light and far fog, so rigs,
+	-- casings and props can be judged without the mission grading hiding them
+	Sandbox = {
+		clockTime = 14.5,
+		brightness = 2.2,
+		ambient = Color3.fromRGB(70, 70, 76),
+		outdoorAmbient = Color3.fromRGB(128, 126, 122),
+		fogColor = Color3.fromRGB(190, 196, 204),
+		fogStart = 400,
+		fogEnd = 2500,
+		atmosphereDensity = 0.3,
+		atmosphereOffset = 0.2,
+		atmosphereHaze = 0.5,
+		atmosphereGlare = 0.2,
+		atmosphereColor = Color3.fromRGB(199, 199, 199),
+		atmosphereDecay = Color3.fromRGB(106, 112, 125),
+		gradingBrightness = 0,
+		gradingContrast = 0.05,
+		gradingSaturation = 0,
+		gradingTint = Color3.fromRGB(255, 255, 255),
+	},
 	Hub = {
 		clockTime = 20.2,
 		brightness = 1.4,
@@ -54,8 +75,8 @@ LightingConfig.presets = {
 		fogStart = 50,
 		fogEnd = 160,
 		atmosphereDensity = 0.86,
-		atmosphereOffset = 0.66,
-		atmosphereHaze = 2.2,
+		atmosphereOffset = 0.3,
+		atmosphereHaze = 3,
 		atmosphereGlare = 0.35,
 		atmosphereColor = Color3.fromRGB(168, 128, 96),
 		atmosphereDecay = Color3.fromRGB(94, 70, 58),

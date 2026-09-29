@@ -14,6 +14,8 @@ local MissionConfig = require(script.Parent.MissionConfig)
 local FlowService = require(script.Parent.FlowService)
 local TrackBuilder = require(script.Parent.TrackBuilder)
 local ChunkSpawner = require(script.Parent.ChunkSpawner)
+local ForkService = require(script.Parent.ForkService)
+local WorldMeshes = require(script.Parent.WorldMeshes)
 local ZombieAI = require(script.Parent.ZombieAI)
 local DistanceTracker = require(script.Parent.DistanceTracker)
 
@@ -109,7 +111,9 @@ function MissionService.startSquad(players: { Player }, config: Squad.SquadConfi
 	MissionState.setModifiers(config.modifierIds)
 
 	local map = MapsConfig.get(config.mapId)
+	WorldMeshes.waitReady(6)
 	ChunkSpawner.configure(seed, if map then map.locationIds else nil)
+	ForkService.configure(seed)
 	ZombieAI.configure(seed + 2)
 	TrackBuilder.build()
 	ChunkSpawner.reset()

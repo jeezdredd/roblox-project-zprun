@@ -2,6 +2,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
@@ -12,15 +13,38 @@ local MissionGoals = require(script.Parent.MissionGoals)
 
 local WeaponService = {}
 
+-- A reload in progress, on the WeaponsConfig timeline the client predicts with. It is
+-- advanced every Heartbeat and again right before a shot is judged, so a shot that
+-- arrives just after the ammo-add sees the rounds.
+type ReloadJob = {
+	style: string,
+	startedAt: number,
+	empty: boolean,
+	scale: number,
+	endsAt: number,
+	-- magazine: the mag seats here; after it a shot may cut the tail
+	ammoAddAt: number,
+	ammoAdded: boolean,
+	-- shell: planned, counted so far, most that will go in (lowered by a cancel)
+	planned: number,
+	loaded: number,
+	limit: number,
+	cancelled: boolean,
+}
+
 type PlayerWeaponState = {
 	weaponId: string,
 	mag: number,
 	reserve: number,
 	lastFireAt: number,
-	reloadingUntil: number,
-	reloadToken: number,
+	reload: ReloadJob?,
+	-- no shots before this (the draw after an equip)
+	drawUntil: number,
 }
 
+-- The client starts its reload one trip earlier than the server and its shots arrive
+-- one trip later, so both sides line up on the same timeline; this only absorbs jitter.
+local SYNC_TOLERANCE = 0.1
 local ORIGIN_TOLERANCE = 5
 local RATE_TOLERANCE = 0.97
 local GONG_COOLDOWN = 0.8
@@ -49,9 +73,57 @@ local function defaultState(weaponId: string): PlayerWeaponState
 		mag = magSize,
 		reserve = reserve,
 		lastFireAt = 0,
-		reloadingUntil = 0,
-		reloadToken = 0,
+		reload = nil,
+		drawUntil = 0,
 	}
+end
+
+local function endReload(player: Player, state: PlayerWeaponState)
+	state.reload = nil
+	player:SetAttribute("Reloading", false)
+end
+
+-- Applies whatever the reload has reached by `now`: the magazine's ammo-add, each shell
+-- at its add point, and the end. Attributes are synced on every count change so the
+-- HUD ticks per shell.
+local function advanceReload(player: Player, state: PlayerWeaponState, now: number)
+	local job = state.reload
+	if not job then
+		return
+	end
+	local config = WeaponsConfig.get(state.weaponId)
+	if not config then
+		endReload(player, state)
+		return
+	end
+	local changed = false
+	if job.style == "shell" then
+		while job.loaded < job.limit do
+			if now < job.startedAt + WeaponsConfig.shellAddTime(config, job.loaded + 1, job.scale) then
+				break
+			end
+			if state.mag >= config.magSize or state.reserve <= 0 then
+				job.limit = job.loaded
+				break
+			end
+			state.mag += 1
+			state.reserve -= 1
+			job.loaded += 1
+			changed = true
+		end
+	elseif not job.ammoAdded and now >= job.ammoAddAt then
+		local taken = math.min(config.magSize - state.mag, state.reserve)
+		state.mag += taken
+		state.reserve -= taken
+		job.ammoAdded = true
+		changed = true
+	end
+	if changed then
+		syncAttributes(player, state)
+	end
+	if now >= job.endsAt then
+		endReload(player, state)
+	end
 end
 
 local function ownsWeapon(player: Player, weaponId: string): boolean
@@ -74,7 +146,8 @@ local function onEquip(player: Player, weaponId: any)
 		return
 	end
 	local config = WeaponsConfig.get(weaponId)
-	if not config or not ownsWeapon(player, weaponId) then
+	-- ALL_WEAPONS_UNLOCKED is the temporary test flag: any weapon, owned or not
+	if not config or not (WeaponsConfig.ALL_WEAPONS_UNLOCKED or ownsWeapon(player, weaponId)) then
 		return
 	end
 	local current = states[player]
@@ -91,6 +164,8 @@ local function onEquip(player: Player, weaponId: any)
 		saved[current.weaponId] = { mag = current.mag, reserve = current.reserve, lastFireAt = current.lastFireAt }
 	end
 
+	-- a reload in progress is dropped with the old state: before its ammo-add the old
+	-- count stands, shells already in stay in
 	local state = defaultState(weaponId)
 	local prior = saved[weaponId]
 	if prior then
@@ -98,9 +173,12 @@ local function onEquip(player: Player, weaponId: any)
 		state.reserve = prior.reserve
 		state.lastFireAt = prior.lastFireAt
 	end
-	state.reloadToken = if current then current.reloadToken + 1 else 0
+	state.drawUntil = os.clock() + config.drawTime
 	states[player] = state
 	player:SetAttribute("Reloading", false)
+	-- the client runs its reload prediction with this, so it has to be there before the
+	-- first reload request
+	player:SetAttribute("ReloadScale", SkillEffects.reloadScale(player))
 	syncAttributes(player, state)
 end
 
@@ -204,8 +282,20 @@ local function onFire(player: Player, origin: any, direction: any)
 	end
 
 	local now = os.clock()
-	if now < state.reloadingUntil then
+	if now < state.drawUntil then
 		return
+	end
+	if state.reload then
+		advanceReload(player, state, now + SYNC_TOLERANCE)
+		local job = state.reload
+		if job then
+			if job.style == "magazine" and job.ammoAdded then
+				-- the magazine is seated: firing cuts the rest of the reload
+				endReload(player, state)
+			else
+				return
+			end
+		end
 	end
 	if now - state.lastFireAt < (1 / config.fireRate) * RATE_TOLERANCE then
 		return
@@ -225,7 +315,14 @@ local function onFire(player: Player, origin: any, direction: any)
 	if originDistance > 0.05 then
 		local losParams = RaycastParams.new()
 		losParams.FilterType = Enum.RaycastFilterType.Exclude
-		losParams.FilterDescendantsInstances = if character then { character } else {}
+		-- only world geometry may block the head-to-camera gap: a zombie hit box pressed
+		-- against the player (a grab, a lunge) must not swallow a point-blank shot
+		local ignore: { Instance } = if character then { character } else {}
+		local zombies = Workspace:FindFirstChild("Zombies")
+		if zombies then
+			table.insert(ignore, zombies)
+		end
+		losParams.FilterDescendantsInstances = ignore
 		if Workspace:Raycast(anchor, toOrigin, losParams) then
 			return
 		end
@@ -290,32 +387,74 @@ local function onReload(player: Player)
 		return
 	end
 	local now = os.clock()
-	if now < state.reloadingUntil then
+	if state.reload or now < state.drawUntil then
 		return
 	end
 	if state.mag >= config.magSize or state.reserve <= 0 then
 		return
 	end
 
-	local reloadTime = config.reloadTime * SkillEffects.reloadScale(player)
-	state.reloadingUntil = now + reloadTime
-	state.reloadToken += 1
-	local token = state.reloadToken
+	local scale = SkillEffects.reloadScale(player)
+	player:SetAttribute("ReloadScale", scale)
+	local empty = state.mag <= 0
+	local job: ReloadJob = {
+		style = "magazine",
+		startedAt = now,
+		empty = empty,
+		scale = scale,
+		endsAt = now,
+		ammoAddAt = now,
+		ammoAdded = false,
+		planned = 0,
+		loaded = 0,
+		limit = 0,
+		cancelled = false,
+	}
+	if config.reloadStyle == "shell" and config.shellReload then
+		local shells = math.min(config.magSize - state.mag, state.reserve)
+		job.style = "shell"
+		job.planned = shells
+		job.limit = shells
+		job.endsAt = now + WeaponsConfig.shellReloadTime(config, shells, empty, scale)
+	else
+		local ammoAdd, total = WeaponsConfig.magazineReload(config, empty, scale)
+		job.ammoAddAt = now + ammoAdd
+		job.endsAt = now + total
+	end
+	state.reload = job
 	player:SetAttribute("Reloading", true)
+end
 
-	task.delay(reloadTime, function()
-		local currentState = states[player]
-		if not currentState or currentState.reloadToken ~= token then
-			return
-		end
-		local needed = config.magSize - currentState.mag
-		local taken = math.min(needed, currentState.reserve)
-		currentState.mag += taken
-		currentState.reserve -= taken
-		currentState.reloadingUntil = 0
-		player:SetAttribute("Reloading", false)
-		syncAttributes(player, currentState)
-	end)
+-- Fire pressed during a reload. Shells: the one in the hand is still counted, the loop
+-- stops, and the job lives on through the fast exit (plus the pump from empty), which
+-- is what keeps fire blocked for that window. Magazines: before ammo-add the old count
+-- stands, after it the tail is cut; either way the reload ends now.
+local function onReloadCancel(player: Player)
+	local state = states[player]
+	if not state or not state.reload then
+		return
+	end
+	local config = WeaponsConfig.get(state.weaponId)
+	if not config then
+		return
+	end
+	local now = os.clock()
+	advanceReload(player, state, now)
+	local job = state.reload
+	if not job then
+		return
+	end
+	if job.style ~= "shell" then
+		endReload(player, state)
+		return
+	end
+	if job.cancelled then
+		return
+	end
+	local limit, readyAfter = WeaponsConfig.shellCancel(config, now - job.startedAt, job.planned, job.empty, job.scale)
+	job.cancelled = true
+	job.limit = math.clamp(limit, job.loaded, job.limit)
+	job.endsAt = math.min(job.endsAt, job.startedAt + readyAfter)
 end
 
 function WeaponService.applyLoadout(player: Player)
@@ -364,9 +503,7 @@ function WeaponService.refillAmmo(player: Player)
 	end
 	state.mag = config.magSize
 	state.reserve = config.magSize * config.reserveMags
-	state.reloadingUntil = 0
-	state.reloadToken += 1
-	player:SetAttribute("Reloading", false)
+	endReload(player, state)
 	syncAttributes(player, state)
 end
 
@@ -374,6 +511,16 @@ function WeaponService.init()
 	Remotes.getEvent(Remotes.Event.WeaponEquip).OnServerEvent:Connect(onEquip)
 	Remotes.getEvent(Remotes.Event.WeaponFire).OnServerEvent:Connect(onFire)
 	Remotes.getEvent(Remotes.Event.WeaponReload).OnServerEvent:Connect(onReload)
+	Remotes.getEvent(Remotes.Event.WeaponReloadCancel).OnServerEvent:Connect(onReloadCancel)
+
+	RunService.Heartbeat:Connect(function()
+		local now = os.clock()
+		for player, state in states do
+			if state.reload then
+				advanceReload(player, state, now)
+			end
+		end
+	end)
 
 	Players.PlayerAdded:Connect(function(player)
 		local state = defaultState("Pistol")
@@ -382,6 +529,7 @@ function WeaponService.init()
 	end)
 	ProfileManager.onLoaded(function(player, data)
 		syncLoadout(player)
+		player:SetAttribute("ReloadScale", SkillEffects.reloadScale(player))
 		local primary = data.Loadout[1]
 		if typeof(primary) == "string" and WeaponsConfig.get(primary) then
 			onEquip(player, primary)

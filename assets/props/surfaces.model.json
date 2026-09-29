@@ -1,0 +1,157 @@
+{
+  "className": "Folder",
+  "children": [
+    {
+      "className": "SurfaceAppearance",
+      "name": "car_burned_a",
+      "properties": {
+        "ColorMap": "rbxassetid://123801171080240",
+        "NormalMap": "rbxassetid://83923307267749",
+        "RoughnessMap": "rbxassetid://94232120409453",
+        "MetalnessMap": "rbxassetid://79093734584994"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "car_burned_b",
+      "properties": {
+        "ColorMap": "rbxassetid://105804922961436",
+        "NormalMap": "rbxassetid://140005886233752",
+        "RoughnessMap": "rbxassetid://124196886278008",
+        "MetalnessMap": "rbxassetid://108428066897310"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "car_crashed",
+      "properties": {
+        "ColorMap": "rbxassetid://88730979815775",
+        "NormalMap": "rbxassetid://115219141599776",
+        "RoughnessMap": "rbxassetid://99043837704290",
+        "MetalnessMap": "rbxassetid://78694756985826"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "concrete_barrier",
+      "properties": {
+        "ColorMap": "rbxassetid://99606549129710",
+        "NormalMap": "rbxassetid://126288416014227",
+        "RoughnessMap": "rbxassetid://111273379974823"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "concrete_barrier_b",
+      "properties": {
+        "ColorMap": "rbxassetid://106572010406349",
+        "NormalMap": "rbxassetid://111058243844354",
+        "RoughnessMap": "rbxassetid://90435294059422"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "covered_car",
+      "properties": {
+        "ColorMap": "rbxassetid://78909948335510",
+        "NormalMap": "rbxassetid://105610439434606",
+        "RoughnessMap": "rbxassetid://120714089778121",
+        "MetalnessMap": "rbxassetid://99418919991000"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "czech_hedgehog",
+      "properties": {
+        "ColorMap": "rbxassetid://123499055542888",
+        "NormalMap": "rbxassetid://78207567948443",
+        "RoughnessMap": "rbxassetid://75559151127519",
+        "MetalnessMap": "rbxassetid://78695885105231"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "oil_barrel",
+      "properties": {
+        "ColorMap": "rbxassetid://84625102310922",
+        "NormalMap": "rbxassetid://127277648116814",
+        "RoughnessMap": "rbxassetid://126256408757237",
+        "MetalnessMap": "rbxassetid://122073482617836"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "road_sign_curve",
+      "properties": {
+        "ColorMap": "rbxassetid://102730263585350",
+        "RoughnessMap": "rbxassetid://101357432135253",
+        "MetalnessMap": "rbxassetid://104404308694059",
+        "AlphaMode": "Transparency"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "road_sign_stop",
+      "properties": {
+        "ColorMap": "rbxassetid://98052654563708",
+        "RoughnessMap": "rbxassetid://83626817450221",
+        "MetalnessMap": "rbxassetid://74823564720556",
+        "AlphaMode": "Transparency"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "rubble_pile",
+      "properties": {
+        "ColorMap": "rbxassetid://92157167535678"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "sandbag_wall",
+      "properties": {
+        "ColorMap": "rbxassetid://109812687898051",
+        "NormalMap": "rbxassetid://114005654838071",
+        "RoughnessMap": "rbxassetid://79003176974911"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "traffic_cone",
+      "properties": {
+        "ColorMap": "rbxassetid://114731001003025",
+        "NormalMap": "rbxassetid://121111742836705",
+        "RoughnessMap": "rbxassetid://127101009254115",
+        "MetalnessMap": "rbxassetid://89374820060038"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "trash_bag",
+      "properties": {
+        "ColorMap": "rbxassetid://84695239737758",
+        "NormalMap": "rbxassetid://104463963757971",
+        "RoughnessMap": "rbxassetid://128823898407107"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "truck_crashed",
+      "properties": {
+        "ColorMap": "rbxassetid://135786990030999",
+        "NormalMap": "rbxassetid://139742247727845",
+        "RoughnessMap": "rbxassetid://71205109341973",
+        "MetalnessMap": "rbxassetid://85794836421011"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "tyre",
+      "properties": {
+        "ColorMap": "rbxassetid://86973838666994",
+        "NormalMap": "rbxassetid://71016032134160",
+        "RoughnessMap": "rbxassetid://134834671953865"
+      }
+    }
+  ]
+}

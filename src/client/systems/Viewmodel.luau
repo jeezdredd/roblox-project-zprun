@@ -13,6 +13,8 @@ local InputController = require(script.Parent.Parent.controllers.InputController
 local CameraEffectsController = require(script.Parent.Parent.controllers.CameraEffectsController)
 local ViewmodelBuilder = require(script.Parent.ViewmodelBuilder)
 local AnimationSequencer = require(script.Parent.AnimationSequencer)
+local PackViewmodel = require(script.Parent.PackViewmodel)
+local ViewmodelPackConfig = require(ReplicatedStorage.Shared.config.ViewmodelPackConfig)
 local HipAim = require(script.Parent.HipAim)
 
 local Viewmodel = {}
@@ -20,10 +22,21 @@ local Viewmodel = {}
 local player = Players.LocalPlayer
 
 local rig: ViewmodelBuilder.Rig? = nil
+-- a weapon pack rig (skinned arms + weapon with baked clips) replaces `rig` for every
+-- class ViewmodelPackConfig lists once the server has loaded its model
+local packRig: PackViewmodel.Rig? = nil
 local isVisible = true
 local sequencer = AnimationSequencer.new("Pistol")
-local phaseListeners: { (string) -> () } = {}
+-- listeners get (phase, weapon class, tag); the tag says what the clip was doing
+-- ("fire", "tactical", "empty", "shell", "chamber", "equip") so a pump after a shot can
+-- be told from the chambering pump after a reload
+local phaseListeners: { (string, string, string?) -> () } = {}
 local sprintActive = false
+local currentClass = "Pistol"
+-- what the legacy sequencer is playing, for the tag of the phases it emits
+local legacyTag: string? = nil
+-- when the current rig started its draw; WeaponController holds fire for drawTime
+local drawnAt = 0
 
 -- The viewmodel only belongs to the run. Outside the Mission phase the camera is not
 -- ours, so a rig parented to it hangs in mid-air in front of the hub camera.
@@ -89,12 +102,23 @@ local function laggedCamera(current: CFrame): CFrame
 	return cameraHistory[index] or current
 end
 
+local function emitPhase(name: string, tag: string?)
+	for _, listener in phaseListeners do
+		listener(name, currentClass, tag)
+	end
+end
+
 local function destroyRig()
 	local previous = rig
 	if previous then
 		previous.model:Destroy()
 	end
 	rig = nil
+	local previousPack = packRig
+	if previousPack then
+		PackViewmodel.destroy(previousPack)
+	end
+	packRig = nil
 	sprintActive = false
 	clipDriven = false
 	sequencer:stop()
@@ -114,10 +138,29 @@ function Viewmodel.setWeapon(weaponId: string)
 	if not camera then
 		return
 	end
+	-- the draw clock starts now: the old rig can stay on screen while the new one
+	-- loads, and it must not count as the new weapon being ready
+	drawnAt = os.clock()
 
+	if coroutine.isyieldable() then
+		if ViewmodelPackConfig.get(config.class) then
+			local folder = ReplicatedStorage:WaitForChild("ViewModelPacks", 5)
+			if folder then
+				folder:WaitForChild(config.class, 5)
+			end
+		end
+		ViewmodelBuilder.waitForMeshes(3)
+	end
 	destroyRig()
-	rig = ViewmodelBuilder.build(config, camera)
+	currentClass = config.class
+	if PackViewmodel.available(config.class) then
+		packRig = PackViewmodel.build(config.class, camera)
+	end
+	if not packRig then
+		rig = ViewmodelBuilder.build(config, camera)
+	end
 	isVisible = true
+	drawnAt = os.clock()
 
 	recoilRotScale = ViewmodelConfig.recoilRotScale(config.class)
 	recoilPos:SetProperties(config.recoilStiffness, config.recoilDamping)
@@ -134,7 +177,18 @@ function Viewmodel.setWeapon(weaponId: string)
 
 	sequencer:setClass(config.class)
 	sequencer:play("Equip")
+	legacyTag = "equip"
 	sprintActive = false
+	emitPhase("Draw", "equip")
+end
+
+-- Seconds since the current rig started its draw (huge when there is no rig, so a
+-- missing viewmodel never holds fire).
+function Viewmodel.drawElapsed(): number
+	if not packRig and not rig then
+		return math.huge
+	end
+	return os.clock() - drawnAt
 end
 
 -- Call this with true for as long as an AnimationTrack is driving rig.animator, and
@@ -186,22 +240,64 @@ function Viewmodel.onFired(config: WeaponsConfig.WeaponConfig)
 		slideSpring:Impulse(14)
 	end
 
-	sequencer:play("Fire")
+	local pack = packRig
+	if pack then
+		PackViewmodel.fire(pack, 1 / math.max(config.fireRate, 0.01))
+	else
+		-- a shot that cuts a reload or the draw blends out of that pose instead of snapping
+		local cutting = sequencer:isPlaying("ReloadShort") or sequencer:isPlaying("ReloadFull") or sequencer:isPlaying("Equip")
+		sequencer:play("Fire", nil, if cutting then 0.12 else nil)
+		legacyTag = "fire"
+	end
 	sprintActive = false
 end
 
 -- The authored sequence drives the pose and the audio phases; the springs only add
 -- the mechanical travel on top, so nothing here runs on a wall-clock timer any more.
-function Viewmodel.playReload(_duration: number, magazineEmpty: boolean?)
-	sequencer:play(if magazineEmpty then "ReloadFull" else "ReloadShort")
+-- The plan's times come from WeaponsConfig, the same timeline the server counts ammo on.
+function Viewmodel.playReload(plan: PackViewmodel.ReloadPlan)
+	local pack = packRig
+	if pack then
+		PackViewmodel.reload(pack, plan)
+	else
+		local config = plan.config
+		if config.reloadStyle == "shell" then
+			-- legacy fallback for a pump without its pack: one pass over the whole reload
+			sequencer:play("ReloadShort", WeaponsConfig.shellReloadTime(config, plan.shells, plan.empty, plan.scale))
+			legacyTag = "shell"
+		else
+			local _, total = WeaponsConfig.magazineReload(config, plan.empty, plan.scale)
+			sequencer:play(if plan.empty then "ReloadFull" else "ReloadShort", total)
+			legacyTag = if plan.empty then "empty" else "tactical"
+		end
+	end
 	sprintActive = false
 end
 
-function Viewmodel.onPhase(listener: (string) -> ())
+-- Fire interrupting a reload (see PackViewmodel.cancelReload). The legacy rig simply
+-- blends back to rest.
+function Viewmodel.cancelReload(cancel: PackViewmodel.ReloadCancel)
+	local pack = packRig
+	if pack then
+		PackViewmodel.cancelReload(pack, cancel)
+		return
+	end
+	if sequencer:isPlaying("ReloadShort") or sequencer:isPlaying("ReloadFull") then
+		sequencer:stop()
+	end
+	legacyTag = nil
+end
+
+function Viewmodel.onPhase(listener: (string, string, string?) -> ())
 	table.insert(phaseListeners, listener)
 end
 
 function Viewmodel.toggleInspect()
+	local pack = packRig
+	if pack then
+		PackViewmodel.inspect(pack)
+		return
+	end
 	if not inspecting then
 		sequencer:play("Inspect")
 	end
@@ -218,6 +314,10 @@ function Viewmodel.toggleInspect()
 end
 
 function Viewmodel.getMuzzlePosition(): Vector3
+	local pack = packRig
+	if pack then
+		return pack.muzzle.WorldPosition
+	end
 	local current = rig
 	if current then
 		return current.muzzle.WorldPosition
@@ -230,16 +330,30 @@ function Viewmodel.getMuzzlePosition(): Vector3
 end
 
 function Viewmodel.getMuzzleAttachment(): Attachment?
+	if packRig then
+		return packRig.muzzle
+	end
 	local current = rig
 	return if current then current.muzzle else nil
 end
 
 function Viewmodel.getEjectAttachment(): Attachment?
+	if packRig then
+		return packRig.eject
+	end
 	local current = rig
 	return if current then current.eject else nil
 end
 
 function Viewmodel.setVisible(visible: boolean)
+	local pack = packRig
+	if pack then
+		if isVisible ~= visible then
+			isVisible = visible
+			PackViewmodel.setVisible(pack, visible)
+		end
+		return
+	end
 	local current = rig
 	if not current or isVisible == visible then
 		return
@@ -307,7 +421,9 @@ local function updateChannels(deltaTime: number, cameraCFrame: CFrame)
 
 	HipAim.update(deltaTime, cameraCFrame)
 	local current = rig
-	local weaponPosition = if current then current.root.Position else cameraCFrame.Position
+	local weaponPosition = if packRig then packRig.muzzle.WorldPosition
+		elseif current then current.root.Position
+		else cameraCFrame.Position
 	local aimYaw, aimPitch = HipAim.angles(cameraCFrame, weaponPosition)
 	aimRot:SetTarget(Vector3.new(aimPitch, aimYaw, -aimYaw * ViewmodelConfig.hipAim.rollCouple))
 
@@ -349,9 +465,48 @@ local function trackImpact(deltaTime: number)
 	lastVerticalVelocity += (verticalVelocity - lastVerticalVelocity) * math.clamp(deltaTime * 20, 0, 1)
 end
 
+local function stepPack(pack: PackViewmodel.Rig, deltaTime: number, camera: Camera)
+	local cameraCFrame = camera.CFrame
+	pushCameraHistory(cameraCFrame)
+	trackImpact(deltaTime)
+	updateChannels(deltaTime, cameraCFrame)
+
+	local scale = ViewmodelPackConfig.PROCEDURAL_POSITION_SCALE
+	local hipAim = ViewmodelConfig.hipAim
+	local position = (swayPos.value * ViewmodelConfig.sway.positionScale
+		+ Vector3.new(aimRot.value.Y * hipAim.shift, -math.abs(aimRot.value.Y) * hipAim.dip, 0)
+		+ movePos.value * ViewmodelPackConfig.BOB_SCALE
+		+ breathe.value
+		+ impactPos.value
+		+ Vector3.new(tiltRoll.value.X, 0, 0)
+		+ recoilPos.value * -1) * scale
+	local rotation = swayRot.value
+		+ aimRot.value
+		+ driftRot.value
+		+ lagRot.value
+		+ moveRot.value * ViewmodelPackConfig.BOB_SCALE
+		+ recoilRot.value * recoilRotScale
+		+ Vector3.new(0, 0, tiltRoll.value.Z)
+	local placement = cameraCFrame * CFrame.new(position) * CFrame.Angles(rotation.X, rotation.Y, rotation.Z)
+	local moving = ExertionState.getSpeed() > 1
+	PackViewmodel.step(pack, deltaTime, placement, moving, emitPhase)
+end
+
 local function step(deltaTime: number)
-	local current = rig
 	local camera = currentCamera()
+	local pack = packRig
+	if active and pack and camera and pack.model.Parent == camera then
+		local character = player.Character
+		local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
+		if not humanoid or humanoid.Health <= 0 then
+			Viewmodel.setVisible(false)
+			return
+		end
+		Viewmodel.setVisible(true)
+		stepPack(pack, deltaTime, camera)
+		return
+	end
+	local current = rig
 	if not active or not current or not camera or current.model.Parent ~= camera then
 		return
 	end
@@ -404,7 +559,7 @@ local function step(deltaTime: number)
 		+ Vector3.new(0, 0, tiltRoll.value.Z)
 
 	local rootCFrame = cameraCFrame
-		* ViewmodelConfig.BASE_OFFSET
+		* ViewmodelConfig.baseOffset(current.class)
 		* CFrame.new(position)
 		* CFrame.Angles(rotation.X, rotation.Y, rotation.Z)
 
@@ -442,10 +597,8 @@ local function step(deltaTime: number)
 end
 
 function Viewmodel.init()
-	sequencer:onPhase(function(name)
-		for _, listener in phaseListeners do
-			listener(name)
-		end
+	sequencer:onPhase(function(name: string)
+		emitPhase(name, legacyTag)
 	end)
 
 	Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()

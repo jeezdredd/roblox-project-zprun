@@ -110,6 +110,17 @@ local function updateCamera(deltaTime: number)
 		return
 	end
 
+	-- Studio QA: a fixed shot for screenshots, set from the command bar as the workspace
+	-- attribute DevCameraCFrame (nil gives the camera back)
+	if RunService:IsStudio() then
+		local shot = Workspace:GetAttribute("DevCameraCFrame")
+		if typeof(shot) == "CFrame" then
+			camera.CameraType = Enum.CameraType.Scriptable
+			camera.CFrame = shot
+			return
+		end
+	end
+
 	local character = Players.LocalPlayer.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
 	if not character or not root or not root:IsA("BasePart") then
@@ -126,7 +137,8 @@ local function updateCamera(deltaTime: number)
 	-- orbit controller, keep the character visible and open up the zoom clamp that
 	-- CursorMode uses to hold first person. Checked before FREEZE_RUN because both are
 	-- inspection modes and this one wants the stock camera either way.
-	if RunService:IsStudio() and DevConfig.THIRD_PERSON_VIEW then
+	-- (the test yard toggles the same view at run time with V, SandboxInput)
+	if RunService:IsStudio() and (DevConfig.THIRD_PERSON_VIEW or Workspace:GetAttribute("DevThirdPerson") == true) then
 		if camera.CameraType ~= Enum.CameraType.Custom then
 			camera.CameraType = Enum.CameraType.Custom
 		end

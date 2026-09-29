@@ -20,3 +20,15 @@ assets/viewmodels/source/**/*.rgba*
 assets/viewmodels/source/**/*_meshids.json
 docs/research/ITD2_*.json
 docs/research/ITD2_*.txt
+
+# Mixamo source for the first-person arms (115 MB, re-download from Mixamo)
+assets/viewmodels/arms/source/*.fbx
+tools/arms_rig/tex/
+tools/arms_rig/__pycache__/
+
+# scratch files the session could not delete (delete by hand)
+_to_delete/
+
+# local tool state
+.claude/settings.local.json
+__pycache__/

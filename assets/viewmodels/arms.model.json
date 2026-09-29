@@ -1,0 +1,117 @@
+{
+  "className": "Model",
+  "children": [
+    {
+      "className": "MeshPart",
+      "name": "HandR",
+      "properties": {
+        "Size": [
+          0.5115,
+          0.4493,
+          0.8807
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "MeshId": "rbxassetid://106110690050280"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "ColorMap": "rbxassetid://73128056603277",
+            "RoughnessMap": "rbxassetid://80202372425255",
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "ForearmR",
+      "properties": {
+        "Size": [
+          0.9432,
+          0.6559,
+          1.912
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "MeshId": "rbxassetid://74494921188414"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "ColorMap": "rbxassetid://73128056603277",
+            "RoughnessMap": "rbxassetid://80202372425255",
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "HandL",
+      "properties": {
+        "Size": [
+          0.5195,
+          0.5406,
+          0.7537
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "MeshId": "rbxassetid://89480608005703"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "ColorMap": "rbxassetid://93252265496322",
+            "RoughnessMap": "rbxassetid://91663241300428",
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "ForearmL",
+      "properties": {
+        "Size": [
+          0.9475,
+          0.654,
+          1.9102
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "MeshId": "rbxassetid://72014854908407"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "ColorMap": "rbxassetid://93252265496322",
+            "RoughnessMap": "rbxassetid://91663241300428",
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    }
+  ]
+}

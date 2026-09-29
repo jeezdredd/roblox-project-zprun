@@ -47,4 +47,24 @@ DevConfig.TARGET_RANGE = {
 	respawnDelay = 1.5,
 }
 
+-- Test yard instead of the run: you spawn on foot (the run frozen, stock first-person
+-- camera, weapons live, keys 1-4 swap guns) in a flat yard away from the road with a
+-- row of each zombie skin standing idle and respawning, target dummies, surface strips
+-- for footstep and casing sounds, an interior room for the indoor acoustics, and a row
+-- of props. Sandbox keys: G sends a chasing wave, H resets the yard, J calms everyone,
+-- T teleports back to the start, V third person, Z slow motion, B plays the sound lane.
+-- The yard also has both clip galleries (every zombie and weapon clip, seen from the
+-- side), material walls, a texture wall and a sound lane (see Sandbox.luau).
+-- Set enabled = false to play the normal run.
+DevConfig.SANDBOX = {
+	enabled = true,
+	origin = Vector3.new(3000, 0, 0),
+	respawnDelay = 3,
+	waveSize = 6,
+}
+-- the yard is walked, so it rides on FREEZE_RUN's controls and camera
+if DevConfig.SANDBOX.enabled then
+	DevConfig.FREEZE_RUN = true
+end
+
 return DevConfig

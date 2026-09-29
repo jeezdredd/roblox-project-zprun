@@ -6,9 +6,9 @@
       "name": "Main",
       "properties": {
         "Size": [
-          0.387294,
-          0.886989,
-          2.756251
+          0.404812,
+          0.682435,
+          1.749855
         ],
         "CFrame": [
           0.0,
@@ -37,48 +37,8 @@
         "CanTouch": false,
         "CastShadow": false,
         "Massless": true,
-        "MeshId": "rbxassetid://78407136143951",
-        "TextureID": "rbxassetid://86347151304351"
-      }
-    },
-    {
-      "className": "MeshPart",
-      "name": "Slide",
-      "properties": {
-        "Size": [
-          0.112737,
-          0.058395,
-          0.70841
-        ],
-        "CFrame": [
-          0.007788,
-          0.118199,
-          -0.806509,
-          1.0,
-          0.0,
-          0.0,
-          0.0,
-          1.0,
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "Color": [
-          0.639216,
-          0.635294,
-          0.647059
-        ],
-        "Material": "Plastic",
-        "Transparency": 0.0,
-        "Anchored": false,
-        "CanCollide": false,
-        "CanQuery": false,
-        "CanTouch": false,
-        "CastShadow": false,
-        "Massless": true,
-        "MeshId": "rbxassetid://87462343759435",
-        "TextureID": "rbxassetid://136658706504639"
+        "MeshId": "rbxassetid://115487507097144",
+        "TextureID": "rbxassetid://112227767585625"
       }
     },
     {
@@ -86,14 +46,14 @@
       "name": "Magazine",
       "properties": {
         "Size": [
-          0.14707,
-          0.967766,
-          0.431763
+          0.159757,
+          0.999091,
+          0.43796
         ],
         "CFrame": [
-          0.006169,
-          -0.51272,
-          -0.288555,
+          -0.000476,
+          -0.487122,
+          0.017853,
           1.0,
           0.0,
           0.0,
@@ -117,8 +77,8 @@
         "CanTouch": false,
         "CastShadow": false,
         "Massless": true,
-        "MeshId": "rbxassetid://106991838266142",
-        "TextureID": "rbxassetid://116284514539934"
+        "MeshId": "rbxassetid://86635758444546",
+        "TextureID": "rbxassetid://95576953652389"
       }
     },
     {
@@ -126,14 +86,14 @@
       "name": "Barrel",
       "properties": {
         "Size": [
-          0.172594,
-          0.204398,
-          0.696983
+          0.162435,
+          0.1541,
+          1.343268
         ],
         "CFrame": [
-          0.006003,
-          0.04214,
-          -1.535511,
+          -0.000714,
+          0.156745,
+          -0.79187,
           1.0,
           0.0,
           0.0,
@@ -157,8 +117,8 @@
         "CanTouch": false,
         "CastShadow": false,
         "Massless": true,
-        "MeshId": "rbxassetid://138647947156830",
-        "TextureID": "rbxassetid://86372494812294"
+        "MeshId": "rbxassetid://105130879509260",
+        "TextureID": "rbxassetid://91338895202759"
       }
     },
     {
@@ -166,14 +126,14 @@
       "name": "Grip",
       "properties": {
         "Size": [
-          0.217899,
-          0.626644,
-          0.451027
+          0.234406,
+          0.635219,
+          0.467685
         ],
         "CFrame": [
-          0.004862,
-          -0.38617,
-          0.391145,
+          -0.002222,
+          -0.365166,
+          0.692291,
           1.0,
           0.0,
           0.0,
@@ -197,8 +157,128 @@
         "CanTouch": false,
         "CastShadow": false,
         "Massless": true,
-        "MeshId": "rbxassetid://100661930051242",
-        "TextureID": "rbxassetid://123975130681789"
+        "MeshId": "rbxassetid://112047820270744",
+        "TextureID": "rbxassetid://123364067872277"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "Handguard",
+      "properties": {
+        "Size": [
+          0.305216,
+          0.298602,
+          0.715892
+        ],
+        "CFrame": [
+          -0.000952,
+          0.146756,
+          -0.4729,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://102626426975963",
+        "TextureID": "rbxassetid://100557206981076"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "Sight",
+      "properties": {
+        "Size": [
+          0.25043,
+          0.569708,
+          1.645585
+        ],
+        "CFrame": [
+          -0.001984,
+          0.262865,
+          -0.180115,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://100765828336190",
+        "TextureID": "rbxassetid://82715037067577"
+      }
+    },
+    {
+      "className": "MeshPart",
+      "name": "Stock",
+      "properties": {
+        "Size": [
+          0.292671,
+          0.719882,
+          0.98338
+        ],
+        "CFrame": [
+          -0.001825,
+          -0.066551,
+          1.294922,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "Color": [
+          0.639216,
+          0.635294,
+          0.647059
+        ],
+        "Material": "Plastic",
+        "Transparency": 0.0,
+        "Anchored": false,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "CastShadow": false,
+        "Massless": true,
+        "MeshId": "rbxassetid://122501819691209",
+        "TextureID": "rbxassetid://137312605271984"
       }
     },
     {
@@ -211,9 +291,9 @@
           0.05
         ],
         "CFrame": [
-          0.006003,
-          0.04214,
-          -1.918003,
+          -0.000714,
+          0.156745,
+          -1.463504,
           1.0,
           0.0,
           0.0,
@@ -249,9 +329,9 @@
           0.05
         ],
         "CFrame": [
-          0.210647,
-          -0.000801,
-          -0.254555,
+          0.228436,
+          0.065,
+          -0.156,
           1.0,
           0.0,
           0.0,
@@ -287,9 +367,9 @@
           0.05
         ],
         "CFrame": [
-          0.004862,
-          -0.42017,
-          0.425144,
+          -0.002222,
+          -0.430166,
+          0.731291,
           1.0,
           0.0,
           0.0,
@@ -325,9 +405,9 @@
           0.05
         ],
         "CFrame": [
-          0.0,
-          -0.11086,
-          -1.059511,
+          -0.000952,
+          -0.028544,
+          -0.4729,
           1.0,
           0.0,
           0.0,

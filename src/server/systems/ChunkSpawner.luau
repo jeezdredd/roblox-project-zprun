@@ -43,7 +43,9 @@ local function spawnChunk(index: number)
 
 	local blend: ChunkFactory.Blend? = nil
 	local blendStart = entry.endIndex - transitionChunks + 1
-	if nextEntry and index >= blendStart then
+	-- An open fork has only a provisional location; never blend into it.
+	local nextOpen = nextEntry ~= nil and nextEntry.fork ~= nil and not nextEntry.fork.resolved
+	if nextEntry and not nextOpen and index >= blendStart then
 		local nextLocation = LocationsConfig.get(nextEntry.locationId)
 		if nextLocation then
 			local alpha = (index - blendStart + 1) / (transitionChunks + 1)
@@ -114,8 +116,11 @@ local function step()
 	updateBiomeAttribute(leadDistance)
 
 	local spawnEdge = leadDistance + GameConstants.SPAWN_AHEAD_DISTANCE
+	local hold = RoutePlan.holdIndex()
 	while startOffset + nextIndex * chunkLength < spawnEdge do
-
+		if hold and nextIndex >= hold then
+			break
+		end
 		spawnChunk(nextIndex)
 		nextIndex += 1
 	end

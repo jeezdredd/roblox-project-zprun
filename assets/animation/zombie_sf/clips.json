@@ -1,0 +1,162 @@
+{
+ "Walker": {
+  "idle": {
+   "source": "Idle",
+   "duration": 2.6667,
+   "loop": true,
+   "groundSpeed": 0.006,
+   "bones": 54
+  },
+  "walk_a": {
+   "source": "Walk",
+   "duration": 2.0,
+   "loop": true,
+   "groundSpeed": 0.876,
+   "bones": 52
+  },
+  "walk_b": {
+   "source": "Walk1",
+   "duration": 2.0,
+   "loop": true,
+   "groundSpeed": 0.876,
+   "bones": 52
+  },
+  "run": {
+   "source": "Run",
+   "duration": 1.6667,
+   "loop": true,
+   "groundSpeed": 12.015,
+   "bones": 52
+  },
+  "attack": {
+   "source": "Attack",
+   "duration": 1.0,
+   "loop": false,
+   "groundSpeed": 0.0,
+   "bones": 50
+  },
+  "death_back": {
+   "source": "FallingBack",
+   "duration": 1.4,
+   "loop": false,
+   "groundSpeed": 0.0,
+   "bones": 46
+  },
+  "death_forward": {
+   "source": "FallingForward",
+   "duration": 1.1667,
+   "loop": false,
+   "groundSpeed": 0.0,
+   "bones": 46
+  }
+ },
+ "Hazmat": {
+  "idle": {
+   "source": "Zombie_Idle",
+   "duration": 5.5417,
+   "loop": true,
+   "groundSpeed": 0.034,
+   "bones": 53
+  },
+  "walk_a": {
+   "source": "Zombie_Walk_Root",
+   "duration": 2.625,
+   "loop": true,
+   "groundSpeed": 0.774,
+   "bones": 53
+  },
+  "spotted": {
+   "source": "Zombie_EnemySpotted",
+   "duration": 5.4167,
+   "loop": false,
+   "groundSpeed": 0.0,
+   "bones": 53
+  },
+  "attack": {
+   "source": "Zombie_Skill",
+   "duration": 3.5417,
+   "loop": false,
+   "groundSpeed": 0.0,
+   "bones": 53
+  }
+ },
+ "Ghoul": {
+  "idle": {
+   "source": "STATIK",
+   "duration": 1.3,
+   "loop": true,
+   "groundSpeed": 0.007,
+   "bones": 24
+  },
+  "idle_b": {
+   "source": "STATIK2",
+   "duration": 1.3,
+   "loop": true,
+   "groundSpeed": 0.012,
+   "bones": 28
+  },
+  "walk_a": {
+   "source": "step",
+   "duration": 0.9333,
+   "loop": true,
+   "groundSpeed": 5.939,
+   "bones": 28
+  },
+  "walk_b": {
+   "source": "spid step",
+   "duration": 0.6333,
+   "loop": true,
+   "groundSpeed": 8.961,
+   "bones": 28
+  },
+  "run": {
+   "source": "run",
+   "duration": 0.5333,
+   "loop": true,
+   "groundSpeed": 15.22,
+   "bones": 25
+  },
+  "run_b": {
+   "source": "run.002",
+   "duration": 0.5,
+   "loop": true,
+   "groundSpeed": 20.706,
+   "bones": 54
+  },
+  "attack": {
+   "source": "ATACK1",
+   "duration": 0.6333,
+   "loop": false,
+   "groundSpeed": 0.0,
+   "bones": 34
+  },
+  "attack_b": {
+   "source": "ATACK2",
+   "duration": 0.6333,
+   "loop": false,
+   "groundSpeed": 0.0,
+   "bones": 24
+  },
+  "death_back": {
+   "source": "DEAD1",
+   "duration": 0.8667,
+   "loop": false,
+   "groundSpeed": 0.0,
+   "bones": 27
+  },
+  "death_forward": {
+   "source": "DEAD2",
+   "duration": 0.9667,
+   "loop": false,
+   "groundSpeed": 0.0,
+   "bones": 28
+  },
+  "hit": {
+   "source": "FTAC4",
+   "duration": 0.9667,
+   "loop": false,
+   "groundSpeed": 0.0,
+   "bones": 67
+  }
+ }
+}

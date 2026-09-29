@@ -137,7 +137,7 @@
     "license": "CC-BY 3.0 - congusbongus, derived from boots on aluminum ladder 01 by Eelke (freesound 462598)",
     "file": "assets/audio/footsteps/metal_03.ogg",
     "assetId": "100991598130169",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/footsteps/concrete_01": {
     "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
@@ -214,7 +214,7 @@
     "license": "CC0 - congusbongus, derived from Gravel Footsteps pack by Ali_6868 (freesound pack 21608)",
     "file": "assets/audio/footsteps/dirt_02.ogg",
     "assetId": "139157958457273",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/footsteps/dirt_03": {
     "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
@@ -235,14 +235,14 @@
     "license": "CC0 - Fantozzi, submitted by qubodup",
     "file": "assets/audio/footsteps/sand_02.ogg",
     "assetId": "124347093278523",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/footsteps/sand_03": {
     "source": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
     "license": "CC0 - Fantozzi, submitted by qubodup",
     "file": "assets/audio/footsteps/sand_03.ogg",
     "assetId": "134445351058100",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/footsteps/water_01": {
     "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
@@ -283,7 +283,7 @@
     "source": "https://commons.wikimedia.org/wiki/File:American_police_siren_i.ogg",
     "license": "Public domain - lezer",
     "file": "assets/audio/city/siren_police.ogg",
-    "assetId": 0,
+    "assetId": "120683554803999",
     "status": "rejected",
     "note": "Real emergency-service siren rejected by Roblox moderation. Needs a stylised siren, not a genuine recording."
   },
@@ -667,11 +667,13 @@
     "status": "approved"
   },
   "audio/weapons/dryfire": {
-    "source": "https://kenney.nl/assets/interface-sounds",
-    "license": "CC0",
-    "file": "assets/audio/weapons/dryfire.ogg",
-    "assetId": "92885069261997",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_7.wav (0.310-0.470 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/dryfire_ffsl.ogg",
+    "status": "approved",
+    "note": "AK-47 \"Dry fire\": hammer falls on empty chamber; 142 ms, mono 44.1 kHz, peak -9.0 dBFS, main transient at 11 ms",
+    "previousAssetId": "92885069261997",
+    "assetId": "116702103253689"
   },
   "audio/weapons/shell_01": {
     "source": "https://kenney.nl/assets/impact-sounds",
@@ -744,102 +746,130 @@
     "status": "approved"
   },
   "audio/weapons/close_pistol": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/close_pistol.wav",
-    "assetId": "74305022147056",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Walther PPQ X_39P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 1.412 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (0.98 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_pistol_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_pistol; 133 ms, RMS -22.5 dBFS",
+    "previousAssetId": "86631815895310",
+    "assetId": "140425800708531"
   },
   "audio/weapons/close_smg": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/close_smg.wav",
-    "assetId": "120415397225180",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 0.312 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.24 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_smg_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_smg; 133 ms, RMS -20.5 dBFS",
+    "previousAssetId": "95787912547318",
+    "assetId": "138019058475822"
   },
   "audio/weapons/close_rifle": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/close_rifle.wav",
-    "assetId": "110884224691219",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, AK-47 C_28P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 0.610 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.92 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_rifle_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_rifle; 133 ms, RMS -19.8 dBFS",
+    "previousAssetId": "94851895053394",
+    "assetId": "74351622653742"
   },
   "audio/weapons/close_shotgun": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/close_shotgun.wav",
-    "assetId": "102335137671396",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Benelli Nova O_21P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 0.436 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (3.33 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_shotgun_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_shotgun; 133 ms, RMS -18.8 dBFS",
+    "previousAssetId": "119624422295402",
+    "assetId": "139031577665682"
   },
   "audio/weapons/tail_open": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/tail_open.wav",
-    "assetId": "108476728399626",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_31.wav from 0.595 s (after the mid mic's own direct blast), 1.9 s, 60 Hz high-pass, 30 ms fade in, 0.5 s fade out (build_shots_v5.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/tail_open_v5.ogg",
+    "status": "approved",
+    "note": "v2 2026-09-29: the round-1 tail kept the mid-distance direct shot at 40-150 ms, heard as a dull second shot under every close shot (the muffled, roomy report); this one is reflections only",
+    "previousAssetId": "85602937749746",
+    "assetId": "78946267345243"
   },
   "audio/weapons/tail_interior": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/tail_interior.wav",
-    "assetId": "105323708354342",
-    "status": "approved"
+    "source": "freesound \"Small pistol gunshot indoors\" by acidsnowflake (sound 402789; 9 mm PAK pistol fired in a small room), https://freesound.org/people/acidsnowflake/sounds/402789/, HQ Vorbis preview (original download needs a login) (1.300-2.400 s window), trimmed/normalized by tools: dual-mono to mono, 35 Hz high-pass, direct blast cut (starts ~30 ms after the shot), 10 ms fade-in, 450 ms cosine fade-out, resampled to 44.1 kHz, normalized to -25 LUFS momentary max like tail_open, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/tail_interior.ogg",
+    "status": "approved",
+    "note": "small-room reverb tail of a pistol shot (RT60 ~0.9 s low / ~0.5 s at 8 kHz), starting ~30 ms after the direct blast; 1100 ms, mono 44.1 kHz, peak -8.0 dBFS, L100 -19.8 LUFS, main transient at 29 ms; small hard room, RT60 ~0.9 s at 250 Hz, ~0.5 s at 8 kHz; decays below -90 dB by ~1.05 s",
+    "previousAssetId": "105323708354342",
+    "assetId": "127258634138499"
   },
   "audio/weapons/close_pistol_02": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/close_pistol_02.wav",
-    "assetId": "95057167104811",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Walther PPQ X_39P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 6.446 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (0.98 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_pistol_02_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_pistol; 133 ms, RMS -21.2 dBFS",
+    "previousAssetId": "104257622758067",
+    "assetId": "71310663165178"
   },
   "audio/weapons/close_pistol_03": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/close_pistol_03.wav",
-    "assetId": "104162930240953",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Walther PPQ X_39P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 10.664 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (0.93 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_pistol_03_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_pistol; 133 ms, RMS -21.3 dBFS",
+    "previousAssetId": "109599073979097",
+    "assetId": "91275769479992"
   },
   "audio/weapons/close_rifle_02": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/close_rifle_02.wav",
-    "assetId": "83354177139368",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, AK-47 C_28P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 3.258 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.86 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_rifle_02_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_rifle; 133 ms, RMS -19.7 dBFS",
+    "previousAssetId": "117614776691145",
+    "assetId": "97564265256784"
   },
   "audio/weapons/close_rifle_03": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/close_rifle_03.wav",
-    "assetId": "74726287934893",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, AK-47 C_28P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 6.026 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.96 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_rifle_03_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_rifle; 133 ms, RMS -20.0 dBFS",
+    "previousAssetId": "116272257357981",
+    "assetId": "130840182225955"
   },
   "audio/weapons/close_smg_02": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/close_smg_02.wav",
-    "assetId": "113891967382551",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 3.506 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.16 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_smg_02_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_smg; 133 ms, RMS -21.1 dBFS",
+    "previousAssetId": "87740059790533",
+    "assetId": "113548570793732"
   },
   "audio/weapons/close_smg_03": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/close_smg_03.wav",
-    "assetId": "133963121189870",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 6.730 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.29 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_smg_03_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_smg; 133 ms, RMS -20.8 dBFS",
+    "previousAssetId": "72344741872009",
+    "assetId": "133282540281128"
   },
   "audio/weapons/close_shotgun_02": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/close_shotgun_02.wav",
-    "assetId": "104315440827993",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Benelli Nova O_21P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 3.466 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (3.42 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_shotgun_02_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_shotgun; 133 ms, RMS -19.2 dBFS",
+    "previousAssetId": "131278557705255",
+    "assetId": "90281415540683"
   },
   "audio/weapons/close_shotgun_03": {
-    "source": "https://opengameart.org/content/gunshot-sounds",
-    "license": "CC BY 3.0 (Vincent Sevedge)",
-    "file": "assets/audio/weapons/close_shotgun_03.wav",
-    "assetId": "89094909367132",
-    "status": "approved"
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Benelli Nova O_17P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 3.718 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (0.62 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/close_shotgun_03_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_shotgun; 133 ms, RMS -17.0 dBFS",
+    "previousAssetId": "71304188783053",
+    "assetId": "125564729072106"
   },
   "animation/weapon/fire": {
     "source": "authored in Blender (pending)",
@@ -911,14 +941,14 @@
     "license": "CC0 - congusbongus, derived from bone shell by blukotek (freesound 249319)",
     "file": "assets/audio/zombie/bone_rattle_01.ogg",
     "assetId": "87281543307970",
-    "status": "reviewing"
+    "status": "approved"
   },
   "audio/zombie/bone_rattle_02": {
     "source": "https://opengameart.org/content/footsteps-on-different-surfaces",
     "license": "CC0 - congusbongus, derived from bone shell by blukotek (freesound 249319)",
     "file": "assets/audio/zombie/bone_rattle_02.ogg",
     "assetId": "116306680002799",
-    "status": "reviewing"
+    "status": "approved"
   },
   "viewmodel/rifle/mesh_main": {
     "source": "Cube 3D (Roblox GenerationService), generated in Studio for this project",
@@ -1241,5 +1271,2127 @@
     "assetId": 120627592212491,
     "status": "approved",
     "note": "consumed by scripts/build_zombie_model.py"
+  },
+  "mesh/world/tree_oak": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "realistic deciduous oak tree, thick brown bark trunk with visible branches, full leafy green crown, stylized realistic game asset",
+    "triangles": 3918,
+    "textureAssetId": "112861416574183",
+    "assetId": "106667262972265",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/tree_oak": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "112861416574183",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/tree_oak"
+  },
+  "mesh/world/tree_birch": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "leafy birch tree, slender white bark trunk with black marks, light green rounded crown of leaves, realistic game asset, flat neutral albedo texture without baked lighting, no floating parts",
+    "triangles": 3994,
+    "textureAssetId": "116065031802589",
+    "assetId": "119384854014678",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/tree_birch": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "116065031802589",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/tree_birch"
+  },
+  "mesh/world/tree_pine": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "tall pine spruce conifer tree, straight brown trunk, dense dark green needle layers, realistic game asset",
+    "triangles": 3998,
+    "textureAssetId": "121575405799929",
+    "assetId": "118255712726163",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/tree_pine": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "121575405799929",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/tree_pine"
+  },
+  "mesh/world/tree_dead": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "dead leafless tree, bare twisted grey-brown trunk and branches, dry cracked bark, wasteland, realistic game asset, flat neutral albedo texture without baked lighting, no floating parts",
+    "triangles": 2914,
+    "textureAssetId": "87743481345358",
+    "assetId": "71409537556706",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/tree_dead": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "87743481345358",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/tree_dead"
+  },
+  "mesh/world/bush": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "dense round green leafy bush shrub, realistic game asset, flat neutral albedo texture without baked lighting, no floating parts",
+    "triangles": 2700,
+    "textureAssetId": "102034065993976",
+    "assetId": "115572590916976",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/bush": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "102034065993976",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/bush"
+  },
+  "mesh/world/rock_boulder": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "single large weathered grey rock boulder, rounded irregular natural shape, cracks, lichen patches, one solid piece, realistic game asset, flat neutral albedo texture without baked lighting, no floating parts",
+    "triangles": 1498,
+    "textureAssetId": "120219545000443",
+    "assetId": "139040145331146",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/rock_boulder": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "120219545000443",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/rock_boulder"
+  },
+  "mesh/world/car_sedan": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "abandoned rusty four door sedan car, dirty faded paint, flat tires, broken windows, zombie apocalypse wreck, realistic game asset",
+    "triangles": 4440,
+    "textureAssetId": "134975378871906",
+    "assetId": "72640520469934",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/car_sedan": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "134975378871906",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/car_sedan"
+  },
+  "mesh/world/car_pickup": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "abandoned rusty old pickup truck, dirty faded red paint, dented panels, flat tires, zombie apocalypse, realistic game asset, flat neutral albedo texture without baked lighting, no floating parts",
+    "triangles": 4908,
+    "textureAssetId": "123081575425798",
+    "assetId": "93348585797128",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/car_pickup": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "123081575425798",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/car_pickup"
+  },
+  "mesh/world/car_police": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "abandoned police patrol car, white body with dark blue stripe, light bar on roof, dirty, dented, flat tires, zombie apocalypse, realistic game asset, flat neutral albedo texture without baked lighting, no floating parts",
+    "triangles": 3802,
+    "textureAssetId": "91127534950766",
+    "assetId": "124603025541086",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/car_police": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "91127534950766",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/car_police"
+  },
+  "mesh/world/crop_corn_row": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "a dense row of tall maize corn plants growing close together, thin green stalks, many long narrow drooping green leaves, small pale tassels on top, cobs small and hidden in the leaves, realistic proportions, game asset, flat neutral albedo texture without baked lighting, no floating parts",
+    "triangles": 5994,
+    "textureAssetId": "72367574690490",
+    "assetId": "109051637159684",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/crop_corn_row": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "72367574690490",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/crop_corn_row"
+  },
+  "texture/props/car_wreck": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "121905215560047",
+    "status": "approved",
+    "note": "Albedo generated with mesh/props/car_wreck (its textureAssetId)"
+  },
+  "mesh/world/building_brick": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "abandoned four story brick apartment building, street facade with rows of windows, some windows boarded up, ground floor shop with rolled down shutter, flat roof with ledge, weathered and dirty, realistic game asset, flat neutral albedo texture without baked lighting, no floating parts",
+    "triangles": 2404,
+    "textureAssetId": "89422155107112",
+    "assetId": "77115867106393",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/building_brick": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "89422155107112",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/building_brick"
+  },
+  "mesh/world/grass_dry": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "clump of tall dry wild grass, straw yellow and pale brown blades, dense tuft, realistic game asset, flat neutral albedo texture without baked lighting, no floating parts",
+    "triangles": 1472,
+    "textureAssetId": "112272325139356",
+    "assetId": "112611390983512",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/grass_dry": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "112272325139356",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/grass_dry"
+  },
+  "mesh/world/car_hatch": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "abandoned dusty dark blue hatchback car, dented, flat tires, cracked windows, zombie apocalypse, realistic game asset, flat neutral albedo texture without baked lighting, no floating parts",
+    "triangles": 3888,
+    "textureAssetId": "102988574085048",
+    "assetId": "76396547925130",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/car_hatch": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "102988574085048",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/car_hatch"
+  },
+  "mesh/world/car_van": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "abandoned city bus, dirty faded yellow and white paint, broken windows, flat tires, rust streaks, zombie apocalypse, realistic game asset, flat neutral albedo texture without baked lighting, no floating parts (came out as a minibus, used as a van)",
+    "triangles": 4738,
+    "textureAssetId": "111222932214505",
+    "assetId": "104057069655872",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/car_van": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "111222932214505",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/car_van"
+  },
+  "mesh/world/building_concrete": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "abandoned five story grey concrete apartment block, street facade with regular rows of windows and small balconies, some broken windows, ground floor with closed shop fronts, flat roof, weathered stains, realistic game asset, flat neutral albedo texture without baked lighting, no floating parts",
+    "triangles": 2570,
+    "textureAssetId": "89430733760290",
+    "assetId": "105457964594240",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/building_concrete": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "89430733760290",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/building_concrete"
+  },
+  "mesh/world/building_townhouse": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "prompt": "abandoned three story old town building with ground floor corner shop, painted plaster facade in faded beige, tall windows with shutters, shop sign and awning, weathered, realistic game asset, flat neutral albedo texture without baked lighting, no floating parts",
+    "triangles": 2929,
+    "textureAssetId": "98654315346198",
+    "assetId": "75166075809292",
+    "status": "approved",
+    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+  },
+  "texture/world/building_townhouse": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "98654315346198",
+    "status": "approved",
+    "note": "Albedo generated with mesh/world/building_townhouse"
+  },
+  "zombie/walker2/mesh/head": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/Head.glb",
+    "assetId": "135391027506857",
+    "status": "approved",
+    "note": "Walker zombie R15 part Head; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/uppertorso": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/UpperTorso.glb",
+    "assetId": "137923626549712",
+    "status": "approved",
+    "note": "Walker zombie R15 part UpperTorso; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/lowertorso": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/LowerTorso.glb",
+    "assetId": "97166074717434",
+    "status": "approved",
+    "note": "Walker zombie R15 part LowerTorso; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/leftupperarm": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/LeftUpperArm.glb",
+    "assetId": "102584646601655",
+    "status": "approved",
+    "note": "Walker zombie R15 part LeftUpperArm; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/leftlowerarm": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/LeftLowerArm.glb",
+    "assetId": "128561834122499",
+    "status": "approved",
+    "note": "Walker zombie R15 part LeftLowerArm; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/lefthand": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/LeftHand.glb",
+    "assetId": "82917982480855",
+    "status": "approved",
+    "note": "Walker zombie R15 part LeftHand; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/rightupperarm": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/RightUpperArm.glb",
+    "assetId": "138611237754204",
+    "status": "approved",
+    "note": "Walker zombie R15 part RightUpperArm; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/rightlowerarm": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/RightLowerArm.glb",
+    "assetId": "122280658089897",
+    "status": "approved",
+    "note": "Walker zombie R15 part RightLowerArm; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/righthand": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/RightHand.glb",
+    "assetId": "113228365991800",
+    "status": "approved",
+    "note": "Walker zombie R15 part RightHand; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/leftupperleg": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/LeftUpperLeg.glb",
+    "assetId": "86904399851133",
+    "status": "approved",
+    "note": "Walker zombie R15 part LeftUpperLeg; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/leftlowerleg": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/LeftLowerLeg.glb",
+    "assetId": "75405967775369",
+    "status": "approved",
+    "note": "Walker zombie R15 part LeftLowerLeg; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/leftfoot": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/LeftFoot.glb",
+    "assetId": "81768687578563",
+    "status": "approved",
+    "note": "Walker zombie R15 part LeftFoot; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/rightupperleg": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/RightUpperLeg.glb",
+    "assetId": "112918079157121",
+    "status": "approved",
+    "note": "Walker zombie R15 part RightUpperLeg; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/rightlowerleg": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/RightLowerLeg.glb",
+    "assetId": "126136482483373",
+    "status": "approved",
+    "note": "Walker zombie R15 part RightLowerLeg; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/mesh/rightfoot": {
+    "source": "Derived from a Cube 3D generation made in Studio under the owner's account (2026-09-28, mesh + texture ids in rig.json), split into R15 parts and re-posed arms-down by tools/zombie_rig/split_rig.py",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "file": "assets/zombies/walker2/source/RightFoot.glb",
+    "assetId": "137318669415213",
+    "status": "approved",
+    "note": "Walker zombie R15 part RightFoot; Model upload, the MeshId is read back in Studio"
+  },
+  "zombie/walker2/texture/head": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "123411036223355",
+    "status": "approved",
+    "note": "Albedo of the generated walker zombie, shared by the R15 parts cut from this source piece"
+  },
+  "zombie/walker2/texture/torso": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "102376334298218",
+    "status": "approved",
+    "note": "Albedo of the generated walker zombie, shared by the R15 parts cut from this source piece"
+  },
+  "zombie/walker2/texture/leftarm": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "129031685388804",
+    "status": "approved",
+    "note": "Albedo of the generated walker zombie, shared by the R15 parts cut from this source piece"
+  },
+  "zombie/walker2/texture/rightarm": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "95645269106570",
+    "status": "approved",
+    "note": "Albedo of the generated walker zombie, shared by the R15 parts cut from this source piece"
+  },
+  "zombie/walker2/texture/leftleg": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "77285867318789",
+    "status": "approved",
+    "note": "Albedo of the generated walker zombie, shared by the R15 parts cut from this source piece"
+  },
+  "zombie/walker2/texture/rightleg": {
+    "source": "cube3d",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": "71378250524248",
+    "status": "approved",
+    "note": "Albedo of the generated walker zombie, shared by the R15 parts cut from this source piece"
+  },
+  "viewmodel/arms/mesh/handr": {
+    "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms cut, fingers posed into a grip and textures repacked by tools/arms_rig/build.py",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/viewmodels/arms/source/HandR.glb",
+    "assetId": "133968452940971",
+    "status": "approved",
+    "note": "First-person arm part HandR; Model upload, the MeshId is read back in Studio. 2026-09-28 re-cut with the wrist bend baked in and 20 cm of upper arm (tools/arms_rig/build.py WRIST_BEND)",
+    "previousAssetId": "138838601509332"
+  },
+  "viewmodel/arms/mesh/forearmr": {
+    "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms cut, fingers posed into a grip and textures repacked by tools/arms_rig/build.py",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/viewmodels/arms/source/ForearmR.glb",
+    "assetId": "70896423030608",
+    "status": "approved",
+    "note": "First-person arm part ForearmR; Model upload, the MeshId is read back in Studio. 2026-09-28 re-cut with the wrist bend baked in and 20 cm of upper arm (tools/arms_rig/build.py WRIST_BEND)",
+    "previousAssetId": "134984143665655"
+  },
+  "viewmodel/arms/texture/armr_color": {
+    "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms cut, fingers posed into a grip and textures repacked by tools/arms_rig/build.py",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/viewmodels/arms/source/ArmR_Color.png",
+    "assetId": "73128056603277",
+    "status": "reviewing",
+    "note": "SurfaceAppearance ColorMap for the right arm (1024 atlas) 2026-09-28 re-cut: atlas repacked for the longer arm (20 cm past the elbow)",
+    "previousAssetId": "91348241382551"
+  },
+  "viewmodel/arms/texture/armr_normal": {
+    "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms cut, fingers posed into a grip and textures repacked by tools/arms_rig/build.py",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/viewmodels/arms/source/ArmR_Normal.png",
+    "assetId": "114444260065283",
+    "status": "reviewing",
+    "note": "SurfaceAppearance NormalMap for the right arm (1024 atlas) 2026-09-28 re-cut: atlas repacked for the longer arm (20 cm past the elbow)",
+    "previousAssetId": "99968400937825"
+  },
+  "viewmodel/arms/texture/armr_roughness": {
+    "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms cut, fingers posed into a grip and textures repacked by tools/arms_rig/build.py",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/viewmodels/arms/source/ArmR_Roughness.png",
+    "assetId": "80202372425255",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for the right arm (1024 atlas) 2026-09-28 re-cut: atlas repacked for the longer arm (20 cm past the elbow)",
+    "previousAssetId": "120798899551496"
+  },
+  "viewmodel/arms/mesh/handl": {
+    "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms cut, fingers posed into a grip and textures repacked by tools/arms_rig/build.py",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/viewmodels/arms/source/HandL.glb",
+    "assetId": "72875083550377",
+    "status": "approved",
+    "note": "First-person arm part HandL; Model upload, the MeshId is read back in Studio. 2026-09-28 re-cut with the wrist bend baked in and 20 cm of upper arm (tools/arms_rig/build.py WRIST_BEND)",
+    "previousAssetId": "122354784613194"
+  },
+  "viewmodel/arms/mesh/forearml": {
+    "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms cut, fingers posed into a grip and textures repacked by tools/arms_rig/build.py",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/viewmodels/arms/source/ForearmL.glb",
+    "assetId": "76970213859002",
+    "status": "approved",
+    "note": "First-person arm part ForearmL; Model upload, the MeshId is read back in Studio. 2026-09-28 re-cut with the wrist bend baked in and 20 cm of upper arm (tools/arms_rig/build.py WRIST_BEND)",
+    "previousAssetId": "101666849387296"
+  },
+  "viewmodel/arms/texture/arml_color": {
+    "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms cut, fingers posed into a grip and textures repacked by tools/arms_rig/build.py",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/viewmodels/arms/source/ArmL_Color.png",
+    "assetId": "93252265496322",
+    "status": "reviewing",
+    "note": "SurfaceAppearance ColorMap for the left arm (1024 atlas) 2026-09-28 re-cut: atlas repacked for the longer arm (20 cm past the elbow)",
+    "previousAssetId": "94826284537182"
+  },
+  "viewmodel/arms/texture/arml_normal": {
+    "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms cut, fingers posed into a grip and textures repacked by tools/arms_rig/build.py",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/viewmodels/arms/source/ArmL_Normal.png",
+    "assetId": "126875659990670",
+    "status": "reviewing",
+    "note": "SurfaceAppearance NormalMap for the left arm (1024 atlas) 2026-09-28 re-cut: atlas repacked for the longer arm (20 cm past the elbow)",
+    "previousAssetId": "79155288690465"
+  },
+  "viewmodel/arms/texture/arml_roughness": {
+    "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms cut, fingers posed into a grip and textures repacked by tools/arms_rig/build.py",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/viewmodels/arms/source/ArmL_Roughness.png",
+    "assetId": "91663241300428",
+    "status": "reviewing",
+    "note": "SurfaceAppearance RoughnessMap for the left arm (1024 atlas) 2026-09-28 re-cut: atlas repacked for the longer arm (20 cm past the elbow)",
+    "previousAssetId": "118369409718439"
+  },
+  "viewmodel/arms/meshid/forearml": {
+    "source": "MeshId inside Model asset 76970213859002 (viewmodel/arms/mesh/forearml), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "assetId": 72014854908407,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately",
+    "previousAssetId": 106722655843657
+  },
+  "viewmodel/arms/meshid/forearmr": {
+    "source": "MeshId inside Model asset 70896423030608 (viewmodel/arms/mesh/forearmr), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "assetId": 74494921188414,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately",
+    "previousAssetId": 72643263333084
+  },
+  "viewmodel/arms/meshid/handl": {
+    "source": "MeshId inside Model asset 72875083550377 (viewmodel/arms/mesh/handl), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "assetId": 89480608005703,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately",
+    "previousAssetId": 140115724079389
+  },
+  "viewmodel/arms/meshid/handr": {
+    "source": "MeshId inside Model asset 133968452940971 (viewmodel/arms/mesh/handr), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "assetId": 106110690050280,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately",
+    "previousAssetId": 70483027631480
+  },
+  "zombie/walker2/meshid/head": {
+    "source": "MeshId inside Model asset 135391027506857 (zombie/walker2/mesh/head), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 133385134893189,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/leftfoot": {
+    "source": "MeshId inside Model asset 81768687578563 (zombie/walker2/mesh/leftfoot), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 131349290150427,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/lefthand": {
+    "source": "MeshId inside Model asset 82917982480855 (zombie/walker2/mesh/lefthand), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 98657256935084,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/leftlowerarm": {
+    "source": "MeshId inside Model asset 128561834122499 (zombie/walker2/mesh/leftlowerarm), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 85723264940749,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/leftlowerleg": {
+    "source": "MeshId inside Model asset 75405967775369 (zombie/walker2/mesh/leftlowerleg), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 85423794306972,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/leftupperarm": {
+    "source": "MeshId inside Model asset 102584646601655 (zombie/walker2/mesh/leftupperarm), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 74380886753860,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/leftupperleg": {
+    "source": "MeshId inside Model asset 86904399851133 (zombie/walker2/mesh/leftupperleg), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 91533094384739,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/lowertorso": {
+    "source": "MeshId inside Model asset 97166074717434 (zombie/walker2/mesh/lowertorso), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 80749319919910,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/rightfoot": {
+    "source": "MeshId inside Model asset 137318669415213 (zombie/walker2/mesh/rightfoot), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 100408691108256,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/righthand": {
+    "source": "MeshId inside Model asset 113228365991800 (zombie/walker2/mesh/righthand), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 77217611853490,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/rightlowerarm": {
+    "source": "MeshId inside Model asset 122280658089897 (zombie/walker2/mesh/rightlowerarm), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 112735815706535,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/rightlowerleg": {
+    "source": "MeshId inside Model asset 126136482483373 (zombie/walker2/mesh/rightlowerleg), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 90043397383267,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/rightupperarm": {
+    "source": "MeshId inside Model asset 138611237754204 (zombie/walker2/mesh/rightupperarm), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 84130433501127,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/rightupperleg": {
+    "source": "MeshId inside Model asset 112918079157121 (zombie/walker2/mesh/rightupperleg), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 89710904920719,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "zombie/walker2/meshid/uppertorso": {
+    "source": "MeshId inside Model asset 137923626549712 (zombie/walker2/mesh/uppertorso), read back in Studio with InsertService:LoadAsset on 2026-09-28",
+    "license": "Roblox Cube 3D generation, owned by Sevastyan (jeezdredd)",
+    "assetId": 101561252630533,
+    "status": "approved",
+    "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
+  },
+  "viewmodel/fps/pistol/rig": {
+    "source": "\"FPS Character Animation Pack Pistol\" by Cristian David Duque Camacho (@DuqueCD7), https://sketchfab.com/3d-models/e2815a5bea3a4e3895b3c29a2586e671, glb (1024 textures) downloaded 2026-09-29; animations stripped by tools/fps_pack/strip_glb.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/viewmodels/fps/source/pistol_rig.glb",
+    "assetId": "91726509041674",
+    "status": "approved",
+    "note": "Skinned arms + pistol (Model upload). Clips are baked separately by tools/fps_pack/gltf_anim.py"
+  },
+  "viewmodel/fps/rifle/rig": {
+    "source": "\"FPS Character Animation Pack Ak-47\" by Cristian David Duque Camacho (@DuqueCD7), https://sketchfab.com/3d-models/b95778a564094fc3a49d1d6a3b6a30ab, glb (1024 textures) downloaded 2026-09-29; animations stripped by tools/fps_pack/strip_glb.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/viewmodels/fps/source/rifle_rig.glb",
+    "assetId": "131913723278890",
+    "status": "approved",
+    "note": "Skinned arms + weapon (Model upload), scene wrapped in a UnitScale node of 2.961 so the arms match the pistol rig's size. Clips are baked separately by tools/fps_pack/gltf_anim.py and emitted with --scale 2.961",
+    "previousAssetId": "96385546033545"
+  },
+  "viewmodel/fps/shotgun/rig": {
+    "source": "\"FPS Character Animation Pack Saps-12\" by Cristian David Duque Camacho (@DuqueCD7), https://sketchfab.com/3d-models/3e5ebbd4ace24f2e92eadb7252927b31, glb (1024 textures) downloaded 2026-09-29; animations stripped by tools/fps_pack/strip_glb.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/viewmodels/fps/source/shotgun_rig.glb",
+    "assetId": "135351541803492",
+    "status": "approved",
+    "note": "Skinned arms + weapon (Model upload), scene wrapped in a UnitScale node of 1.2218 so the arms match the pistol rig's size. Clips are baked separately by tools/fps_pack/gltf_anim.py and emitted with --scale 1.2218",
+    "previousAssetId": "80646488664970"
+  },
+  "viewmodel/fps/smg/rig": {
+    "source": "\"UZI | First Person Animations (2026 Remake)\" by 1Matzh (@1Matzh); uses \"UZI\" by @Gintoki1234 and \"Division Agent (Rigged)\" by @Blue-Spirit, https://sketchfab.com/3d-models/73266e9f1eb949b69a3ab11d8f636048, glb (1024 textures) downloaded 2026-09-29; animations stripped by tools/fps_pack/strip_glb.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/viewmodels/fps/source/smg_rig.glb",
+    "status": "approved",
+    "note": "Skinned arms + weapon (Model upload). The Sketchfab glb's shared skin is broken (inverse bind matrices of the background plane, arms and gun vertices in a mangled space, so bones imported about 1000x smaller than the mesh); strip_glb.py --skin-fix tools/fps_pack/skin_fixes/smg.json repairs it, and the scene is wrapped in a UnitScale node of 3.0 so the forearms and hands match the pistol rig's size. Clips are baked separately by tools/fps_pack/build_clips.py (same skin fix) and emitted with --scale 3.0",
+    "previousAssetId": "78765325307841",
+    "assetId": "118961607883385"
+  },
+  "zombie/sketchfab/walker/rig": {
+    "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf, glb (1024 textures) downloaded 2026-09-29; animations stripped by tools/fps_pack/strip_glb.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/source/walker_rig.glb",
+    "assetId": "137213067329118",
+    "status": "approved",
+    "note": "Skinned zombie (Model upload), scene wrapped in a UnitScale node of 2.76 for about 5.5 studs tall"
+  },
+  "zombie/sketchfab/hazmat/rig": {
+    "source": "\"Zombie Hazmat\" by LxNazarov (@LxNazarov), https://sketchfab.com/3d-models/49b3b4307f6a4d2386fdb02354158d04, glb (1024 textures) downloaded 2026-09-29; animations stripped by tools/fps_pack/strip_glb.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/source/hazmat_rig.glb",
+    "assetId": "107604379318472",
+    "status": "approved",
+    "note": "Skinned zombie (Model upload), scene wrapped in a UnitScale node of 3.05 for about 5.5 studs tall",
+    "previousAssetId": "110613762606714"
+  },
+  "zombie/sketchfab/ghoul/rig": {
+    "source": "\"ZOMBIE. Animation test for the game\" by stasbelyk13 (@stasbelyk13), https://sketchfab.com/3d-models/093d4624339c43afb277a2abab9b4735, glb (1024 textures) downloaded 2026-09-29; animations stripped by tools/fps_pack/strip_glb.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/source/ghoul_rig.glb",
+    "assetId": "81180897523056",
+    "status": "approved",
+    "note": "Skinned zombie (Model upload), scene wrapped in a UnitScale node of 2.04 for about 5.5 studs tall"
+  },
+  "animation/zombie_sf/walker/walk_a": {
+    "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/walker/walk_a.rbxmx",
+    "assetId": "122053638510657",
+    "status": "approved",
+    "note": "clip 'Walk', 2.0s, loop=True, ground speed 0.876 studs/s"
+  },
+  "animation/zombie_sf/ghoul/walk_a": {
+    "source": "\"ZOMBIE. Animation test for the game\" by stasbelyk13 (@stasbelyk13), https://sketchfab.com/3d-models/093d4624339c43afb277a2abab9b4735; clip baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/ghoul/walk_a.rbxmx",
+    "assetId": "108963423605455",
+    "status": "approved",
+    "note": "clip 'step', 0.9333s, loop=True, ground speed 5.939 studs/s"
+  },
+  "animation/zombie_sf/walker/idle": {
+    "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip 'Idle' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/walker/idle.rbxmx",
+    "assetId": "122338571027645",
+    "status": "approved",
+    "note": "clip 'Idle', 2.6667s, loop=True, ground speed 0.006 studs/s"
+  },
+  "animation/zombie_sf/walker/walk_b": {
+    "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip 'Walk1' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/walker/walk_b.rbxmx",
+    "assetId": "83743257675643",
+    "status": "approved",
+    "note": "clip 'Walk1', 2.0s, loop=True, ground speed 0.876 studs/s"
+  },
+  "animation/zombie_sf/walker/run": {
+    "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip 'Run' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/walker/run.rbxmx",
+    "assetId": "112885913195614",
+    "status": "approved",
+    "note": "clip 'Run', 1.6667s, loop=True, ground speed 12.015 studs/s"
+  },
+  "animation/zombie_sf/walker/attack": {
+    "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip 'Attack' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/walker/attack.rbxmx",
+    "assetId": "119589453155115",
+    "status": "approved",
+    "note": "clip 'Attack', 1.0s, loop=False, ground speed 0.0 studs/s"
+  },
+  "animation/zombie_sf/walker/death_back": {
+    "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip 'FallingBack' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/walker/death_back.rbxmx",
+    "assetId": "140472784130451",
+    "status": "approved",
+    "note": "clip 'FallingBack', 1.4s, loop=False, ground speed 0.0 studs/s"
+  },
+  "animation/zombie_sf/walker/death_forward": {
+    "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip 'FallingForward' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/walker/death_forward.rbxmx",
+    "assetId": "119409290666656",
+    "status": "approved",
+    "note": "clip 'FallingForward', 1.1667s, loop=False, ground speed 0.0 studs/s"
+  },
+  "animation/zombie_sf/hazmat/idle": {
+    "source": "\"Zombie Hazmat\" by LxNazarov (@LxNazarov), https://sketchfab.com/3d-models/49b3b4307f6a4d2386fdb02354158d04; clip 'Zombie_Idle' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/hazmat/idle.rbxmx",
+    "assetId": "95082551274377",
+    "status": "approved",
+    "note": "clip 'Zombie_Idle', 5.5417s, loop=True, ground speed 0.034 studs/s"
+  },
+  "animation/zombie_sf/hazmat/walk_a": {
+    "source": "\"Zombie Hazmat\" by LxNazarov (@LxNazarov), https://sketchfab.com/3d-models/49b3b4307f6a4d2386fdb02354158d04; clip 'Zombie_Walk_Root' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/hazmat/walk_a.rbxmx",
+    "assetId": "78249467447156",
+    "status": "approved",
+    "note": "clip 'Zombie_Walk_Root', 2.625s, loop=True, ground speed 0.774 studs/s"
+  },
+  "animation/zombie_sf/hazmat/spotted": {
+    "source": "\"Zombie Hazmat\" by LxNazarov (@LxNazarov), https://sketchfab.com/3d-models/49b3b4307f6a4d2386fdb02354158d04; clip 'Zombie_EnemySpotted' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/hazmat/spotted.rbxmx",
+    "assetId": "101751701566830",
+    "status": "approved",
+    "note": "clip 'Zombie_EnemySpotted', 5.4167s, loop=False, ground speed 0.0 studs/s"
+  },
+  "animation/zombie_sf/hazmat/attack": {
+    "source": "\"Zombie Hazmat\" by LxNazarov (@LxNazarov), https://sketchfab.com/3d-models/49b3b4307f6a4d2386fdb02354158d04; clip 'Zombie_Skill' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/hazmat/attack.rbxmx",
+    "assetId": "135526032127834",
+    "status": "approved",
+    "note": "clip 'Zombie_Skill', 3.5417s, loop=False, ground speed 0.0 studs/s"
+  },
+  "animation/zombie_sf/ghoul/idle": {
+    "source": "\"ZOMBIE. Animation test for the game\" by stasbelyk13 (@stasbelyk13), https://sketchfab.com/3d-models/093d4624339c43afb277a2abab9b4735; clip 'STATIK' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/ghoul/idle.rbxmx",
+    "assetId": "130525951968766",
+    "status": "approved",
+    "note": "clip 'STATIK', 1.3s, loop=True, ground speed 0.007 studs/s"
+  },
+  "animation/zombie_sf/ghoul/idle_b": {
+    "source": "\"ZOMBIE. Animation test for the game\" by stasbelyk13 (@stasbelyk13), https://sketchfab.com/3d-models/093d4624339c43afb277a2abab9b4735; clip 'STATIK2' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/ghoul/idle_b.rbxmx",
+    "assetId": "86522433544316",
+    "status": "approved",
+    "note": "clip 'STATIK2', 1.3s, loop=True, ground speed 0.012 studs/s"
+  },
+  "animation/zombie_sf/ghoul/walk_b": {
+    "source": "\"ZOMBIE. Animation test for the game\" by stasbelyk13 (@stasbelyk13), https://sketchfab.com/3d-models/093d4624339c43afb277a2abab9b4735; clip 'spid step' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/ghoul/walk_b.rbxmx",
+    "assetId": "100191919181294",
+    "status": "approved",
+    "note": "clip 'spid step', 0.6333s, loop=True, ground speed 8.961 studs/s"
+  },
+  "animation/zombie_sf/ghoul/run": {
+    "source": "\"ZOMBIE. Animation test for the game\" by stasbelyk13 (@stasbelyk13), https://sketchfab.com/3d-models/093d4624339c43afb277a2abab9b4735; clip 'run' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/ghoul/run.rbxmx",
+    "assetId": "80393923382940",
+    "status": "approved",
+    "note": "clip 'run', 0.5333s, loop=True, ground speed 15.22 studs/s"
+  },
+  "animation/zombie_sf/ghoul/run_b": {
+    "source": "\"ZOMBIE. Animation test for the game\" by stasbelyk13 (@stasbelyk13), https://sketchfab.com/3d-models/093d4624339c43afb277a2abab9b4735; clip 'run.002' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/ghoul/run_b.rbxmx",
+    "assetId": "72354080432324",
+    "status": "approved",
+    "note": "clip 'run.002', 0.5s, loop=True, ground speed 20.706 studs/s"
+  },
+  "animation/zombie_sf/ghoul/attack": {
+    "source": "\"ZOMBIE. Animation test for the game\" by stasbelyk13 (@stasbelyk13), https://sketchfab.com/3d-models/093d4624339c43afb277a2abab9b4735; clip 'ATACK1' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/ghoul/attack.rbxmx",
+    "assetId": "74295182226274",
+    "status": "approved",
+    "note": "clip 'ATACK1', 0.6333s, loop=False, ground speed 0.0 studs/s"
+  },
+  "animation/zombie_sf/ghoul/attack_b": {
+    "source": "\"ZOMBIE. Animation test for the game\" by stasbelyk13 (@stasbelyk13), https://sketchfab.com/3d-models/093d4624339c43afb277a2abab9b4735; clip 'ATACK2' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/ghoul/attack_b.rbxmx",
+    "assetId": "116735440561121",
+    "status": "approved",
+    "note": "clip 'ATACK2', 0.6333s, loop=False, ground speed 0.0 studs/s"
+  },
+  "animation/zombie_sf/ghoul/death_back": {
+    "source": "\"ZOMBIE. Animation test for the game\" by stasbelyk13 (@stasbelyk13), https://sketchfab.com/3d-models/093d4624339c43afb277a2abab9b4735; clip 'DEAD1' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/ghoul/death_back.rbxmx",
+    "assetId": "89983319996897",
+    "status": "approved",
+    "note": "clip 'DEAD1', 0.8667s, loop=False, ground speed 0.0 studs/s"
+  },
+  "animation/zombie_sf/ghoul/death_forward": {
+    "source": "\"ZOMBIE. Animation test for the game\" by stasbelyk13 (@stasbelyk13), https://sketchfab.com/3d-models/093d4624339c43afb277a2abab9b4735; clip 'DEAD2' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/ghoul/death_forward.rbxmx",
+    "assetId": "93576901103219",
+    "status": "approved",
+    "note": "clip 'DEAD2', 0.9667s, loop=False, ground speed 0.0 studs/s"
+  },
+  "animation/zombie_sf/ghoul/hit": {
+    "source": "\"ZOMBIE. Animation test for the game\" by stasbelyk13 (@stasbelyk13), https://sketchfab.com/3d-models/093d4624339c43afb277a2abab9b4735; clip 'FTAC4' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/animation/zombie_sf/ghoul/hit.rbxmx",
+    "assetId": "125310758002255",
+    "status": "approved",
+    "note": "clip 'FTAC4', 0.9667s, loop=False, ground speed 0.0 studs/s"
+  },
+  "audio/weapons/pistol_mag_out": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_3.wav (0.780-1.220 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/pistol_mag_out.ogg",
+    "status": "approved",
+    "note": "Walther PPQ \"Detach mag\": mag catch click + mag sliding out of the grip; 403 ms, mono 44.1 kHz, peak -6.0 dBFS, main transient at 8 ms",
+    "assetId": "130384486505953"
+  },
+  "audio/weapons/pistol_mag_in": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_2.wav (0.747-1.020 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/pistol_mag_in.ogg",
+    "status": "approved",
+    "note": "Walther PPQ \"Insert mag\": end of the slide-in + hard seat click; 273 ms, mono 44.1 kHz, peak -8.0 dBFS, main transient at 17 ms",
+    "assetId": "100629909517887"
+  },
+  "audio/weapons/pistol_slide_back": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_6.wav (0.680-1.060 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/pistol_slide_back.ogg",
+    "status": "approved",
+    "note": "Walther PPQ \"Pull back slide\" (take 1); 249 ms, mono 44.1 kHz, peak -8.6 dBFS, main transient at 17 ms",
+    "assetId": "118111142268478"
+  },
+  "audio/weapons/pistol_slide_release": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_16.wav (0.880-1.160 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/pistol_slide_release.ogg",
+    "status": "approved",
+    "note": "Walther PPQ \"Drop slide empty mag\": slide stop released, slide slams home; 260 ms, mono 44.1 kHz, peak -8.0 dBFS, main transient at 21 ms",
+    "assetId": "123219379775854"
+  },
+  "audio/weapons/rifle_mag_out": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_11.wav (0.285-0.640 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/rifle_mag_out.ogg",
+    "status": "approved",
+    "note": "AK-47 \"Detach empty mag\": paddle release click + mag rocked out; 344 ms, mono 44.1 kHz, peak -6.0 dBFS, main transient at 4 ms",
+    "assetId": "133853957089146"
+  },
+  "audio/weapons/rifle_mag_in": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_10.wav (0.288-0.520 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/rifle_mag_in.ogg",
+    "status": "approved",
+    "note": "AK-47 \"Insert empty mag\": last part of the rock-in + seat clack; 217 ms, mono 44.1 kHz, peak -6.9 dBFS, main transient at 5 ms",
+    "assetId": "103835801234005"
+  },
+  "audio/weapons/rifle_bolt_back": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_12.wav (0.140-0.470 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/rifle_bolt_back.ogg",
+    "status": "approved",
+    "note": "AK-47 \"Pull slide empty mag\": charging handle pulled back (take 1); 263 ms, mono 44.1 kHz, peak -11.6 dBFS, main transient at 71 ms",
+    "assetId": "101881794720220"
+  },
+  "audio/weapons/rifle_bolt_forward": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_13.wav (0.185-0.420 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/rifle_bolt_forward.ogg",
+    "status": "approved",
+    "note": "AK-47 \"Release slide empty mag\": charging handle released, bolt slams forward; 235 ms, mono 44.1 kHz, peak -10.2 dBFS, main transient at 32 ms",
+    "assetId": "72631878016479"
+  },
+  "audio/weapons/shotgun_pump_back": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Benelli Nova master track O_0.wav (1.385-1.620 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/shotgun_pump_back.ogg",
+    "status": "approved",
+    "note": "Benelli Nova \"Open action empty mag\": pump racked back, last ~80 ms of travel + rear clack (take 1); 235 ms, mono 44.1 kHz, peak -7.9 dBFS, main transient at 80 ms",
+    "assetId": "109279559577710"
+  },
+  "audio/weapons/shotgun_pump_forward": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Benelli Nova master track O_1.wav (1.515-1.760 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/shotgun_pump_forward.ogg",
+    "status": "approved",
+    "note": "Benelli Nova \"Close action empty mag\": pump driven forward, last ~75 ms of travel + lock clack; 245 ms, mono 44.1 kHz, peak -13.9 dBFS, main transient at 68 ms",
+    "assetId": "80851949837515"
+  },
+  "audio/weapons/shotgun_shell_in": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Benelli Nova master track O_3.wav (1.525-1.980 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/shotgun_shell_in.ogg",
+    "status": "approved",
+    "note": "Benelli Nova \"Load mag\": one shell pushed past the carrier into the tube and latched (take 1, second half); 432 ms, mono 44.1 kHz, peak -9.0 dBFS, main transient at 3 ms",
+    "assetId": "99199081946791"
+  },
+  "audio/weapons/smg_mag_out": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Carl Gustav M45 master track G_9.wav (0.425-0.760 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/smg_mag_out.ogg",
+    "status": "approved",
+    "note": "Carl Gustav M45 \"Detach empty mag\": catch press + mag pulled from well; 294 ms, mono 44.1 kHz, peak -6.3 dBFS, main transient at 3 ms",
+    "assetId": "107426951622823"
+  },
+  "audio/weapons/smg_mag_in": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Carl Gustav M45 master track G_8.wav (0.505-0.700 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/smg_mag_in.ogg",
+    "status": "approved",
+    "note": "Carl Gustav M45 \"Insert empty mag\": end of the slide-in + seat click (take 1); 183 ms, mono 44.1 kHz, peak -6.0 dBFS, main transient at 8 ms",
+    "assetId": "84367595524620"
+  },
+  "audio/weapons/smg_bolt": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Carl Gustav M45 master track G_10.wav (0.890-1.340 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/smg_bolt.ogg",
+    "status": "approved",
+    "note": "Carl Gustav M45 \"Lock back bolt empty mag\": bolt pulled back and caught on the sear (take 2); 382 ms, mono 44.1 kHz, peak -7.0 dBFS, main transient at 88 ms",
+    "assetId": "97074768501509"
+  },
+  "audio/weapons/last_round": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_13.wav (0.985-1.062 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/last_round.ogg",
+    "status": "approved",
+    "note": "Walther PPQ \"Lock back slide empty mag\": the slide-lock clack only; 73 ms, mono 44.1 kHz, peak -7.4 dBFS, main transient at 9 ms",
+    "assetId": "88253867216250"
+  },
+  "audio/weapons/low_ammo_click": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_15.wav (0.540-0.640 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 1.2 kHz 4th-order high-pass (keeps only the metallic tink), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/low_ammo_click.ogg",
+    "status": "approved",
+    "note": "AK-47 \"Load round into mag\": one cartridge snapping under the feed lips (metal spring tink), HPF 1.2 kHz; 95 ms, mono 44.1 kHz, peak -8.5 dBFS, main transient at 7 ms",
+    "assetId": "110328617846032"
+  },
+  "audio/weapons/weapon_draw": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Carl Gustav M45 master track G_0.wav (0.465-0.700 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/weapon_draw.ogg",
+    "status": "approved",
+    "note": "Carl Gustav M45 \"Open stock\": stock snaps open, short metal rattle; 220 ms, mono 44.1 kHz, peak -6.1 dBFS, main transient at 10 ms",
+    "assetId": "85663554892464"
+  },
+  "audio/weapons/weapon_holster": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Carl Gustav M45 master track G_1.wav (0.790-0.980 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/weapon_holster.ogg",
+    "status": "approved",
+    "note": "Carl Gustav M45 \"Close stock\": stock folds and latches; 166 ms, mono 44.1 kHz, peak -6.5 dBFS, main transient at 3 ms",
+    "assetId": "127185527965620"
+  },
+  "audio/weapons/casing_brass_01": {
+    "source": "BigSoundBank (Joseph Sardin), \"Cartridge case 9 mm on concrete #5\" (sound 1359, 48 kHz/24-bit mono FLAC original), https://bigsoundbank.com/s1359.html (0.050-0.470 s window), trimmed/normalized by tools: mono original, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/); BigSoundBank/LaSonotheque public-domain release, https://bigsoundbank.com/licenses.html",
+    "file": "assets/audio/weapons/casing_brass_01.ogg",
+    "status": "approved",
+    "note": "9 mm case on concrete (#5): bright ting + one bounce ~200 ms later; 407 ms, mono 44.1 kHz, peak -10.7 dBFS, L100 -28.1 LUFS, main transient at 4 ms",
+    "assetId": "80918178478655"
+  },
+  "audio/weapons/casing_brass_02": {
+    "source": "BigSoundBank (Joseph Sardin), \"Cartridge case 7.62mm on concrete #3\" (sound 1369, 48 kHz/24-bit mono FLAC original), https://bigsoundbank.com/s1369.html (0.040-0.500 s window), trimmed/normalized by tools: mono original, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/); BigSoundBank/LaSonotheque public-domain release, https://bigsoundbank.com/licenses.html",
+    "file": "assets/audio/weapons/casing_brass_02.ogg",
+    "status": "approved",
+    "note": "7.62 mm case on concrete (#3): ting + bounce ~215 ms later + two tiny ticks, natural decay; 447 ms, mono 44.1 kHz, peak -18.0 dBFS, L100 -28.0 LUFS, main transient at 6 ms",
+    "assetId": "72000465242962"
+  },
+  "audio/weapons/casing_brass_03": {
+    "source": "BigSoundBank (Joseph Sardin), \"Cartridge case 9 mm on concrete #1\" (sound 1355, 48 kHz/24-bit mono FLAC original), https://bigsoundbank.com/s1355.html (0.060-0.420 s window), trimmed/normalized by tools: mono original, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/); BigSoundBank/LaSonotheque public-domain release, https://bigsoundbank.com/licenses.html",
+    "file": "assets/audio/weapons/casing_brass_03.ogg",
+    "status": "approved",
+    "note": "9 mm case on concrete (#1): ting + two quick bounces (~130/235 ms), ring faded; 345 ms, mono 44.1 kHz, peak -14.5 dBFS, L100 -28.0 LUFS, main transient at 4 ms",
+    "assetId": "121490104660504"
+  },
+  "audio/weapons/casing_shotgun_01": {
+    "source": "freesound \"Shotgun shell ejection.aif\" by JohnDelayniKIng (sound 147261; used shotgun shells dropped on a hard surface), https://freesound.org/people/JohnDelayniKIng/sounds/147261/, HQ Vorbis preview (original download needs a login) (20.130-20.590 s window), trimmed/normalized by tools: stereo preview aligned and summed to mono, 120 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/casing_shotgun_01.ogg",
+    "status": "approved",
+    "note": "empty 12 ga hull on a hard floor (drop 10): plastic thunk + bounce ~310 ms later; 432 ms, mono 44.1 kHz, peak -10.3 dBFS, L100 -28.1 LUFS, main transient at 10 ms; laptop-mic source with a little room decay, only the unclipped late drops of the take were used",
+    "assetId": "72962074954597"
+  },
+  "audio/weapons/casing_shotgun_02": {
+    "source": "freesound \"Shotgun shell ejection.aif\" by JohnDelayniKIng (sound 147261; used shotgun shells dropped on a hard surface), https://freesound.org/people/JohnDelayniKIng/sounds/147261/, HQ Vorbis preview (original download needs a login) (18.170-18.520 s window), trimmed/normalized by tools: stereo preview aligned and summed to mono, 120 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/casing_shotgun_02.ogg",
+    "status": "approved",
+    "note": "empty 12 ga hull on a hard floor (drop 9): single thunk with short settle; 332 ms, mono 44.1 kHz, peak -10.6 dBFS, L100 -28.2 LUFS, main transient at 11 ms; laptop-mic source with a little room decay, only the unclipped late drops of the take were used",
+    "assetId": "120692337960337"
+  },
+  "audio/weapons/mag_drop": {
+    "source": "freesound \"Drop mag 05.wav\" by GreenFireSound (sound 481071, pack \"Interact\", tags weapon/drop/magazine), https://freesound.org/people/GreenFireSound/sounds/481071/, HQ Vorbis preview (original download needs a login) (0.030-0.430 s window), trimmed/normalized by tools: dual-mono preview to mono, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/) - attribution required: \"Drop mag 05\" by GreenFireSound, https://freesound.org/s/481071/, modified (trimmed, filtered, normalized)",
+    "file": "assets/audio/weapons/mag_drop.ogg",
+    "status": "approved",
+    "note": "weapon magazine dropped on a hard floor: first impact + second clack ~150 ms later; 364 ms, mono 44.1 kHz, peak -9.9 dBFS, L100 -28.1 LUFS, main transient at 9 ms; CC BY: add the credit line to the game credits. Material (metal vs polymer mag) not stated by the uploader; no CC0 metal-mag ground drop was found",
+    "assetId": "131493675012408"
+  },
+  "audio/foley/gear_rattle_01": {
+    "source": "freesound \"Metal rattling\" by dynamique (sound 617023; metal-on-metal rattle recorded for soldiers carrying metal weapons), https://freesound.org/people/dynamique/sounds/617023/, HQ Vorbis preview (original download needs a login) (3.030-3.290 s window), trimmed/normalized by tools: dual-mono preview to mono, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -31 LUFS (100 ms K-weighted max; 3 dB under the handling foley since it fires on every footstep) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/foley/gear_rattle_01.ogg",
+    "status": "approved",
+    "note": "kit metal rattle: one clink + two softer ticks; 242 ms, mono 44.1 kHz, peak -15.5 dBFS, L100 -31.1 LUFS, main transient at 4 ms",
+    "assetId": "96976244459507"
+  },
+  "audio/foley/gear_rattle_02": {
+    "source": "freesound \"Metal rattling\" by dynamique (sound 617023; metal-on-metal rattle recorded for soldiers carrying metal weapons), https://freesound.org/people/dynamique/sounds/617023/, HQ Vorbis preview (original download needs a login) (4.985-5.260 s window), trimmed/normalized by tools: dual-mono preview to mono, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -31 LUFS (100 ms K-weighted max; 3 dB under the handling foley since it fires on every footstep) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/foley/gear_rattle_02.ogg",
+    "status": "approved",
+    "note": "kit metal rattle: firmer clink + two faint ticks; 258 ms, mono 44.1 kHz, peak -15.1 dBFS, L100 -31.1 LUFS, main transient at 4 ms",
+    "assetId": "111256378392859"
+  },
+  "audio/foley/gear_rattle_03": {
+    "source": "freesound \"Metal rattling\" by dynamique (sound 617023; metal-on-metal rattle recorded for soldiers carrying metal weapons), https://freesound.org/people/dynamique/sounds/617023/, HQ Vorbis preview (original download needs a login) (21.090-21.370 s window), trimmed/normalized by tools: dual-mono preview to mono, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -31 LUFS (100 ms K-weighted max; 3 dB under the handling foley since it fires on every footstep) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/foley/gear_rattle_03.ogg",
+    "status": "approved",
+    "note": "kit metal rattle: double clink + late tick; 265 ms, mono 44.1 kHz, peak -13.7 dBFS, L100 -31.2 LUFS, main transient at 40 ms",
+    "assetId": "95430542204222"
+  },
+  "audio/foley/gear_rattle_04": {
+    "source": "freesound \"AR15 M4 Gun Hardware Magazine Movement Sounds\" by jackthemurray (sound 393732), https://freesound.org/people/jackthemurray/sounds/393732/, HQ Vorbis preview (original download needs a login) (12.515-12.700 s window), trimmed/normalized by tools: stereo preview aligned and summed to mono, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -31 LUFS (100 ms K-weighted max; 3 dB under the handling foley since it fires on every footstep) with a -6 dBFS peak ceiling, OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/foley/gear_rattle_04.ogg",
+    "status": "approved",
+    "note": "AR15 hardware rattle (sling/mag play) while moving the rifle: short 3-hit jingle; 161 ms, mono 44.1 kHz, peak -12.9 dBFS, L100 -31.1 LUFS, main transient at 30 ms",
+    "assetId": "72273109572510"
+  },
+  "audio/weapons/gunshot_sub_01": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_28.wav (near-distance single shots, 192 kHz/24-bit), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary (9.890-10.100 s window), trimmed/normalized by tools: stereo pair aligned and summed to mono, varispeed 16x slower (192 kHz master read at 12 kHz, 4 octaves down), 4th-order 110 Hz low-pass + 32 Hz high-pass, resampled to 44.1 kHz, 160 Hz low-pass, trimmed to <=1 ms before onset, 240 ms with 120 ms cosine fade-out, loudness-matched to -22 LUFS (100 ms K-weighted max, ~5 dB under close_rifle), OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/gunshot_sub_01.ogg",
+    "status": "approved",
+    "note": "AK-47 near shot (C_28 take 4) slowed 16x (4 octaves down), band-limited 32-110 Hz: ~58 Hz thump; 240 ms, mono 44.1 kHz, peak -5.6 dBFS, L100 -22.0 LUFS, main transient at 14 ms; derived from a real shot, not synthesized: a single shot only has a ~10 ms LF pulse, so the thump itself lasts ~60-100 ms (-30 dB at ~100 ms), the file runs 240 ms",
+    "assetId": "116392563598719"
+  },
+  "audio/weapons/gunshot_sub_02": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_28.wav (near-distance single shots, 192 kHz/24-bit), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary (1.070-1.280 s window), trimmed/normalized by tools: stereo pair aligned and summed to mono, varispeed 12x slower (192 kHz master read at 16 kHz, ~3.6 octaves down), 4th-order 110 Hz low-pass + 32 Hz high-pass, resampled to 44.1 kHz, 160 Hz low-pass, trimmed to <=1 ms before onset, 240 ms with 120 ms cosine fade-out, loudness-matched to -22 LUFS (100 ms K-weighted max, ~5 dB under close_rifle), OGG Vorbis q6",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/gunshot_sub_02.ogg",
+    "status": "approved",
+    "note": "AK-47 near shot (C_28 take 1) slowed 12x (~3.6 octaves down), band-limited 32-110 Hz: ~65 Hz thump; 240 ms, mono 44.1 kHz, peak -5.4 dBFS, L100 -22.0 LUFS, main transient at 12 ms; derived from a real shot, not synthesized: a single shot only has a ~10 ms LF pulse, so the thump itself lasts ~60-100 ms (-30 dB at ~100 ms), the file runs 240 ms",
+    "assetId": "132554186829666"
+  },
+  "model/props/concrete_barrier": {
+    "source": "Concrete Road Barrier by Amal Kumar, https://polyhaven.com/a/concrete_road_barrier, downloaded 2026-09-29, Poly Haven 1k glTF; meshopt-decimated 60.9k->6k tris; pivot moved to base centre, real-world metres; embedded JPEG normal and metallic-roughness maps re-encoded as PNG (the Open Cloud glb importer rejected the JPEG-only file with \"Failed to parse the uploaded file\")",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/concrete_barrier/model.glb",
+    "status": "approved",
+    "note": "6000 tris; 5.5 x 3 x 2.3 studs (X x Y x Z; 1.545 x 0.83 x 0.639 m); pivot at base centre; Concrete block road barrier with black/white hazard stripes. Long axis X. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/concrete_barrier.",
+    "assetId": "120274798149384"
+  },
+  "texture/props/concrete_barrier_color": {
+    "source": "Concrete Road Barrier by Amal Kumar, https://polyhaven.com/a/concrete_road_barrier, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/concrete_barrier/concrete_barrier_color.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/concrete_barrier, 1024px",
+    "assetId": "99606549129710"
+  },
+  "texture/props/concrete_barrier_normal": {
+    "source": "Concrete Road Barrier by Amal Kumar, https://polyhaven.com/a/concrete_road_barrier, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/concrete_barrier/concrete_barrier_normal.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance NormalMap (OpenGL/+Y) for mesh/props/concrete_barrier, 1024px",
+    "assetId": "126288416014227"
+  },
+  "texture/props/concrete_barrier_roughness": {
+    "source": "Concrete Road Barrier by Amal Kumar, https://polyhaven.com/a/concrete_road_barrier, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/concrete_barrier/concrete_barrier_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/concrete_barrier, 1024px",
+    "assetId": "111273379974823"
+  },
+  "model/props/concrete_barrier_b": {
+    "source": "Concrete Road Barrier 02 by Amal Kumar, https://polyhaven.com/a/concrete_road_barrier_02, downloaded 2026-09-29, Poly Haven 1k glTF; decimated 23.8k->6k tris; pivot moved to base centre, real-world metres; embedded JPEG normal and metallic-roughness maps re-encoded as PNG (the Open Cloud glb importer rejected the JPEG-only file with \"Failed to parse the uploaded file\")",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/concrete_barrier_b/model.glb",
+    "status": "approved",
+    "note": "6000 tris; 5.6 x 4 x 1.6 studs (X x Y x Z; 1.565 x 1.112 x 0.442 m); pivot at base centre; Plain weathered concrete block barrier with lifting hooks, taller variant. Long axis X. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/concrete_barrier_b.",
+    "assetId": "124333344106471"
+  },
+  "texture/props/concrete_barrier_b_color": {
+    "source": "Concrete Road Barrier 02 by Amal Kumar, https://polyhaven.com/a/concrete_road_barrier_02, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/concrete_barrier_b/concrete_barrier_b_color.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/concrete_barrier_b, 1024px",
+    "assetId": "106572010406349"
+  },
+  "texture/props/concrete_barrier_b_normal": {
+    "source": "Concrete Road Barrier 02 by Amal Kumar, https://polyhaven.com/a/concrete_road_barrier_02, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/concrete_barrier_b/concrete_barrier_b_normal.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance NormalMap (OpenGL/+Y) for mesh/props/concrete_barrier_b, 1024px",
+    "assetId": "111058243844354"
+  },
+  "texture/props/concrete_barrier_b_roughness": {
+    "source": "Concrete Road Barrier 02 by Amal Kumar, https://polyhaven.com/a/concrete_road_barrier_02, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/concrete_barrier_b/concrete_barrier_b_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/concrete_barrier_b, 1024px",
+    "assetId": "90435294059422"
+  },
+  "model/props/oil_barrel": {
+    "source": "Barrel_01 by Jorge Camacho, https://polyhaven.com/a/Barrel_01, downloaded 2026-09-29, Poly Haven 1k glTF; no decimation; pivot moved to base centre, real-world metres; embedded JPEG normal and metallic-roughness maps re-encoded as PNG (the Open Cloud glb importer rejected the JPEG-only file with \"Failed to parse the uploaded file\")",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/oil_barrel/model.glb",
+    "status": "approved",
+    "note": "2682 tris; 2 x 3.1 x 2 studs (X x Y x Z; 0.563 x 0.88 x 0.563 m); pivot at base centre; Red 200L steel drum with explosive-hazard label, worn paint. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/oil_barrel.",
+    "assetId": "139993495492974"
+  },
+  "texture/props/oil_barrel_color": {
+    "source": "Barrel_01 by Jorge Camacho, https://polyhaven.com/a/Barrel_01, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/oil_barrel/oil_barrel_color.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/oil_barrel, 1024px",
+    "assetId": "84625102310922"
+  },
+  "texture/props/oil_barrel_normal": {
+    "source": "Barrel_01 by Jorge Camacho, https://polyhaven.com/a/Barrel_01, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/oil_barrel/oil_barrel_normal.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance NormalMap (OpenGL/+Y) for mesh/props/oil_barrel, 1024px",
+    "assetId": "127277648116814"
+  },
+  "texture/props/oil_barrel_roughness": {
+    "source": "Barrel_01 by Jorge Camacho, https://polyhaven.com/a/Barrel_01, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/oil_barrel/oil_barrel_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/oil_barrel, 1024px",
+    "assetId": "126256408757237"
+  },
+  "texture/props/oil_barrel_metalness": {
+    "source": "Barrel_01 by Jorge Camacho, https://polyhaven.com/a/Barrel_01, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/oil_barrel/oil_barrel_metalness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance MetalnessMap for mesh/props/oil_barrel, 1024px",
+    "assetId": "122073482617836"
+  },
+  "model/props/tyre": {
+    "source": "Old Tyre by MP, https://polyhaven.com/a/old_tyre, downloaded 2026-09-29, Poly Haven 1k glTF; rotated 90deg to lie flat (stackable); pivot moved to base centre, real-world metres; embedded JPEG normal and metallic-roughness maps re-encoded as PNG (the Open Cloud glb importer rejected the JPEG-only file with \"Failed to parse the uploaded file\")",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/tyre/model.glb",
+    "status": "approved",
+    "note": "2880 tris; 2.1 x 0.6 x 2.1 studs (X x Y x Z; 0.6 x 0.165 x 0.6 m); pivot at base centre; Worn car tyre lying flat. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/tyre.",
+    "assetId": "86566058896194"
+  },
+  "texture/props/tyre_color": {
+    "source": "Old Tyre by MP, https://polyhaven.com/a/old_tyre, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/tyre/tyre_color.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/tyre, 1024px",
+    "assetId": "86973838666994"
+  },
+  "texture/props/tyre_normal": {
+    "source": "Old Tyre by MP, https://polyhaven.com/a/old_tyre, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/tyre/tyre_normal.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance NormalMap (OpenGL/+Y) for mesh/props/tyre, 1024px",
+    "assetId": "71016032134160"
+  },
+  "texture/props/tyre_roughness": {
+    "source": "Old Tyre by MP, https://polyhaven.com/a/old_tyre, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/tyre/tyre_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/tyre, 1024px",
+    "assetId": "134834671953865"
+  },
+  "model/props/trash_bag": {
+    "source": "Trashbag by Benny Weimer, https://polyhaven.com/a/trashbag, downloaded 2026-09-29, Poly Haven 1k glTF; no decimation; pivot moved to base centre, real-world metres; embedded JPEG normal and metallic-roughness maps re-encoded as PNG (the Open Cloud glb importer rejected the JPEG-only file with \"Failed to parse the uploaded file\")",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/trash_bag/model.glb",
+    "status": "approved",
+    "note": "4482 tris; 1.9 x 2.1 x 1.7 studs (X x Y x Z; 0.528 x 0.575 x 0.463 m); pivot at base centre; Full black garbage bag (photoscan). Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/trash_bag.",
+    "assetId": "89752880926581"
+  },
+  "texture/props/trash_bag_color": {
+    "source": "Trashbag by Benny Weimer, https://polyhaven.com/a/trashbag, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/trash_bag/trash_bag_color.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/trash_bag, 1024px",
+    "assetId": "84695239737758"
+  },
+  "texture/props/trash_bag_normal": {
+    "source": "Trashbag by Benny Weimer, https://polyhaven.com/a/trashbag, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/trash_bag/trash_bag_normal.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance NormalMap (OpenGL/+Y) for mesh/props/trash_bag, 1024px",
+    "assetId": "104463963757971"
+  },
+  "texture/props/trash_bag_roughness": {
+    "source": "Trashbag by Benny Weimer, https://polyhaven.com/a/trashbag, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/trash_bag/trash_bag_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/trash_bag, 1024px",
+    "assetId": "128823898407107"
+  },
+  "model/props/covered_car": {
+    "source": "Covered Car by MP, https://polyhaven.com/a/covered_car, downloaded 2026-09-29, Poly Haven 1k glTF; 5 parts joined to one mesh, decimated 12.6k->9k tris; pivot moved to base centre, real-world metres; embedded JPEG normal and metallic-roughness maps re-encoded as PNG (the Open Cloud glb importer rejected the JPEG-only file with \"Failed to parse the uploaded file\")",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/covered_car/model.glb",
+    "status": "approved",
+    "note": "8999 tris; 6.4 x 5 x 15.6 studs (X x Y x Z; 1.789 x 1.411 x 4.38 m); pivot at base centre; Sedan under a dusty tarp (abandoned car). Long axis Z. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/covered_car.",
+    "assetId": "139885465266237"
+  },
+  "texture/props/covered_car_color": {
+    "source": "Covered Car by MP, https://polyhaven.com/a/covered_car, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/covered_car/covered_car_color.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/covered_car, 1024px",
+    "assetId": "78909948335510"
+  },
+  "texture/props/covered_car_normal": {
+    "source": "Covered Car by MP, https://polyhaven.com/a/covered_car, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/covered_car/covered_car_normal.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance NormalMap (OpenGL/+Y) for mesh/props/covered_car, 1024px",
+    "assetId": "105610439434606"
+  },
+  "texture/props/covered_car_roughness": {
+    "source": "Covered Car by MP, https://polyhaven.com/a/covered_car, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/covered_car/covered_car_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/covered_car, 1024px",
+    "assetId": "120714089778121"
+  },
+  "texture/props/covered_car_metalness": {
+    "source": "Covered Car by MP, https://polyhaven.com/a/covered_car, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/props/covered_car/covered_car_metalness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance MetalnessMap for mesh/props/covered_car, 1024px",
+    "assetId": "99418919991000"
+  },
+  "model/props/car_burned_a": {
+    "source": "Burned-out Cars by Renafox (@kryik1023), https://sketchfab.com/3d-models/burned-out-cars-701066df6b914fd08318524c7ccd96a7, downloaded 2026-09-29, Sketchfab glb (1024 tex); split car #1 (Material_25) out of the 2-car scene, scaled x0.01493 to 4.4 m length, AO/emissive dropped; pivot moved to base centre, real-world metres",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Renafox (@kryik1023) on Sketchfab",
+    "file": "assets/props/car_burned_a/model.glb",
+    "status": "approved",
+    "note": "1957 tris; 6.6 x 4.6 x 15.7 studs (X x Y x Z; 1.848 x 1.276 x 4.4 m); pivot at base centre; Burned-out estate/SUV shell, scan-based low-poly with normal map. Long axis Z. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/car_burned_a.",
+    "assetId": "137342018443498"
+  },
+  "texture/props/car_burned_a_color": {
+    "source": "Burned-out Cars by Renafox (@kryik1023), https://sketchfab.com/3d-models/burned-out-cars-701066df6b914fd08318524c7ccd96a7, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Renafox (@kryik1023) on Sketchfab",
+    "file": "assets/props/car_burned_a/car_burned_a_color.png",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/car_burned_a, 1024px",
+    "assetId": "123801171080240"
+  },
+  "texture/props/car_burned_a_normal": {
+    "source": "Burned-out Cars by Renafox (@kryik1023), https://sketchfab.com/3d-models/burned-out-cars-701066df6b914fd08318524c7ccd96a7, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Renafox (@kryik1023) on Sketchfab",
+    "file": "assets/props/car_burned_a/car_burned_a_normal.png",
+    "status": "approved",
+    "note": "SurfaceAppearance NormalMap (OpenGL/+Y) for mesh/props/car_burned_a, 1024px",
+    "assetId": "83923307267749"
+  },
+  "texture/props/car_burned_a_roughness": {
+    "source": "Burned-out Cars by Renafox (@kryik1023), https://sketchfab.com/3d-models/burned-out-cars-701066df6b914fd08318524c7ccd96a7, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Renafox (@kryik1023) on Sketchfab",
+    "file": "assets/props/car_burned_a/car_burned_a_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/car_burned_a, 1024px",
+    "assetId": "94232120409453"
+  },
+  "texture/props/car_burned_a_metalness": {
+    "source": "Burned-out Cars by Renafox (@kryik1023), https://sketchfab.com/3d-models/burned-out-cars-701066df6b914fd08318524c7ccd96a7, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Renafox (@kryik1023) on Sketchfab",
+    "file": "assets/props/car_burned_a/car_burned_a_metalness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance MetalnessMap for mesh/props/car_burned_a, 1024px",
+    "assetId": "79093734584994"
+  },
+  "model/props/car_burned_b": {
+    "source": "Burned-out Cars by Renafox (@kryik1023), https://sketchfab.com/3d-models/burned-out-cars-701066df6b914fd08318524c7ccd96a7, downloaded 2026-09-29, Sketchfab glb (1024 tex); split car #2 (Material_26) out of the 2-car scene, same x0.01493 scale; pivot moved to base centre, real-world metres",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Renafox (@kryik1023) on Sketchfab",
+    "file": "assets/props/car_burned_b/model.glb",
+    "status": "approved",
+    "note": "1494 tris; 6.6 x 4.3 x 15.5 studs (X x Y x Z; 1.844 x 1.212 x 4.336 m); pivot at base centre; Burned-out sedan shell, scan-based low-poly with normal map. Long axis Z. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/car_burned_b.",
+    "assetId": "106889749337431"
+  },
+  "texture/props/car_burned_b_color": {
+    "source": "Burned-out Cars by Renafox (@kryik1023), https://sketchfab.com/3d-models/burned-out-cars-701066df6b914fd08318524c7ccd96a7, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Renafox (@kryik1023) on Sketchfab",
+    "file": "assets/props/car_burned_b/car_burned_b_color.png",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/car_burned_b, 1024px",
+    "assetId": "105804922961436"
+  },
+  "texture/props/car_burned_b_normal": {
+    "source": "Burned-out Cars by Renafox (@kryik1023), https://sketchfab.com/3d-models/burned-out-cars-701066df6b914fd08318524c7ccd96a7, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Renafox (@kryik1023) on Sketchfab",
+    "file": "assets/props/car_burned_b/car_burned_b_normal.png",
+    "status": "approved",
+    "note": "SurfaceAppearance NormalMap (OpenGL/+Y) for mesh/props/car_burned_b, 1024px",
+    "assetId": "140005886233752"
+  },
+  "texture/props/car_burned_b_roughness": {
+    "source": "Burned-out Cars by Renafox (@kryik1023), https://sketchfab.com/3d-models/burned-out-cars-701066df6b914fd08318524c7ccd96a7, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Renafox (@kryik1023) on Sketchfab",
+    "file": "assets/props/car_burned_b/car_burned_b_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/car_burned_b, 1024px",
+    "assetId": "124196886278008"
+  },
+  "texture/props/car_burned_b_metalness": {
+    "source": "Burned-out Cars by Renafox (@kryik1023), https://sketchfab.com/3d-models/burned-out-cars-701066df6b914fd08318524c7ccd96a7, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Renafox (@kryik1023) on Sketchfab",
+    "file": "assets/props/car_burned_b/car_burned_b_metalness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance MetalnessMap for mesh/props/car_burned_b, 1024px",
+    "assetId": "108428066897310"
+  },
+  "model/props/car_crashed": {
+    "source": "Crashed Abandoned Car - Game Ready by Rashad Ibrahimli (@rashad-brahimli), https://sketchfab.com/3d-models/crashed-abandoned-car-game-ready-66ef51a84c9843dda53bf0b4b9020011, downloaded 2026-09-29, Sketchfab glb (1024 tex); 10 parts joined, scaled x0.6 to ~4.6 m length; pivot moved to base centre, real-world metres",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Rashad Ibrahimli (@rashad-brahimli) on Sketchfab",
+    "file": "assets/props/car_crashed/model.glb",
+    "status": "approved",
+    "note": "8330 tris; 11 x 6.3 x 16.4 studs (X x Y x Z; 3.086 x 1.754 x 4.582 m); pivot at base centre; Rusted blue SUV, crushed front, doors hanging open (open doors make it 3.1 m wide). Long axis Z. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/car_crashed.",
+    "assetId": "112363092865601"
+  },
+  "texture/props/car_crashed_color": {
+    "source": "Crashed Abandoned Car - Game Ready by Rashad Ibrahimli (@rashad-brahimli), https://sketchfab.com/3d-models/crashed-abandoned-car-game-ready-66ef51a84c9843dda53bf0b4b9020011, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Rashad Ibrahimli (@rashad-brahimli) on Sketchfab",
+    "file": "assets/props/car_crashed/car_crashed_color.png",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/car_crashed, 1024px",
+    "assetId": "88730979815775"
+  },
+  "texture/props/car_crashed_normal": {
+    "source": "Crashed Abandoned Car - Game Ready by Rashad Ibrahimli (@rashad-brahimli), https://sketchfab.com/3d-models/crashed-abandoned-car-game-ready-66ef51a84c9843dda53bf0b4b9020011, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Rashad Ibrahimli (@rashad-brahimli) on Sketchfab",
+    "file": "assets/props/car_crashed/car_crashed_normal.png",
+    "status": "approved",
+    "note": "SurfaceAppearance NormalMap (OpenGL/+Y) for mesh/props/car_crashed, 1024px",
+    "assetId": "115219141599776"
+  },
+  "texture/props/car_crashed_roughness": {
+    "source": "Crashed Abandoned Car - Game Ready by Rashad Ibrahimli (@rashad-brahimli), https://sketchfab.com/3d-models/crashed-abandoned-car-game-ready-66ef51a84c9843dda53bf0b4b9020011, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Rashad Ibrahimli (@rashad-brahimli) on Sketchfab",
+    "file": "assets/props/car_crashed/car_crashed_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/car_crashed, 1024px",
+    "assetId": "99043837704290"
+  },
+  "texture/props/car_crashed_metalness": {
+    "source": "Crashed Abandoned Car - Game Ready by Rashad Ibrahimli (@rashad-brahimli), https://sketchfab.com/3d-models/crashed-abandoned-car-game-ready-66ef51a84c9843dda53bf0b4b9020011, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Rashad Ibrahimli (@rashad-brahimli) on Sketchfab",
+    "file": "assets/props/car_crashed/car_crashed_metalness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance MetalnessMap for mesh/props/car_crashed, 1024px",
+    "assetId": "78694756985826"
+  },
+  "model/props/truck_crashed": {
+    "source": "Crashed Abandoned Truck - Game Ready by Rashad Ibrahimli (@rashad-brahimli), https://sketchfab.com/3d-models/crashed-abandoned-truck-game-ready-1e9afcb999814bcfa2ea27b22df14059, downloaded 2026-09-29, Sketchfab glb (1024 tex); 15 parts joined, all-white vertex colours dropped, scaled x0.18 to ~5.6 m; pivot moved to base centre, real-world metres",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Rashad Ibrahimli (@rashad-brahimli) on Sketchfab",
+    "file": "assets/props/truck_crashed/model.glb",
+    "status": "approved",
+    "note": "9360 tris; 14.3 x 7.1 x 20.1 studs (X x Y x Z; 4.002 x 1.986 x 5.621 m); pivot at base centre; Olive rusted pickup, crushed nose, door open. Long axis Z. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/truck_crashed.",
+    "assetId": "113238053630547"
+  },
+  "texture/props/truck_crashed_color": {
+    "source": "Crashed Abandoned Truck - Game Ready by Rashad Ibrahimli (@rashad-brahimli), https://sketchfab.com/3d-models/crashed-abandoned-truck-game-ready-1e9afcb999814bcfa2ea27b22df14059, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Rashad Ibrahimli (@rashad-brahimli) on Sketchfab",
+    "file": "assets/props/truck_crashed/truck_crashed_color.png",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/truck_crashed, 1024px",
+    "assetId": "135786990030999"
+  },
+  "texture/props/truck_crashed_normal": {
+    "source": "Crashed Abandoned Truck - Game Ready by Rashad Ibrahimli (@rashad-brahimli), https://sketchfab.com/3d-models/crashed-abandoned-truck-game-ready-1e9afcb999814bcfa2ea27b22df14059, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Rashad Ibrahimli (@rashad-brahimli) on Sketchfab",
+    "file": "assets/props/truck_crashed/truck_crashed_normal.png",
+    "status": "approved",
+    "note": "SurfaceAppearance NormalMap (OpenGL/+Y) for mesh/props/truck_crashed, 1024px",
+    "assetId": "139742247727845"
+  },
+  "texture/props/truck_crashed_roughness": {
+    "source": "Crashed Abandoned Truck - Game Ready by Rashad Ibrahimli (@rashad-brahimli), https://sketchfab.com/3d-models/crashed-abandoned-truck-game-ready-1e9afcb999814bcfa2ea27b22df14059, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Rashad Ibrahimli (@rashad-brahimli) on Sketchfab",
+    "file": "assets/props/truck_crashed/truck_crashed_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/truck_crashed, 1024px",
+    "assetId": "71205109341973"
+  },
+  "texture/props/truck_crashed_metalness": {
+    "source": "Crashed Abandoned Truck - Game Ready by Rashad Ibrahimli (@rashad-brahimli), https://sketchfab.com/3d-models/crashed-abandoned-truck-game-ready-1e9afcb999814bcfa2ea27b22df14059, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Rashad Ibrahimli (@rashad-brahimli) on Sketchfab",
+    "file": "assets/props/truck_crashed/truck_crashed_metalness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance MetalnessMap for mesh/props/truck_crashed, 1024px",
+    "assetId": "85794836421011"
+  },
+  "model/props/sandbag_wall": {
+    "source": "Sandbag Barrier (Ready for Unreal Engine) by G4AGamingLabs, https://sketchfab.com/3d-models/sandbag-barrier-ready-for-unreal-engine-593800671c8e45eca93b8b7c765c0f77, downloaded 2026-09-29, Sketchfab glb (1024 tex); decimated 20k->8k tris; pivot moved to base centre, real-world metres",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit G4AGamingLabs on Sketchfab",
+    "file": "assets/props/sandbag_wall/model.glb",
+    "status": "approved",
+    "note": "7999 tris; 16.4 x 3.7 x 2.6 studs (X x Y x Z; 4.587 x 1.027 x 0.737 m); pivot at base centre; Straight sandbag wall, 3 rows high. Long axis X. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/sandbag_wall.",
+    "assetId": "94969654347056"
+  },
+  "texture/props/sandbag_wall_color": {
+    "source": "Sandbag Barrier (Ready for Unreal Engine) by G4AGamingLabs, https://sketchfab.com/3d-models/sandbag-barrier-ready-for-unreal-engine-593800671c8e45eca93b8b7c765c0f77, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit G4AGamingLabs on Sketchfab",
+    "file": "assets/props/sandbag_wall/sandbag_wall_color.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/sandbag_wall, 1024px",
+    "assetId": "109812687898051"
+  },
+  "texture/props/sandbag_wall_normal": {
+    "source": "Sandbag Barrier (Ready for Unreal Engine) by G4AGamingLabs, https://sketchfab.com/3d-models/sandbag-barrier-ready-for-unreal-engine-593800671c8e45eca93b8b7c765c0f77, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit G4AGamingLabs on Sketchfab",
+    "file": "assets/props/sandbag_wall/sandbag_wall_normal.png",
+    "status": "approved",
+    "note": "SurfaceAppearance NormalMap (OpenGL/+Y) for mesh/props/sandbag_wall, 1024px",
+    "assetId": "114005654838071"
+  },
+  "texture/props/sandbag_wall_roughness": {
+    "source": "Sandbag Barrier (Ready for Unreal Engine) by G4AGamingLabs, https://sketchfab.com/3d-models/sandbag-barrier-ready-for-unreal-engine-593800671c8e45eca93b8b7c765c0f77, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit G4AGamingLabs on Sketchfab",
+    "file": "assets/props/sandbag_wall/sandbag_wall_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/sandbag_wall, 1024px",
+    "assetId": "79003176974911"
+  },
+  "model/props/czech_hedgehog": {
+    "source": "Rusted Czech Hedgehog by Kane Griffiths (@GrostyBoi), https://sketchfab.com/3d-models/rusted-czech-hedgehog-cfa712e8851a4881989ea890bfc6910e, downloaded 2026-09-29, Sketchfab glb (1024 tex); cm->m (x0.01), re-pivoted to ground; pivot moved to base centre, real-world metres",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Kane Griffiths (@GrostyBoi) on Sketchfab",
+    "file": "assets/props/czech_hedgehog/model.glb",
+    "status": "approved",
+    "note": "1972 tris; 6.3 x 4.9 x 5.6 studs (X x Y x Z; 1.767 x 1.38 x 1.572 m); pivot at base centre; Rusted steel anti-tank hedgehog standing on 3 legs. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/czech_hedgehog.",
+    "assetId": "103540102764716"
+  },
+  "texture/props/czech_hedgehog_color": {
+    "source": "Rusted Czech Hedgehog by Kane Griffiths (@GrostyBoi), https://sketchfab.com/3d-models/rusted-czech-hedgehog-cfa712e8851a4881989ea890bfc6910e, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Kane Griffiths (@GrostyBoi) on Sketchfab",
+    "file": "assets/props/czech_hedgehog/czech_hedgehog_color.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/czech_hedgehog, 1024px",
+    "assetId": "123499055542888"
+  },
+  "texture/props/czech_hedgehog_normal": {
+    "source": "Rusted Czech Hedgehog by Kane Griffiths (@GrostyBoi), https://sketchfab.com/3d-models/rusted-czech-hedgehog-cfa712e8851a4881989ea890bfc6910e, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Kane Griffiths (@GrostyBoi) on Sketchfab",
+    "file": "assets/props/czech_hedgehog/czech_hedgehog_normal.png",
+    "status": "approved",
+    "note": "SurfaceAppearance NormalMap (OpenGL/+Y) for mesh/props/czech_hedgehog, 1024px",
+    "assetId": "78207567948443"
+  },
+  "texture/props/czech_hedgehog_roughness": {
+    "source": "Rusted Czech Hedgehog by Kane Griffiths (@GrostyBoi), https://sketchfab.com/3d-models/rusted-czech-hedgehog-cfa712e8851a4881989ea890bfc6910e, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Kane Griffiths (@GrostyBoi) on Sketchfab",
+    "file": "assets/props/czech_hedgehog/czech_hedgehog_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/czech_hedgehog, 1024px",
+    "assetId": "75559151127519"
+  },
+  "texture/props/czech_hedgehog_metalness": {
+    "source": "Rusted Czech Hedgehog by Kane Griffiths (@GrostyBoi), https://sketchfab.com/3d-models/rusted-czech-hedgehog-cfa712e8851a4881989ea890bfc6910e, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Kane Griffiths (@GrostyBoi) on Sketchfab",
+    "file": "assets/props/czech_hedgehog/czech_hedgehog_metalness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance MetalnessMap for mesh/props/czech_hedgehog, 1024px",
+    "assetId": "78695885105231"
+  },
+  "model/props/rubble_pile": {
+    "source": "A Pile Of Concrete Debris - 3D Scan by Alben Tan (@albentan2012), https://sketchfab.com/3d-models/a-pile-of-concrete-debris-3d-scan-194bec2429da4b74b3926ac981616da8, downloaded 2026-09-29, Sketchfab glb (1024 tex); 3 parts joined, welded + decimated 49k->10k tris, normals recomputed; pivot moved to base centre, real-world metres",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Alben Tan (@albentan2012) on Sketchfab",
+    "file": "assets/props/rubble_pile/model.glb",
+    "status": "approved",
+    "note": "9999 tris; 8.6 x 2.6 x 8.8 studs (X x Y x Z; 2.412 x 0.738 x 2.47 m); pivot at base centre; Photoscanned pile of broken concrete chunks. Colour map only (no normal/roughness in source): set SurfaceAppearance roughness ~0.9 or use plain TextureID. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/rubble_pile.",
+    "assetId": "137306482068856"
+  },
+  "texture/props/rubble_pile_color": {
+    "source": "A Pile Of Concrete Debris - 3D Scan by Alben Tan (@albentan2012), https://sketchfab.com/3d-models/a-pile-of-concrete-debris-3d-scan-194bec2429da4b74b3926ac981616da8, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Alben Tan (@albentan2012) on Sketchfab",
+    "file": "assets/props/rubble_pile/rubble_pile_color.jpg",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/rubble_pile, 1024px",
+    "assetId": "92157167535678"
+  },
+  "model/props/traffic_cone": {
+    "source": "Traffic Cones by NotAnotherApocalypticCo., https://sketchfab.com/3d-models/traffic-cones-e03b1d2dfdc0416bb8324d15573ea60c, downloaded 2026-09-29, Sketchfab glb (1024 tex); single 71 cm cone (Traffic_Cone_2_2.002) extracted from the 32-piece pack, clearcoat dropped; pivot moved to base centre, real-world metres",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit NotAnotherApocalypticCo. on Sketchfab",
+    "file": "assets/props/traffic_cone/model.glb",
+    "status": "approved",
+    "note": "752 tris; 1.4 x 2.6 x 1.4 studs (X x Y x Z; 0.404 x 0.734 x 0.404 m); pivot at base centre; Standard 71 cm orange traffic cone; fairly clean (add dirt decal if needed). Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/traffic_cone.",
+    "assetId": "113406952468042"
+  },
+  "texture/props/traffic_cone_color": {
+    "source": "Traffic Cones by NotAnotherApocalypticCo., https://sketchfab.com/3d-models/traffic-cones-e03b1d2dfdc0416bb8324d15573ea60c, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit NotAnotherApocalypticCo. on Sketchfab",
+    "file": "assets/props/traffic_cone/traffic_cone_color.png",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/traffic_cone, 1024px",
+    "assetId": "114731001003025"
+  },
+  "texture/props/traffic_cone_normal": {
+    "source": "Traffic Cones by NotAnotherApocalypticCo., https://sketchfab.com/3d-models/traffic-cones-e03b1d2dfdc0416bb8324d15573ea60c, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit NotAnotherApocalypticCo. on Sketchfab",
+    "file": "assets/props/traffic_cone/traffic_cone_normal.png",
+    "status": "approved",
+    "note": "SurfaceAppearance NormalMap (OpenGL/+Y) for mesh/props/traffic_cone, 1024px",
+    "assetId": "121111742836705"
+  },
+  "texture/props/traffic_cone_roughness": {
+    "source": "Traffic Cones by NotAnotherApocalypticCo., https://sketchfab.com/3d-models/traffic-cones-e03b1d2dfdc0416bb8324d15573ea60c, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit NotAnotherApocalypticCo. on Sketchfab",
+    "file": "assets/props/traffic_cone/traffic_cone_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/traffic_cone, 1024px",
+    "assetId": "127101009254115"
+  },
+  "texture/props/traffic_cone_metalness": {
+    "source": "Traffic Cones by NotAnotherApocalypticCo., https://sketchfab.com/3d-models/traffic-cones-e03b1d2dfdc0416bb8324d15573ea60c, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit NotAnotherApocalypticCo. on Sketchfab",
+    "file": "assets/props/traffic_cone/traffic_cone_metalness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance MetalnessMap for mesh/props/traffic_cone, 1024px",
+    "assetId": "89374820060038"
+  },
+  "model/props/road_sign_stop": {
+    "source": "Road Signs by FrodoUndead, https://sketchfab.com/3d-models/road-signs-c39bf97110494b5db3de84165211f592, downloaded 2026-09-29, Sketchfab glb (2048 tex); dirty STOP sign (Object_362) extracted, its UV islands repacked into a 1024 atlas (face kept at source res), scaled x0.25; pivot moved to base centre, real-world metres",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit FrodoUndead on Sketchfab",
+    "file": "assets/props/road_sign_stop/model.glb",
+    "status": "approved",
+    "note": "80 tris; 2.6 x 10.1 x 0.2 studs (X x Y x Z; 0.736 x 2.84 x 0.054 m); pivot at base centre; Dirty STOP sign on a perforated post; face points +Z. Colour PNG has alpha: set SurfaceAppearance.AlphaMode = Transparency. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/road_sign_stop.",
+    "alphaMode": "Transparency",
+    "assetId": "131384531889774"
+  },
+  "texture/props/road_sign_stop_color": {
+    "source": "Road Signs by FrodoUndead, https://sketchfab.com/3d-models/road-signs-c39bf97110494b5db3de84165211f592, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit FrodoUndead on Sketchfab",
+    "file": "assets/props/road_sign_stop/road_sign_stop_color.png",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/road_sign_stop, 1024px; RGBA, alpha-tested",
+    "assetId": "98052654563708"
+  },
+  "texture/props/road_sign_stop_roughness": {
+    "source": "Road Signs by FrodoUndead, https://sketchfab.com/3d-models/road-signs-c39bf97110494b5db3de84165211f592, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit FrodoUndead on Sketchfab",
+    "file": "assets/props/road_sign_stop/road_sign_stop_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/road_sign_stop, 1024px",
+    "assetId": "83626817450221"
+  },
+  "texture/props/road_sign_stop_metalness": {
+    "source": "Road Signs by FrodoUndead, https://sketchfab.com/3d-models/road-signs-c39bf97110494b5db3de84165211f592, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit FrodoUndead on Sketchfab",
+    "file": "assets/props/road_sign_stop/road_sign_stop_metalness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance MetalnessMap for mesh/props/road_sign_stop, 1024px",
+    "assetId": "74823564720556"
+  },
+  "model/props/road_sign_curve": {
+    "source": "Road Signs by FrodoUndead, https://sketchfab.com/3d-models/road-signs-c39bf97110494b5db3de84165211f592, downloaded 2026-09-29, Sketchfab glb (2048 tex); dirty winding-road warning sign (Object_294) extracted, UVs repacked into a 1024 atlas, scaled x0.25; pivot moved to base centre, real-world metres",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit FrodoUndead on Sketchfab",
+    "file": "assets/props/road_sign_curve/model.glb",
+    "status": "approved",
+    "note": "96 tris; 3.2 x 10.1 x 0.2 studs (X x Y x Z; 0.903 x 2.84 x 0.054 m); pivot at base centre; Yellow winding-road warning diamond on a post; face points +Z. Colour PNG has alpha: set SurfaceAppearance.AlphaMode = Transparency. Model upload (Open Cloud glb import); the MeshId inside is read back in Studio into mesh/props/road_sign_curve.",
+    "alphaMode": "Transparency",
+    "assetId": "121803892221658"
+  },
+  "texture/props/road_sign_curve_color": {
+    "source": "Road Signs by FrodoUndead, https://sketchfab.com/3d-models/road-signs-c39bf97110494b5db3de84165211f592, downloaded 2026-09-29, extracted from the processed glb material",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit FrodoUndead on Sketchfab",
+    "file": "assets/props/road_sign_curve/road_sign_curve_color.png",
+    "status": "approved",
+    "note": "SurfaceAppearance ColorMap for mesh/props/road_sign_curve, 1024px; RGBA, alpha-tested",
+    "assetId": "102730263585350"
+  },
+  "texture/props/road_sign_curve_roughness": {
+    "source": "Road Signs by FrodoUndead, https://sketchfab.com/3d-models/road-signs-c39bf97110494b5db3de84165211f592, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit FrodoUndead on Sketchfab",
+    "file": "assets/props/road_sign_curve/road_sign_curve_roughness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance RoughnessMap for mesh/props/road_sign_curve, 1024px",
+    "assetId": "101357432135253"
+  },
+  "texture/props/road_sign_curve_metalness": {
+    "source": "Road Signs by FrodoUndead, https://sketchfab.com/3d-models/road-signs-c39bf97110494b5db3de84165211f592, downloaded 2026-09-29, extracted from the processed glb material (G/B channel split of glTF metallicRoughness)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit FrodoUndead on Sketchfab",
+    "file": "assets/props/road_sign_curve/road_sign_curve_metalness.png",
+    "status": "approved",
+    "note": "SurfaceAppearance MetalnessMap for mesh/props/road_sign_curve, 1024px",
+    "assetId": "104404308694059"
+  },
+  "texture/surface/asphalt_cracked_color": {
+    "source": "Road 012 B by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Road012B, downloaded 2026-09-29, 1K-JPG, Color map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/asphalt_cracked/asphalt_cracked_color.jpg",
+    "status": "approved",
+    "note": "Cracked, patched asphalt without markings; tileable PBR set for SurfaceAppearance/MaterialVariant (color)",
+    "assetId": "129128032496808"
+  },
+  "texture/surface/asphalt_cracked_normal": {
+    "source": "Road 012 B by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Road012B, downloaded 2026-09-29, 1K-JPG, NormalGL map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/asphalt_cracked/asphalt_cracked_normal.jpg",
+    "status": "approved",
+    "note": "Cracked, patched asphalt without markings; tileable PBR set for SurfaceAppearance/MaterialVariant (normal)",
+    "assetId": "89710024899225"
+  },
+  "texture/surface/asphalt_cracked_roughness": {
+    "source": "Road 012 B by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Road012B, downloaded 2026-09-29, 1K-JPG, Roughness map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/asphalt_cracked/asphalt_cracked_roughness.jpg",
+    "status": "approved",
+    "note": "Cracked, patched asphalt without markings; tileable PBR set for SurfaceAppearance/MaterialVariant (roughness)",
+    "assetId": "121850910757878"
+  },
+  "texture/surface/asphalt_worn_lines_color": {
+    "source": "Road 009 C by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Road009C, downloaded 2026-09-29, 1K-JPG, Color map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/asphalt_worn_lines/asphalt_worn_lines_color.jpg",
+    "status": "approved",
+    "note": "Worn cracked asphalt with faded yellow centre dashes and patches; tileable PBR set for SurfaceAppearance/MaterialVariant (color)",
+    "assetId": "120924344936578"
+  },
+  "texture/surface/asphalt_worn_lines_normal": {
+    "source": "Road 009 C by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Road009C, downloaded 2026-09-29, 1K-JPG, NormalGL map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/asphalt_worn_lines/asphalt_worn_lines_normal.jpg",
+    "status": "approved",
+    "note": "Worn cracked asphalt with faded yellow centre dashes and patches; tileable PBR set for SurfaceAppearance/MaterialVariant (normal)",
+    "assetId": "110210146596552"
+  },
+  "texture/surface/asphalt_worn_lines_roughness": {
+    "source": "Road 009 C by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Road009C, downloaded 2026-09-29, 1K-JPG, Roughness map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/asphalt_worn_lines/asphalt_worn_lines_roughness.jpg",
+    "status": "approved",
+    "note": "Worn cracked asphalt with faded yellow centre dashes and patches; tileable PBR set for SurfaceAppearance/MaterialVariant (roughness)",
+    "assetId": "111566680127620"
+  },
+  "texture/surface/concrete_dirty_color": {
+    "source": "Concrete 035 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Concrete035, downloaded 2026-09-29, 1K-JPG, Color map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/concrete_dirty/concrete_dirty_color.jpg",
+    "status": "approved",
+    "note": "Old dark stained concrete/plaster (1024x512, 2:1 tile); tileable PBR set for SurfaceAppearance/MaterialVariant (color)",
+    "assetId": "112752694762911"
+  },
+  "texture/surface/concrete_dirty_normal": {
+    "source": "Concrete 035 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Concrete035, downloaded 2026-09-29, 1K-JPG, NormalGL map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/concrete_dirty/concrete_dirty_normal.jpg",
+    "status": "approved",
+    "note": "Old dark stained concrete/plaster (1024x512, 2:1 tile); tileable PBR set for SurfaceAppearance/MaterialVariant (normal)",
+    "assetId": "135087024371618"
+  },
+  "texture/surface/concrete_dirty_roughness": {
+    "source": "Concrete 035 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Concrete035, downloaded 2026-09-29, 1K-JPG, Roughness map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/concrete_dirty/concrete_dirty_roughness.jpg",
+    "status": "approved",
+    "note": "Old dark stained concrete/plaster (1024x512, 2:1 tile); tileable PBR set for SurfaceAppearance/MaterialVariant (roughness)",
+    "assetId": "85178526164228"
+  },
+  "texture/surface/metal_rusty_color": {
+    "source": "Rust 009 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Rust009, downloaded 2026-09-29, 1K-JPG, Color map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/metal_rusty/metal_rusty_color.jpg",
+    "status": "approved",
+    "note": "Heavily rusted steel (no metalness map: rust is non-metal); tileable PBR set for SurfaceAppearance/MaterialVariant (color)",
+    "assetId": "80340122137394"
+  },
+  "texture/surface/metal_rusty_normal": {
+    "source": "Rust 009 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Rust009, downloaded 2026-09-29, 1K-JPG, NormalGL map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/metal_rusty/metal_rusty_normal.jpg",
+    "status": "approved",
+    "note": "Heavily rusted steel (no metalness map: rust is non-metal); tileable PBR set for SurfaceAppearance/MaterialVariant (normal)",
+    "assetId": "131260796078423"
+  },
+  "texture/surface/metal_rusty_roughness": {
+    "source": "Rust 009 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Rust009, downloaded 2026-09-29, 1K-JPG, Roughness map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/metal_rusty/metal_rusty_roughness.jpg",
+    "status": "approved",
+    "note": "Heavily rusted steel (no metalness map: rust is non-metal); tileable PBR set for SurfaceAppearance/MaterialVariant (roughness)",
+    "assetId": "89816928212096"
+  },
+  "texture/surface/paint_peeling_metal_color": {
+    "source": "Painted Metal 013 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=PaintedMetal013, downloaded 2026-09-29, 1K-JPG, Color map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/paint_peeling_metal/paint_peeling_metal_color.jpg",
+    "status": "approved",
+    "note": "White paint peeling off rusty metal (has metalness); tileable PBR set for SurfaceAppearance/MaterialVariant (color)",
+    "assetId": "94759207439627"
+  },
+  "texture/surface/paint_peeling_metal_normal": {
+    "source": "Painted Metal 013 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=PaintedMetal013, downloaded 2026-09-29, 1K-JPG, NormalGL map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/paint_peeling_metal/paint_peeling_metal_normal.jpg",
+    "status": "approved",
+    "note": "White paint peeling off rusty metal (has metalness); tileable PBR set for SurfaceAppearance/MaterialVariant (normal)",
+    "assetId": "98445382442491"
+  },
+  "texture/surface/paint_peeling_metal_roughness": {
+    "source": "Painted Metal 013 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=PaintedMetal013, downloaded 2026-09-29, 1K-JPG, Roughness map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/paint_peeling_metal/paint_peeling_metal_roughness.jpg",
+    "status": "approved",
+    "note": "White paint peeling off rusty metal (has metalness); tileable PBR set for SurfaceAppearance/MaterialVariant (roughness)",
+    "assetId": "78157909004945"
+  },
+  "texture/surface/paint_peeling_metal_metalness": {
+    "source": "Painted Metal 013 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=PaintedMetal013, downloaded 2026-09-29, 1K-JPG, Metalness map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/paint_peeling_metal/paint_peeling_metal_metalness.jpg",
+    "status": "approved",
+    "note": "White paint peeling off rusty metal (has metalness); tileable PBR set for SurfaceAppearance/MaterialVariant (metalness)",
+    "assetId": "138413819930772"
+  },
+  "texture/surface/plaster_peeling_brick_color": {
+    "source": "Painted Plaster 016 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=PaintedPlaster016, downloaded 2026-09-29, 1K-JPG, Color map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/plaster_peeling_brick/plaster_peeling_brick_color.jpg",
+    "status": "approved",
+    "note": "Grimy white plaster flaking off to brick; tileable PBR set for SurfaceAppearance/MaterialVariant (color)",
+    "assetId": "92703204719878"
+  },
+  "texture/surface/plaster_peeling_brick_normal": {
+    "source": "Painted Plaster 016 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=PaintedPlaster016, downloaded 2026-09-29, 1K-JPG, NormalGL map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/plaster_peeling_brick/plaster_peeling_brick_normal.jpg",
+    "status": "approved",
+    "note": "Grimy white plaster flaking off to brick; tileable PBR set for SurfaceAppearance/MaterialVariant (normal)",
+    "assetId": "110230733436968"
+  },
+  "texture/surface/plaster_peeling_brick_roughness": {
+    "source": "Painted Plaster 016 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=PaintedPlaster016, downloaded 2026-09-29, 1K-JPG, Roughness map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/plaster_peeling_brick/plaster_peeling_brick_roughness.jpg",
+    "status": "approved",
+    "note": "Grimy white plaster flaking off to brick; tileable PBR set for SurfaceAppearance/MaterialVariant (roughness)",
+    "assetId": "89415037092804"
+  },
+  "texture/surface/bricks_grimy_color": {
+    "source": "Bricks 097 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Bricks097, downloaded 2026-09-29, 1K-JPG, Color map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/bricks_grimy/bricks_grimy_color.jpg",
+    "status": "approved",
+    "note": "Dirty damaged red brick wall (1024x512, 2:1 tile); tileable PBR set for SurfaceAppearance/MaterialVariant (color)",
+    "assetId": "112083229300075"
+  },
+  "texture/surface/bricks_grimy_normal": {
+    "source": "Bricks 097 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Bricks097, downloaded 2026-09-29, 1K-JPG, NormalGL map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/bricks_grimy/bricks_grimy_normal.jpg",
+    "status": "approved",
+    "note": "Dirty damaged red brick wall (1024x512, 2:1 tile); tileable PBR set for SurfaceAppearance/MaterialVariant (normal)",
+    "assetId": "83089916081019"
+  },
+  "texture/surface/bricks_grimy_roughness": {
+    "source": "Bricks 097 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Bricks097, downloaded 2026-09-29, 1K-JPG, Roughness map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/bricks_grimy/bricks_grimy_roughness.jpg",
+    "status": "approved",
+    "note": "Dirty damaged red brick wall (1024x512, 2:1 tile); tileable PBR set for SurfaceAppearance/MaterialVariant (roughness)",
+    "assetId": "77303507036085"
+  },
+  "texture/surface/dirt_dry_color": {
+    "source": "Ground 109 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Ground109, downloaded 2026-09-29, 1K-JPG, Color map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/dirt_dry/dirt_dry_color.jpg",
+    "status": "approved",
+    "note": "Dry dirt with pebbles (desert-town roadside); tileable PBR set for SurfaceAppearance/MaterialVariant (color)",
+    "assetId": "102906269640591"
+  },
+  "texture/surface/dirt_dry_normal": {
+    "source": "Ground 109 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Ground109, downloaded 2026-09-29, 1K-JPG, NormalGL map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/dirt_dry/dirt_dry_normal.jpg",
+    "status": "approved",
+    "note": "Dry dirt with pebbles (desert-town roadside); tileable PBR set for SurfaceAppearance/MaterialVariant (normal)",
+    "assetId": "86593365981751"
+  },
+  "texture/surface/dirt_dry_roughness": {
+    "source": "Ground 109 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Ground109, downloaded 2026-09-29, 1K-JPG, Roughness map renamed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/dirt_dry/dirt_dry_roughness.jpg",
+    "status": "approved",
+    "note": "Dry dirt with pebbles (desert-town roadside); tileable PBR set for SurfaceAppearance/MaterialVariant (roughness)",
+    "assetId": "90440200060377"
+  },
+  "texture/surface/ground_burned_color": {
+    "source": "Burned Ground 01 by Rob Tuytel, https://polyhaven.com/a/burned_ground_01, downloaded 2026-09-29, 1k JPG (diff)",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/textures/ground_burned/ground_burned_color.jpg",
+    "status": "approved",
+    "note": "Burned soil with ash and charred debris; tileable (~1 m real size); color",
+    "assetId": "75863816847957"
+  },
+  "texture/surface/ground_burned_normal": {
+    "source": "Burned Ground 01 by Rob Tuytel, https://polyhaven.com/a/burned_ground_01, downloaded 2026-09-29, 1k JPG (nor_gl)",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/textures/ground_burned/ground_burned_normal.jpg",
+    "status": "approved",
+    "note": "Burned soil with ash and charred debris; tileable (~1 m real size); normal",
+    "assetId": "91420481081827"
+  },
+  "texture/surface/ground_burned_roughness": {
+    "source": "Burned Ground 01 by Rob Tuytel, https://polyhaven.com/a/burned_ground_01, downloaded 2026-09-29, 1k JPG (rough)",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "file": "assets/textures/ground_burned/ground_burned_roughness.jpg",
+    "status": "approved",
+    "note": "Burned soil with ash and charred debris; tileable (~1 m real size); roughness",
+    "assetId": "112932909731260"
+  },
+  "texture/decal/graffiti_a": {
+    "source": "Graffiti Set 001 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=GraffitiSet001, downloaded 2026-09-29, cell r0c3 of the 4K atlas (blue bubble tag \"BSD\"); Color+Opacity merged into RGBA PNG, trimmed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/decals/decal_graffiti_a.png",
+    "status": "approved",
+    "note": "Decal RGBA 1001x588; wall graffiti",
+    "assetId": "121576501398603"
+  },
+  "texture/decal/graffiti_b": {
+    "source": "Graffiti Set 001 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=GraffitiSet001, downloaded 2026-09-29, cell r1c3 of the 4K atlas (orange tag \"DION\"); Color+Opacity merged into RGBA PNG, trimmed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/decals/decal_graffiti_b.png",
+    "status": "approved",
+    "note": "Decal RGBA 1021x677; wall graffiti",
+    "assetId": "84754254422357"
+  },
+  "texture/decal/graffiti_c": {
+    "source": "Graffiti Set 001 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=GraffitiSet001, downloaded 2026-09-29, cell r3c0 of the 4K atlas (cyan tag \"SZM CRU\"); Color+Opacity merged into RGBA PNG, trimmed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/decals/decal_graffiti_c.png",
+    "status": "approved",
+    "note": "Decal RGBA 1000x651; wall graffiti",
+    "assetId": "131429912508365"
+  },
+  "texture/decal/asphalt_patch_a": {
+    "source": "Asphalt Damage Set 001 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=AsphaltDamageSet001, downloaded 2026-09-29, largest element of the 4K atlas (worn asphalt patch); Color+Opacity merged into RGBA PNG, trimmed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/decals/decal_asphalt_patch_a.png",
+    "status": "approved",
+    "note": "Decal RGBA 1024x256; road-surface decal to break asphalt tiling",
+    "assetId": "130009179528114"
+  },
+  "texture/decal/asphalt_patch_b": {
+    "source": "Asphalt Damage Set 001 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=AsphaltDamageSet001, downloaded 2026-09-29, 2nd-largest element of the 4K atlas (patch strip with cracks); Color+Opacity merged into RGBA PNG, trimmed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/decals/decal_asphalt_patch_b.png",
+    "status": "approved",
+    "note": "Decal RGBA 1024x241; road-surface decal to break asphalt tiling",
+    "assetId": "100474776612286"
+  },
+  "texture/decal/leak_streaks": {
+    "source": "Leaking 008 by ambientCG (Lennart Demes), https://ambientcg.com/view?id=Leaking008, downloaded 2026-09-29, full 1K decal (dark water/grime streaks); Color+Opacity merged into RGBA PNG, trimmed",
+    "license": "CC0 1.0 Universal (ambientCG, public domain; no attribution required)",
+    "file": "assets/textures/decals/decal_leak_streaks.png",
+    "status": "approved",
+    "note": "Decal RGBA 1024x256; wall grime streaks under roofs/windows",
+    "assetId": "140351039383728"
+  },
+  "mesh/props/car_burned_a": {
+    "source": "MeshId inside Model asset 137342018443498 (model/props/car_burned_a), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Renafox (@kryik1023) on Sketchfab",
+    "assetId": 115629906297750,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/car_burned_b": {
+    "source": "MeshId inside Model asset 106889749337431 (model/props/car_burned_b), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Renafox (@kryik1023) on Sketchfab",
+    "assetId": 71875183248350,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/car_crashed": {
+    "source": "MeshId inside Model asset 112363092865601 (model/props/car_crashed), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Rashad Ibrahimli (@rashad-brahimli) on Sketchfab",
+    "assetId": 109590372060010,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/concrete_barrier": {
+    "source": "MeshId inside Model asset 120274798149384 (model/props/concrete_barrier), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "assetId": 130077960420845,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/concrete_barrier_b": {
+    "source": "MeshId inside Model asset 124333344106471 (model/props/concrete_barrier_b), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "assetId": 104964622595156,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/covered_car": {
+    "source": "MeshId inside Model asset 139885465266237 (model/props/covered_car), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "assetId": 75273671179252,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/czech_hedgehog": {
+    "source": "MeshId inside Model asset 103540102764716 (model/props/czech_hedgehog), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Kane Griffiths (@GrostyBoi) on Sketchfab",
+    "assetId": 105915336759295,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/oil_barrel": {
+    "source": "MeshId inside Model asset 139993495492974 (model/props/oil_barrel), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "assetId": 109217425030606,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/road_sign_curve": {
+    "source": "MeshId inside Model asset 121803892221658 (model/props/road_sign_curve), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit FrodoUndead on Sketchfab",
+    "assetId": 74758553075314,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/road_sign_stop": {
+    "source": "MeshId inside Model asset 131384531889774 (model/props/road_sign_stop), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit FrodoUndead on Sketchfab",
+    "assetId": 114941088449362,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/rubble_pile": {
+    "source": "MeshId inside Model asset 137306482068856 (model/props/rubble_pile), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Alben Tan (@albentan2012) on Sketchfab",
+    "assetId": 114457019126807,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/sandbag_wall": {
+    "source": "MeshId inside Model asset 94969654347056 (model/props/sandbag_wall), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit G4AGamingLabs on Sketchfab",
+    "assetId": 135636368308954,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/traffic_cone": {
+    "source": "MeshId inside Model asset 113406952468042 (model/props/traffic_cone), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit NotAnotherApocalypticCo. on Sketchfab",
+    "assetId": 101348197971692,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/trash_bag": {
+    "source": "MeshId inside Model asset 89752880926581 (model/props/trash_bag), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "assetId": 121172426087778,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/truck_crashed": {
+    "source": "MeshId inside Model asset 113238053630547 (model/props/truck_crashed), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) - credit Rashad Ibrahimli (@rashad-brahimli) on Sketchfab",
+    "assetId": 110076691679223,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "mesh/props/tyre": {
+    "source": "MeshId inside Model asset 86566058896194 (model/props/tyre), read back in Studio with InsertService:LoadAsset on 2026-09-29",
+    "license": "CC0 1.0 Universal (Poly Haven, public domain; no attribution required)",
+    "assetId": 123198656466621,
+    "status": "approved",
+    "note": "MeshId consumed by WorldMeshes through WorldMeshConfig (CreateMeshPartAsync); not uploaded separately"
+  },
+  "audio/weapons/tail_open_rifle": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, AK-47 C_28P.wav, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, the same shot as close_rifle from 0.11 s: the range's reflection and its decay to the next shot, padded with 0.11 s of silence so close_rifle + tail_open_rifle played together rebuild the original shot; 0.45 s fade-out, same gain as close_rifle, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/tail_open_rifle_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: outdoor tail per class, played at the close shot's volume; 2600 ms, peak -24.2 dBFS relative to the close part at -1 dBFS",
+    "assetId": "83478871552010"
+  },
+  "audio/weapons/tail_open_pistol": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Walther PPQ X_39P.wav, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, the same shot as close_pistol from 0.11 s: the range's reflection and its decay to the next shot, padded with 0.11 s of silence so close_pistol + tail_open_pistol played together rebuild the original shot; 0.45 s fade-out, same gain as close_pistol, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/tail_open_pistol_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: outdoor tail per class, played at the close shot's volume; 2803 ms, peak -31.7 dBFS relative to the close part at -1 dBFS",
+    "assetId": "71625818861588"
+  },
+  "audio/weapons/tail_open_shotgun": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Benelli Nova O_21P.wav, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, the same shot as close_shotgun from 0.11 s: the range's reflection and its decay to the next shot, padded with 0.11 s of silence so close_shotgun + tail_open_shotgun played together rebuild the original shot; 0.45 s fade-out, same gain as close_shotgun, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/tail_open_shotgun_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: outdoor tail per class, played at the close shot's volume; 2803 ms, peak -26.4 dBFS relative to the close part at -1 dBFS",
+    "assetId": "121089221722939"
+  },
+  "audio/weapons/tail_open_smg": {
+    "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, the same shot as close_smg from 0.11 s: the range's reflection and its decay to the next shot, padded with 0.11 s of silence so close_smg + tail_open_smg played together rebuild the original shot; 0.45 s fade-out, same gain as close_smg, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+    "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+    "file": "assets/audio/weapons/tail_open_smg_v6.ogg",
+    "status": "reviewing",
+    "note": "v6 2026-09-29: outdoor tail per class, played at the close shot's volume; 2803 ms, peak -24.3 dBFS relative to the close part at -1 dBFS",
+    "assetId": "84034488143189"
   }
 }

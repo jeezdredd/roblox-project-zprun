@@ -7,6 +7,9 @@ local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local LocationsConfig = require(ReplicatedStorage.Shared.config.LocationsConfig)
 local TexturesConfig = require(ReplicatedStorage.Shared.config.TexturesConfig)
 local MaterialUtil = require(ReplicatedStorage.Shared.util.MaterialUtil)
+local WorldFlanks = require(script.Parent.WorldFlanks)
+local WorldMeshes = require(script.Parent.WorldMeshes)
+local ChunkOccupancy = require(script.Parent.ChunkOccupancy)
 
 export type Blend = {
 	next: LocationsConfig.LocationConfig,
@@ -55,110 +58,39 @@ local function applyTexture(part: BasePart, face: Enum.NormalId, textureId: numb
 	texture.Face = face
 	texture.StudsPerTileU = studsPerTile
 	texture.StudsPerTileV = studsPerTile
+	-- tint with the part colour, otherwise the texture's own grey wins and every
+	-- biome floor reads the same
+	texture.Color3 = part.Color:Lerp(Color3.new(1, 1, 1), 0.35)
 	texture.Parent = part
 end
 
-local function getTemplate(kind: string): Model?
-	local folder = ReplicatedStorage:FindFirstChild("PropTemplates")
-	local template = folder and folder:FindFirstChild(kind)
-	if template and template:IsA("Model") then
-		return template
+-- A mesh tree with an invisible trunk collider, so only the trunk blocks the runner.
+local function buildMeshTree(group: string, position: Vector3, height: number, rng: Random, parent: Instance, collide: boolean): boolean
+	local base = CFrame.new(position) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0)
+	local mesh = WorldMeshes.placeFrom(group, rng, base, height, parent, { shadow = true, sink = 0.4 })
+	if not mesh then
+		return false
 	end
-	return nil
-end
-
-local MAX_WINDOW_BANDS = 4
-
-local function buildWindowBands(sign: number, height: number, width: number, depth: number, position: Vector3, rng: Random, parent: Instance)
-	local faceX = position.X - sign * (depth / 2 + 0.15)
-	local bands = math.min(MAX_WINDOW_BANDS, math.max(1, math.floor((height - 10) / 9)))
-	for index = 1, bands do
-		local y = 6 + (index - 1) * ((height - 12) / bands)
-		local lit = rng:NextNumber() < 0.35
-		local band = createPart(
-			"WindowBand",
-			Vector3.new(0.25, 2.4, width - 3),
-			CFrame.new(faceX, position.Y + y, position.Z),
-			if lit then Color3.fromRGB(255, 214, 140) else Color3.fromRGB(25, 30, 40),
-			if lit then Enum.Material.Neon else Enum.Material.Glass,
-			parent
-		)
-		band.Transparency = if lit then 0.45 else 0.1
-		band.CanCollide = false
-		band.CanQuery = false
-		band.CastShadow = false
+	if collide then
+		local collider = Instance.new("Part")
+		collider.Name = "TrunkCollider"
+		collider.Shape = Enum.PartType.Cylinder
+		collider.Size = Vector3.new(height * 0.5, 2.6, 2.6)
+		collider.CFrame = CFrame.new(position.X, position.Y + height * 0.25, position.Z) * CFrame.Angles(0, 0, math.rad(90))
+		collider.Anchored = true
+		collider.Transparency = 1
+		collider.CastShadow = false
+		collider.CanTouch = false
+		collider.Parent = parent
 	end
-end
-
-local function buildBuilding(sign: number, position: Vector3, rng: Random, parent: Instance, widthOverride: number?, depthOverride: number?)
-	local depth = depthOverride or rng:NextNumber(14, 20)
-	local width = widthOverride or rng:NextNumber(18, 30)
-	local height = rng:NextNumber(18, 42)
-	local isBrick = rng:NextNumber() < 0.55
-	local shade = rng:NextInteger(75, 115)
-	local color = if isBrick
-		then Color3.fromRGB(shade + 30, shade - 10, shade - 20)
-		else Color3.fromRGB(shade, shade, shade + 6)
-	local material = if isBrick then Enum.Material.Brick else Enum.Material.Concrete
-
-	local body = createPart(
-		"Building",
-		Vector3.new(depth, height, width),
-		CFrame.new(position.X, position.Y + height / 2, position.Z),
-		color,
-		material,
-		parent
-	)
-	if isBrick then
-		local laneFace = if sign > 0 then Enum.NormalId.Left else Enum.NormalId.Right
-		applyTexture(body, laneFace, TexturesConfig.BRICKS, 2.5)
-	end
-	buildWindowBands(sign, height, width, depth, position, rng, parent)
-
-	local roofColor = color:Lerp(Color3.new(0, 0, 0), 0.4)
-	createPart(
-		"Roof",
-		Vector3.new(depth + 1.2, 1, width + 1.2),
-		CFrame.new(position.X, position.Y + height + 0.5, position.Z),
-		roofColor,
-		Enum.Material.Concrete,
-		parent
-	)
-	noShadow(createPart(
-		"RoofBox",
-		Vector3.new(3, 2, 4),
-		CFrame.new(position.X + rng:NextNumber(-3, 3), position.Y + height + 2, position.Z + rng:NextNumber(-6, 6)),
-		Color3.fromRGB(120, 122, 126),
-		Enum.Material.DiamondPlate,
-		parent
-	))
-
-	if rng:NextNumber() < 0.5 and height < 38 then
-		local towerHeight = rng:NextNumber(10, 20)
-		local towerWidth = width * 0.6
-		local towerDepth = depth * 0.7
-		local tower = createPart(
-			"BuildingTower",
-			Vector3.new(towerDepth, towerHeight, towerWidth),
-			CFrame.new(position.X + sign * (depth - towerDepth) / 2, position.Y + height + 1 + towerHeight / 2, position.Z),
-			color,
-			material,
-			parent
-		)
-		tower.CastShadow = true
-		createPart(
-			"TowerRoof",
-			Vector3.new(towerDepth + 1, 0.8, towerWidth + 1),
-			CFrame.new(position.X + sign * (depth - towerDepth) / 2, position.Y + height + 1.4 + towerHeight, position.Z),
-			roofColor,
-			Enum.Material.Concrete,
-			parent
-		)
-	end
+	return true
 end
 
 local function buildTree(position: Vector3, rng: Random, parent: Instance)
-	local trunkHeight = rng:NextNumber(13, 21)
+	if buildMeshTree("tree_any", position, rng:NextNumber(18, 26), rng, parent, true) then
+		return
+	end
+	local trunkHeight = rng:NextNumber(10, 16)
 	local trunkRadius = rng:NextNumber(1.1, 1.8)
 
 	local trunk = Instance.new("Part")
@@ -171,41 +103,26 @@ local function buildTree(position: Vector3, rng: Random, parent: Instance)
 	trunk.Material = Enum.Material.Wood
 	trunk.Parent = parent
 
-	local canopyRadius = rng:NextNumber(5, 7.5)
-	for i = 1, 2 do
+	local canopyRadius = rng:NextNumber(6, 8.5)
+	local green = Color3.fromRGB(rng:NextInteger(44, 62), rng:NextInteger(84, 110), rng:NextInteger(40, 54))
+	for i = 1, 3 do
 		local ball = Instance.new("Part")
 		ball.Name = "Canopy"
 		ball.Shape = Enum.PartType.Ball
-		local radius = canopyRadius * (if i == 1 then 1 else 0.7)
-		ball.Size = Vector3.new(radius * 2, radius * 2, radius * 2)
+		local radius = canopyRadius * (if i == 1 then 1 else rng:NextNumber(0.6, 0.8))
+		ball.Size = Vector3.new(radius * 2, radius * 1.5, radius * 2)
 		ball.CFrame = CFrame.new(
-			position.X + rng:NextNumber(-2, 2),
-			position.Y + trunkHeight + radius * 0.6 + (i - 1) * radius * 0.8,
-			position.Z + rng:NextNumber(-2, 2)
+			position.X + rng:NextNumber(-canopyRadius * 0.45, canopyRadius * 0.45),
+			position.Y + trunkHeight + radius * 0.3 + (i - 1) * 2.2,
+			position.Z + rng:NextNumber(-canopyRadius * 0.45, canopyRadius * 0.45)
 		)
 		ball.Anchored = true
 		ball.CanCollide = false
 		ball.CanQuery = false
-		ball.Color = Color3.fromRGB(rng:NextInteger(40, 60), rng:NextInteger(95, 125), rng:NextInteger(40, 60))
+		ball.Color = green:Lerp(Color3.new(), rng:NextNumber(0, 0.15))
 		ball.Material = Enum.Material.Grass
 		ball.Parent = parent
 	end
-end
-
-local function buildCanopyCover(position: Vector3, rng: Random, parent: Instance)
-	local spanX = rng:NextNumber(28, 42)
-	local spanZ = rng:NextNumber(28, 42)
-	local cover = Instance.new("Part")
-	cover.Name = "CanopyCover"
-	cover.Shape = Enum.PartType.Ball
-	cover.Size = Vector3.new(spanX, rng:NextNumber(7, 10), spanZ)
-	cover.CFrame = CFrame.new(position.X, position.Y + rng:NextNumber(16, 20), position.Z)
-	cover.Anchored = true
-	cover.CanCollide = false
-	cover.CanQuery = false
-	cover.Color = Color3.fromRGB(rng:NextInteger(35, 50), rng:NextInteger(85, 110), rng:NextInteger(35, 50))
-	cover.Material = Enum.Material.Grass
-	cover.Parent = parent
 end
 
 local function buildRuin(position: Vector3, rotationY: number, rng: Random, parent: Instance)
@@ -224,7 +141,7 @@ local function buildRuin(position: Vector3, rotationY: number, rng: Random, pare
 			Vector3.new(rng:NextNumber(4, 9), rng:NextNumber(0.8, 1.6), rng:NextNumber(3, 7)),
 			CFrame.new(
 				position.X + rng:NextNumber(-6, 6),
-				position.Y + rng:NextNumber(0.4, 1.2),
+				position.Y + rng:NextNumber(0.2, 0.5),
 				position.Z + rng:NextNumber(-6, 6)
 			) * CFrame.Angles(rng:NextNumber(-0.25, 0.25), rng:NextNumber(0, math.pi), rng:NextNumber(-0.25, 0.25)),
 			Color3.fromRGB(118, 110, 100),
@@ -251,7 +168,20 @@ local function buildWheels(base: CFrame, length: number, parent: Instance)
 	end
 end
 
+local function buildMeshCar(group: string, position: Vector3, yaw: number, length: number, rng: Random, parent: Instance): MeshPart?
+	local name = WorldMeshes.pick(group, rng)
+	if not name then
+		return nil
+	end
+	-- the meshes face either way along z; flip half of them so rows do not repeat
+	local flip = if rng:NextNumber() < 0.5 then math.pi else 0
+	return WorldMeshes.placeByLength(name, CFrame.new(position) * CFrame.Angles(0, yaw + flip, 0), length, parent, { collide = true, sink = 0.2 })
+end
+
 local function buildCar(position: Vector3, yaw: number, rng: Random, parent: Instance)
+	if buildMeshCar("car", position, yaw, 12.4, rng, parent) then
+		return
+	end
 	local color = CAR_COLORS[rng:NextInteger(1, #CAR_COLORS)]
 	local base = CFrame.new(position.X, position.Y + 2.1, position.Z) * CFrame.Angles(0, yaw, 0)
 	createPart("CarBody", Vector3.new(6.4, 2.3, 12.4), base, color, Enum.Material.Metal, parent)
@@ -261,6 +191,10 @@ local function buildCar(position: Vector3, yaw: number, rng: Random, parent: Ins
 end
 
 local function buildBus(position: Vector3, yaw: number, rng: Random, parent: Instance)
+	local name = if WorldMeshes.isLoaded("car_van") then "car_van" else nil
+	if name and WorldMeshes.placeByLength(name, CFrame.new(position) * CFrame.Angles(0, yaw, 0), 15, parent, { collide = true, sink = 0.2 }) then
+		return
+	end
 	local base = CFrame.new(position.X, position.Y + 3.9, position.Z) * CFrame.Angles(0, yaw, 0)
 	createPart("BusBody", Vector3.new(7.5, 6.6, 25.5), base, Color3.fromRGB(180, 140, 60), Enum.Material.Metal, parent)
 	local windows = createPart("BusWindows", Vector3.new(7.55, 2.1, 21), base * CFrame.new(0, 1.35, 0), Color3.fromRGB(35, 40, 50), Enum.Material.Glass, parent)
@@ -272,6 +206,10 @@ local function buildBus(position: Vector3, yaw: number, rng: Random, parent: Ins
 end
 
 local function buildTruck(position: Vector3, yaw: number, rng: Random, parent: Instance)
+	local name = if WorldMeshes.isLoaded("car_pickup") then "car_pickup" else nil
+	if name and WorldMeshes.placeByLength(name, CFrame.new(position) * CFrame.Angles(0, yaw, 0), 15, parent, { collide = true, sink = 0.2 }) then
+		return
+	end
 	local base = CFrame.new(position.X, position.Y + 3.3, position.Z) * CFrame.Angles(0, yaw, 0)
 	createPart("TruckCab", Vector3.new(7.5, 5.4, 6.75), base * CFrame.new(0, 0, 10.5), Color3.fromRGB(90, 110, 130), Enum.Material.Metal, parent)
 	createPart("TruckTrailer", Vector3.new(8.1, 7.5, 18), base * CFrame.new(0, 1.05, -3.75), Color3.fromRGB(150, 150, 154), Enum.Material.Metal, parent)
@@ -280,13 +218,16 @@ local function buildTruck(position: Vector3, yaw: number, rng: Random, parent: I
 end
 
 local function buildCrash(position: Vector3, rng: Random, parent: Instance)
-	buildCar(position + Vector3.new(-3.8, 0, -3), rng:NextNumber(0.4, 1.1), rng, parent)
-	buildCar(position + Vector3.new(3.8, 0, 3), rng:NextNumber(-1.1, -0.4), rng, parent)
+	if not buildMeshCar("car_wreck", position + Vector3.new(-4.2, 0, -5.5), rng:NextNumber(0.3, 0.7), 12, rng, parent) then
+		buildCar(position + Vector3.new(-4.2, 0, -5.5), rng:NextNumber(0.3, 0.7), rng, parent)
+	end
+	buildCar(position + Vector3.new(4.2, 0, 5.5), rng:NextNumber(-0.7, -0.3), rng, parent)
 	for _ = 1, 3 do
+		local height = rng:NextNumber(0.4, 0.9)
 		createPart(
 			"Debris",
-			Vector3.new(rng:NextNumber(0.8, 1.8), rng:NextNumber(0.4, 0.9), rng:NextNumber(0.8, 1.8)),
-			CFrame.new(position.X + rng:NextNumber(-5, 5), position.Y + 0.8, position.Z + rng:NextNumber(-5, 5))
+			Vector3.new(rng:NextNumber(0.8, 1.8), height, rng:NextNumber(0.8, 1.8)),
+			CFrame.new(position.X + rng:NextNumber(-5, 5), position.Y + height / 2 + 0.45, position.Z + rng:NextNumber(-5, 5))
 				* CFrame.Angles(0, rng:NextNumber(0, math.pi), 0),
 			Color3.fromRGB(60, 60, 64),
 			Enum.Material.CorrodedMetal,
@@ -315,7 +256,7 @@ local function buildLog(position: Vector3, rng: Random, parent: Instance)
 	log.Name = "FallenLog"
 	log.Shape = Enum.PartType.Cylinder
 	log.Size = Vector3.new(length, 3.2, 3.2)
-	log.CFrame = CFrame.new(position.X, position.Y + 1.8, position.Z) * CFrame.Angles(0, rng:NextNumber(0, math.pi), 0)
+	log.CFrame = CFrame.new(position.X, position.Y + 1.45, position.Z) * CFrame.Angles(0, rng:NextNumber(0, math.pi), 0)
 	log.Anchored = true
 	log.Color = Color3.fromRGB(86, 62, 42)
 	log.Material = Enum.Material.Wood
@@ -324,6 +265,11 @@ end
 
 local function buildBoulder(position: Vector3, rng: Random, parent: Instance)
 	local size = rng:NextNumber(4.5, 9)
+	local base = CFrame.new(position) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0)
+	local stretch = Vector3.new(rng:NextNumber(0.9, 1.35), 1, rng:NextNumber(0.9, 1.35))
+	if WorldMeshes.placeFrom("boulder", rng, base, size * 0.75, parent, { collide = true, stretch = stretch, sink = size * 0.08 }) then
+		return
+	end
 	local rock = Instance.new("Part")
 	rock.Name = "Boulder"
 	rock.Shape = Enum.PartType.Ball
@@ -340,51 +286,10 @@ local function buildRubblePile(position: Vector3, rng: Random, parent: Instance)
 		createPart(
 			"Rubble",
 			Vector3.new(rng:NextNumber(2, 5), rng:NextNumber(1, 2.4), rng:NextNumber(2, 4)),
-			CFrame.new(position.X + rng:NextNumber(-3, 3), position.Y + rng:NextNumber(0.5, 1.6), position.Z + rng:NextNumber(-3, 3))
+			CFrame.new(position.X + rng:NextNumber(-3, 3), position.Y + rng:NextNumber(0.3, 0.8), position.Z + rng:NextNumber(-3, 3))
 				* CFrame.Angles(rng:NextNumber(-0.2, 0.2), rng:NextNumber(0, math.pi), rng:NextNumber(-0.2, 0.2)),
 			Color3.fromRGB(126, 118, 106),
 			Enum.Material.Concrete,
-			parent
-		)
-	end
-end
-
-local function buildFarmhouse(sign: number, position: Vector3, rng: Random, parent: Instance)
-	local width = rng:NextNumber(16, 26)
-	local depth = rng:NextNumber(14, 22)
-	local height = rng:NextNumber(10, 15)
-	local shell = Color3.fromRGB(rng:NextInteger(24, 34), rng:NextInteger(22, 30), rng:NextInteger(22, 28))
-
-	createPart("FarmWall", Vector3.new(width, height, depth), CFrame.new(position + Vector3.new(0, height / 2, 0)), shell, Enum.Material.WoodPlanks, parent)
-
-	local roof = Instance.new("WedgePart")
-	roof.Name = "FarmRoof"
-	roof.Size = Vector3.new(depth, height * 0.45, width)
-	roof.CFrame = CFrame.new(position + Vector3.new(0, height + height * 0.22, 0)) * CFrame.Angles(0, math.rad(90), 0)
-	roof.Anchored = true
-	roof.CanCollide = false
-	roof.CanQuery = false
-	roof.CastShadow = false
-	roof.Color = shell:Lerp(Color3.new(), 0.35)
-	roof.Material = Enum.Material.Wood
-	roof.Parent = parent
-
-	local porch = createPart(
-		"FarmPorch",
-		Vector3.new(width * 0.8, 0.6, 4),
-		CFrame.new(position + Vector3.new(0, 1.4, -sign * (depth / 2 + 2))),
-		shell:Lerp(Color3.new(), 0.2),
-		Enum.Material.WoodPlanks,
-		parent
-	)
-	porch.CanCollide = false
-	for _, offset in { -0.36, 0.36 } do
-		createPart(
-			"PorchPost",
-			Vector3.new(0.5, 4.6, 0.5),
-			CFrame.new(position + Vector3.new(width * offset, 3.7, -sign * (depth / 2 + 3.6))),
-			shell:Lerp(Color3.new(), 0.2),
-			Enum.Material.Wood,
 			parent
 		)
 	end
@@ -427,23 +332,35 @@ local function buildFencePost(position: Vector3, rng: Random, parent: Instance)
 	post.CanCollide = false
 end
 
+-- A tussock of dry grass: a low mound with thin blades leaning outwards.
 local function buildDryGrass(position: Vector3, rng: Random, parent: Instance)
-	for i = 1, rng:NextInteger(3, 6) do
+	if WorldMeshes.placeFrom("grass_dry", rng, CFrame.new(position) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0), rng:NextNumber(3, 4.5), parent, { shadow = false, sink = 0.2, stretch = Vector3.new(rng:NextNumber(1, 1.6), 1, rng:NextNumber(1, 1.6)) }) then
+		return
+	end
+	local straw = Color3.fromRGB(rng:NextInteger(150, 180), rng:NextInteger(128, 150), rng:NextInteger(66, 86))
+	local radius = rng:NextNumber(1.6, 2.6)
+	local mound = createPart("GrassMound", Vector3.new(radius * 2, rng:NextNumber(1.4, 2.2), radius * 2), CFrame.new(position + Vector3.new(0, 0.3, 0)), straw:Lerp(Color3.new(), 0.25), Enum.Material.Grass, parent)
+	mound.Shape = Enum.PartType.Ball
+	mound.CanCollide = false
+	mound.CanQuery = false
+	mound.CastShadow = false
+	local blades = rng:NextInteger(6, 9)
+	for i = 1, blades do
+		local angle = (i / blades) * math.pi * 2 + rng:NextNumber(-0.3, 0.3)
+		local height = rng:NextNumber(2.5, 4.5)
+		local out = rng:NextNumber(0.3, radius * 0.8)
 		local blade = createPart(
 			"DryGrass",
-			Vector3.new(rng:NextNumber(1.6, 3), rng:NextNumber(3.5, 6.5), 0.14),
-			CFrame.new(position + Vector3.new(rng:NextNumber(-3, 3), 2, rng:NextNumber(-3, 3)))
-				* CFrame.Angles(0, rng:NextNumber(0, math.pi), math.rad(rng:NextNumber(-8, 8))),
-			Color3.fromRGB(rng:NextInteger(150, 186), rng:NextInteger(128, 156), rng:NextInteger(64, 88)),
+			Vector3.new(0.18, height, 0.5),
+			CFrame.new(position + Vector3.new(math.cos(angle) * out, height / 2, math.sin(angle) * out))
+				* CFrame.Angles(0, -angle, math.rad(rng:NextNumber(12, 28))),
+			straw:Lerp(Color3.new(1, 1, 1), rng:NextNumber(0, 0.12)),
 			Enum.Material.Grass,
 			parent
 		)
 		blade.CanCollide = false
 		blade.CanQuery = false
 		blade.CastShadow = false
-		if i > 4 then
-			break
-		end
 	end
 end
 
@@ -475,11 +392,14 @@ local function buildUndergrowth(position: Vector3, rng: Random, parent: Instance
 		return
 	end
 
+	if WorldMeshes.placeFrom("bush", rng, CFrame.new(position) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0), rng:NextNumber(1.8, 3), parent, { shadow = false, sink = 0.25 }) then
+		return
+	end
 	for _ = 1, rng:NextInteger(2, 4) do
 		local fern = createPart(
 			"Fern",
 			Vector3.new(rng:NextNumber(1.8, 3.6), 0.12, rng:NextNumber(1.8, 3.3)),
-			CFrame.new(position + Vector3.new(rng:NextNumber(-2.2, 2.2), rng:NextNumber(0.5, 1.4), rng:NextNumber(-2.2, 2.2)))
+			CFrame.new(position + Vector3.new(rng:NextNumber(-2.2, 2.2), rng:NextNumber(0.55, 0.8), rng:NextNumber(-2.2, 2.2)))
 				* CFrame.Angles(math.rad(rng:NextNumber(-25, 25)), rng:NextNumber(0, math.pi), math.rad(rng:NextNumber(-25, 25))),
 			Color3.fromRGB(rng:NextInteger(36, 58), rng:NextInteger(72, 98), rng:NextInteger(34, 52)),
 			Enum.Material.Grass,
@@ -490,25 +410,73 @@ local function buildUndergrowth(position: Vector3, rng: Random, parent: Instance
 	end
 end
 
-local function buildCornWall(position: Vector3, rng: Random, parent: Instance)
-	local width = rng:NextNumber(16, 26)
-	local wall = createPart(
-		"CornWall",
-		Vector3.new(width, rng:NextNumber(13, 17), rng:NextNumber(10, 18)),
-		CFrame.new(position + Vector3.new(0, 7.5, 0)) * CFrame.Angles(0, rng:NextNumber(-0.15, 0.15), 0),
-		Color3.fromRGB(rng:NextInteger(26, 38), rng:NextInteger(30, 42), rng:NextInteger(20, 28)),
-		Enum.Material.Grass,
-		parent
-	)
-	wall.CanCollide = false
+local CORN_GREEN = Color3.fromRGB(96, 118, 52)
+local CORN_TASSEL = Color3.fromRGB(196, 176, 102)
 
-	for _ = 1, rng:NextInteger(4, 7) do
+-- A stand of corn: a few rows across the corridor with a pale tassel line on top and
+-- stalk lines on the face towards the runner. Blocks sight, not movement.
+local function buildMeshCorn(position: Vector3, rng: Random, parent: Instance): boolean
+	local name = WorldMeshes.pick("corn", rng)
+	local native = name and WorldMeshes.nativeSize(name)
+	if not name or not native then
+		return false
+	end
+	local length = rng:NextNumber(14, 22)
+	local base = CFrame.new(position) * CFrame.Angles(0, rng:NextNumber(-0.12, 0.12), 0)
+	local rows = rng:NextInteger(2, 3)
+	for r = 1, rows do
+		local height = rng:NextNumber(10, 12.5)
+		local scale = height / native.Y
+		local stretch = Vector3.new(length * rng:NextNumber(0.8, 1) / (native.X * scale), 1, 0.7)
+		local z = (r - (rows + 1) / 2) * 4.5
+		local flip = if rng:NextNumber() < 0.5 then math.pi else 0
+		WorldMeshes.place(name, base * CFrame.new(rng:NextNumber(-2, 2), 0, z) * CFrame.Angles(0, flip, 0), height, parent, { stretch = stretch, shadow = r == rows, sink = 0.3 })
+	end
+	return true
+end
+
+local function buildCornWall(position: Vector3, rng: Random, parent: Instance)
+	if buildMeshCorn(position, rng, parent) then
+		return
+	end
+	local length = rng:NextNumber(12, 20)
+	local rows = rng:NextInteger(2, 4)
+	local yaw = CFrame.Angles(0, rng:NextNumber(-0.12, 0.12), 0)
+	local base = CFrame.new(position) * yaw
+	for r = 1, rows do
+		local height = rng:NextNumber(10, 13)
+		local z = (r - (rows + 1) / 2) * 3.2
+		local rowLength = length * rng:NextNumber(0.75, 1)
+		local shift = rng:NextNumber(-2, 2)
+		local color = CORN_GREEN:Lerp(Color3.new(), rng:NextNumber(0, 0.18))
+		local row = createPart("CornRow", Vector3.new(rowLength, height, 2.4), base * CFrame.new(shift, height / 2, z), color, Enum.Material.LeafyGrass, parent)
+		row.CanCollide = false
+		row.CanQuery = false
+		if r == rows then
+			-- the face the runner sees: stalk lines so the block reads as corn, not hedge
+			local step = 1.4
+			local x = -rowLength / 2 + rng:NextNumber(0.3, 1)
+			while x < rowLength / 2 - 0.3 do
+				local h = height * rng:NextNumber(0.85, 1.05)
+				local stalk = createPart("CornFace", Vector3.new(0.35, h, 0.3), base * CFrame.new(shift + x, h / 2, z + 1.3) * CFrame.Angles(0, 0, math.rad(rng:NextNumber(-4, 4))), color:Lerp(CORN_TASSEL, rng:NextNumber(0.15, 0.35)), Enum.Material.Grass, parent)
+				stalk.CanCollide = false
+				stalk.CanQuery = false
+				stalk.CastShadow = false
+				x += step * rng:NextNumber(0.8, 1.2)
+			end
+		end
+		local tassel = createPart("CornTassel", Vector3.new(rowLength - 1, 0.8, 1.6), base * CFrame.new(shift, height + 0.3, z), CORN_TASSEL:Lerp(Color3.new(), rng:NextNumber(0, 0.15)), Enum.Material.Grass, parent)
+		tassel.CanCollide = false
+		tassel.CanQuery = false
+		tassel.CastShadow = false
+	end
+	for _ = 1, rng:NextInteger(3, 5) do
 		local stalk = createPart(
 			"CornStalk",
-			Vector3.new(0.3, rng:NextNumber(8, 12), 0.3),
-			CFrame.new(position + Vector3.new(rng:NextNumber(-width / 2, width / 2), 5, rng:NextNumber(-6, 6)))
-				* CFrame.Angles(math.rad(rng:NextNumber(-6, 6)), rng:NextNumber(0, math.pi), math.rad(rng:NextNumber(-6, 6))),
-			Color3.fromRGB(rng:NextInteger(40, 58), rng:NextInteger(48, 66), rng:NextInteger(28, 38)),
+			Vector3.new(0.3, rng:NextNumber(9, 12), 0.3),
+			base * CFrame.new(rng:NextNumber(-length / 2 - 0.8, length / 2 + 0.8), 5, rng:NextNumber(-rows * 1.6, rows * 1.6))
+				* CFrame.Angles(math.rad(rng:NextNumber(-8, 8)), 0, math.rad(rng:NextNumber(-8, 8))),
+			CORN_GREEN,
 			Enum.Material.Grass,
 			parent
 		)
@@ -568,35 +536,6 @@ local function buildObstacle(kind: string, position: Vector3, rng: Random, paren
 		else
 			buildCrash(position, rng, parent)
 		end
-	end
-end
-
-local function buildEdgeProp(kind: string, sign: number, position: Vector3, rng: Random, parent: Instance)
-	local template = getTemplate(kind)
-	if template then
-		local clone = template:Clone()
-		clone:PivotTo(CFrame.new(position) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0))
-		clone.Parent = parent
-		return
-	end
-	if kind == "buildings" then
-		buildBuilding(sign, position, rng, parent)
-	elseif kind == "trees" then
-		buildTree(position, rng, parent)
-	elseif kind == "farm" then
-		local roll = rng:NextNumber()
-		if roll < 0.3 then
-			buildFarmhouse(sign, position, rng, parent)
-		elseif roll < 0.5 then
-			buildTree(position, rng, parent)
-		else
-			buildDryGrass(position, rng, parent)
-			buildFencePost(position, rng, parent)
-		end
-	elseif kind == "corn" then
-		buildCornWall(position, rng, parent)
-	else
-		buildRuin(position, rng:NextNumber(0, math.pi * 2), rng, parent)
 	end
 end
 
@@ -734,11 +673,13 @@ end
 
 local function buildTrafficJam(position: Vector3, rng: Random, parent: Instance)
 	local count = rng:NextInteger(3, 5)
-	local step = rng:NextNumber(13, 16)
+	local step = rng:NextNumber(15, 18)
 	local z = position.Z - (count - 1) * step / 2
 	for _ = 1, count do
 		local x = position.X + rng:NextNumber(-3, 3)
-		buildCar(Vector3.new(x, position.Y, z), rng:NextNumber(-0.25, 0.25), rng, parent)
+		if ChunkOccupancy.claim(x, z, 6.5) then
+			buildCar(Vector3.new(x, position.Y, z), rng:NextNumber(-0.15, 0.15), rng, parent)
+		end
 		z += step
 	end
 end
@@ -771,7 +712,30 @@ local function corridorEdgeX(sign: number): number
 	return sign * (GameConstants.PLAYABLE_HALF_WIDTH + EDGE_OFFSET)
 end
 
+local function addPoliceLights(at: CFrame, spacing: number, rng: Random, parent: Instance)
+	if rng:NextNumber() >= 0.6 then
+		return
+	end
+	for index, color in { Color3.fromRGB(255, 60, 60), Color3.fromRGB(70, 110, 255) } do
+		local lamp = noShadow(createPart("LightBarLamp", Vector3.new(1.4, 0.4, 0.8), at * CFrame.new((index - 1.5) * spacing, 0, 0), color, Enum.Material.Neon, parent))
+		lamp.CanCollide = false
+		lamp.CanQuery = false
+		local light = Instance.new("PointLight")
+		light.Color = color
+		light.Brightness = 2
+		light.Range = 18
+		light.Shadows = false
+		light.Parent = lamp
+		CollectionService:AddTag(light, FLICKER_TAG)
+	end
+end
+
 local function buildPoliceCar(position: Vector3, yaw: number, rng: Random, parent: Instance)
+	local mesh = buildMeshCar("car_police", position, yaw, 12.4, rng, parent)
+	if mesh then
+		addPoliceLights(mesh.CFrame * CFrame.new(0, mesh.Size.Y / 2 - 0.25, mesh.Size.Z * 0.02), 1.5, rng, parent)
+		return
+	end
 	local base = CFrame.new(position.X, position.Y + 2.1, position.Z) * CFrame.Angles(0, yaw, 0)
 	createPart("CarBody", Vector3.new(6.4, 2.3, 12.4), base, POLICE_WHITE, Enum.Material.Metal, parent)
 	noShadow(createPart("CarStripe", Vector3.new(6.5, 0.7, 12.5), base * CFrame.new(0, -0.5, 0), POLICE_BLUE, Enum.Material.Metal, parent))
@@ -780,20 +744,7 @@ local function buildPoliceCar(position: Vector3, yaw: number, rng: Random, paren
 	buildWheels(base, 12.4, parent)
 	local bar = noShadow(createPart("LightBar", Vector3.new(4.2, 0.4, 1), base * CFrame.new(0, 3.2, 0.6), Color3.fromRGB(40, 40, 44), Enum.Material.SmoothPlastic, parent))
 	bar.CanCollide = false
-	if rng:NextNumber() < 0.6 then
-		for index, color in { Color3.fromRGB(255, 60, 60), Color3.fromRGB(70, 110, 255) } do
-			local lamp = noShadow(createPart("LightBarLamp", Vector3.new(1.6, 0.42, 0.9), base * CFrame.new((index - 1.5) * 2, 3.2, 0.6), color, Enum.Material.Neon, parent))
-			lamp.CanCollide = false
-			lamp.CanQuery = false
-			local light = Instance.new("PointLight")
-			light.Color = color
-			light.Brightness = 2
-			light.Range = 18
-			light.Shadows = false
-			light.Parent = lamp
-			CollectionService:AddTag(light, FLICKER_TAG)
-		end
-	end
+	addPoliceLights(base * CFrame.new(0, 3.2, 0.6), 2, rng, parent)
 end
 
 local function buildFenceRun(sign: number, zStart: number, length: number, rng: Random, parent: Instance)
@@ -860,11 +811,12 @@ local function buildCorridorEdge(kind: string, sign: number, rng: Random, parent
 		local roll = rng:NextNumber()
 		local remaining = chunkLength / 2 - z
 		if kind == "buildings" then
-			if roll < 0.34 then
-				local width = math.min(rng:NextNumber(18, 30), remaining)
-				local depth = rng:NextNumber(14, 22)
-				buildBuilding(sign, Vector3.new(edgeX + sign * depth / 2, 0.5, z + width / 2), rng, parent, width, depth)
-				z += width + rng:NextNumber(1, 4)
+			-- the street wall lives in WorldFlanks; this row is the kerb-side clutter in
+			-- front of it
+			if roll < 0.12 then
+				local count = 2
+				buildCarRow(sign, z, count, rng, parent)
+				z += count * 13.5 + 2
 			elseif roll < 0.52 then
 				local length = math.min(rng:NextNumber(12, 24), remaining)
 				buildFenceRun(sign, z, length, rng, parent)
@@ -889,7 +841,7 @@ local function buildCorridorEdge(kind: string, sign: number, rng: Random, parent
 			if rng:NextNumber() < 0.25 then
 				buildBoulder(Vector3.new(edgeX + sign * rng:NextNumber(-2, 2), 0.5, z + rng:NextNumber(2, 5)), rng, parent)
 			end
-			z += rng:NextNumber(5, 9)
+			z += rng:NextNumber(8, 12)
 		elseif kind == "farm" then
 			local length = math.min(rng:NextNumber(24, 48), remaining)
 			buildRailFence(sign, z, length, rng, parent)
@@ -898,21 +850,22 @@ local function buildCorridorEdge(kind: string, sign: number, rng: Random, parent
 			end
 			z += length + rng:NextNumber(2, 6)
 		elseif kind == "corn" then
-			buildCornWall(Vector3.new(edgeX + sign * 8, 0.5, z + 9), rng, parent)
-			z += rng:NextNumber(14, 20)
+			-- the flank crop rows start right at the corridor edge
+			return
 		else
+			-- steps are the prop's full z extent plus a gap, so neighbours never overlap
 			if roll < 0.4 then
-				buildRuin(Vector3.new(edgeX + sign * 3, 0.5, z + 6), 0, rng, parent)
-				z += 13
+				buildRuin(Vector3.new(edgeX + sign * 3, 0.5, z + 8), 0, rng, parent)
+				z += 17
 			elseif roll < 0.65 then
 				buildRubblePile(Vector3.new(edgeX + sign * 4, 0.5, z + 5), rng, parent)
-				z += 10
+				z += 12
 			elseif roll < 0.82 then
-				buildCrash(Vector3.new(edgeX + sign * 5, 0.5, z + 8), rng, parent)
-				z += 16
+				buildCrash(Vector3.new(edgeX + sign * 6, 0.5, z + 13), rng, parent)
+				z += 28
 			else
-				buildBoulder(Vector3.new(edgeX + sign * 4, 0.5, z + 4), rng, parent)
-				z += 9
+				buildBoulder(Vector3.new(edgeX + sign * 4, 0.5, z + 6), rng, parent)
+				z += 14
 			end
 		end
 	end
@@ -1011,25 +964,13 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 		end
 	end
 
-	local edgeStep = if effective.edgeProps == "trees"
-		then { 22, 34 }
-		elseif effective.edgeProps == "buildings" then { 18, 30 }
-		else { 30, 46 }
-	for _, sign in { -1, 1 } do
-		local z = -chunkLength / 2 + rng:NextNumber(6, 20)
-		while z < chunkLength / 2 - 8 do
-			local kind = location.edgeProps
-			if nextLocation and rng:NextNumber() < alpha then
-				kind = nextLocation.edgeProps
-			end
-			local nearOffset = if kind == "buildings" then 2 else 10
-			local farOffset = if kind == "buildings" then apronWidth - 55 else apronWidth - 20
-			local x = sign * (laneWidth / 2 + barrierThickness + rng:NextNumber(nearOffset, farOffset))
-			buildEdgeProp(kind, sign, Vector3.new(x, 0.5, z), rng, model)
-			z += rng:NextNumber(edgeStep[1], edgeStep[2])
-		end
+	ChunkOccupancy.reset()
 
+	for _, sign in { -1, 1 } do
 		buildCorridorEdge(effective.edgeProps, sign, rng, model)
+		-- the edge row owns an 8-stud strip; flank props and lane debris keep out of it
+		local edgeX = corridorEdgeX(sign)
+		ChunkOccupancy.reserveBox(edgeX - sign * 1, -chunkLength / 2, edgeX + sign * 8, chunkLength / 2)
 
 		if effective.edgeProps == "buildings" then
 			local debrisZ = -chunkLength / 2 + rng:NextNumber(8, 22)
@@ -1037,13 +978,16 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 				local x = sign * (GameConstants.PLAYABLE_HALF_WIDTH - rng:NextNumber(3, 14))
 				local roll = rng:NextNumber()
 				local position = Vector3.new(x, 0.5, debrisZ)
+				if not ChunkOccupancy.claim(x, debrisZ, if roll >= 0.86 then 9 else 6.5) then
+					roll = 2
+				end
 				if roll < 0.4 then
 					buildCar(position, rng:NextNumber(-1.2, 1.2), rng, model)
 				elseif roll < 0.66 then
 					buildRubblePile(position, rng, model)
 				elseif roll < 0.86 then
 					buildDivider(position, rng, model)
-				else
+				elseif roll <= 1 then
 					buildCrash(position, rng, model)
 				end
 				debrisZ += rng:NextNumber(28, 52)
@@ -1051,19 +995,27 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 		end
 	end
 
+	WorldFlanks.build(effective.edgeProps, rng, model)
+
 	if effective.edgeProps == "buildings" then
 		local bandHalf = GameConstants.PLAYABLE_HALF_WIDTH
 		for _, sign in { -1, 1 } do
 			local lampX = sign * (bandHalf + 2.5)
 			local lampZ = -chunkLength / 2 + rng:NextNumber(4, 14)
 			while lampZ < chunkLength / 2 - 6 do
+				ChunkOccupancy.reserve(lampX, lampZ, 1.5)
 				buildStreetLamp(sign, Vector3.new(lampX, 0.5, lampZ), rng, model)
 				lampZ += rng:NextNumber(34, 44)
 			end
 		end
 		for _ = 1, rng:NextInteger(1, 2) do
 			local sign = if rng:NextNumber() < 0.5 then -1 else 1
-			buildBurningBarrel(Vector3.new(sign * rng:NextNumber(bandHalf - 24, bandHalf + 4), 0.5, rng:NextNumber(-chunkLength / 2 + 8, chunkLength / 2 - 8)), rng, model)
+			local bx, bz = ChunkOccupancy.findSpot(2, 4, function()
+				return sign * rng:NextNumber(bandHalf - 24, bandHalf - 2), rng:NextNumber(-chunkLength / 2 + 8, chunkLength / 2 - 8)
+			end)
+			if bx and bz then
+				buildBurningBarrel(Vector3.new(bx, 0.5, bz), rng, model)
+			end
 		end
 		if rng:NextNumber() < 0.35 then
 			buildTrafficJam(Vector3.new(rng:NextNumber(-bandHalf * 0.8, bandHalf * 0.8), 0.5, rng:NextNumber(-20, 20)), rng, model)
@@ -1080,19 +1032,25 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	if effective.edgeProps == "farm" or effective.edgeProps == "corn" then
 		local isCorn = effective.edgeProps == "corn"
 		for _ = 1, if isCorn then 4 else obstacleTotal do
-			local x = rng:NextNumber(-fieldHalf, fieldHalf)
-			local z = rng:NextNumber(-chunkLength / 2 + 8, chunkLength / 2 - 8)
-			if isCorn then
-				buildCornWall(Vector3.new(x, 0.5, z), rng, model)
-			else
-				buildDryGrass(Vector3.new(x, 0.5, z), rng, model)
+			local x, z = ChunkOccupancy.findSpot(if isCorn then 11 else 2, 4, function()
+				return rng:NextNumber(-fieldHalf, fieldHalf), rng:NextNumber(-chunkLength / 2 + 8, chunkLength / 2 - 8)
+			end)
+			if x and z then
+				if isCorn then
+					buildCornWall(Vector3.new(x, 0.5, z), rng, model)
+				else
+					buildDryGrass(Vector3.new(x, 0.5, z), rng, model)
+				end
 			end
 		end
 		if not isCorn then
 			for _ = 1, 3 do
-				local x = rng:NextNumber(-fieldHalf, fieldHalf)
-				local z = rng:NextNumber(-chunkLength / 2 + 16, chunkLength / 2 - 16)
-				buildTree(Vector3.new(x, 0.5, z), rng, model)
+				local x, z = ChunkOccupancy.findSpot(3, 4, function()
+					return rng:NextNumber(-fieldHalf, fieldHalf), rng:NextNumber(-chunkLength / 2 + 16, chunkLength / 2 - 16)
+				end)
+				if x and z then
+					buildTree(Vector3.new(x, 0.5, z), rng, model)
+				end
 			end
 		end
 		buildWireRun(
@@ -1100,31 +1058,28 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 			1,
 			-chunkLength / 2 + 10,
 			chunkLength / 2 - 10,
-			laneWidth / 2 + barrierThickness + 16,
+			-- between the last crop row and the windbreak trees of the farm flank
+			GameConstants.PLAYABLE_HALF_WIDTH + 4 + 93,
 			rng,
 			model
 		)
 	elseif isField then
 		for _ = 1, obstacleTotal + 6 do
-			local x = rng:NextNumber(-fieldHalf, fieldHalf)
-			local z = rng:NextNumber(-chunkLength / 2 + 8, chunkLength / 2 - 8)
-			buildTree(Vector3.new(x, 0.5, z), rng, model)
-		end
-		for _ = 1, 6 do
-			local x = rng:NextNumber(-fieldHalf, fieldHalf)
-			local z = rng:NextNumber(-chunkLength / 2 + 16, chunkLength / 2 - 16)
-			buildCanopyCover(Vector3.new(x, 0.5, z), rng, model)
+			local x, z = ChunkOccupancy.findSpot(3.5, 4, function()
+				return rng:NextNumber(-fieldHalf, fieldHalf), rng:NextNumber(-chunkLength / 2 + 8, chunkLength / 2 - 8)
+			end)
+			if x and z then
+				buildTree(Vector3.new(x, 0.5, z), rng, model)
+			end
 		end
 		for _ = 1, 14 do
-			local x = rng:NextNumber(-fieldHalf, fieldHalf)
-			local z = rng:NextNumber(-chunkLength / 2 + 8, chunkLength / 2 - 8)
-			buildUndergrowth(Vector3.new(x, 0.5, z), rng, model)
+			local x, z = ChunkOccupancy.findSpot(1.8, 3, function()
+				return rng:NextNumber(-fieldHalf, fieldHalf), rng:NextNumber(-chunkLength / 2 + 8, chunkLength / 2 - 8)
+			end)
+			if x and z then
+				buildUndergrowth(Vector3.new(x, 0.5, z), rng, model)
+			end
 		end
-	elseif effective.edgeProps == "buildings" and rng:NextNumber() < GameConstants.FIELD_CLUSTER_CHANCE then
-		local clusterX = rng:NextNumber(-fieldHalf * 0.7, fieldHalf * 0.7)
-		local clusterZ = rng:NextNumber(-chunkLength / 2 + 30, chunkLength / 2 - 30)
-		local clusterSign = if clusterX < 0 then -1 else 1
-		buildBuilding(clusterSign, Vector3.new(clusterX, 0.5, clusterZ), rng, model)
 	end
 
 	local laneCount = 3
@@ -1136,10 +1091,14 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 		end
 		if rng:NextNumber() < 0.75 then
 			local laneCenter = -fieldHalf + laneStep * (lane - 0.5)
-			local x = math.clamp(laneCenter + rng:NextNumber(-laneStep * 0.3, laneStep * 0.3), -fieldHalf, fieldHalf)
-			local z = rng:NextNumber(-chunkLength / 2 + 14, chunkLength / 2 - 14)
-			buildObstacle(effective.edgeProps, Vector3.new(x, 0.5, z), rng, model)
-			placed += 1
+			local x, z = ChunkOccupancy.findSpot(8, 5, function()
+				return math.clamp(laneCenter + rng:NextNumber(-laneStep * 0.3, laneStep * 0.3), -fieldHalf, fieldHalf),
+					rng:NextNumber(-chunkLength / 2 + 14, chunkLength / 2 - 14)
+			end)
+			if x and z then
+				buildObstacle(effective.edgeProps, Vector3.new(x, 0.5, z), rng, model)
+				placed += 1
+			end
 		end
 	end
 

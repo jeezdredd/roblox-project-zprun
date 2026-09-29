@@ -16,6 +16,7 @@ local RoutePlan = require(script.Parent.RoutePlan)
 local ModifiersConfig = require(ReplicatedStorage.Shared.config.ModifiersConfig)
 local ZombieFactory = require(script.Parent.ZombieFactory)
 local ZombieAnimator = require(script.Parent.ZombieAnimator)
+local ZombieHitboxes = require(script.Parent.ZombieHitboxes)
 local DistanceTracker = require(script.Parent.DistanceTracker)
 local MissionConfig = require(script.Parent.MissionConfig)
 local MissionState = require(script.Parent.MissionState)
@@ -46,6 +47,11 @@ type ZombieState = {
 	targetPoint: Vector3?,
 	nextFacingAt: number,
 	alertAt: number?,
+	-- skinned rigs: top speed the skin's clips can show, the swing holding it, and
+	-- whether it has screamed at a player yet
+	speedCap: number,
+	attackUntil: number,
+	spotted: boolean,
 }
 
 local MAX_POOLED = 24
@@ -56,6 +62,10 @@ local AI_FULL_RANGE = 180
 local AI_FAR_STRIDE = 4
 
 local LURE_RANGE = 80
+-- a zombie this close to a player swings at them (the damage itself is the Hitbox touch)
+local ATTACK_REACH = 7
+-- speed kept while a swing plays, as a share of the chase speed
+local ATTACK_SLOWDOWN = 0.3
 local GRAB_DAMAGE_SCALE = 3
 
 local random = Random.new()
@@ -203,6 +213,19 @@ end
 local function onDied(state: ZombieState)
 	state.mode = "Down"
 	local model = state.model
+	-- skinned rigs fall through their death clip, so the body stays upright and still
+	if ZombieAnimator.playDeath(state.tracks, random) then
+		local root = state.root
+		local _, yaw = root.CFrame:ToEulerAnglesYXZ()
+		root.Anchored = true
+		root.CFrame = CFrame.new(root.Position) * CFrame.Angles(0, yaw, 0)
+		for _, name in { ZombieRig.LOWER_TORSO_NAME, ZombieRig.TORSO_NAME } do
+			local part = model:FindFirstChild(name)
+			if part and part:IsA("BasePart") then
+				part.CanCollide = false
+			end
+		end
+	end
 	task.delay(GameConstants.ZOMBIE_CORPSE_LIFETIME, function()
 		if zombies[model] == state then
 			ZombieAI.recycle(state)
@@ -210,8 +233,8 @@ local function onDied(state: ZombieState)
 	end)
 end
 
-local function buildModel(config: ZombiesConfig.ZombieConfig): Model
-	local model = ZombieFactory.build(config)
+local function buildModel(config: ZombiesConfig.ZombieConfig, skinName: string?): Model
+	local model = ZombieFactory.build(config, nil, skinName)
 	local hitbox = model:FindFirstChild("Hitbox")
 	if hitbox and hitbox:IsA("BasePart") then
 		hitbox.Touched:Connect(function(hit)
@@ -223,6 +246,14 @@ local function buildModel(config: ZombiesConfig.ZombieConfig): Model
 	end
 	local humanoid = model:FindFirstChildOfClass("Humanoid")
 	if humanoid then
+		local lastHealth = humanoid.Health
+		humanoid.HealthChanged:Connect(function(health)
+			local state = zombies[model]
+			if state and health > 0 and health < lastHealth then
+				ZombieAnimator.hit(state.tracks, state.speed)
+			end
+			lastHealth = health
+		end)
 		humanoid.Died:Connect(function()
 			local state = zombies[model]
 			if state then
@@ -233,7 +264,11 @@ local function buildModel(config: ZombiesConfig.ZombieConfig): Model
 	return model
 end
 
-local function acquireModel(config: ZombiesConfig.ZombieConfig): Model
+local function acquireModel(config: ZombiesConfig.ZombieConfig, skinName: string?): Model
+	-- a forced skin skips the pool, whose models carry whatever skin they were built with
+	if skinName then
+		return buildModel(config, skinName)
+	end
 	local pool = pools[config.id]
 	if pool then
 		local pooled = table.remove(pool)
@@ -265,14 +300,20 @@ local function setTorsoCollision(model: Model, enabled: boolean)
 end
 
 local function spawnCorpse(position: Vector3): Model
-	local model = ZombieFactory.build(pickConfig())
+	local model = ZombieFactory.build(pickConfig(), true)
+	local skinned = model:GetAttribute("ZombieSkin") ~= nil
 	local humanoid = model:FindFirstChildOfClass("Humanoid")
 	if humanoid then
 		humanoid:Destroy()
 	end
+	if skinned then
+		ZombieHitboxes.detach(model)
+	end
 	for _, descendant in model:GetDescendants() do
 		if descendant:IsA("BasePart") then
-			if descendant.Name == "Hitbox" or descendant.Name == "Eye" then
+			-- skinned: only the rig's meshes stay, the hit boxes go
+			local hitBox = skinned and not descendant:IsA("MeshPart") and descendant.Name ~= "Rig" and descendant ~= model.PrimaryPart
+			if descendant.Name == "Hitbox" or descendant.Name == "Eye" or hitBox then
 				descendant:Destroy()
 			else
 				descendant.Anchored = true
@@ -284,7 +325,12 @@ local function spawnCorpse(position: Vector3): Model
 	end
 	local groundY = groundedY(position) - ZombieFactory.ROOT_HEIGHT
 	local yaw = random:NextNumber() * 2 * math.pi
-	model:PivotTo(CFrame.new(position.X, groundY + 0.75, position.Z) * CFrame.Angles(0, yaw, 0) * CFrame.Angles(math.pi / 2, 0, 0))
+	if skinned then
+		-- the death clip lays the body down from standing
+		model:PivotTo(CFrame.new(position.X, groundY + ZombieFactory.ROOT_HEIGHT, position.Z) * CFrame.Angles(0, yaw, 0))
+	else
+		model:PivotTo(CFrame.new(position.X, groundY + 0.75, position.Z) * CFrame.Angles(0, yaw, 0) * CFrame.Angles(math.pi / 2, 0, 0))
+	end
 	local stain = Instance.new("Part")
 	stain.Name = "Stain"
 	stain.Size = Vector3.new(7, 0.05, 7)
@@ -299,15 +345,18 @@ local function spawnCorpse(position: Vector3): Model
 	stain.Parent = model
 	model.Name = "Corpse"
 	model.Parent = getPropsFolder()
+	if skinned then
+		ZombieAnimator.poseCorpse(model, random)
+	end
 	table.insert(corpses, model)
 	return model
 end
 
-local function spawnZombie(position: Vector3, config: ZombiesConfig.ZombieConfig, startAlert: boolean?, posture: string?, faceAt: Vector3?, wakeDistance: number?)
+local function spawnZombie(position: Vector3, config: ZombiesConfig.ZombieConfig, startAlert: boolean?, posture: string?, faceAt: Vector3?, wakeDistance: number?, skinName: string?): Model?
 	if aliveCount >= MAX_ALIVE then
-		return
+		return nil
 	end
-	local model = acquireModel(config)
+	local model = acquireModel(config, skinName)
 	local humanoid = model:FindFirstChildOfClass("Humanoid") :: Humanoid
 	local root = model.PrimaryPart :: BasePart
 
@@ -346,6 +395,9 @@ local function spawnZombie(position: Vector3, config: ZombiesConfig.ZombieConfig
 		targetPoint = nil,
 		nextFacingAt = 0,
 		alertAt = nil,
+		speedCap = (model:GetAttribute("MaxSpeed") :: number?) or math.huge,
+		attackUntil = 0,
+		spotted = false,
 	}
 	humanoid.WalkSpeed = config.speedMin
 	humanoid.AutoRotate = false
@@ -371,6 +423,7 @@ local function spawnZombie(position: Vector3, config: ZombiesConfig.ZombieConfig
 	strideCounter = (strideCounter + 1) % AI_FAR_STRIDE
 	zombies[model] = state
 	aliveCount += 1
+	return model
 end
 
 local function findNearestPlayer(position: Vector3): Player?
@@ -528,6 +581,10 @@ local function aiStep()
 	local difficulty = MissionConfig.getDifficulty()
 	local speedScale = difficulty.zombieSpeedMultiplier * (1 + getModifierSpeedBonus())
 	local aggroActive = difficulty.zombiesChase and DistanceTracker.getMaxDistance() >= difficulty.aggroDistance
+	-- Studio test yard: aggro is a switch (Sandbox), not a distance run
+	if RunService:IsStudio() and Workspace:GetAttribute("SandboxActive") == true then
+		aggroActive = Workspace:GetAttribute("SandboxAggro") == true
+	end
 
 	if aggroActive ~= lastAggroState then
 		lastAggroState = aggroActive
@@ -576,7 +633,7 @@ local function aiStep()
 
 		if lureActive and lure and (state.root.Position - lure.pos).Magnitude < LURE_RANGE then
 			state.humanoid.AutoRotate = true
-			state.humanoid.WalkSpeed = state.config.speedMax * speedScale
+			state.humanoid.WalkSpeed = math.min(state.config.speedMax * speedScale, state.speedCap)
 			state.humanoid:MoveTo(lure.pos)
 			continue
 		end
@@ -641,9 +698,12 @@ local function aiStep()
 			local cruise = speedFromCurve(config, distance, speedScale)
 			local floorSpeed = config.speedMin * speedScale
 			local ramp = math.clamp((now - (state.alertAt or now)) / ZombieBehaviourConfig.ALERT_ACCELERATION_DURATION, 0, 1)
-			state.speed = floorSpeed + (cruise - floorSpeed) * ramp
+			state.speed = math.min(floorSpeed + (cruise - floorSpeed) * ramp, state.speedCap)
+			if distance <= ATTACK_REACH and now >= state.attackUntil then
+				state.attackUntil = now + ZombieAnimator.attack(state.tracks, random)
+			end
 			state.humanoid.AutoRotate = true
-			state.humanoid.WalkSpeed = state.speed
+			state.humanoid.WalkSpeed = if now < state.attackUntil then state.speed * ATTACK_SLOWDOWN else state.speed
 			state.moveActive = true
 			state.faceOnly = false
 			ZombieAnimator.setSpeed(state.tracks, config.id == "Runner", state.speed)
@@ -663,6 +723,10 @@ local function aiStep()
 				end
 				state.turnRate = math.rad(ZombieBehaviourConfig.AWARE_TURN_RATE)
 				state.faceOnly = true
+				if not state.spotted then
+					state.spotted = true
+					ZombieAnimator.spotted(state.tracks)
+				end
 			else
 				state.faceOnly = false
 			end
@@ -1113,6 +1177,10 @@ local function fallbackSection(location: LocationsConfig.LocationConfig): Zombie
 end
 
 local function spawnStep()
+	-- the Studio test yard places its own zombies
+	if RunService:IsStudio() and Workspace:GetAttribute("SandboxActive") == true then
+		return
+	end
 	local lead = DistanceTracker.getMaxDistance()
 	local leadX = GameConstants.RUN_ORIGIN.X
 	for _, player in MissionState.getParticipants() do
@@ -1150,6 +1218,19 @@ local function spawnStep()
 		nextSpawnAt += math.max(4, delay * GameConstants.BASE_RUN_SPEED)
 		budget -= 1
 	end
+end
+
+-- Studio test yard only: one zombie of a given config and skin at a position.
+function ZombieAI.devSpawn(position: Vector3, configId: string, skinName: string?, faceAt: Vector3?, startAlert: boolean?): Model?
+	if not RunService:IsStudio() then
+		return nil
+	end
+	for _, config in ZombiesConfig do
+		if config.id == configId then
+			return spawnZombie(position, config, startAlert, nil, faceAt, nil, skinName)
+		end
+	end
+	return nil
 end
 
 function ZombieAI.clearAll()

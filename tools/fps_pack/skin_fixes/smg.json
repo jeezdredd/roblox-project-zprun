@@ -1,0 +1,16 @@
+{
+  "note": "Skin repair for the Sketchfab glb export of \"UZI | First Person Animations (2026 Remake)\" by 1Matzh (73266e9f1eb949b69a3ab11d8f636048). The export shares one skin between the Background plane, the arms (Mesh_*) and the gun (UZI_*), with inverse bind matrices computed for the Background plane (scale 710.5 x 357.8 x 372.0) and the other meshes' vertices stored as raw = -diag(scale - 101) * R * v, mirrored. Both matrices were solved on 2026-09-29 from the pack's source FBX (Sketchfab source archive: cluster Transform/TransformLink, mesh vertices matched to the glb within 2e-5): `vertex` maps the stored Mesh_*/UZI_* POSITION, NORMAL and TANGENT data into the skinned mesh node's space (metres, the FBX rig's space), `ibm_post` turns every inverse bind matrix into the inverse of the joint's true bind pose (IBM' = IBM @ ibm_post). Used by strip_glb.py --skin-fix and gltf_anim.py bake --skin-fix.",
+  "meshes": "^(Mesh_|UZI_)",
+  "vertex": [
+    [-0.001640617665, 0.0, 0.0, 0.008160439072],
+    [0.0, 0.0, 0.003689921067, 0.0],
+    [0.0, -0.003893891658, 0.0, 0.1078521426],
+    [0.0, 0.0, 0.0, 1.0]
+  ],
+  "ibm_post": [
+    [0.1407407676, 0.0, 0.0, -0.001148478706],
+    [0.0, 0.0, 0.2794762996, -0.03014215958],
+    [0.0, -0.2688113352, 0.0, 0.0],
+    [0.0, 0.0, 0.0, 1.0]
+  ]
+}

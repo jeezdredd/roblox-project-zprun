@@ -2,7 +2,7 @@
 
 Branching route choice during a run. Near the end of a biome the corridor splits into two entrances and the squad picks where to run next. Each branch changes the rules of the next stretch, so every choice trades a cost for a reward.
 
-Status: **designed, not started**. Last updated 2026-09-28.
+Status: **step 1 in playtest** (fork between existing biomes). Last updated 2026-09-28.
 
 Related: [[Gameplay Systems]], [[Roadmap]], [[Decisions]], [[Architecture]].
 
@@ -10,7 +10,7 @@ Related: [[Gameplay Systems]], [[Roadmap]], [[Decisions]], [[Architecture]].
 
 | # | Item | Status | Notes |
 | --- | --- | --- | --- |
-| 1 | Fork between two existing biomes (Forest / City) | not started | Proves voting and route insertion with no new art |
+| 1 | Fork between two existing biomes | playtest | Built 2026-09-28, uncommitted. Vote verified in Studio both ways (left runner picked the left option, right runner the right). Sign and HUD screenshot-checked. See "Step 1 implementation" |
 | 2 | Branch rule fields in `LocationConfig` | not started | See "Branch rules" below |
 | 3 | Flashlight driven by "night OR branch requires it" | not started | Today `FlashlightController` reads only `NightMission` |
 | 4 | Sewer branch | not started | Needs a narrow `laneStyle` and tunnel props |
@@ -20,6 +20,22 @@ Related: [[Gameplay Systems]], [[Roadmap]], [[Decisions]], [[Architecture]].
 | 8 | Fork HUD (timer, branch icons, rules) | not started | |
 
 Status values: `not started`, `in progress`, `playtest`, `done`, `blocked (reason)`.
+
+## Step 1 implementation (2026-09-28)
+
+Files: `src/shared/config/ForkConfig.luau`, `src/server/systems/RoutePlan.luau`, `src/server/systems/ChunkSpawner.luau`, `src/server/systems/ForkService.luau`, `src/client/ui/ForkHud.luau`; wired in `src/server/init.server.luau`, `src/server/systems/MissionService.luau` (`ForkService.configure(seed)`) and `src/client/init.client.luau`.
+
+- **Planning.** `RoutePlan` marks a new plan entry as a fork (`entry.fork = { options, resolved }`) when its divider would start after `ForkConfig.FIRST_DIVIDER_AT` (300) and its boundary is at least `ForkConfig.MIN_SPACING` (2200) from the previous fork. Until resolved the entry carries a provisional location and nothing past it is planned. `ForkService` calls `RoutePlan.planAhead` far enough ahead that the divider is built at the streaming horizon, not in view.
+- **Options.** Two locations from the map's pool other than the current biome. Every map except Mixed has only two locations, so there the choice is "switch" vs "stay". A one-location pool never forks.
+- **Streaming hold.** `ChunkSpawner` stops at `RoutePlan.holdIndex()` (the first blend chunk into the open fork) and never blends into an unresolved entry, so the cross-fade is always built with the chosen biome.
+- **Vote.** The vote line is `ForkConfig.VOTE_LEAD` before the boundary: `SPAWN_AHEAD_DISTANCE + TRANSITION_CHUNKS * CHUNK_LENGTH` = 1024 studs. The divider is `DIVIDER_LENGTH` (384) of jersey barriers on the centre line ending at the vote line, with a sign gantry at its start. When the lead runner crosses the line, each living participant counts for the side of the centre line they are on (left = `options[1]`, -X; right = `options[2]`, +X). Tie or nobody alive: random.
+- **Client.** `ForkService` publishes `Workspace` attributes `ForkLeft`, `ForkRight`, `ForkVoteDistance`, then `ForkResult`. `ForkHud` shows CHOOSE YOUR ROUTE with both options, highlights the side the local runner is on, distance and seconds to the line, then the result for 3 s.
+
+**Known limits of step 1**
+
+- The new biome starts 1024 studs (about 17-40 s) after the vote, because streaming needs the choice before the far end of the corridor is built. Shortening it means hiding the far end (fog, a tunnel mouth, a bend) so the spawner can resolve later. Open question below.
+- Chunk obstacles are not kept clear of the divider, so an obstacle can sit against the barriers or in front of the sign.
+- The HUD countdown divides by current forward speed, so it jumps when the runner slows.
 
 ## Where it hooks into the code
 
@@ -89,3 +105,5 @@ Run modifiers (`ModifiersConfig`: `FastZombies`, `Night`) stay in force for the 
 - How the losing-entrance funnel looks without feeling like a wall.
 - Night-in-sewer multiplier cut: yes or no.
 - Train hit: instant kill or heavy damage.
+- Can the gap between vote and new biome (1024 studs today) be hidden or shortened? Needs a visual trick at the fork, see "Known limits of step 1".
+- Should two-location maps fork at all ("stay" vs "switch"), or only Mixed?

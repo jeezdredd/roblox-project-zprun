@@ -1,0 +1,114 @@
+{
+ "audio/weapons/close_rifle": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, AK-47 C_28P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 0.610 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.92 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/close_rifle_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_rifle; 133 ms, RMS -19.8 dBFS"
+ },
+ "audio/weapons/tail_open_rifle": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, AK-47 C_28P.wav, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, the same shot as close_rifle from 0.11 s: the range's reflection and its decay to the next shot, padded with 0.11 s of silence so close_rifle + tail_open_rifle played together rebuild the original shot; 0.45 s fade-out, same gain as close_rifle, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/tail_open_rifle_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: outdoor tail per class, played at the close shot's volume; 2600 ms, peak -24.2 dBFS relative to the close part at -1 dBFS"
+ },
+ "audio/weapons/close_rifle_02": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, AK-47 C_28P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 3.258 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.86 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/close_rifle_02_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_rifle; 133 ms, RMS -19.7 dBFS"
+ },
+ "audio/weapons/close_rifle_03": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, AK-47 C_28P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 6.026 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.96 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/close_rifle_03_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_rifle; 133 ms, RMS -20.0 dBFS"
+ },
+ "audio/weapons/close_pistol": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Walther PPQ X_39P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 1.412 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (0.98 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/close_pistol_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_pistol; 133 ms, RMS -22.5 dBFS"
+ },
+ "audio/weapons/tail_open_pistol": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Walther PPQ X_39P.wav, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, the same shot as close_pistol from 0.11 s: the range's reflection and its decay to the next shot, padded with 0.11 s of silence so close_pistol + tail_open_pistol played together rebuild the original shot; 0.45 s fade-out, same gain as close_pistol, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/tail_open_pistol_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: outdoor tail per class, played at the close shot's volume; 2803 ms, peak -31.7 dBFS relative to the close part at -1 dBFS"
+ },
+ "audio/weapons/close_pistol_02": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Walther PPQ X_39P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 6.446 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (0.98 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/close_pistol_02_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_pistol; 133 ms, RMS -21.2 dBFS"
+ },
+ "audio/weapons/close_pistol_03": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Walther PPQ X_39P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 10.664 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (0.93 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/close_pistol_03_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_pistol; 133 ms, RMS -21.3 dBFS"
+ },
+ "audio/weapons/close_shotgun": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Benelli Nova O_21P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 0.436 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (3.33 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/close_shotgun_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_shotgun; 133 ms, RMS -18.8 dBFS"
+ },
+ "audio/weapons/tail_open_shotgun": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Benelli Nova O_21P.wav, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, the same shot as close_shotgun from 0.11 s: the range's reflection and its decay to the next shot, padded with 0.11 s of silence so close_shotgun + tail_open_shotgun played together rebuild the original shot; 0.45 s fade-out, same gain as close_shotgun, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/tail_open_shotgun_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: outdoor tail per class, played at the close shot's volume; 2803 ms, peak -26.4 dBFS relative to the close part at -1 dBFS"
+ },
+ "audio/weapons/close_shotgun_02": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Benelli Nova O_21P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 3.466 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (3.42 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/close_shotgun_02_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_shotgun; 133 ms, RMS -19.2 dBFS"
+ },
+ "audio/weapons/close_shotgun_03": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Benelli Nova O_17P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 3.718 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (0.62 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/close_shotgun_03_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_shotgun; 133 ms, RMS -17.0 dBFS"
+ },
+ "audio/weapons/close_smg": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 0.312 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.24 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/close_smg_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_smg; 133 ms, RMS -20.5 dBFS"
+ },
+ "audio/weapons/tail_open_smg": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, the same shot as close_smg from 0.11 s: the range's reflection and its decay to the next shot, padded with 0.11 s of silence so close_smg + tail_open_smg played together rebuild the original shot; 0.45 s fade-out, same gain as close_smg, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/tail_open_smg_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: outdoor tail per class, played at the close shot's volume; 2803 ms, peak -24.3 dBFS relative to the close part at -1 dBFS"
+ },
+ "audio/weapons/close_smg_02": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 3.506 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.16 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/close_smg_02_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_smg; 133 ms, RMS -21.1 dBFS"
+ },
+ "audio/weapons/close_smg_03": {
+  "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 6.730 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.29 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "file": "assets/audio/weapons/close_smg_03_v6.ogg",
+  "status": "pending",
+  "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_smg; 133 ms, RMS -20.8 dBFS"
+ }
+}

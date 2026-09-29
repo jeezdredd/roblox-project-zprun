@@ -6,8 +6,31 @@ local Workspace = game:GetService("Workspace")
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local ViewmodelConfig = require(ReplicatedStorage.Shared.config.ViewmodelConfig)
 local TexturesConfig = require(ReplicatedStorage.Shared.config.TexturesConfig)
+local ArmRigConfig = require(ReplicatedStorage.Shared.config.ArmRigConfig)
+local MeshTemplates = require(ReplicatedStorage.Shared.util.MeshTemplates)
 
 local ViewmodelBuilder = {}
+
+-- Rojo-mounted MeshParts render at the mesh's native size (see MeshTemplates), so the
+-- weapon and arm meshes are loaded through MeshTemplates as soon as this module loads.
+local MESH_FOLDERS = { "ViewModels", "ViewModelArms" }
+for _, folderName in MESH_FOLDERS do
+	local folder = ReplicatedStorage:FindFirstChild(folderName)
+	if folder then
+		MeshTemplates.prefetch(folder)
+	end
+end
+
+-- Yields until the weapon and arm meshes have loaded, so the first equip does not build
+-- from wrongly sized templates. Only call it where yielding is allowed.
+function ViewmodelBuilder.waitForMeshes(timeout: number)
+	for _, folderName in MESH_FOLDERS do
+		local folder = ReplicatedStorage:FindFirstChild(folderName)
+		if folder then
+			MeshTemplates.waitFor(folder, timeout)
+		end
+	end
+end
 
 export type Node = {
 	part: BasePart,
@@ -15,6 +38,10 @@ export type Node = {
 	rest: CFrame,
 	bone: string?,
 	motor: Motor6D?,
+	-- authored offsets for this bone are in the parent's axes (weapon space), not in the
+	-- bone's own rest frame; pose() converts them. Set on the mesh hand pivots, whose rest
+	-- frames are turned far from the weapon's axes.
+	parentSpace: boolean?,
 }
 
 export type Rig = {
@@ -243,6 +270,8 @@ local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): HandMou
 		end
 	end
 
+	MeshTemplates.resolveChildren(clone)
+
 	local main = clone:FindFirstChild("Main")
 	if not main or not main:IsA("BasePart") then
 		clone:Destroy()
@@ -353,6 +382,49 @@ local function buildArm(rig: Rig, side: number, handRest: CFrame, handBone: stri
 	applyTexture(addNode(rig, "Part", "Forearm" .. suffix, Vector3.new(0.28, 0.28, 0.5), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 0.3), forearmBone), TexturesConfig.FABRIC, 0.7)
 end
 
+-- Mesh arms cut from a Mixamo soldier (tools/arms_rig). Same bone names as the box arms
+-- (handR, handRWrist, handRForearm and the L set), so PoseLibrary and the spring layer
+-- drive them unchanged. The bones sit on invisible pivots: the hand bone on the grip
+-- axis, the wrist bone on the wrist, and the meshes hang off them by their centres.
+-- Returns false when the meshes are not uploaded yet, and the caller falls back to boxes.
+-- Roblox's glTF importer turns uploaded meshes 180 degrees about Y (see ZombieFactory),
+-- so each arm mesh is turned back about its own centre.
+local GLTF_FLIP = CFrame.Angles(0, math.pi, 0)
+
+local function buildMeshArm(rig: Rig, class: string, side: number, mountRest: CFrame, handBone: string, parentBone: string?): boolean
+	local folder = ReplicatedStorage:FindFirstChild("ViewModelArms")
+	if not ArmRigConfig.ready or not folder then
+		return false
+	end
+	local suffix = if side > 0 then "R" else "L"
+	local handTemplate = folder:FindFirstChild("Hand" .. suffix)
+	local forearmTemplate = folder:FindFirstChild("Forearm" .. suffix)
+	if not (handTemplate and handTemplate:IsA("BasePart") and forearmTemplate and forearmTemplate:IsA("BasePart")) then
+		return false
+	end
+	local cfg: ArmRigConfig.Side = if side > 0 then ArmRigConfig.R else ArmRigConfig.L
+	local grips = ViewmodelConfig.ARM_GRIP[class] or ViewmodelConfig.ARM_GRIP.Rifle
+	local grip = if side > 0 then grips.R else grips.L
+	local bend = if side > 0 then ViewmodelConfig.ARM_WRIST_BEND.R else ViewmodelConfig.ARM_WRIST_BEND.L
+	local scale = ViewmodelConfig.SCALE
+	local pivotSize = Vector3.new(0.05, 0.05, 0.05)
+
+	addNode(rig, "Part", "HandPivot" .. suffix, pivotSize, COLOR_GLOVE, Enum.Material.Fabric, mountRest * grip, parentBone, handBone).Transparency = 1
+	rig.byBone[handBone].parentSpace = true
+	local hand = MeshTemplates.clone(handTemplate :: MeshPart)
+	hand.Size = hand.Size * scale
+	adoptNode(rig, hand, CFrame.new(cfg.handCentre * scale) * GLTF_FLIP, handBone, nil)
+
+	local wristBone = handBone .. "Wrist"
+	addNode(rig, "Part", "WristPivot" .. suffix, pivotSize, COLOR_GLOVE, Enum.Material.Fabric, cfg.wrist, handBone, wristBone).Transparency = 1
+	local forearmBone = handBone .. "Forearm"
+	addNode(rig, "Part", "ForearmPivot" .. suffix, pivotSize, COLOR_SLEEVE, Enum.Material.Fabric, bend, wristBone, forearmBone).Transparency = 1
+	local forearm = MeshTemplates.clone(forearmTemplate :: MeshPart)
+	forearm.Size = forearm.Size * scale
+	adoptNode(rig, forearm, CFrame.new(cfg.forearmCentre * scale) * GLTF_FLIP, forearmBone, nil)
+	return true
+end
+
 function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Camera): Rig
 	local model = Instance.new("Model")
 	model.Name = "Viewmodel"
@@ -414,8 +486,15 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 		if mounts.handL then
 			leftRest = mounts.handL * leftRest.Rotation
 		end
-		buildArm(rig, 1, rightRest, "handR", "weaponRoot", 52)
-		buildArm(rig, -1, leftRest, "handL", mounts.handLParent, 46)
+		local meshArms = mounts.handR ~= nil
+			and mounts.handL ~= nil
+			and buildMeshArm(rig, class, 1, CFrame.new((mounts.handR :: CFrame).Position), "handR", "weaponRoot")
+		if meshArms then
+			buildMeshArm(rig, class, -1, CFrame.new((mounts.handL :: CFrame).Position), "handL", mounts.handLParent)
+		else
+			buildArm(rig, 1, rightRest, "handR", "weaponRoot", 52)
+			buildArm(rig, -1, leftRest, "handL", mounts.handLParent, 46)
+		end
 		model.Parent = camera
 		return rig
 	end
@@ -592,6 +671,13 @@ function ViewmodelBuilder.pose(rig: Rig, rootCFrame: CFrame, overrides: PoseOver
 			-- PoseLibrary is authored in design units against the unscaled rig, so its
 			-- translations have to follow ViewmodelConfig.SCALE like every rest offset.
 			offset = offset * scaled(authored)
+		end
+		if node.parentSpace and offset ~= CFrame.identity then
+			-- Motor6D.Transform acts in the bone's rest frame; turn a weapon-space offset
+			-- into that frame so it moves and turns the hand along the weapon's axes,
+			-- still pivoting about the hand
+			local restRotation = node.rest.Rotation
+			offset = restRotation:Inverse() * offset * restRotation
 		end
 		motor.Transform = offset
 	end

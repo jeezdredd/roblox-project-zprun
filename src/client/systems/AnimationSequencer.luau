@@ -19,6 +19,7 @@ export type Sequencer = {
 	blendClock: number,
 	blendFrom: PoseLibrary.Pose,
 	blendTime: number,
+	timeScale: number,
 	phaseListeners: { (string) -> () },
 }
 
@@ -68,6 +69,7 @@ function AnimationSequencer.new(class: string): Sequencer
 		blendClock = 1,
 		blendFrom = {},
 		blendTime = AnimationTimings.BLEND_TIME,
+		timeScale = 1,
 		phaseListeners = {},
 	}, AnimationSequencer)
 	return (self :: any) :: Sequencer
@@ -96,7 +98,11 @@ end
 
 -- Any sequence can be cut off mid-frame; the current pose becomes the blend origin
 -- so the switch never snaps.
-function AnimationSequencer:play(id: string)
+-- `targetDuration` stretches or squeezes the whole sequence to that many seconds (the
+-- reload plays over the weapon's reloadTime); omitted, the authored timings stand.
+-- `blendTime` overrides the sequence's own blend-in: Fire has none so the kick lands on
+-- the frame, but a shot that cuts a reload tail needs one or the arms jump.
+function AnimationSequencer:play(id: string, targetDuration: number?, blendTime: number?)
 	local sequence = AnimationTimings.get(id)
 	if not sequence then
 		return
@@ -106,9 +112,16 @@ function AnimationSequencer:play(id: string)
 	end
 
 	self.blendFrom = self.current
-	self.blendTime = sequence.blendTime or AnimationTimings.BLEND_TIME
+	self.blendTime = blendTime or sequence.blendTime or AnimationTimings.BLEND_TIME
 	self.blendClock = if self.blendTime > 0 then 0 else 1
 	self.activeId = id
+	self.timeScale = 1
+	if targetDuration and targetDuration > 0 then
+		local total = AnimationTimings.duration(id)
+		if total > 0 then
+			self.timeScale = total / targetDuration
+		end
+	end
 	self.stepIndex = 1
 	self.stepClock = 0
 	self.fromPose = self.current
@@ -142,14 +155,15 @@ function AnimationSequencer:update(deltaTime: number): PoseLibrary.Pose
 		if sequence then
 			local step = sequence.steps[self.stepIndex]
 			if step then
-				self.stepClock += deltaTime
+				self.stepClock += deltaTime * self.timeScale
 				local duration = math.max(step.duration, 0.0001)
 				local alpha = math.clamp(self.stepClock / duration, 0, 1)
 				local eased = easeValue(step.easing, alpha)
-				target = blendPoses(self.fromPose, poses[step.pose] or {}, eased)
+				local stepPose = poses[step.pose] or (if step.fallback then poses[step.fallback] else nil) or {}
+				target = blendPoses(self.fromPose, stepPose, eased)
 
 				if alpha >= 1 then
-					self.fromPose = poses[step.pose] or {}
+					self.fromPose = stepPose
 					self.stepIndex += 1
 					self.stepClock = 0
 					local nextStep = sequence.steps[self.stepIndex]

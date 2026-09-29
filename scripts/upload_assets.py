@@ -112,6 +112,10 @@ def poll(key, operation_id):
         if payload is None:
             return None, None, error
         if payload.get("done"):
+            if payload.get("error"):
+                # a finished operation without a response is a rejected upload (for
+                # example "Failed to parse the uploaded file"), not an asset with id 0
+                return None, None, json.dumps(payload["error"])[:300]
             response = payload.get("response", {})
             state = response.get("moderationResult", {}).get("moderationState", "Unknown")
             return response.get("assetId"), state, None
@@ -154,7 +158,8 @@ def main():
     key_value = load_key()
     failures = 0
     for manifest_key, entry, path, asset_type in pending:
-        display_name = "tfz-" + manifest_key.replace("/", "-").replace("_", "-")
+        # Open Cloud rejects display names over 50 characters ("Asset name length is invalid")
+        display_name = ("tfz-" + manifest_key.replace("/", "-").replace("_", "-"))[:50]
         operation_id, error = upload(key_value, display_name, path, asset_type)
         if error:
             print(f"FAIL  {manifest_key}: {error}")

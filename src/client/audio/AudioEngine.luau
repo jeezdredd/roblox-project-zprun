@@ -294,6 +294,32 @@ local function createVoice(index: number, folder: Instance): Voice
 	return voice
 end
 
+type ClassLayers = { ordered: { SpatialAudioConfig.LayerBand }, names: { string }, indexOf: { [SpatialAudioConfig.LayerBand]: number } }
+
+local layerCache: { [SpatialAudioConfig.ClassSpec]: ClassLayers } = {}
+
+-- A class's layer bands in close -> far order, built once per class.
+local function classLayers(spec: SpatialAudioConfig.ClassSpec): ClassLayers
+	local cached = layerCache[spec]
+	if cached then
+		return cached
+	end
+	local layers: ClassLayers = { ordered = {}, names = {}, indexOf = {} }
+	local bands = spec.layerBands
+	if bands then
+		for _, name in LAYER_ORDER do
+			local band = bands[name]
+			if band then
+				table.insert(layers.ordered, band)
+				table.insert(layers.names, name)
+				layers.indexOf[band] = #layers.ordered
+			end
+		end
+	end
+	layerCache[spec] = layers
+	return layers
+end
+
 local function classLimit(spec: SpatialAudioConfig.ClassSpec): number
 	return math.max(2, math.floor(spec.maxVoices * profile.voiceLimitScale + 0.5))
 end
@@ -434,23 +460,10 @@ local function propagate(voice: Voice, deltaTime: number, rays: number, forceRay
 
 	local band = voice.layerBand
 	if band then
-		local bands = spec.layerBands
-		if bands then
-			-- weight of this voice's band among the class bands, in layer order
-			local ordered: { SpatialAudioConfig.LayerBand } = {}
-			local mine = 0
-			for _, name in LAYER_ORDER do
-				local candidate = bands[name]
-				if candidate then
-					table.insert(ordered, candidate)
-					if candidate == band then
-						mine = #ordered
-					end
-				end
-			end
-			if mine > 0 then
-				voice.layerWeight = AudioMath.layerWeights(distance, ordered)[mine]
-			end
+		local layers = classLayers(spec)
+		local mine = layers.indexOf[band]
+		if mine then
+			voice.layerWeight = AudioMath.layerWeights(distance, layers.ordered)[mine]
 		end
 	end
 
@@ -748,9 +761,8 @@ function AudioEngine.play(play: PlaySpec): Handle
 		return handle
 	end
 
-	local bands = spec.layerBands
 	local ids = layerIds(play)
-	local hasLayers = bands ~= nil and next(ids) ~= nil
+	local hasLayers = spec.layerBands ~= nil and next(ids) ~= nil
 	if not hasLayers then
 		local id = play.id or (if play.key then resolveId(play.key) else 0)
 		if id <= 0 then
@@ -772,22 +784,14 @@ function AudioEngine.play(play: PlaySpec): Handle
 	for name in ids do
 		available[name] = true
 	end
-	local ordered: { SpatialAudioConfig.LayerBand } = {}
-	local names: { string } = {}
-	for _, name in LAYER_ORDER do
-		local band = (bands :: { [string]: SpatialAudioConfig.LayerBand })[name]
-		if band then
-			table.insert(ordered, band)
-			table.insert(names, name)
-		end
-	end
-	local weights = AudioMath.layerWeights(if is3D then distance else 0, ordered)
-	for index, band in ordered do
+	local layers = classLayers(spec)
+	local weights = AudioMath.layerWeights(if is3D then distance else 0, layers.ordered)
+	for index, band in layers.ordered do
 		local weight = weights[index]
 		if weight < LAYER_MIN_WEIGHT and not loop then
 			continue
 		end
-		local key = AudioMath.fallbackLayer(available, names[index], LAYER_ORDER)
+		local key = AudioMath.fallbackLayer(available, layers.names[index], LAYER_ORDER)
 		local id = if key then ids[key] else nil
 		if not id then
 			continue

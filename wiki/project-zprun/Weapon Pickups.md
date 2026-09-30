@@ -16,13 +16,15 @@ credits it spends are [[Run Economy]]'s, the world it stands in is [[Environment
 | `src/client/systems/WeaponPickupClient.luau` | The Highlight pool (at most 24), the toasts |
 | `WeaponService.pickUp`, `clearRunLoadout` | The run loadout a found weapon writes into, equipped through the loadout's own `onEquip`; gone with the run |
 | `RunEconomy.spend`, `RunEconomyMath.spend` | Run credits for the drop: kill pay first, the distance spent counted as banked |
-| `ChunkSpawner` | `configure(seed + 3)`, `spawnForChunk`, `clearChunk`, `init` hooks |
+| `ChunkSpawner`, `ChunkFactory`, `ChunkOccupancy`, `AmmoCrates` | `configure(seed + 3)`, `spawnForChunk`, `clearChunk`, `init` hooks; the footprints remembered per chunk model; the crate positions per chunk |
 | `WorldMeshConfig` | `supply_crate` entry and group (the id was already in the manifest) |
 
 ## Rules
 
-- Placement is deterministic from the run seed and the chunk index; every player sees
-  the same scenes. Nothing in the first two chunks.
+- The plan (scene, drop, their candidate spots, the drop's weapon) is deterministic
+  from the run seed and the chunk index, each from its own Random; the candidate used
+  depends on the chunk's props, which pooling makes spawn-order dependent. One run shows
+  one layout to everyone. Nothing in the first two chunks.
 - Hold 0.3 s; the server validates phase, participant, distance (16 studs) and that the
   scene is untaken. The found weapon replaces the slot in hand for the run only; the
   profile's loadout is never written.
@@ -33,8 +35,12 @@ credits it spends are [[Run Economy]]'s, the world it stands in is [[Environment
 
 ## Trade-offs (owner's calls made here)
 
-- The scenes are placed after the chunk is built, in their own folder, and checked
-  against the chunk's props with an overlap query, rather than inside `ChunkFactory`:
-  chunks are pooled and a taken scene must not come back with a pooled chunk.
+- The scenes are placed after the chunk is built, in their own folder, rather than
+  inside `ChunkFactory`: chunks are pooled and a taken scene must not come back with a
+  pooled chunk. The chunk's `ChunkOccupancy` footprints are remembered under its model
+  (`ChunkOccupancy.remember`) so the spot check sees the non-queryable dressing too;
+  the standing pickups and the ammo crates are checked by radius, the queryable rest by
+  an overlap query.
 - The drop's weapon is rolled from a seeded Random per drop, so the roll cannot be
-  fished by re-triggering, and it is spent only after the roll gave a real weapon.
+  fished by re-triggering; the weapon in hand is rerolled once, and the credits are spent
+  only after the roll gave a real weapon.

@@ -38,18 +38,34 @@ each with `CANDIDATES` (3) spots in order:
   the road shoulder `SHOULDER_INSET` (4..12 studs) inside the playable edge, clear of the
   chunk ends by `END_CLEARANCE` (14), facing the road with `YAW_JITTER` (20 degrees);
 - a supply drop with `supplyDrop.chance` (City and Wasteland 0.12, Farmstead 0.1, Forest
-  and Cornfield 0.08) in the middle half of the lane, never within `SCENE_DROP_GAP` (24)
-  studs along the road of the chunk's scene.
+  and Cornfield 0.08) in the middle half of the lane; every drop candidate keeps
+  `SCENE_DROP_GAP` (24) studs along the road from every scene candidate, since the
+  server may use any of them, and a candidate that finds no clear lane in six tries is
+  left out (a drop with none is dropped, never forced).
 
 The server (`src/server/systems/WeaponPickups.luau`, called by `ChunkSpawner` once the
-chunk stands) seeds `Random.new(runSeed + 3 + chunkIndex * 7919)` per chunk, so the plan
-depends on the run seed and the chunk index alone, not on spawn order or pooling: every
-run of a seed puts the same scenes in the same places for everyone. It takes the first
-candidate spot whose footprint has nothing of the chunk model in a box above the floor
-(`Workspace:GetPartBoundsInBox`, the chunk as the only include), so a scene never stands
-inside a car or a wall; a chunk whose three spots are all blocked gets no scene. Scenes
-live in `Workspace.Pickups`, tagged `WeaponPickup`, with the attributes `SceneId`,
-`Kind` (`Scene` or `Drop`), `WeaponId` and `Taken`, and go with their chunk
+chunk stands) seeds `Random.new(runSeed + 3 + chunkIndex * 7919)` per chunk for the
+plan, and separate Randoms off the same base for the drop's weapon roll (+1) and the
+mesh picks (+2), so the plan's stream never shifts with what happened to load.
+
+What is deterministic from the run seed and the chunk index alone: whether the chunk
+gets a scene and a drop, which scene, the three candidate spots of each, the drop's
+weapon. What is not: which of the three candidates is used. The server takes the first
+one that is free of the chunk's props, and a chunk's props depend on its build, which
+for a pooled chunk is an earlier one (pooling reuses chunk models in spawn order). A
+run still shows one layout to everyone, because the server builds it once and the
+clients only see the result; two runs of the same seed agree on the plan and usually
+on the spots, not always.
+
+The spot check, all in chunk-local x/z: the chunk's `ChunkOccupancy` footprints,
+remembered under the chunk model at its build (`ChunkOccupancy.remember`; the query
+below cannot see the non-queryable dressing such as corn walls, dry grass and
+undergrowth, the footprints can), the pickups already standing (their small parts are
+not queryable either) by radius, the chunk's ammo crates (`AmmoCrates.positionsForChunk`),
+and last `Workspace:GetPartBoundsInBox` above the floor with the chunk model and
+`Workspace.Pickups` as the includes. A chunk whose three spots are all blocked gets no
+scene. Scenes live in `Workspace.Pickups`, tagged `WeaponPickup`, with the attributes
+`SceneId`, `Kind` (`Scene` or `Drop`), `WeaponId` and `Taken`, and go with their chunk
 (`clearChunk` from `ChunkSpawner.despawnChunk`).
 
 ## 3. Taking one
@@ -84,7 +100,9 @@ crate's (`AmmoCrates`), so the two never read alike.
 
 The prompt reads "Crack open · 250 CR". The server checks the run balance
 (`RunEconomy.snapshot`), rolls the weapon with `PickupPlanner.rollDrop` from the weighted
-table (Shotgun 4, SMG 4, Rifle 3, Pistol 1; the roll is seeded per drop), spends the
+table (Shotgun 4, SMG 4, Rifle 3, Pistol 1; the roll is seeded per drop, and a roll of
+the weapon already in hand is rerolled once so the credits buy a gun and not a refill),
+spends the
 credits through `RunEconomy.spend` (kill pay first, then distance pay, and the distance
 spent counts as banked so the same studs never pay for it again;
 `RunEconomyMath.spend`, tested), hands the weapon over through `pickUp` and shuts the
@@ -131,13 +149,18 @@ release on moving on, hysteresis, zero budget, vanished scenes, duplicates).
   weapon in hand is the carbine with a full magazine and reserve, and the slot it
   replaced (the 1 or 2 key) now holds it. A second player at the same scene after that
   gets no prompt.
-- **Server checks.** Trigger the prompt from the hub (DevBench teleport) or from
-  further than 16 studs (fire the remote by hand): nothing happens.
+- **Server checks.** The prompt is the only trigger; there is no client remote to fire.
+  Die beside a scene and hold the prompt during the death cinematic, or hold it as a
+  player who left the squad (`SquadLeave`) while standing in the run: nothing happens;
+  a scene taken by a teammate shows no prompt to the next player.
 - **Back in the hub** the 1 and 2 keys hold the profile's loadout again and the Gunsmith
   shows it unchanged.
-- **Supply drop.** Find the red smoke; with under 250 run credits the prompt refuses
-  ("NEED 250 CR"); with more, "+N CR THIS RUN" drops by 250, the toast names the weapon,
-  it is in hand, the smoke stops.
+- **Supply drop.** Find the red smoke, rising straight up from the canister; with under
+  250 run credits the prompt refuses ("NEED 250 CR"); with more, "+N CR THIS RUN" drops
+  by 250, the toast names a weapon other than the one in hand, it is in hand, the smoke
+  stops.
+- **Spots.** In the Cornfield and the Forest no scene stands inside a corn wall, dry
+  grass or undergrowth; a drop never stands on a scene or an ammo crate.
 - **Ammo crates unchanged:** green smoke, walk-over pickup, "+N AMMO".
 - **Budget.** The chunk counter line (`BudgetLine`) does not change; the scenes are not
   in the chunk model.

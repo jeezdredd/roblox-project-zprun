@@ -90,6 +90,14 @@ end
 -- Applies whatever the reload has reached by `now`: the magazine's ammo-add, each shell
 -- at its add point, and the end. Attributes are synced on every count change so the
 -- HUD ticks per shell.
+-- A full magazine and reserve, as a hub refill and a found gun give.
+local function fillWeapon(player: Player, state: PlayerWeaponState, config: WeaponsConfig.WeaponConfig)
+	state.mag = config.magSize
+	state.reserve = config.magSize * config.reserveMags
+	endReload(player, state)
+	syncAttributes(player, state)
+end
+
 local function advanceReload(player: Player, state: PlayerWeaponState, now: number)
 	local job = state.reload
 	if not job then
@@ -520,10 +528,7 @@ function WeaponService.pickUp(player: Player, weaponId: string): boolean
 		saved[weaponId] = nil
 	end
 	if current and current.weaponId == weaponId then
-		current.mag = config.magSize
-		current.reserve = config.magSize * config.reserveMags
-		endReload(player, current)
-		syncAttributes(player, current)
+		fillWeapon(player, current, config)
 	else
 		onEquip(player, weaponId)
 	end
@@ -565,10 +570,7 @@ function WeaponService.refillAmmo(player: Player)
 	if not config then
 		return
 	end
-	state.mag = config.magSize
-	state.reserve = config.magSize * config.reserveMags
-	endReload(player, state)
-	syncAttributes(player, state)
+	fillWeapon(player, state, config)
 end
 
 function WeaponService.init()

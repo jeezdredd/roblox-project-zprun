@@ -9,6 +9,7 @@ local PickupScenesConfig = require("../../src/shared/config/PickupScenesConfig")
 local PickupPlanner = require("../../src/shared/world/PickupPlanner")
 local HighlightBudget = require("../../src/shared/util/HighlightBudget")
 local WeaponsConfig = require("../../src/shared/config/WeaponsConfig")
+local ChunkOccupancy = require("../../src/server/systems/ChunkOccupancy")
 
 local failures = 0
 
@@ -156,8 +157,8 @@ group("seeded placement", function()
 		for index = 2, 40 do
 			total += 1
 			for _, placement in planFor("City", index, seed) do
-				check("candidates per placement", #placement.spots == PickupScenesConfig.CANDIDATES)
 				if placement.kind == "Scene" then
+					check("scene candidates", #placement.spots == PickupScenesConfig.CANDIDATES)
 					sceneChunks += 1
 					local rule = PickupScenesConfig.get(placement.sceneId :: string)
 					check("scene is allowed in the city", rule ~= nil and PickupScenesConfig.allowedIn(rule :: any, "City"))
@@ -171,6 +172,7 @@ group("seeded placement", function()
 					end
 				else
 					dropChunks += 1
+					check("drop candidates", #placement.spots >= 1 and #placement.spots <= PickupScenesConfig.CANDIDATES)
 					check("drop radius from config", placement.radius == PickupScenesConfig.supplyDrop.radius)
 					for _, spot in placement.spots do
 						check("drop in the lane", math.abs(spot.x) <= OPTIONS.halfWidth * PickupScenesConfig.DROP_LANE_FRACTION + 1e-6)
@@ -192,21 +194,59 @@ group("seeded placement", function()
 	quiet.supplyDrop.chance = { City = 0 }
 	check("zero density places nothing", #PickupPlanner.plan(quiet, "City", 10, makeRng(3), OPTIONS) == 0)
 
-	-- a biome that always gets both keeps the drop away from the scene's first spot
+	-- a biome that always gets both keeps every drop candidate away from every scene
+	-- candidate, since the server may use the second or third of either
 	local busy = table.clone(C)
 	busy.density = { City = 1 }
 	busy.supplyDrop = table.clone(C.supplyDrop)
 	busy.supplyDrop.chance = { City = 1 }
-	for seed = 1, 80 do
+	local both, dropped = 0, 0
+	for seed = 1, 200 do
 		local placements = PickupPlanner.plan(busy, "City", 10, makeRng(seed), OPTIONS)
-		check("both placed", #placements == 2 and placements[1].kind == "Scene" and placements[2].kind == "Drop")
+		check("the scene comes first", placements[1] ~= nil and placements[1].kind == "Scene")
 		if #placements == 2 then
-			local sceneZ = placements[1].spots[1].z
-			for _, spot in placements[2].spots do
-				check("drop keeps its gap from the scene", math.abs(spot.z - sceneZ) >= PickupScenesConfig.SCENE_DROP_GAP - 1e-6 or math.abs(spot.z) >= OPTIONS.halfLength - PickupScenesConfig.END_CLEARANCE - 1e-6)
+			both += 1
+			check("the drop comes second", placements[2].kind == "Drop")
+			for _, dropSpot in placements[2].spots do
+				for candidate, sceneSpot in placements[1].spots do
+					check(string.format("drop keeps its gap from scene candidate %d", candidate), math.abs(dropSpot.z - sceneSpot.z) >= PickupScenesConfig.SCENE_DROP_GAP - 1e-6)
+				end
 			end
+		else
+			dropped += 1
 		end
 	end
+	check("the drop is placed most of the time", both > 150, tostring(both))
+	check("a drop with no clear lane is left out, never forced", both + dropped == 200)
+
+	-- three scene candidates that cover the whole chunk leave the drop no lane at all
+	local wide = table.clone(busy)
+	wide.SCENE_DROP_GAP = 200
+	for seed = 1, 20 do
+		local placements = PickupPlanner.plan(wide, "City", 10, makeRng(seed), OPTIONS)
+		check("no lane, no drop", #placements == 1 and placements[1].kind == "Scene")
+	end
+end)
+
+group("chunk footprints remembered", function()
+	ChunkOccupancy.reset()
+	ChunkOccupancy.claim(10, 20, 5)
+	ChunkOccupancy.reserve(-12, 0, 3)
+	local chunkA = {}
+	ChunkOccupancy.remember(chunkA)
+	ChunkOccupancy.reset()
+	ChunkOccupancy.claim(0, 0, 2)
+	local chunkB = {}
+	ChunkOccupancy.remember(chunkB)
+	check("a's claims survive the reset", not ChunkOccupancy.isFreeFor(chunkA, 12, 21, 3))
+	check("a's reservation counts", not ChunkOccupancy.isFreeFor(chunkA, -9, 0, 1))
+	check("a is free elsewhere", ChunkOccupancy.isFreeFor(chunkA, 0, 0, 2))
+	check("b has only its own", ChunkOccupancy.isFreeFor(chunkB, 12, 21, 3) and not ChunkOccupancy.isFreeFor(chunkB, 1, 1, 2))
+	check("touching is free", ChunkOccupancy.isFreeFor(chunkA, 18, 20, 3))
+	check("an unknown chunk is free", ChunkOccupancy.isFreeFor({}, 10, 20, 5))
+	ChunkOccupancy.forget(chunkA)
+	check("forgotten is free", ChunkOccupancy.isFreeFor(chunkA, 10, 20, 5))
+	ChunkOccupancy.reset()
 end)
 
 group("highlight pool", function()

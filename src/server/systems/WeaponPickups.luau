@@ -19,6 +19,8 @@ local PickupScenesConfig = require(ReplicatedStorage.Shared.config.PickupScenesC
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local PickupPlanner = require(ReplicatedStorage.Shared.world.PickupPlanner)
+local AmmoCrates = require(script.Parent.AmmoCrates)
+local ChunkOccupancy = require(script.Parent.ChunkOccupancy)
 local MissionState = require(script.Parent.MissionState)
 local RunEconomy = require(script.Parent.RunEconomy)
 local WeaponService = require(script.Parent.WeaponService)
@@ -33,8 +35,14 @@ local FLOOR_TOP = 0.5
 -- the box the occupancy check sweeps above the floor (stains and markings sit below it)
 local CHECK_FLOOR = 1
 local CHECK_HEIGHT = 5
--- per-chunk seed spacing, so neighbouring chunks never share a stream
+-- per-chunk seed spacing, so neighbouring chunks never share a stream; the plan, the
+-- drop roll and the mesh picks each get their own Random off it, so the plan's stream
+-- never shifts with what happened to load
 local CHUNK_SEED_STEP = 7919
+local SEED_ROLL = 1
+local SEED_MESH = 2
+-- an ammo crate's footprint, for the spot check
+local CRATE_RADIUS = 3
 
 type Pickup = {
 	model: Model,
@@ -43,6 +51,7 @@ type Pickup = {
 	chunkIndex: number,
 	kind: string,
 	weaponId: string?,
+	radius: number,
 	taken: boolean,
 }
 
@@ -284,7 +293,13 @@ local function onTriggered(pickup: Pickup, player: Player)
 		tell(player, "Refused", string.format("Need %d CR", cost), position)
 		return
 	end
-	local weaponId = PickupPlanner.rollDrop(PickupScenesConfig, Random.new(seed + pickup.chunkIndex * CHUNK_SEED_STEP + 1):NextNumber())
+	-- the roll is seeded per drop; the weapon already in hand is rerolled once, so the
+	-- credits buy a gun and not a refill
+	local rollRng = Random.new(seed + pickup.chunkIndex * CHUNK_SEED_STEP + SEED_ROLL)
+	local weaponId = PickupPlanner.rollDrop(PickupScenesConfig, rollRng:NextNumber())
+	if weaponId == player:GetAttribute("WeaponId") then
+		weaponId = PickupPlanner.rollDrop(PickupScenesConfig, rollRng:NextNumber())
+	end
 	if not weaponId or not WeaponsConfig.get(weaponId) then
 		return
 	end
@@ -299,14 +314,14 @@ local function onTriggered(pickup: Pickup, player: Player)
 	tell(player, "Drop", weaponId, position)
 end
 
-local function register(model: Model, anchor: BasePart, prompt: ProximityPrompt, chunkIndex: number, kind: string, weaponId: string?)
+local function register(model: Model, anchor: BasePart, prompt: ProximityPrompt, chunkIndex: number, kind: string, weaponId: string?, radius: number)
 	model:SetAttribute("Kind", kind)
 	model:SetAttribute("Taken", false)
 	if weaponId then
 		model:SetAttribute("WeaponId", weaponId)
 	end
 	CollectionService:AddTag(model, WeaponPickups.TAG)
-	local pickup: Pickup = { model = model, anchor = anchor, prompt = prompt, chunkIndex = chunkIndex, kind = kind, weaponId = weaponId, taken = false }
+	local pickup: Pickup = { model = model, anchor = anchor, prompt = prompt, chunkIndex = chunkIndex, kind = kind, weaponId = weaponId, radius = radius, taken = false }
 	pickups[model] = pickup
 	prompt.Triggered:Connect(function(player)
 		onTriggered(pickup, player)
@@ -329,25 +344,46 @@ local function buildScene(sceneId: string, base: CFrame, rng: Random, chunkIndex
 	buildWeaponProp(config.weaponId, weaponAt, model)
 	local anchor = buildAnchor(weaponAt, model)
 	local prompt = buildPrompt(anchor, config.prompt, "Take")
-	register(model, anchor, prompt, chunkIndex, "Scene", config.weaponId)
+	register(model, anchor, prompt, chunkIndex, "Scene", config.weaponId, config.radius)
 end
 
 local function buildDrop(base: CFrame, rng: Random, chunkIndex: number)
 	local model = Instance.new("Model")
 	model.Name = "PickupSupplyDrop"
 	local canister = buildSupplyDrop(base, rng, model)
-	local anchor = buildAnchor(canister.CFrame, model)
+	-- the canister lies on its side; the smoke rises from its position, unrolled
+	local anchor = buildAnchor(CFrame.new(canister.Position), model)
 	buildRedSmoke(anchor)
 	local prompt = buildPrompt(anchor, PickupScenesConfig.supplyDrop.displayName, string.format("Crack open · %d CR", PickupScenesConfig.supplyDrop.cost))
-	register(model, anchor, prompt, chunkIndex, "Drop", nil)
+	register(model, anchor, prompt, chunkIndex, "Drop", nil, PickupScenesConfig.supplyDrop.radius)
 end
 
--- Whether the spot is free of the chunk's props: nothing of the chunk model inside a
--- box of the footprint above the floor.
-local function spotIsFree(chunk: Model, position: Vector3, radius: number): boolean
+-- Whether the spot is free: of the chunk's footprints remembered at its build (the
+-- query below cannot see non-queryable dressing such as corn walls, dry grass and
+-- undergrowth), of any queryable part of the chunk or of another pickup inside a box
+-- of the footprint above the floor, of the pickups already standing (their small parts
+-- are not queryable either) and of the chunk's ammo crates.
+local function spotIsFree(chunk: Model, chunkIndex: number, localX: number, localZ: number, position: Vector3, radius: number): boolean
+	if not ChunkOccupancy.isFreeFor(chunk, localX, localZ, radius) then
+		return false
+	end
+	for _, pickup in pickups do
+		local reach = radius + pickup.radius
+		local delta = pickup.anchor.Position - position
+		if delta.X * delta.X + delta.Z * delta.Z < reach * reach then
+			return false
+		end
+	end
+	for _, crate in AmmoCrates.positionsForChunk(chunkIndex) do
+		local reach = radius + CRATE_RADIUS
+		local delta = crate - position
+		if delta.X * delta.X + delta.Z * delta.Z < reach * reach then
+			return false
+		end
+	end
 	local params = OverlapParams.new()
 	params.FilterType = Enum.RaycastFilterType.Include
-	params.FilterDescendantsInstances = { chunk }
+	params.FilterDescendantsInstances = { chunk, folder or Workspace }
 	local center = CFrame.new(position + Vector3.new(0, CHECK_FLOOR + CHECK_HEIGHT / 2, 0))
 	local hits = Workspace:GetPartBoundsInBox(center, Vector3.new(radius * 2, CHECK_HEIGHT, radius * 2), params)
 	return #hits == 0
@@ -367,16 +403,17 @@ function WeaponPickups.spawnForChunk(chunkIndex: number, chunk: Model, biome: st
 	if #placements == 0 then
 		return
 	end
+	local meshRng = Random.new(seed + chunkIndex * CHUNK_SEED_STEP + SEED_MESH)
 	local pivot = chunk:GetPivot()
 	for _, placement in placements do
 		for _, spot in placement.spots do
 			local position = pivot.Position + Vector3.new(spot.x, FLOOR_TOP, spot.z)
-			if spotIsFree(chunk, position, placement.radius) then
+			if spotIsFree(chunk, chunkIndex, spot.x, spot.z, position, placement.radius) then
 				local base = CFrame.new(position) * CFrame.Angles(0, spot.yaw, 0)
 				if placement.kind == "Scene" and placement.sceneId then
-					buildScene(placement.sceneId, base, rng, chunkIndex)
+					buildScene(placement.sceneId, base, meshRng, chunkIndex)
 				elseif placement.kind == "Drop" then
-					buildDrop(base, rng, chunkIndex)
+					buildDrop(base, meshRng, chunkIndex)
 				end
 				break
 			end

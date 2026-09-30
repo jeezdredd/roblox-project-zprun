@@ -133,27 +133,45 @@ local function shoulderSpot(config: Config, rng: Rng, options: Options): Spot
 	return { x = x, z = z, yaw = facing + jitter }
 end
 
-local function laneSpot(config: Config, rng: Rng, options: Options, avoidZ: number?): Spot
-	local reach = options.halfWidth * config.DROP_LANE_FRACTION
-	local x = rng:NextNumber(-reach, reach)
-	local z = rng:NextNumber(-options.halfLength + config.END_CLEARANCE, options.halfLength - config.END_CLEARANCE)
-	if avoidZ and math.abs(z - avoidZ) < config.SCENE_DROP_GAP then
-		-- push it the other way along the road, inside the chunk
-		local shifted = avoidZ + (if z >= avoidZ then config.SCENE_DROP_GAP else -config.SCENE_DROP_GAP)
-		z = math.clamp(shifted, -options.halfLength + config.END_CLEARANCE, options.halfLength - config.END_CLEARANCE)
+-- tries at a lane spot clear of every scene candidate before the spot is given up
+local LANE_TRIES = 6
+
+local function clearOf(z: number, avoid: { number }, gap: number): boolean
+	for _, other in avoid do
+		if math.abs(z - other) < gap then
+			return false
+		end
 	end
-	return { x = x, z = z, yaw = rng:NextNumber(0, math.pi * 2) }
+	return true
+end
+
+-- A lane spot at least SCENE_DROP_GAP along the road from every z in `avoid` (all the
+-- scene's candidates, since the server may use any of them), or nil when none of the
+-- tries lands clear.
+local function laneSpot(config: Config, rng: Rng, options: Options, avoid: { number }): Spot?
+	local reach = options.halfWidth * config.DROP_LANE_FRACTION
+	local zMin = -options.halfLength + config.END_CLEARANCE
+	local zMax = options.halfLength - config.END_CLEARANCE
+	for _ = 1, LANE_TRIES do
+		local x = rng:NextNumber(-reach, reach)
+		local z = rng:NextNumber(zMin, zMax)
+		if clearOf(z, avoid, config.SCENE_DROP_GAP) then
+			return { x = x, z = z, yaw = rng:NextNumber(0, math.pi * 2) }
+		end
+	end
+	return nil
 end
 
 -- The placements for chunk `chunkIndex` of `biome`: at most one scene and one supply
--- drop, each with `CANDIDATES` spots. Nothing before START_CLEARANCE_CHUNKS.
+-- drop, the scene with `CANDIDATES` spots, the drop with up to that many (each clear
+-- of every scene candidate). Nothing before START_CLEARANCE_CHUNKS.
 function PickupPlanner.plan(config: Config, biome: string, chunkIndex: number, rng: Rng, options: Options): { Placement }
 	local placements: { Placement } = {}
 	if chunkIndex < config.START_CLEARANCE_CHUNKS then
 		return placements
 	end
 
-	local sceneZ: number? = nil
+	local sceneZs: { number } = {}
 	local density = config.density[biome] or 0
 	if density > 0 and rng:NextNumber(0, 1) < density then
 		local sceneId = PickupPlanner.chooseScene(config, biome, rng)
@@ -162,7 +180,9 @@ function PickupPlanner.plan(config: Config, biome: string, chunkIndex: number, r
 			for _ = 1, math.max(config.CANDIDATES, 1) do
 				table.insert(spots, shoulderSpot(config, rng, options))
 			end
-			sceneZ = spots[1].z
+			for _, spot in spots do
+				table.insert(sceneZs, spot.z)
+			end
 			table.insert(placements, { kind = "Scene", sceneId = sceneId, radius = config.scenes[sceneId].radius, spots = spots })
 		end
 	end
@@ -171,9 +191,14 @@ function PickupPlanner.plan(config: Config, biome: string, chunkIndex: number, r
 	if dropChance > 0 and rng:NextNumber(0, 1) < dropChance then
 		local spots: { Spot } = {}
 		for _ = 1, math.max(config.CANDIDATES, 1) do
-			table.insert(spots, laneSpot(config, rng, options, sceneZ))
+			local spot = laneSpot(config, rng, options, sceneZs)
+			if spot then
+				table.insert(spots, spot)
+			end
 		end
-		table.insert(placements, { kind = "Drop", sceneId = nil, radius = config.supplyDrop.radius, spots = spots })
+		if #spots > 0 then
+			table.insert(placements, { kind = "Drop", sceneId = nil, radius = config.supplyDrop.radius, spots = spots })
+		end
 	end
 
 	return placements

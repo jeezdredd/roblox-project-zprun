@@ -196,16 +196,18 @@ PickupScenesConfig.scenes = {
 		prompt = "S870 Shotgun",
 		biomes = { "Farmstead", "Cornfield", "Forest" },
 		weight = 3,
-		radius = 3.5,
-		weaponAt = { 0.55, 1.9, 0.35 },
+		-- the fence is centred on the scene origin: posts at x -2.75 and 2.75, the crate
+		-- past the near post, everything inside this radius
+		radius = 4.5,
+		weaponAt = { -2.2, 1.9, 0.35 },
 		weaponYaw = 8,
 		weaponPitch = -62,
 		parts = {
-			{ kind = "cylinder", name = "Post", size = { 4.6, 0.55, 0.55 }, at = { 0, 2.3, 0 }, roll = 90, color = WOOD, material = "Wood", collide = true },
-			{ kind = "cylinder", name = "PostFar", size = { 4.2, 0.5, 0.5 }, at = { 5.5, 2.1, 0 }, roll = 90, color = WOOD, material = "Wood", collide = true },
-			{ kind = "box", name = "RailTop", size = { 6.2, 0.22, 0.14 }, at = { 2.75, 3.4, 0 }, color = WOOD, material = "Wood" },
-			{ kind = "box", name = "RailLow", size = { 6.2, 0.22, 0.14 }, at = { 2.75, 1.7, 0 }, color = WOOD, material = "Wood" },
-			{ kind = "box", name = "Crate", size = { 1.6, 1.2, 1.6 }, at = { -1.6, 0.6, 0.6 }, yaw = 15, color = CRATE, material = "WoodPlanks" },
+			{ kind = "cylinder", name = "Post", size = { 4.6, 0.55, 0.55 }, at = { -2.75, 2.3, 0 }, roll = 90, color = WOOD, material = "Wood", collide = true },
+			{ kind = "cylinder", name = "PostFar", size = { 4.2, 0.5, 0.5 }, at = { 2.75, 2.1, 0 }, roll = 90, color = WOOD, material = "Wood", collide = true },
+			{ kind = "box", name = "RailTop", size = { 6.2, 0.22, 0.14 }, at = { 0, 3.4, 0 }, color = WOOD, material = "Wood" },
+			{ kind = "box", name = "RailLow", size = { 6.2, 0.22, 0.14 }, at = { 0, 1.7, 0 }, color = WOOD, material = "Wood" },
+			{ kind = "box", name = "Crate", size = { 1.6, 1.2, 1.6 }, at = { -3.6, 0.6, 0.9 }, yaw = 15, color = CRATE, material = "WoodPlanks" },
 		},
 	}),
 	-- A sidearm on the hood of an abandoned police car.

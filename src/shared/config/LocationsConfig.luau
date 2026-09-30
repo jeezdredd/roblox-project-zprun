@@ -70,9 +70,10 @@ LocationsConfig.locations = {
 		displayName = "Wasteland",
 		lengthChunksMin = 3,
 		lengthChunksMax = 5,
-		floorMaterial = Enum.Material.Ground,
-		floorColor = Color3.fromRGB(210, 200, 188),
-		floorTextureId = TexturesConfig.GROUND,
+		-- a dead highway: worn asphalt with faded lines (TFZ_RoadWorn) between dirt aprons
+		floorMaterial = Enum.Material.Asphalt,
+		floorColor = Color3.fromRGB(168, 158, 146),
+		floorTextureId = TexturesConfig.ASPHALT,
 		apronMaterial = Enum.Material.Ground,
 		apronColor = Color3.fromRGB(200, 190, 178),
 		apronTextureId = TexturesConfig.GROUND,

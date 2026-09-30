@@ -15,11 +15,16 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local DressingConfig = require(ReplicatedStorage.Shared.config.DressingConfig)
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
+local MaterialUtil = require(ReplicatedStorage.Shared.util.MaterialUtil)
 local WorldMeshes = require(script.Parent.WorldMeshes)
 local ChunkOccupancy = require(script.Parent.ChunkOccupancy)
 
 local WorldFlanks = {}
+
+-- material variants per biome (docs/world/environment.md, section 5.2)
+local MATERIALS = DressingConfig.materials
 
 local HALF = GameConstants.CHUNK_LENGTH / 2
 local EDGE = GameConstants.PLAYABLE_HALF_WIDTH + 4
@@ -108,7 +113,13 @@ local function facadeBuilding(sign: number, xNear: number, depth: number, z: num
 	local color = jitter(style[1], rng, 0.04)
 	local cx = sign * (xNear + depth / 2)
 	local cz = z + width / 2
-	part("Block", Vector3.new(depth, height, width), CFrame.new(cx, FLOOR + height / 2, cz), color, style[2], parent, detail)
+	local block = part("Block", Vector3.new(depth, height, width), CFrame.new(cx, FLOOR + height / 2, cz), color, style[2], parent, detail)
+	local facadeVariant = MATERIALS.City.facade
+	if facadeVariant and style[2] == Enum.Material.Brick and rng:NextNumber() < (MATERIALS.City.facadeShare or 0) then
+		-- peeling plaster over brick; the map carries the colour, so the tint goes neutral
+		block.Color = Color3.fromRGB(204, 194, 180)
+		MaterialUtil.apply(block, facadeVariant)
+	end
 
 	local faceX = sign * xNear - sign * 0.15
 	local roofColor = color:Lerp(Color3.new(), 0.45)
@@ -162,36 +173,46 @@ end
 
 -- A generated building mesh filling one street-wall slot. The mesh's street face is
 -- +Z; turning it by -sign * 90 degrees points that face at the corridor. Its width
--- (native x) is fitted to the slot, which sets the height.
-local function meshBuilding(sign: number, xNear: number, z: number, span: number, rng: Random, parent: Instance): boolean
+-- (native x) is fitted to the slot, which sets the height within the band's clamp.
+local function meshBuilding(sign: number, xNear: number, z: number, span: number, rng: Random, parent: Instance, minHeight: number, maxHeight: number, shadow: boolean): boolean
 	local name = WorldMeshes.pick("building", rng)
 	local native = name and WorldMeshes.nativeSize(name)
 	if not name or not native then
 		return false
 	end
-	local height = math.clamp(span * native.Y / native.X, 26, 60)
+	local height = math.clamp(span * native.Y / native.X, minHeight, maxHeight)
 	local depth = native.Z * height / native.Y
 	local base = CFrame.new(sign * (xNear + depth / 2), FLOOR, z + span / 2) * CFrame.Angles(0, -sign * math.rad(90), 0)
-	return WorldMeshes.place(name, base, height, parent, { shadow = true, sink = 0.2 }) ~= nil
+	return WorldMeshes.place(name, base, height, parent, { shadow = shadow, sink = 0.2 }) ~= nil
 end
 
 local function cityFlank(sign: number, rng: Random, parent: Instance)
 	-- sidewalk and kerb along the corridor edge
-	part("Sidewalk", Vector3.new(EDGE - GameConstants.PLAYABLE_HALF_WIDTH + 1, 0.4, GameConstants.CHUNK_LENGTH), CFrame.new(sign * (GameConstants.PLAYABLE_HALF_WIDTH + (EDGE - GameConstants.PLAYABLE_HALF_WIDTH + 1) / 2 - 0.5), FLOOR + 0.2, 0), Color3.fromRGB(150, 148, 142), Enum.Material.Concrete, parent)
-	part("Kerb", Vector3.new(0.6, 0.5, GameConstants.CHUNK_LENGTH), CFrame.new(sign * (GameConstants.PLAYABLE_HALF_WIDTH - 0.2), FLOOR + 0.25, 0), Color3.fromRGB(176, 174, 168), Enum.Material.Concrete, parent)
+	local sidewalk = part("Sidewalk", Vector3.new(EDGE - GameConstants.PLAYABLE_HALF_WIDTH + 1, 0.4, GameConstants.CHUNK_LENGTH), CFrame.new(sign * (GameConstants.PLAYABLE_HALF_WIDTH + (EDGE - GameConstants.PLAYABLE_HALF_WIDTH + 1) / 2 - 0.5), FLOOR + 0.2, 0), Color3.fromRGB(150, 148, 142), Enum.Material.Concrete, parent)
+	local kerb = part("Kerb", Vector3.new(0.6, 0.5, GameConstants.CHUNK_LENGTH), CFrame.new(sign * (GameConstants.PLAYABLE_HALF_WIDTH - 0.2), FLOOR + 0.25, 0), Color3.fromRGB(176, 174, 168), Enum.Material.Concrete, parent)
+	local sidewalkVariant = MATERIALS.City.sidewalk
+	if sidewalkVariant then
+		MaterialUtil.apply(sidewalk, sidewalkVariant)
+		MaterialUtil.apply(kerb, sidewalkVariant)
+	end
 
 	-- near block: continuous street wall behind the corridor-edge row
 	local near = EDGE + 22
 	fillZ(rng, 16, 30, { 0, 2 }, function(z, span)
-		if rng:NextNumber() < 0.85 and meshBuilding(sign, near, z, span, rng, parent) then
+		if rng:NextNumber() < 0.85 and meshBuilding(sign, near, z, span, rng, parent, 26, 60, true) then
 			return
 		end
 		facadeBuilding(sign, near, rng:NextNumber(18, 26), z, span, rng:NextNumber(28, 62), rng, parent, true)
 	end)
-	-- middle block: taller, cheaper
+	-- middle block: taller, no shadows; building meshes on most slots, facades on the
+	-- rest so the skyline keeps its variety
 	local mid = near + 34
 	fillZ(rng, 22, 40, { 0, 4 }, function(z, span)
-		facadeBuilding(sign, mid + rng:NextNumber(0, 10), rng:NextNumber(24, 34), z, span, rng:NextNumber(50, 110), rng, parent, false)
+		local setback = rng:NextNumber(0, 10)
+		if rng:NextNumber() < DressingConfig.CITY_MIDDLE_MESH_SHARE and meshBuilding(sign, mid + setback, z, span, rng, parent, 50, 110, false) then
+			return
+		end
+		facadeBuilding(sign, mid + setback, rng:NextNumber(24, 34), z, span, rng:NextNumber(50, 110), rng, parent, false)
 	end)
 	-- skyline silhouettes at the back
 	local back = mid + 50
@@ -209,8 +230,8 @@ local function yawAt(position: Vector3, rng: Random): CFrame
 	return CFrame.new(position) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0)
 end
 
-local function tree(position: Vector3, rng: Random, parent: Instance, shadow: boolean, group: string?)
-	if WorldMeshes.placeFrom(group or "tree_any", rng, yawAt(position, rng), rng:NextNumber(19, 30), parent, { shadow = shadow, sink = 0.4 }) then
+local function tree(position: Vector3, rng: Random, parent: Instance, shadow: boolean, group: string?, mesh: boolean?)
+	if mesh ~= false and WorldMeshes.placeFrom(group or "tree_any", rng, yawAt(position, rng), rng:NextNumber(19, 30), parent, { shadow = shadow, sink = 0.4 }) then
 		return
 	end
 	local conifer = rng:NextNumber() < 0.45
@@ -237,15 +258,20 @@ end
 
 local function forestFlank(sign: number, rng: Random, parent: Instance)
 	-- dark forest floor so the gaps between trunks are not bright grass
-	part("ForestFloor", Vector3.new(WORLD_EDGE - EDGE, 0.2, GameConstants.CHUNK_LENGTH), CFrame.new(sign * (EDGE + (WORLD_EDGE - EDGE) / 2), FLOOR + 0.1, 0), Color3.fromRGB(58, 62, 40), Enum.Material.Ground, parent)
-	-- near band: individual trees, jittered grid, shadows on
+	local floor = part("ForestFloor", Vector3.new(WORLD_EDGE - EDGE, 0.2, GameConstants.CHUNK_LENGTH), CFrame.new(sign * (EDGE + (WORLD_EDGE - EDGE) / 2), FLOOR + 0.1, 0), Color3.fromRGB(58, 62, 40), Enum.Material.Ground, parent)
+	local floorVariant = MATERIALS.Forest.forestFloor
+	if floorVariant then
+		MaterialUtil.apply(floor, floorVariant)
+	end
+	-- near band: individual trees, jittered grid, shadows on; mesh trees stop at the
+	-- triangle budget's line and the primitive tree carries on behind them
 	local x = EDGE + 3
 	while x < EDGE + 60 do
 		local z = -HALF + rng:NextNumber(0, 6)
 		while z < HALF do
 			local tx = sign * (x + rng:NextNumber(-3, 3))
 			if ChunkOccupancy.claim(tx, z, 3) then
-				tree(Vector3.new(tx, FLOOR, z), rng, parent, x < EDGE + 25)
+				tree(Vector3.new(tx, FLOOR, z), rng, parent, x < EDGE + 25, nil, x < DressingConfig.FOREST_MESH_TREE_MAX_X)
 			end
 			z += rng:NextNumber(14, 20)
 		end
@@ -281,20 +307,52 @@ end
 local SAND = Color3.fromRGB(172, 156, 130)
 local CONCRETE = Color3.fromRGB(124, 118, 108)
 
-local function ruinShell(sign: number, x: number, z: number, rng: Random, parent: Instance)
-	-- an L of broken walls with a jagged top, a gutted building seen from the road
+local function ruinPart(name: string, size: Vector3, cframe: CFrame, color: Color3, parent: Instance, shadow: boolean): Part
+	local p = part(name, size, cframe, color, Enum.Material.Concrete, parent, shadow)
+	local variant = MATERIALS.Wasteland.ruin
+	if variant then
+		MaterialUtil.apply(p, variant)
+	end
+	return p
+end
+
+-- A gutted building seen from the road. With a building mesh loaded it is that mesh
+-- sunk into the ground and leaning away from the road, two wall stubs and rubble at its
+-- street foot; otherwise an L of broken walls with a jagged top. Returns the depth the
+-- ruin takes outwards from x.
+local function ruinShell(sign: number, x: number, z: number, rng: Random, parent: Instance): number
 	local width = rng:NextNumber(18, 30)
 	local depth = rng:NextNumber(14, 22)
 	local color = jitter(CONCRETE, rng, 0.05)
+	local name = WorldMeshes.pick("building", rng)
+	local native = name and WorldMeshes.nativeSize(name)
 	local steps = rng:NextInteger(3, 5)
+	if name and native then
+		local height = rng:NextNumber(30, 46)
+		local sink = height * rng:NextNumber(0.35, 0.55)
+		local tilt = math.rad(rng:NextNumber(3, 8))
+		depth = native.Z * height / native.Y
+		-- the tilt is about the road axis, so the top leans outwards
+		local base = CFrame.new(sign * (x + 4 + depth / 2), FLOOR, z + width / 2) * CFrame.Angles(0, 0, -sign * tilt) * CFrame.Angles(0, -sign * math.rad(90), 0)
+		WorldMeshes.place(name, base, height, parent, { shadow = true, sink = sink })
+		steps = 2
+		local rubble = WorldMeshes.pick("rubble", rng)
+		if rubble then
+			WorldMeshes.placeNatural(rubble, yawAt(Vector3.new(sign * (x - 2), FLOOR, z + width * rng:NextNumber(0.2, 0.8)), rng), parent, { shadow = true, sink = 0.3 }, 1.2)
+		end
+		depth += 4
+	end
 	for i = 0, steps - 1 do
 		local h = rng:NextNumber(6, 22)
 		local seg = width / steps
-		part("RuinFront", Vector3.new(1.6, h, seg), CFrame.new(sign * x, FLOOR + h / 2, z + seg * (i + 0.5)), color, Enum.Material.Concrete, parent, true)
+		ruinPart("RuinFront", Vector3.new(1.6, h, seg), CFrame.new(sign * x, FLOOR + h / 2, z + seg * (i + 0.5)), color, parent, true)
 	end
-	local sideH = rng:NextNumber(8, 18)
-	part("RuinSide", Vector3.new(depth, sideH, 1.6), CFrame.new(sign * (x + depth / 2), FLOOR + sideH / 2, z), color, Enum.Material.Concrete, parent, true)
-	part("RuinSlab", Vector3.new(depth * 0.8, 1.2, width * 0.5), CFrame.new(sign * (x + depth / 2), FLOOR + 3, z + width * 0.4) * CFrame.Angles(0, 0, sign * 0.35), color:Lerp(Color3.new(), 0.2), Enum.Material.Concrete, parent)
+	if steps > 2 then
+		local sideH = rng:NextNumber(8, 18)
+		ruinPart("RuinSide", Vector3.new(depth, sideH, 1.6), CFrame.new(sign * (x + depth / 2), FLOOR + sideH / 2, z), color, parent, true)
+		ruinPart("RuinSlab", Vector3.new(depth * 0.8, 1.2, width * 0.5), CFrame.new(sign * (x + depth / 2), FLOOR + 3, z + width * 0.4) * CFrame.Angles(0, 0, sign * 0.35), color:Lerp(Color3.new(), 0.2), parent, false)
+	end
+	return depth
 end
 
 local function deadTree(position: Vector3, rng: Random, parent: Instance)
@@ -322,8 +380,8 @@ local function wastelandFlank(sign: number, rng: Random, parent: Instance)
 		end
 		if roll < 0.5 then
 			local x = EDGE + rng:NextNumber(10, 20)
-			ruinShell(sign, x, z, rng, parent)
-			ChunkOccupancy.reserveBox(sign * (x - 1), z - 1, sign * (x + 23), z + 31)
+			local depth = ruinShell(sign, x, z, rng, parent)
+			ChunkOccupancy.reserveBox(sign * (x - 4), z - 1, sign * (x + depth + 1), z + 31)
 		else
 			for _ = 1, rng:NextInteger(1, 3) do
 				local at = spot(2.5, 8, 32)
@@ -352,7 +410,11 @@ local function wastelandFlank(sign: number, rng: Random, parent: Instance)
 		local length = rng:NextNumber(30, 60)
 		local height = rng:NextNumber(4, 10)
 		local width = rng:NextNumber(18, 30)
-		wedge("Berm", Vector3.new(length, height, width), CFrame.new(sign * (EDGE + rng:NextNumber(40, 90)), FLOOR + height / 2, rng:NextNumber(-HALF, HALF)) * CFrame.Angles(0, if sign > 0 then math.rad(-90) else math.rad(90), 0), jitter(SAND, rng, 0.05), Enum.Material.Sand, parent)
+		local berm = wedge("Berm", Vector3.new(length, height, width), CFrame.new(sign * (EDGE + rng:NextNumber(40, 90)), FLOOR + height / 2, rng:NextNumber(-HALF, HALF)) * CFrame.Angles(0, if sign > 0 then math.rad(-90) else math.rad(90), 0), jitter(SAND, rng, 0.05), Enum.Material.Sand, parent)
+		local bermVariant = MATERIALS.Wasteland.berm
+		if bermVariant then
+			MaterialUtil.apply(berm, bermVariant)
+		end
 	end
 	-- back: mesas and a broken skyline
 	local back = EDGE + 110
@@ -404,7 +466,11 @@ local function barn(sign: number, x: number, z: number, w: number, d: number, rn
 	local red = jitter(Color3.fromRGB(122, 42, 34), rng, 0.05)
 	part("Barn", Vector3.new(d, h, w), CFrame.new(sign * (x + d / 2), FLOOR + h / 2, z), red, Enum.Material.WoodPlanks, parent, true)
 	for _, s in { -1, 1 } do
-		wedge("BarnRoof", Vector3.new(w + 1, h * 0.45, d / 2 + 0.5), CFrame.new(sign * (x + d / 2) + s * d / 4, FLOOR + h + h * 0.225, z) * CFrame.Angles(0, if s > 0 then math.rad(-90) else math.rad(90), 0), Color3.fromRGB(64, 60, 58), Enum.Material.CorrodedMetal, parent)
+		local roof = wedge("BarnRoof", Vector3.new(w + 1, h * 0.45, d / 2 + 0.5), CFrame.new(sign * (x + d / 2) + s * d / 4, FLOOR + h + h * 0.225, z) * CFrame.Angles(0, if s > 0 then math.rad(-90) else math.rad(90), 0), Color3.fromRGB(64, 60, 58), Enum.Material.CorrodedMetal, parent)
+		local roofVariant = MATERIALS.Farmstead.barnRoof
+		if roofVariant then
+			MaterialUtil.apply(roof, roofVariant)
+		end
 	end
 	part("BarnDoor", Vector3.new(0.3, h * 0.6, w * 0.3), CFrame.new(sign * x - sign * 0.2, FLOOR + h * 0.3, z), Color3.fromRGB(230, 222, 206), Enum.Material.WoodPlanks, parent)
 end

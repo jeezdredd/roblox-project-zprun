@@ -3,6 +3,7 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local DressingConfig = require(ReplicatedStorage.Shared.config.DressingConfig)
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local LocationsConfig = require(ReplicatedStorage.Shared.config.LocationsConfig)
 local TexturesConfig = require(ReplicatedStorage.Shared.config.TexturesConfig)
@@ -10,6 +11,9 @@ local MaterialUtil = require(ReplicatedStorage.Shared.util.MaterialUtil)
 local WorldFlanks = require(script.Parent.WorldFlanks)
 local WorldMeshes = require(script.Parent.WorldMeshes)
 local ChunkOccupancy = require(script.Parent.ChunkOccupancy)
+local ChunkBudgetCounter = require(script.Parent.Parent.world.ChunkBudgetCounter)
+local WorldDecals = require(script.Parent.Parent.world.WorldDecals)
+local WorldDressing = require(script.Parent.Parent.world.WorldDressing)
 
 export type Blend = {
 	next: LocationsConfig.LocationConfig,
@@ -218,8 +222,10 @@ local function buildTruck(position: Vector3, yaw: number, rng: Random, parent: I
 end
 
 local function buildCrash(position: Vector3, rng: Random, parent: Instance)
-	if not buildMeshCar("car_wreck", position + Vector3.new(-4.2, 0, -5.5), rng:NextNumber(0.3, 0.7), 12, rng, parent) then
-		buildCar(position + Vector3.new(-4.2, 0, -5.5), rng:NextNumber(0.3, 0.7), rng, parent)
+	local wreckAt = position + Vector3.new(-4.2, 0, -5.5)
+	local wreckYaw = rng:NextNumber(0.3, 0.7)
+	if not buildMeshCar("car_burned", wreckAt, wreckYaw, 12, rng, parent) and not buildMeshCar("car_wreck", wreckAt, wreckYaw, 12, rng, parent) then
+		buildCar(wreckAt, wreckYaw, rng, parent)
 	end
 	buildCar(position + Vector3.new(4.2, 0, 5.5), rng:NextNumber(-0.7, -0.3), rng, parent)
 	for _ = 1, 3 do
@@ -238,8 +244,20 @@ end
 
 local function buildDivider(position: Vector3, rng: Random, parent: Instance)
 	local segments = rng:NextInteger(2, 3)
+	local name = WorldMeshes.pick("barrier", rng)
+	local natural = name and WorldMeshes.naturalSize(name)
+	if name and natural then
+		-- the barrier's long side runs along the road, segments end to end
+		local yaw = if natural.Z >= natural.X then 0 else math.pi / 2
+		local length = math.max(natural.X, natural.Z) + 0.4
+		for i = 0, segments - 1 do
+			local at = CFrame.new(position.X, position.Y, position.Z + (i - (segments - 1) / 2) * length) * CFrame.Angles(0, yaw, 0)
+			WorldMeshes.placeNatural(name, at, parent, { collide = true, sink = 0.15 })
+		end
+		return
+	end
 	for i = 0, segments - 1 do
-		createPart(
+		local divider = createPart(
 			"Divider",
 			Vector3.new(2.2, 3, 10),
 			CFrame.new(position.X, position.Y + 2, position.Z + i * 11 - (segments - 1) * 5.5),
@@ -247,6 +265,31 @@ local function buildDivider(position: Vector3, rng: Random, parent: Instance)
 			Enum.Material.Concrete,
 			parent
 		)
+		MaterialUtil.apply(divider, "TFZ_ConcreteDirty")
+	end
+end
+
+-- Hedgehogs and a sandbag wall across a lane: the checkpoint blocker of the City and
+-- the Wasteland. Falls back to the divider when the props are not loaded.
+local function buildBlock(position: Vector3, rng: Random, parent: Instance)
+	local hedgehog = WorldMeshes.pick("hedgehog", rng)
+	local hedgehogSize = hedgehog and WorldMeshes.naturalSize(hedgehog)
+	if not hedgehog or not hedgehogSize then
+		buildDivider(position, rng, parent)
+		return
+	end
+	local sandbags = WorldMeshes.pick("sandbags", rng)
+	local sandbagSize = sandbags and WorldMeshes.naturalSize(sandbags)
+	local step = math.max(hedgehogSize.X, hedgehogSize.Z) + 1
+	for i = -1, 1 do
+		if i == 0 and sandbags and sandbagSize then
+			-- the wall's long side runs across the road
+			local yaw = if sandbagSize.X >= sandbagSize.Z then 0 else math.pi / 2
+			WorldMeshes.placeNatural(sandbags, CFrame.new(position) * CFrame.Angles(0, yaw, 0), parent, { collide = true, sink = 0.15 })
+		else
+			local at = CFrame.new(position.X + i * step, position.Y, position.Z + rng:NextNumber(-1, 1)) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0)
+			WorldMeshes.placeNatural(hedgehog, at, parent, { collide = true, sink = 0.15 })
+		end
 	end
 end
 
@@ -282,6 +325,10 @@ local function buildBoulder(position: Vector3, rng: Random, parent: Instance)
 end
 
 local function buildRubblePile(position: Vector3, rng: Random, parent: Instance)
+	local name = WorldMeshes.pick("rubble", rng)
+	if name and WorldMeshes.placeNatural(name, CFrame.new(position) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0), parent, { collide = true, sink = 0.3 }, rng:NextNumber(0.9, 1.3)) then
+		return
+	end
 	for _ = 1, rng:NextInteger(3, 4) do
 		createPart(
 			"Rubble",
@@ -516,8 +563,10 @@ local function buildObstacle(kind: string, position: Vector3, rng: Random, paren
 			buildBus(position, rng:NextNumber(-0.4, 0.4), rng, parent)
 		elseif roll < 0.6 then
 			buildTruck(position, rng:NextNumber(-0.4, 0.4), rng, parent)
-		elseif roll < 0.82 then
+		elseif roll < 0.78 then
 			buildCrash(position, rng, parent)
+		elseif roll < 0.9 then
+			buildBlock(position, rng, parent)
 		else
 			buildDivider(position, rng, parent)
 		end
@@ -529,8 +578,10 @@ local function buildObstacle(kind: string, position: Vector3, rng: Random, paren
 		end
 	else
 		local roll = rng:NextNumber()
-		if roll < 0.45 then
+		if roll < 0.35 then
 			buildRubblePile(position, rng, parent)
+		elseif roll < 0.5 then
+			buildBlock(position, rng, parent)
 		elseif roll < 0.72 then
 			buildBoulder(position, rng, parent)
 		else
@@ -588,6 +639,7 @@ local function buildStreetLamp(sign: number, position: Vector3, rng: Random, par
 		Enum.Material.Metal,
 		parent
 	)
+	MaterialUtil.apply(post, "TFZ_PaintPeelingMetal")
 	noShadow(createPart(
 		"LampArm",
 		Vector3.new(LAMP_ARM, 0.35, 0.35),
@@ -765,7 +817,8 @@ local function buildFenceRun(sign: number, zStart: number, length: number, rng: 
 	end
 	local z = zStart
 	while z <= zStart + length + 0.1 do
-		noShadow(createPart("FencePole", Vector3.new(0.5, height + 0.6, 0.5), CFrame.new(x, 0.5 + (height + 0.6) / 2, z), Color3.fromRGB(80, 82, 84), Enum.Material.Metal, parent))
+		local pole = noShadow(createPart("FencePole", Vector3.new(0.5, height + 0.6, 0.5), CFrame.new(x, 0.5 + (height + 0.6) / 2, z), Color3.fromRGB(80, 82, 84), Enum.Material.Metal, parent))
+		MaterialUtil.apply(pole, "TFZ_PaintPeelingMetal")
 		z += 8
 	end
 end
@@ -786,7 +839,8 @@ local function buildJerseyRow(sign: number, zStart: number, length: number, pare
 	local x = corridorEdgeX(sign) + sign * 1.2
 	local z = zStart
 	while z + 10 <= zStart + length + 0.1 do
-		createPart("Divider", Vector3.new(2.2, 3, 10), CFrame.new(x, 2.5, z + 5), Color3.fromRGB(168, 168, 170), Enum.Material.Concrete, parent)
+		local divider = createPart("Divider", Vector3.new(2.2, 3, 10), CFrame.new(x, 2.5, z + 5), Color3.fromRGB(168, 168, 170), Enum.Material.Concrete, parent)
+		MaterialUtil.apply(divider, "TFZ_ConcreteDirty")
 		z += 10.4
 	end
 end
@@ -804,70 +858,80 @@ local function buildRailFence(sign: number, zStart: number, length: number, rng:
 	end
 end
 
+-- Free run of the edge strip after each element, so the dressing clusters have room.
+local EDGE_GAP_MIN = 6
+local EDGE_GAP_MAX = 18
+
 local function buildCorridorEdge(kind: string, sign: number, rng: Random, parent: Instance)
+	if kind == "corn" then
+		-- the flank crop rows start right at the corridor edge
+		return
+	end
 	local edgeX = corridorEdgeX(sign)
 	local z = -chunkLength / 2 + rng:NextNumber(0, 4)
 	while z < chunkLength / 2 - 4 do
 		local roll = rng:NextNumber()
 		local remaining = chunkLength / 2 - z
+		-- the z the element takes, its full extent plus its own gap
+		local used: number
 		if kind == "buildings" then
 			-- the street wall lives in WorldFlanks; this row is the kerb-side clutter in
 			-- front of it
 			if roll < 0.12 then
 				local count = 2
 				buildCarRow(sign, z, count, rng, parent)
-				z += count * 13.5 + 2
+				used = count * 13.5 + 2
 			elseif roll < 0.52 then
 				local length = math.min(rng:NextNumber(12, 24), remaining)
 				buildFenceRun(sign, z, length, rng, parent)
-				z += length + 1
+				used = length + 1
 			elseif roll < 0.66 then
 				local count = rng:NextInteger(2, 3)
 				buildCarRow(sign, z, count, rng, parent)
-				z += count * 13.5 + 2
+				used = count * 13.5 + 2
 			elseif roll < 0.74 then
 				buildPoliceCar(Vector3.new(edgeX + sign * 4.6, 0.5, z + 7), rng:NextNumber(-0.35, 0.35), rng, parent)
-				z += 15
+				used = 15
 			elseif roll < 0.86 then
 				buildRubblePile(Vector3.new(edgeX + sign * 4, 0.5, z + 5), rng, parent)
-				z += 10
+				used = 10
 			else
 				local length = math.min(rng:NextNumber(12, 21), remaining)
 				buildJerseyRow(sign, z, length, parent)
-				z += length + 1
+				used = length + 1
 			end
 		elseif kind == "trees" then
 			buildTree(Vector3.new(edgeX + sign * rng:NextNumber(1, 6), 0.5, z), rng, parent)
 			if rng:NextNumber() < 0.25 then
 				buildBoulder(Vector3.new(edgeX + sign * rng:NextNumber(-2, 2), 0.5, z + rng:NextNumber(2, 5)), rng, parent)
 			end
-			z += rng:NextNumber(8, 12)
+			used = rng:NextNumber(8, 12)
 		elseif kind == "farm" then
 			local length = math.min(rng:NextNumber(24, 48), remaining)
 			buildRailFence(sign, z, length, rng, parent)
 			if rng:NextNumber() < 0.5 then
 				buildTree(Vector3.new(edgeX + sign * rng:NextNumber(4, 10), 0.5, z + rng:NextNumber(4, length - 4)), rng, parent)
 			end
-			z += length + rng:NextNumber(2, 6)
-		elseif kind == "corn" then
-			-- the flank crop rows start right at the corridor edge
-			return
+			used = length + rng:NextNumber(2, 6)
 		else
-			-- steps are the prop's full z extent plus a gap, so neighbours never overlap
 			if roll < 0.4 then
 				buildRuin(Vector3.new(edgeX + sign * 3, 0.5, z + 8), 0, rng, parent)
-				z += 17
+				used = 17
 			elseif roll < 0.65 then
 				buildRubblePile(Vector3.new(edgeX + sign * 4, 0.5, z + 5), rng, parent)
-				z += 12
+				used = 12
 			elseif roll < 0.82 then
 				buildCrash(Vector3.new(edgeX + sign * 6, 0.5, z + 13), rng, parent)
-				z += 28
+				used = 28
 			else
 				buildBoulder(Vector3.new(edgeX + sign * 4, 0.5, z + 6), rng, parent)
-				z += 14
+				used = 14
 			end
 		end
+		-- the element's footprint is recorded so lane debris, flank props and the
+		-- dressing clusters keep out of it; the gap after it is theirs
+		ChunkOccupancy.reserveBox(edgeX - sign * 1, z, edgeX + sign * 8, z + used)
+		z += used + rng:NextNumber(EDGE_GAP_MIN, EDGE_GAP_MAX)
 	end
 end
 
@@ -889,11 +953,10 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	model.Name = "Chunk_" .. location.id
 
 	local floor = createPart("Floor", Vector3.new(laneWidth, 1, chunkLength), CFrame.new(), floorColor, floorMaterial, model)
-	local pbrName = if floorMaterial == Enum.Material.Asphalt
-		then "TFZ_Asphalt"
-		elseif floorMaterial == Enum.Material.Concrete then "TFZ_Concrete"
-		else nil
-	if not (pbrName and MaterialUtil.apply(floor, pbrName)) then
+	-- the biome's material variants (docs/world/environment.md, section 5.2); the flat
+	-- texture tiles stay as the fallback when a variant has not shipped
+	local materials = DressingConfig.materials[effective.id]
+	if not (materials and MaterialUtil.apply(floor, materials.floor)) then
 		applyTexture(floor, Enum.NormalId.Top, floorTextureId, 8)
 	end
 
@@ -942,7 +1005,9 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 			apronMaterial,
 			model
 		)
-		applyTexture(apron, Enum.NormalId.Top, apronTextureId, 7)
+		if not (materials and MaterialUtil.apply(apron, materials.apron)) then
+			applyTexture(apron, Enum.NormalId.Top, apronTextureId, 7)
+		end
 	end
 
 	if effective.roadMarkings and not isField then
@@ -968,9 +1033,6 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 
 	for _, sign in { -1, 1 } do
 		buildCorridorEdge(effective.edgeProps, sign, rng, model)
-		-- the edge row owns an 8-stud strip; flank props and lane debris keep out of it
-		local edgeX = corridorEdgeX(sign)
-		ChunkOccupancy.reserveBox(edgeX - sign * 1, -chunkLength / 2, edgeX + sign * 8, chunkLength / 2)
 
 		if effective.edgeProps == "buildings" then
 			local debrisZ = -chunkLength / 2 + rng:NextNumber(8, 22)
@@ -1102,7 +1164,12 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 		end
 	end
 
+	-- the props and marks go last, into whatever ground the obstacles and flanks left
+	WorldDressing.dress(effective.id, rng, chunkLength / 2, model)
+	WorldDecals.dress(effective.id, rng, floor, GameConstants.PLAYABLE_HALF_WIDTH, chunkLength / 2, model)
+
 	model.PrimaryPart = floor
+	ChunkBudgetCounter.report(model, effective.id)
 	return model
 end
 

@@ -3,7 +3,8 @@
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
+
+local LightingDirector = require(script.Parent.LightingDirector)
 
 local PostFx = {}
 
@@ -76,12 +77,10 @@ local function step(deltaTime: number)
 	damageEffect.Saturation = -(lowness * 0.35 * (0.6 + pulse * 0.4)) - deathFade * 0.65
 	damageEffect.TintColor = Color3.fromRGB(255, 255 - math.floor(damagePulse * 90), 255 - math.floor(damagePulse * 90))
 	damageEffect.Brightness = -damagePulse * 0.06
-	local biome = Workspace:GetAttribute("Biome")
-	-- MissionService writes NightMission, never Night, so this read was always nil and
-	-- the forest kept its daylight bloom through every night run.
-	local sunInFrame = biome == "Forest" and Workspace:GetAttribute("NightMission") ~= true
-	bloom.Intensity = (if sunInFrame then 0.62 else 0.34) + deathFade * 1.6 + damagePulse * 0.5
-	bloom.Threshold = if sunInFrame then 1 else 1.25
+	-- the biome and night presets carry their own bloom (LightingConfig)
+	local preset = LightingDirector.getCurrent()
+	bloom.Intensity = preset.bloomIntensity + deathFade * 1.6 + damagePulse * 0.5
+	bloom.Threshold = preset.bloomThreshold
 
 	vignette.BackgroundTransparency = 1 - math.clamp(damagePulse * 0.7 + lowness * 0.3 * (0.5 + pulse * 0.5), 0, 0.85)
 end

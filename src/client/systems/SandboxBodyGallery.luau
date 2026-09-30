@@ -285,7 +285,11 @@ local function step(deltaTime: number)
 	local camera = Workspace.CurrentCamera
 	local eye = if camera then camera.CFrame.Position else Vector3.zero
 	local updated = 0
-	for _, station in stations do
+	local count = #stations
+	-- start the round at a different station each frame: with every station in full
+	-- cadence the per-frame cap would otherwise starve the same last rows every frame
+	for offset = 1, count do
+		local station = stations[(frame + offset) % count + 1]
 		station.pending += deltaTime
 		local pivot = station.model:GetPivot().Position
 		local cadence, ikOn = BodyMath.lodBand((pivot - eye).Magnitude, bands)

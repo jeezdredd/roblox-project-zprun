@@ -10,7 +10,7 @@ Related: [[Gameplay Systems]], [[Roadmap]], [[Decisions]], [[Architecture]].
 
 | # | Item | Status | Notes |
 | --- | --- | --- | --- |
-| 1 | Fork between two existing biomes | playtest | Built 2026-09-28, uncommitted. Vote verified in Studio both ways (left runner picked the left option, right runner the right). Sign and HUD screenshot-checked. See "Step 1 implementation" |
+| 1 | Fork between two existing biomes | playtest | Built 2026-09-28 (da0ea7e). Vote verified in Studio both ways (left runner picked the left option, right runner the right). Sign and HUD screenshot-checked. See "Step 1 implementation" |
 | 2 | Branch rule fields in `LocationConfig` | not started | See "Branch rules" below |
 | 3 | Flashlight driven by "night OR branch requires it" | not started | Today `FlashlightController` reads only `NightMission` |
 | 4 | Sewer branch | not started | Needs a narrow `laneStyle` and tunnel props |

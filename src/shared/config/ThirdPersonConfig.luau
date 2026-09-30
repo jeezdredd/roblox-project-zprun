@@ -102,6 +102,12 @@ ThirdPersonConfig.IK = {
 	deathFade = 0.15,
 	-- IK weight while the draw starts (the gun is still coming up)
 	equipWeight = 0.3,
+	-- share of the straight arm's length a hand target is kept within (the elbow keeps a
+	-- little bend), how far the gun may come back along its axis for the right hand, and
+	-- the gap the support hand keeps ahead of the right one when it slides back
+	reachMargin = 0.95,
+	maxGunSlide = 1,
+	handGap = 0.3,
 }
 
 ThirdPersonConfig.GESTURES = {
@@ -123,13 +129,17 @@ local function class(spec: ClassSpec): ClassSpec
 	return spec
 end
 
--- Starting values, tuned in the yard's body gallery (test plan items 1 and 2). The
--- WorldWeapon geometry: grip 0.7 tall at the origin, receiver 0.56 above it running
--- along z (2.1 long on long guns, 0.9 on the pistol), barrel beyond, magazine hanging
--- 0.2 above the grip line under the receiver's middle, handguard around z -2.2.
+-- Tuned in the yard's body gallery against the default R15 body (arms about 1.8 studs
+-- from the shoulder joint, chest 2 wide). The WorldWeapon geometry (WorldWeaponModel
+-- LENGTHS): grip 0.7 tall at the origin with the right hand 0.3 behind it, receiver 0.56
+-- above it running along z (1.6 long on the rifle and the shotgun, 1.2 on the SMG, 0.9
+-- on the pistol), barrel beyond, magazine under the receiver's middle, handguard just
+-- past the receiver, stock from 0.24 behind the grip. The holds keep the gun in front of
+-- the chest's middle, where the left arm can still reach along it; a support socket past
+-- the reach slides back along the gun (BodyRig), so a longer-armed avatar reaches further.
 ThirdPersonConfig.classes = {
 	Pistol = class({
-		hold = CFrame.new(0.3, 0.45, -1.15) * CFrame.Angles(0, math.rad(-3), 0),
+		hold = CFrame.new(0.15, 0.45, -1.35),
 		support = Vector3.new(-0.16, -0.32, 0.14),
 		supportRoll = -40,
 		magazine = Vector3.new(0, -0.55, -0.05),
@@ -147,10 +157,10 @@ ThirdPersonConfig.classes = {
 		pumpTime = 0,
 	}),
 	SMG = class({
-		hold = CFrame.new(0.3, 0.3, -0.95) * CFrame.Angles(0, math.rad(-4), 0),
-		support = Vector3.new(0, 0.3, -1.25),
+		hold = CFrame.new(0.1, 0.35, -1.1),
+		support = Vector3.new(0, 0.25, -0.8),
 		supportRoll = -25,
-		magazine = Vector3.new(0, -0.2, -0.95),
+		magazine = Vector3.new(0, -0.2, -0.5),
 		charge = Vector3.new(0, 0.85, 0.15),
 		port = nil,
 		pump = nil,
@@ -165,10 +175,10 @@ ThirdPersonConfig.classes = {
 		pumpTime = 0,
 	}),
 	Rifle = class({
-		hold = CFrame.new(0.32, 0.25, -0.9) * CFrame.Angles(0, math.rad(-6), 0),
-		support = Vector3.new(0, 0.3, -1.95),
+		hold = CFrame.new(0, 0.35, -0.95),
+		support = Vector3.new(0, 0.3, -1.45),
 		supportRoll = -25,
-		magazine = Vector3.new(0, -0.2, -0.95),
+		magazine = Vector3.new(0, -0.2, -0.7),
 		charge = Vector3.new(0.3, 0.75, 0.35),
 		port = nil,
 		pump = nil,
@@ -183,13 +193,13 @@ ThirdPersonConfig.classes = {
 		pumpTime = 0,
 	}),
 	Shotgun = class({
-		hold = CFrame.new(0.32, 0.25, -0.9) * CFrame.Angles(0, math.rad(-6), 0),
-		support = Vector3.new(0, 0.3, -1.95),
+		hold = CFrame.new(0, 0.35, -0.95),
+		support = Vector3.new(0, 0.3, -1.55),
 		supportRoll = -25,
-		magazine = Vector3.new(0, 0.05, -0.6),
+		magazine = Vector3.new(0, 0.05, -0.5),
 		charge = nil,
-		port = Vector3.new(0, 0.05, -0.6),
-		pump = Vector3.new(0, 0.3, -1.95),
+		port = Vector3.new(0, 0.05, -0.5),
+		pump = Vector3.new(0, 0.3, -1.55),
 		chargeStyle = "bolt",
 		chargePull = 0,
 		pumpTravel = 0.5,

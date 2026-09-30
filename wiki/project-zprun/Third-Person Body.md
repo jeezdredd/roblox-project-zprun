@@ -6,7 +6,7 @@ locomotion that already runs. Built on its own branch on 2026-09-29 and brought 
 2026-09-30; the full design, research and Studio test plan are in
 `docs/animation/third-person-body.md`.
 
-## Status (2026-09-30): on, holds being tuned
+## Status (2026-09-30): on
 
 `ThirdPersonConfig.ENABLED` is true. What it took, in the order the yard showed it:
 
@@ -32,10 +32,17 @@ locomotion that already runs. Built on its own branch on 2026-09-29 and brought 
   head and the gun are now aimed from the root's upright frame, worked out down the
   joint chain for the frame's pose (see the layer stack): measured in the gallery, a
   running mannequin's chest leans 15 degrees, its head and gun are level.
-- **Hold numbers.** The per-class holds were set before the gun model's hand offset was
-  counted: the right hand sits 0.92 behind the grip part, so the rifle's right hand
-  lands at the chest and the handguard is 2.8 studs ahead of it, out of the arm's reach
-  (1.8 studs from the shoulder). Being retuned in the gallery next.
+- **The gun was not in the hands.** `WorldWeaponModel.HAND_OFFSET` put the grip part 0.9
+  studs past the right hand, so with the hands on the IK targets the right hand held the
+  underside of the stock and the grip floated ahead of it, and the rifle's handguard
+  ended 2.8 studs ahead of the chest while the default R15 arm reaches 1.8 from the
+  shoulder joint. The grip now sits in the fist (0.3 past the hand), the long guns are
+  shorter (`WorldWeaponModel` `LENGTHS`: the old rifle was 83 % of the avatar's height),
+  the holds keep the gun in front of the chest's middle, and a hand target past its
+  arm's reach slides back along the gun (the gun itself for the right hand, the support
+  socket for the left, never closer than 0.3 to the right hand), so both hands land on
+  the gun on any avatar. Measured on the default R15: every station within 0.07 studs of
+  its targets.
 - The station stood among the props at real size; it moved to `SandboxOrigin + (80, 0,
   -300)`, clear ground.
 
@@ -79,7 +86,10 @@ frames where `Animator.EvaluationThrottled` says the pose was reused:
    GripSocket` and on `LeftUpperArm -> LeftHand` to the gesture pose, both targets
    attachments on the `UpperTorso`. The welded `WorldWeapon` follows the right hand.
    Weights fade out when the character dies, drops the weapon or is beyond the IK
-   range, and `Enabled` goes false at zero.
+   range, and `Enabled` goes false at zero. Before the targets are written both are
+   brought inside their arm's reach (95 % of the straight arm, read from the joints each
+   update): the gun slides back along its axis for the right hand (at most 1 stud), the
+   support target slides back along the gun for the left.
 
 ## What reaches other clients, and how
 
@@ -95,10 +105,14 @@ frames where `Animator.EvaluationThrottled` says the pose was reused:
 
 | Class | Hold (grip in torso space) | Support hand | Chambering | Recoil scale (kick, snap) |
 | --- | --- | --- | --- | --- |
-| Pistol | (0.3, 0.45, -1.15) | cupping the grip | slide: the weapon itself pulls back 0.12 | 0.6, 1.2 |
-| SMG | (0.3, 0.3, -0.95) | receiver front | top bolt, 0.3 back | 0.8, 0.9 |
-| Rifle | (0.32, 0.25, -0.9) | handguard | charging handle, right rear, 0.35 back | 1.0, 1.0 |
-| Shotgun | (0.32, 0.25, -0.9) | pump | port under the receiver per shell; the pump travels 0.5 after a shot and after an empty reload | 1.3, 1.5 |
+| Pistol | (0.15, 0.45, -1.35) | cupping the grip | slide: the weapon itself pulls back 0.12 | 0.6, 1.2 |
+| SMG | (0.1, 0.35, -1.1) | receiver front, (0, 0.25, -0.8) | top bolt, 0.3 back | 0.8, 0.9 |
+| Rifle | (0, 0.35, -0.95) | handguard rear, (0, 0.3, -1.45); on the default R15 it lands on the receiver | charging handle, right rear, 0.35 back | 1.0, 1.0 |
+| Shotgun | (0, 0.35, -0.95) | pump, (0, 0.3, -1.55) | port under the receiver per shell; the pump travels 0.5 after a shot and after an empty reload | 1.3, 1.5 |
+
+The gun model (`WorldWeaponModel`): grip part in the fist, 0.3 past the right hand;
+receiver 1.6 long on the rifle and the shotgun, 1.2 on the SMG, 0.9 on the pistol;
+barrel 1.1, 1.3, 0.5 and 0.4; stock 0.6, 0.65 and 0.5 (none on the pistol).
 
 Reload keyframes come from `WeaponsConfig` (`magazineReload`, `shellReload`) so the
 gesture seats the magazine at the same instant the server counts the rounds.
@@ -139,9 +153,8 @@ allocated per frame. Aim traffic with a full squad is under 1.5 KB/s per client.
 
 ## Open
 
-- Retune the holds and sockets against the gun model's hand offset (the rifle's right
-  hand sits at the chest, the handguard is out of reach), then run the rest of the test
-  plan.
+- Run the rest of the test plan: the reload, pump, sprint and equip stations, and V on
+  the local character (`FootPlanting`'s foot IK is on it in the yard).
 - `AnimationConstraint` rigs are not supported: the place keeps the joint upgrade off.
 - A `Pole` per elbow is not set; add one if an elbow bends the wrong way in the yard.
 - Strafe clips are still id 0, so the gallery's strafe station shows the run clip with

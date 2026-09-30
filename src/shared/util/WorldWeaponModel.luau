@@ -16,9 +16,23 @@ local WorldWeaponModel = {}
 
 WorldWeaponModel.NAME = "WorldWeapon"
 WorldWeaponModel.CLASS_ATTRIBUTE = "WeaponClass"
--- the grip part relative to the right hand: the hand's -z points down and its +y
--- forward once the arm is raised, so the barrel ends up along the aim
-WorldWeaponModel.HAND_OFFSET = CFrame.new(0, -0.9, -0.2) * CFrame.Angles(math.rad(-80), 0, 0)
+-- the grip part relative to the right hand: in the fist, just past the hand's end along
+-- its -y (the fingers' way), the barrel along the forearm. It sat 0.9 studs out before
+-- (2026-09-30), which left the hand under the stock and the grip floating ahead of it
+-- once the body layer put the hands on the gun.
+WorldWeaponModel.HAND_OFFSET = CFrame.new(0, -0.3, -0.1) * CFrame.Angles(math.rad(-80), 0, 0)
+
+-- Lengths along the barrel in studs: receiver, barrel, stock (0 for none). Sized to the
+-- default R15 body, whose arms reach about 1.8 studs from the shoulder joint across a
+-- chest 2 studs wide: the first rifle (receiver 2.1, stock 0.9) put its handguard 2.8
+-- studs ahead of the chest and its stock through it.
+type Lengths = { receiver: number, barrel: number, stock: number }
+local LENGTHS: { [string]: Lengths } = {
+	Pistol = { receiver = 0.9, barrel = 0.4, stock = 0 },
+	SMG = { receiver = 1.2, barrel = 0.5, stock = 0.5 },
+	Rifle = { receiver = 1.6, barrel = 1.1, stock = 0.6 },
+	Shotgun = { receiver = 1.6, barrel = 1.3, stock = 0.65 },
+}
 
 local COLOR_METAL = Color3.fromRGB(46, 48, 52)
 local COLOR_GRIP = Color3.fromRGB(52, 44, 36)
@@ -104,8 +118,9 @@ function WorldWeaponModel.build(character: Model, config: WeaponsConfig.WeaponCo
 
 	local isPistol = config.class == "Pistol"
 	local isShotgun = config.class == "Shotgun"
-	local bodyLength = if isPistol then 0.9 else 2.1
-	local barrelLength = if isPistol then 0.4 else 1.3
+	local lengths = LENGTHS[config.class] or LENGTHS.Rifle
+	local bodyLength = lengths.receiver
+	local barrelLength = lengths.barrel
 
 	local grip = makePart("Grip", Vector3.new(0.3, 0.7, 0.34), COLOR_GRIP, Enum.Material.SmoothPlastic, model)
 	local handOffset = WorldWeaponModel.HAND_OFFSET
@@ -120,8 +135,11 @@ function WorldWeaponModel.build(character: Model, config: WeaponsConfig.WeaponCo
 	if not isPistol then
 		local furnitureColor = if isShotgun then COLOR_WOOD else COLOR_GRIP
 		local furnitureMaterial = if isShotgun then Enum.Material.WoodPlanks else Enum.Material.SmoothPlastic
-		local stock = makePart("Stock", Vector3.new(0.24, 0.38, 0.9), furnitureColor, furnitureMaterial, model)
-		weldTo(hand, stock, handOffset * CFrame.new(0, 0.5, 0.72))
+		if lengths.stock > 0 then
+			-- from the receiver's back end (0.24 behind the grip) rearwards
+			local stock = makePart("Stock", Vector3.new(0.24, 0.38, lengths.stock), furnitureColor, furnitureMaterial, model)
+			weldTo(hand, stock, handOffset * CFrame.new(0, 0.5, 0.24 + lengths.stock / 2))
+		end
 		local handguard = makePart("Handguard", Vector3.new(0.28, 0.32, barrelLength * 0.6), furnitureColor, furnitureMaterial, model)
 		weldTo(hand, handguard, handOffset * CFrame.new(0, 0.52, -bodyLength - 0.1))
 	end

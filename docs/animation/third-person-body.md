@@ -10,7 +10,7 @@ Studio test plan the owner runs in the yard.
 References for the look: Call of Duty: Modern Warfare (2019) and later, Battlefield, Hunt:
 Showdown; on Roblox, Blackhawk Rescue Mission 5 and Frontlines.
 
-**Status 2026-09-30: on** (`ThirdPersonConfig.ENABLED = true`), holds being tuned. The
+**Status 2026-09-30: on** (`ThirdPersonConfig.ENABLED = true`). The
 place keeps `StarterPlayer.AvatarJointUpgrade = Disabled` so characters have the
 `Motor6D`s this design writes; the aim is now taken from the root's upright frame
 instead of the torso (the run clip leans the chest about 37 degrees), which replaces the
@@ -303,6 +303,11 @@ rebuilds the weapon. The rig reads `AmmoMag == 0` at reload start for the empty 
 and `min(magSize - AmmoMag, AmmoReserve)` for the shell count.
 
 ### 3.4 Per-class parameters
+
+The values below are the first design. The tuned holds, sockets and gun lengths
+(2026-09-30, after the gun was found 0.9 studs past the hand and the handguard out of the
+arm's reach) are in `ThirdPersonConfig`, `WorldWeaponModel` and the vault page's Per class
+table.
 
 Studs, degrees, seconds. The hold frame is the grip socket's CFrame in `UpperTorso`
 space at aim pitch 0 (position, then pitch / yaw / roll); the support socket is where the

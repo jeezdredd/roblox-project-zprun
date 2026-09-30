@@ -30,6 +30,13 @@ type Joint = {
 	base: CFrame,
 }
 
+-- an arm's three joints, read each update for the reach (an avatar rescale moves them)
+type Arm = {
+	shoulder: Motor6D,
+	elbow: Motor6D,
+	wrist: Motor6D,
+}
+
 type Sockets = {
 	grip: CFrame,
 	support: CFrame,
@@ -52,6 +59,8 @@ type Fields = {
 	leftControl: IKControl,
 	rightTarget: Attachment,
 	leftTarget: Attachment,
+	rightArm: Arm?,
+	leftArm: Arm?,
 	weapon: Model?,
 	class: ThirdPersonConfig.ClassSpec?,
 	config: WeaponsConfig.WeaponConfig?,
@@ -106,6 +115,42 @@ local function findMotor(part: Instance?, name: string): Joint?
 		return nil
 	end
 	return { motor = motor, written = motor.Transform, base = motor.Transform }
+end
+
+local function findArm(character: Model, side: string): Arm?
+	local upper = character:FindFirstChild(side .. "UpperArm")
+	local lower = character:FindFirstChild(side .. "LowerArm")
+	local hand = character:FindFirstChild(side .. "Hand")
+	local shoulder = if upper then upper:FindFirstChild(side .. "Shoulder") else nil
+	local elbow = if lower then lower:FindFirstChild(side .. "Elbow") else nil
+	local wrist = if hand then hand:FindFirstChild(side .. "Wrist") else nil
+	if shoulder and shoulder:IsA("Motor6D") and elbow and elbow:IsA("Motor6D") and wrist and wrist:IsA("Motor6D") then
+		return { shoulder = shoulder, elbow = elbow, wrist = wrist }
+	end
+	return nil
+end
+
+-- The shoulder joint in torso space and how far the hand's centre gets from it with the
+-- arm straight.
+local function armReach(arm: Arm): (Vector3, number)
+	local upper = (arm.elbow.C0.Position - arm.shoulder.C1.Position).Magnitude
+	local lower = (arm.wrist.C0.Position - arm.elbow.C1.Position).Magnitude
+	return arm.shoulder.C0.Position, upper + lower + arm.wrist.C1.Position.Magnitude
+end
+
+-- The smallest slide along `back` (a unit vector) that brings `point` within `reach` of
+-- `origin`, at most `limit`: 0 when the point is already in reach, or when sliding back
+-- does not bring it closer.
+local function slideIntoReach(point: Vector3, origin: Vector3, reach: number, back: Vector3, limit: number): number
+	local offset = point - origin
+	local excess = offset:Dot(offset) - reach * reach
+	if excess <= 0 or limit <= 0 then
+		return 0
+	end
+	local along = offset:Dot(back)
+	local discriminant = along * along - excess
+	local slide = if discriminant >= 0 then -along - math.sqrt(discriminant) else -along
+	return math.clamp(slide, 0, limit)
 end
 
 local function makeTarget(name: string, parent: Instance): Attachment
@@ -166,6 +211,8 @@ function BodyRig.new(character: Model): BodyRig?
 		leftControl = makeControl("BodyLeftArmIk", humanoid, leftUpperArm, leftHand, leftTarget, 1),
 		rightTarget = rightTarget,
 		leftTarget = leftTarget,
+		rightArm = findArm(character, "Right"),
+		leftArm = findArm(character, "Left"),
 		weapon = nil,
 		class = nil,
 		config = nil,
@@ -520,8 +567,33 @@ function BodyRig.update(self: BodyRig, deltaTime: number)
 		end
 	end
 
-	self.rightTarget.CFrame = weaponFrame * sockets.grip
-	self.leftTarget.CFrame = supportTarget(self, weaponFrame, sockets, class)
+	-- Both hands inside the arms' reach, whatever the avatar's proportions: a grip past
+	-- the right arm's reach brings the whole gun back along its axis, and a support socket
+	-- past the left arm's slides back along the gun (no closer than a hand's width to the
+	-- right hand), so the left hand lands on the receiver instead of stopping short of the
+	-- handguard in the air.
+	local back = weaponFrame.ZVector
+	local rightArm = self.rightArm
+	if rightArm then
+		local shoulder, reach = armReach(rightArm)
+		local slide = slideIntoReach((weaponFrame * sockets.grip).Position, shoulder, reach * IK.reachMargin, back, IK.maxGunSlide)
+		if slide > 0 then
+			weaponFrame = weaponFrame + back * slide
+		end
+	end
+	local grip = weaponFrame * sockets.grip
+	local support = supportTarget(self, weaponFrame, sockets, class)
+	local leftArm = self.leftArm
+	if leftArm then
+		local shoulder, reach = armReach(leftArm)
+		local limit = -(support.Position - grip.Position):Dot(back) - IK.handGap
+		local slide = slideIntoReach(support.Position, shoulder, reach * IK.reachMargin, back, limit)
+		if slide > 0 then
+			support = support + back * slide
+		end
+	end
+	self.rightTarget.CFrame = grip
+	self.leftTarget.CFrame = support
 end
 
 -- Whether the rig can still be used (the character is in the world).

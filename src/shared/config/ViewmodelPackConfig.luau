@@ -56,6 +56,10 @@ export type ClassPack = {
 	-- the whole rig, every clip alike. Tuned in Studio with the camera attribute
 	-- ViewmodelHold (PackViewmodel.step).
 	hold: Vector3?,
+	-- The same offset while a reload, a draw or an inspect plays (nil keeps `hold`): a
+	-- hold that brings an idle gun closer can push those clips, which already bring the
+	-- gun in, into the camera. The rig blends between the two over about 0.1 s.
+	actionHold: Vector3?,
 	-- Rotation of the rig's rest (bind) pose relative to the upright clip pose, when
 	-- Roblox built the bones turned (the Uzi's bind A-pose comes in turned -90 degrees
 	-- about X). Only the weapon anchors read it; the clips always pose the rig upright.
@@ -114,6 +118,8 @@ ViewmodelPackConfig.classes = {
 		-- the pack holds the pistol at arm's length in the middle of the view (hands 32 cm
 		-- out, the gun 55-65 cm): 12 cm closer and a little right and up, near MW's hip
 		hold = Vector3.new(0.03, 0.05, 0.14),
+		-- the reload rolls the gun up to the face on its own: the pack's framing there
+		actionHold = Vector3.zero,
 		weaponBone = "DEF_Cuerpo_02",
 		weaponMesh = "^Pistol_",
 		equip = "Equip",

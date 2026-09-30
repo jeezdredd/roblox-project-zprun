@@ -67,8 +67,11 @@ export type Rig = {
 	muzzleLocal: CFrame,
 	ejectLocal: CFrame,
 	eyeInverse: CFrame,
-	-- the class's `hold` offset, applied between the camera and the eye point
+	-- the class's `hold` offset, applied between the camera and the eye point, the one
+	-- used while a reload, draw or inspect plays, and the blend between them (1 = action)
 	hold: CFrame,
+	actionHold: CFrame,
+	holdBlend: number,
 	-- looping clip underneath (idle or walk), nil while a one-shot plays
 	base: string?,
 	queue: { Entry },
@@ -93,6 +96,8 @@ local MAX_FOLLOW_SPEED = 1.5
 -- how far past the ShellIn marker a cancelled shell is allowed to run
 local SEAT_MARGIN = 0.015
 local MAX_TRANSITIONS_PER_STEP = 4
+-- time constant of the blend between `hold` and `actionHold`
+local HOLD_BLEND_TIME = 0.1
 
 local SOFT_TAGS: { [string]: boolean } = {
 	equip = true,
@@ -266,6 +271,9 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 		ejectLocal = ejectLocal,
 		eyeInverse = (CFrame.new(pack.eye.Position * scale) * pack.eye.Rotation):Inverse(),
 		hold = CFrame.new(pack.hold or Vector3.zero),
+		actionHold = CFrame.new(pack.actionHold or pack.hold or Vector3.zero),
+		-- the rig starts on the draw
+		holdBlend = 1,
 		base = nil,
 		queue = {},
 		entry = nil,
@@ -583,10 +591,15 @@ function PackViewmodel.step(rig: Rig, deltaTime: number, placement: CFrame, movi
 		end
 	end
 
+	local entry = rig.entry
+	local tag = if entry then entry.tag else nil
+	local blendTarget = if tag and SOFT_TAGS[tag] then 1 else 0
+	rig.holdBlend += (blendTarget - rig.holdBlend) * (1 - math.exp(-deltaTime / HOLD_BLEND_TIME))
+
 	-- framing knob for tuning a class's `hold` from the command bar:
 	-- workspace.CurrentCamera:SetAttribute("ViewmodelHold", Vector3.new(0.05, -0.1, 0.05))
 	local tune = if camera then camera:GetAttribute("ViewmodelHold") else nil
-	local hold = if typeof(tune) == "Vector3" then CFrame.new(tune) else rig.hold
+	local hold = if typeof(tune) == "Vector3" then CFrame.new(tune) else rig.hold:Lerp(rig.actionHold, rig.holdBlend)
 	rig.root.CFrame = placement * hold * rig.eyeInverse
 	local weapon = player:boneWorld(rig.pack.weaponBone)
 	if weapon then

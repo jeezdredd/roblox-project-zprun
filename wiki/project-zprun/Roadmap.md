@@ -22,8 +22,8 @@ Shipped layers, roughly in the order they landed:
 - **Vendors and monetization**: authoritative catalogs and purchases over a RemoteFunction in `src/server/systems/ShopService.luau` (weapon unlock/upgrade, skills, skins, two loadout slots), and `src/server/systems/MonetizationService.luau` with an idempotent `ProcessReceipt` keyed on the profile's `PurchaseHistory` and a Robux Continue product.
 - **ITD run layer**: ammo crates with green smoke pillars, per-run mission goals with credit bonuses, loadout slots, and the Farmstead and Cornfield biomes.
 - **Anti-blur pass**: texel density normalised across surfaces, bloom limits and a sun-in-frame exception for the forest preset.
-- **Skinned zombies (2026-09-29, uncommitted)**: three CC BY 4.0 Sketchfab characters with 22 authored clips (`ZombieSkins`, `ZombieRigs`), bone-driven hit boxes and static torso blockers (`ZombieHitboxes`), walk/run choice by ground speed, attack swing, Hazmat scream, Ghoul flinch, held death poses and posed corpse props. See [[Gameplay Systems]].
-- **MW2019 weapon pass (2026-09-29, uncommitted)**: first-person packs for all four classes (`PackViewmodel`, `ViewmodelClipPlayer`), tactical and empty reloads with ammo-add, shell-by-shell shotgun with fire cancel, draw time, pooled visible casings with landing sounds, a new muzzle flash, marker-driven foley, the low-ammo layer, and 32 CC0 recordings from The Free Firearm Sound Library. See [[Gameplay Systems]] and [[Decisions]].
+- **Skinned zombies (2026-09-29, da0ea7e)**: three CC BY 4.0 Sketchfab characters with 22 authored clips (`ZombieSkins`, `ZombieRigs`), bone-driven hit boxes and static torso blockers (`ZombieHitboxes`), walk/run choice by ground speed, attack swing, Hazmat scream, Ghoul flinch, held death poses and posed corpse props. See [[Gameplay Systems]].
+- **MW2019 weapon pass (2026-09-29, da0ea7e)**: first-person packs for all four classes (`PackViewmodel`, `ViewmodelClipPlayer`), tactical and empty reloads with ammo-add, shell-by-shell shotgun with fire cancel, draw time, pooled visible casings with landing sounds, a new muzzle flash, marker-driven foley, the low-ammo layer, and 32 CC0 recordings from The Free Firearm Sound Library. See [[Gameplay Systems]] and [[Decisions]].
 
 ## Now: quality pass in stages
 
@@ -33,10 +33,10 @@ After the 2026-09-29 review the work runs in stages, one area at a time, each he
 | --- | --- | --- |
 | 0. Test yard | A Studio yard in place of the run, with every texture, prop, weapon and animation on show and weapons to fire | Done (da0ea7e) |
 | 1. Regressions | Casing size, animations that looked broken, muffled gunshots | Casings checked at real size; gunshots rebuilt (v6), waiting for a listen; first-person clips checked frame by frame; the weapon gallery's rigs hung above their posts and now stand on them; the Uzi (stock against the cheek) and pistol (too far) reframed; recoil made frame-rate independent and set near MW2019 hip fire, the shotgun's clip kick cut from 34 to about 15 degrees |
-| 2. Sound in space | Distance curves per class, air absorption, speed-of-sound delay, occlusion, reflections, environment tails and reverb, a bus mix with ducking and a limiter, for every sound | Engine in (uncommitted), checked in Studio for audibility and voice use; waiting for a listen, then the weapons move onto it |
+| 2. Sound in space | Distance curves per class, air absorption, speed-of-sound delay, occlusion, reflections, environment tails and reverb, a bus mix with ducking and a limiter, for every sound | Engine in (70feddb), checked in Studio for audibility and voice use; waiting for a listen, then the weapons move onto it |
 | 3. Animation | Everything that moves: first-person packs, zombies, the third-person player, procedural layers; the best available sources | Third-person body layer on (the place keeps the avatar joint upgrade off for `Motor6D` joints), holds being tuned ([[Third-Person Body]]) |
 | 4. Weapons and ammunition | Behaviour and feel, the remaining MW spec items (mech and punch layers, hit and kill markers, wall pull-back, the first raise) | Planned |
-| 5. Environment | Props in the road chunks, textures and decals, map and lighting | Planned; 16 props and 8 material variants are ready |
+| 5. Environment | Props in the road chunks, textures and decals, map and lighting | Environment pass in (a371ee6): road dressing clusters, material variants per biome, mesh middle row and ruins, decal layer, night presets per biome, chunk budgets and the yard's biome strip ([[Environment]]); the screenshot plan and the missing decals are open |
 
 Carried over from the MW2019 pass:
 

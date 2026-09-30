@@ -14,14 +14,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://99808551078611"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://84056215190278",
+            "NormalMap": "rbxassetid://74134021727639",
+            "RoughnessMap": "rbxassetid://109226696669230"
           }
         }
       ]
@@ -39,14 +42,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://79234218410851"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://91263931976855",
+            "NormalMap": "rbxassetid://84000159635096",
+            "RoughnessMap": "rbxassetid://97257569106568"
           }
         }
       ]
@@ -64,14 +70,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://92679192690111"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://91263931976855",
+            "NormalMap": "rbxassetid://84000159635096",
+            "RoughnessMap": "rbxassetid://97257569106568"
           }
         }
       ]
@@ -89,14 +98,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://119682219009189"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://77534981139194",
+            "NormalMap": "rbxassetid://76235273823260",
+            "RoughnessMap": "rbxassetid://113793087545787"
           }
         }
       ]
@@ -114,14 +126,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://124383844951020"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://77534981139194",
+            "NormalMap": "rbxassetid://76235273823260",
+            "RoughnessMap": "rbxassetid://113793087545787"
           }
         }
       ]
@@ -139,14 +154,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://138046083714636"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://77534981139194",
+            "NormalMap": "rbxassetid://76235273823260",
+            "RoughnessMap": "rbxassetid://113793087545787"
           }
         }
       ]
@@ -164,14 +182,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://92215606360223"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://77534981139194",
+            "NormalMap": "rbxassetid://76235273823260",
+            "RoughnessMap": "rbxassetid://113793087545787"
           }
         }
       ]
@@ -189,14 +210,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://99440793845140"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://77534981139194",
+            "NormalMap": "rbxassetid://76235273823260",
+            "RoughnessMap": "rbxassetid://113793087545787"
           }
         }
       ]
@@ -214,14 +238,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://102275397001381"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://77534981139194",
+            "NormalMap": "rbxassetid://76235273823260",
+            "RoughnessMap": "rbxassetid://113793087545787"
           }
         }
       ]
@@ -239,14 +266,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://127668042716269"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://115179633879993",
+            "NormalMap": "rbxassetid://113181027686721",
+            "RoughnessMap": "rbxassetid://84277745061280"
           }
         }
       ]
@@ -264,14 +294,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://101338654226488"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://115179633879993",
+            "NormalMap": "rbxassetid://113181027686721",
+            "RoughnessMap": "rbxassetid://84277745061280"
           }
         }
       ]
@@ -289,14 +322,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://111097753835964"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://115179633879993",
+            "NormalMap": "rbxassetid://113181027686721",
+            "RoughnessMap": "rbxassetid://84277745061280"
           }
         }
       ]
@@ -314,14 +350,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://81738849827840"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://115179633879993",
+            "NormalMap": "rbxassetid://113181027686721",
+            "RoughnessMap": "rbxassetid://84277745061280"
           }
         }
       ]
@@ -339,14 +378,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://129785347668429"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://115179633879993",
+            "NormalMap": "rbxassetid://113181027686721",
+            "RoughnessMap": "rbxassetid://84277745061280"
           }
         }
       ]
@@ -364,14 +406,17 @@
         "CanCollide": false,
         "CanQuery": false,
         "CanTouch": false,
-        "MeshId": "rbxassetid://0"
+        "MeshId": "rbxassetid://89642263398328"
       },
       "children": [
         {
           "className": "SurfaceAppearance",
           "name": "SurfaceAppearance",
           "properties": {
-            "AlphaMode": "Overlay"
+            "AlphaMode": "Overlay",
+            "ColorMap": "rbxassetid://115179633879993",
+            "NormalMap": "rbxassetid://113181027686721",
+            "RoughnessMap": "rbxassetid://84277745061280"
           }
         }
       ]

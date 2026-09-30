@@ -14,7 +14,7 @@ export type Part = { centre: Vector3, size: Vector3, group: string? }
 
 local SoldierRigConfig = {}
 
-SoldierRigConfig.ready = false
+SoldierRigConfig.ready = true
 SoldierRigConfig.hipHeight = 1.8551
 SoldierRigConfig.height = 5.4473
 

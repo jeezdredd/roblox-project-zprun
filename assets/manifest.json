@@ -1736,7 +1736,7 @@
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/viewmodels/arms/source/ArmR_Color.png",
     "assetId": "73128056603277",
-    "status": "reviewing",
+    "status": "approved",
     "note": "SurfaceAppearance ColorMap for the right arm (1024 atlas) 2026-09-28 re-cut: atlas repacked for the longer arm (20 cm past the elbow)",
     "previousAssetId": "91348241382551"
   },
@@ -1745,7 +1745,7 @@
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/viewmodels/arms/source/ArmR_Normal.png",
     "assetId": "114444260065283",
-    "status": "reviewing",
+    "status": "approved",
     "note": "SurfaceAppearance NormalMap for the right arm (1024 atlas) 2026-09-28 re-cut: atlas repacked for the longer arm (20 cm past the elbow)",
     "previousAssetId": "99968400937825"
   },
@@ -1781,7 +1781,7 @@
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/viewmodels/arms/source/ArmL_Color.png",
     "assetId": "93252265496322",
-    "status": "reviewing",
+    "status": "approved",
     "note": "SurfaceAppearance ColorMap for the left arm (1024 atlas) 2026-09-28 re-cut: atlas repacked for the longer arm (20 cm past the elbow)",
     "previousAssetId": "94826284537182"
   },
@@ -1790,7 +1790,7 @@
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/viewmodels/arms/source/ArmL_Normal.png",
     "assetId": "126875659990670",
-    "status": "reviewing",
+    "status": "approved",
     "note": "SurfaceAppearance NormalMap for the left arm (1024 atlas) 2026-09-28 re-cut: atlas repacked for the longer arm (20 cm past the elbow)",
     "previousAssetId": "79155288690465"
   },
@@ -1799,7 +1799,7 @@
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/viewmodels/arms/source/ArmL_Roughness.png",
     "assetId": "91663241300428",
-    "status": "reviewing",
+    "status": "approved",
     "note": "SurfaceAppearance RoughnessMap for the left arm (1024 atlas) 2026-09-28 re-cut: atlas repacked for the longer arm (20 cm past the elbow)",
     "previousAssetId": "118369409718439"
   },
@@ -3550,449 +3550,449 @@
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Rifle Idle",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/player/rifle_idle.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "126297115872441",
+    "status": "approved",
     "note": "loop, In Place; the standing gait of the rifle set; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/player/rifle_walk": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Rifle Walk",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/player/rifle_walk.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "107509447603332",
+    "status": "approved",
     "note": "loop, In Place; below WALK_SPEED_MAX; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/player/rifle_run": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Rifle Run",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/player/rifle_run.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "119204271434907",
+    "status": "approved",
     "note": "loop, In Place; replaces the generic Run while a rifle-class weapon is held; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/player/rifle_sprint": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Sprint Forward",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/player/rifle_sprint.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "103571039111021",
+    "status": "approved",
     "note": "the rifle-carry Sprint Forward; loop, In Place; above ThirdPersonConfig.SPRINT.speed; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/player/rifle_strafe_left": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Strafe",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/player/rifle_strafe_left.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "93654212262849",
+    "status": "approved",
     "note": "the rifle walk Strafe, left variant; loop, In Place; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/player/rifle_strafe_right": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Strafe",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/player/rifle_strafe_right.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "106993284172414",
+    "status": "approved",
     "note": "the rifle walk Strafe, right variant; loop, In Place; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/player/rifle_reload": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Reloading",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/player/rifle_reload.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "119352787235436",
+    "status": "approved",
     "note": "the rifle standing Reloading; one-shot, root kept; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/player/pistol_idle": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Pistol Idle",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/player/pistol_idle.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "122735789535165",
+    "status": "approved",
     "note": "loop, In Place; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/player/pistol_walk": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Pistol Walk",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/player/pistol_walk.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "106618890463484",
+    "status": "approved",
     "note": "loop, In Place; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/player/pistol_run": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Pistol Run",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/player/pistol_run.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "125244965851873",
+    "status": "approved",
     "note": "loop, In Place; replaces the generic Run while a pistol is held; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/player/pistol_strafe_left": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Pistol Strafe",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/player/pistol_strafe_left.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "136831057263960",
+    "status": "approved",
     "note": "left variant; loop, In Place; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/player/pistol_strafe_right": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Pistol Strafe",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/player/pistol_strafe_right.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "70843677095418",
+    "status": "approved",
     "note": "right variant; loop, In Place; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/player/hit_rifle": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Hit Reaction",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/player/hit_rifle.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "140682919603839",
+    "status": "approved",
     "note": "while holding a rifle; one-shot; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/zombie/stand_up_back": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Zombie Stand Up",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/zombie/stand_up_back.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "83617145377153",
+    "status": "approved",
     "note": "the from-the-back variant; one-shot, root kept; the Dormant rise, ZombieAnimator; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/zombie/stand_up_stomach": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Zombie Stand Up",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/zombie/stand_up_stomach.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "120471858950909",
+    "status": "approved",
     "note": "the from-the-stomach variant; one-shot, root kept; the Dormant rise, ZombieAnimator; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "animation/zombie/biting_ground": {
     "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Zombie Biting Victim On The Ground",
     "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/animation/zombie/biting_ground.rbxmx",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "123104654305565",
+    "status": "approved",
     "note": "loop; the Feeding pose, ZombieAnimator; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-09-30"
   },
   "character/soldier/mesh/head": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/Head.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "85672960722604",
+    "status": "approved",
     "note": "Soldier body R15 part Head; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/uppertorso": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/UpperTorso.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "125658444522286",
+    "status": "approved",
     "note": "Soldier body R15 part UpperTorso; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/lowertorso": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/LowerTorso.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "124600911867182",
+    "status": "approved",
     "note": "Soldier body R15 part LowerTorso; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/leftupperarm": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/LeftUpperArm.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "136523721697253",
+    "status": "approved",
     "note": "Soldier body R15 part LeftUpperArm; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/leftlowerarm": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/LeftLowerArm.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "92258425854413",
+    "status": "approved",
     "note": "Soldier body R15 part LeftLowerArm; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/lefthand": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/LeftHand.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "127967318639091",
+    "status": "approved",
     "note": "Soldier body R15 part LeftHand; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/rightupperarm": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/RightUpperArm.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "116013769671434",
+    "status": "approved",
     "note": "Soldier body R15 part RightUpperArm; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/rightlowerarm": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/RightLowerArm.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "113929263929099",
+    "status": "approved",
     "note": "Soldier body R15 part RightLowerArm; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/righthand": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/RightHand.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "87359217431960",
+    "status": "approved",
     "note": "Soldier body R15 part RightHand; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/leftupperleg": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/LeftUpperLeg.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "103395973783170",
+    "status": "approved",
     "note": "Soldier body R15 part LeftUpperLeg; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/leftlowerleg": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/LeftLowerLeg.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "140515940706614",
+    "status": "approved",
     "note": "Soldier body R15 part LeftLowerLeg; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/leftfoot": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/LeftFoot.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "106134667398057",
+    "status": "approved",
     "note": "Soldier body R15 part LeftFoot; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/rightupperleg": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/RightUpperLeg.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "130366428216680",
+    "status": "approved",
     "note": "Soldier body R15 part RightUpperLeg; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/rightlowerleg": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/RightLowerLeg.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "105261371183810",
+    "status": "approved",
     "note": "Soldier body R15 part RightLowerLeg; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/mesh/rightfoot": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/RightFoot.glb",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "82666387850740",
+    "status": "approved",
     "note": "Soldier body R15 part RightFoot; Model upload, the MeshId is read back in Studio"
   },
   "character/soldier/meshid/head": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/head, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 85672960722604 (character/soldier/mesh/head), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 99808551078611,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/uppertorso": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/uppertorso, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 125658444522286 (character/soldier/mesh/uppertorso), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 79234218410851,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/lowertorso": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/lowertorso, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 124600911867182 (character/soldier/mesh/lowertorso), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 92679192690111,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/leftupperarm": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/leftupperarm, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 136523721697253 (character/soldier/mesh/leftupperarm), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 119682219009189,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/leftlowerarm": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/leftlowerarm, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 92258425854413 (character/soldier/mesh/leftlowerarm), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 124383844951020,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/lefthand": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/lefthand, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 127967318639091 (character/soldier/mesh/lefthand), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 138046083714636,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/rightupperarm": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/rightupperarm, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 116013769671434 (character/soldier/mesh/rightupperarm), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 92215606360223,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/rightlowerarm": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/rightlowerarm, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 113929263929099 (character/soldier/mesh/rightlowerarm), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 99440793845140,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/righthand": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/righthand, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 87359217431960 (character/soldier/mesh/righthand), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 102275397001381,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/leftupperleg": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/leftupperleg, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 103395973783170 (character/soldier/mesh/leftupperleg), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 127668042716269,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/leftlowerleg": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/leftlowerleg, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 140515940706614 (character/soldier/mesh/leftlowerleg), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 101338654226488,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/leftfoot": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/leftfoot, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 106134667398057 (character/soldier/mesh/leftfoot), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 111097753835964,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/rightupperleg": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/rightupperleg, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 130366428216680 (character/soldier/mesh/rightupperleg), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 81738849827840,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/rightlowerleg": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/rightlowerleg, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 105261371183810 (character/soldier/mesh/rightlowerleg), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 129785347668429,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/meshid/rightfoot": {
-    "source": "MeshId inside the Model asset character/soldier/mesh/rightfoot, read back in Studio with InsertService:LoadAsset",
+    "source": "MeshId inside Model asset 82666387850740 (character/soldier/mesh/rightfoot), read back in Studio with InsertService:LoadAsset on 2026-09-30",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": 89642263398328,
+    "status": "approved",
     "note": "MeshPart.MeshId for the Rojo template; not uploaded separately"
   },
   "character/soldier/texture/head_color": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/Head_Color.png",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "84056215190278",
+    "status": "approved",
     "note": "SurfaceAppearance ColorMap for the soldier's head parts (1024 atlas)"
   },
   "character/soldier/texture/head_normal": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/Head_Normal.png",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "74134021727639",
+    "status": "approved",
     "note": "SurfaceAppearance NormalMap for the soldier's head parts (1024 atlas)"
   },
   "character/soldier/texture/head_roughness": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/Head_Roughness.png",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "109226696669230",
+    "status": "approved",
     "note": "SurfaceAppearance RoughnessMap for the soldier's head parts (1024 atlas)"
   },
   "character/soldier/texture/torso_color": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/Torso_Color.png",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "91263931976855",
+    "status": "approved",
     "note": "SurfaceAppearance ColorMap for the soldier's torso parts (1024 atlas)"
   },
   "character/soldier/texture/torso_normal": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/Torso_Normal.png",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "84000159635096",
+    "status": "approved",
     "note": "SurfaceAppearance NormalMap for the soldier's torso parts (1024 atlas)"
   },
   "character/soldier/texture/torso_roughness": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/Torso_Roughness.png",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "97257569106568",
+    "status": "approved",
     "note": "SurfaceAppearance RoughnessMap for the soldier's torso parts (1024 atlas)"
   },
   "character/soldier/texture/arms_color": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/Arms_Color.png",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "77534981139194",
+    "status": "approved",
     "note": "SurfaceAppearance ColorMap for the soldier's arms parts (1024 atlas)"
   },
   "character/soldier/texture/arms_normal": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/Arms_Normal.png",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "76235273823260",
+    "status": "approved",
     "note": "SurfaceAppearance NormalMap for the soldier's arms parts (1024 atlas)"
   },
   "character/soldier/texture/arms_roughness": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/Arms_Roughness.png",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "113793087545787",
+    "status": "approved",
     "note": "SurfaceAppearance RoughnessMap for the soldier's arms parts (1024 atlas)"
   },
   "character/soldier/texture/legs_color": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/Legs_Color.png",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "115179633879993",
+    "status": "approved",
     "note": "SurfaceAppearance ColorMap for the soldier's legs parts (1024 atlas)"
   },
   "character/soldier/texture/legs_normal": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/Legs_Normal.png",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "113181027686721",
+    "status": "approved",
     "note": "SurfaceAppearance NormalMap for the soldier's legs parts (1024 atlas)"
   },
   "character/soldier/texture/legs_roughness": {
     "source": "Mixamo character \"Swat Guy\" (FBX Binary, T-pose, with skin), downloaded 2026-09-28; arms skinned to hang down, fingers in the first-person grip, split into the 15 R15 parts and textures repacked by tools/character_rig/soldier.py",
     "license": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
     "file": "assets/character/soldier/source/Legs_Roughness.png",
-    "assetId": 0,
-    "status": "needed",
+    "assetId": "84277745061280",
+    "status": "approved",
     "note": "SurfaceAppearance RoughnessMap for the soldier's legs parts (1024 atlas)"
   }
 }

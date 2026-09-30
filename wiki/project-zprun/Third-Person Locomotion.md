@@ -44,9 +44,8 @@ returns the ids per gait so the yard gallery can adopt them.
 Done on 2026-09-30: all sixteen clips exported from the Mixamo X Bot as Collada (With
 Skin, 30 fps, no keyframe reduction, In Place on the loops, off the one-shots) and
 converted by `tools/animation_pipeline/dae_to_keyframes.py` into `assets/animation/`
-(the arm rest offset fixed on the way, see [[Decisions]]). Left for the owner:
-`python3 scripts/upload_assets.py --only animation/`, `refresh_status.py`,
-`sync_configs.py`, `sync_needed.py`.
+(the arm rest offset fixed on the way, see [[Decisions]]). Uploaded and approved the same day;
+the gallery's soldier mannequins run on the new pistol gait.
 
 ## Trade-offs (owner's calls made here)
 

@@ -2,7 +2,7 @@
 
 The character every player spawns as: the Mixamo "Swat Guy" (the character the
 first-person arms are cut from), split into the fifteen R15 parts, instead of Roblox's
-block body. Built 2026-09-30; waiting for the upload.
+block body. Built and live 2026-09-30.
 
 Related: [[Third-Person Body]], [[Third-Person Locomotion]], [[Decisions]].
 
@@ -41,17 +41,29 @@ pivots, hip height set.
 | `WorldWeaponModel` | A hand with `GripOffset` holds the grip at its fist, and the support sockets place the left fist, not the hand's centre, on the gun |
 | `scripts/build_soldier_rig.py` | Writes the template and `SoldierRigConfig` from `rig.json` and the manifest; `ready` is false until every mesh id is filled in, and until then nothing changes |
 
-## Owner's steps
+## Status (2026-09-30)
 
-1. `python3 scripts/upload_assets.py --only character/soldier/`: fifteen part Models and
-   twelve atlases.
-2. Read back each Model's MeshId in Studio (as for `zombie/walker2`) into the
-   `character/soldier/meshid/<part>` rows.
-3. `python3 scripts/build_soldier_rig.py`, `sync_configs.py`, `sync_needed.py`.
-4. Play in Studio: the soldier spawns; then the holds are retuned on it in the yard (V),
-   since `ThirdPersonConfig` holds were set on the block body's proportions.
+Uploaded (fifteen part Models, twelve atlases), mesh ids read back in Studio with
+`InsertService:LoadAsset` into the `character/soldier/meshid/<part>` rows,
+`build_soldier_rig.py` run: `SoldierRigConfig.ready` is true. Checked in Play: the
+player spawns as the soldier (hip height 1.855, feet on the floor, Recruit tint on the
+uniform), the world rifle builds on the hand, and the yard's body gallery shows soldier
+mannequins front-on with both hands on the pistol over the new Mixamo gaits. The
+EditableMesh read-back of `LeftFoot` confirms the importer's 180-degree turn (vertex
+means with x and z negated), so the body faces -Z like the root.
+
+Found in the first Play: a player whose character spawned while the meshes were still
+loading kept the block body (its `CharacterAdded` landed after the build's sweep).
+`SoldierCharacter` now watches `CharacterAdded` and respawns any block character once
+the soldier is ready, never during a run.
+
+When a fixed `DevCameraCFrame` shot points at the local character, the first-person
+controller turns the character to the camera's look, so it always shows the back; the
+gallery mannequins are the way to see the front.
 
 ## Open
+
+- Retune the third-person holds on the soldier's proportions in the gallery.
 
 - Skins: a tint cannot turn the grey camo white, so Field Medic reads like Recruit.
   Per-skin texture variants would fix it.

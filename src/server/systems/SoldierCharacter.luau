@@ -18,6 +18,28 @@ local SoldierCharacter = {}
 
 local LOAD_TIMEOUT = 30
 
+local ready = false
+
+-- A character that spawned on the block body while the soldier was still loading (its
+-- CharacterAdded can land after the build's own sweep) is respawned once the
+-- StarterCharacter exists; a run is never interrupted for it.
+local function respawnIfBlock(player: Player, character: Model)
+	if not ready or character:GetAttribute(SoldierBody.ATTRIBUTE) or MissionState.isParticipant(player) then
+		return
+	end
+	task.defer(function()
+		if player.Parent and player.Character == character then
+			player:LoadCharacter()
+		end
+	end)
+end
+
+local function watch(player: Player)
+	player.CharacterAdded:Connect(function(character)
+		respawnIfBlock(player, character)
+	end)
+end
+
 local function build()
 	if not SoldierBody.load(LOAD_TIMEOUT) then
 		warn("[TaskForceZ] soldier meshes did not load, players keep the block body")
@@ -41,10 +63,11 @@ local function build()
 	model.Name = "StarterCharacter"
 	model.Parent = StarterPlayer
 
+	ready = true
 	for _, player in Players:GetPlayers() do
 		local character = player.Character
-		if character and not character:GetAttribute(SoldierBody.ATTRIBUTE) and not MissionState.isParticipant(player) then
-			player:LoadCharacter()
+		if character then
+			respawnIfBlock(player, character)
 		end
 	end
 end
@@ -52,6 +75,10 @@ end
 function SoldierCharacter.init()
 	if not SoldierBody.available() then
 		return
+	end
+	Players.PlayerAdded:Connect(watch)
+	for _, player in Players:GetPlayers() do
+		watch(player)
 	end
 	task.spawn(build)
 end

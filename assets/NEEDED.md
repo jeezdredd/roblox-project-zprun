@@ -11,19 +11,6 @@ only, no synthesis, no invented ids.
 
 | Slot | Used by | What to look for | Priority | Status |
 | --- | --- | --- | --- | --- |
-| `animation/player/hit_rifle` | AnimationController.playAction — hit reaction | Mixamo: Hit Reaction, holding a rifle | polish | needed |
-| `animation/player/pistol_idle` | AnimationController — pistol set idle | Mixamo: Pistol Idle (In Place) | polish | needed |
-| `animation/player/pistol_run` | AnimationController — pistol set run, replaces Run | Mixamo: Pistol Run (In Place) | polish | needed |
-| `animation/player/pistol_strafe_left` | AnimationController — pistol set strafe | Mixamo: Pistol Strafe, left (In Place) | polish | needed |
-| `animation/player/pistol_strafe_right` | AnimationController — pistol set strafe | Mixamo: Pistol Strafe, right (In Place) | polish | needed |
-| `animation/player/pistol_walk` | AnimationController — pistol set walk | Mixamo: Pistol Walk (In Place) | polish | needed |
-| `animation/player/rifle_idle` | AnimationController — rifle set idle | Mixamo: Rifle Idle (In Place) | polish | needed |
-| `animation/player/rifle_reload` | AnimationController.playAction — rifle reload | Mixamo: Reloading, rifle standing | polish | needed |
-| `animation/player/rifle_run` | AnimationController — rifle set run, replaces Run | Mixamo: Rifle Run (In Place) | polish | needed |
-| `animation/player/rifle_sprint` | AnimationController — rifle set sprint | Mixamo: Sprint Forward, rifle carry (In Place) | polish | needed |
-| `animation/player/rifle_strafe_left` | AnimationController — rifle set strafe | Mixamo: Strafe, rifle walk, left (In Place) | polish | needed |
-| `animation/player/rifle_strafe_right` | AnimationController — rifle set strafe | Mixamo: Strafe, rifle walk, right (In Place) | polish | needed |
-| `animation/player/rifle_walk` | AnimationController — rifle set walk | Mixamo: Rifle Walk (In Place) | polish | needed |
 | `animation/player/strafe_left` | AnimationController — lateral dodge | Mixamo: Left Strafe (in place) | blocker | pending |
 | `animation/player/strafe_right` | AnimationController — lateral dodge | Mixamo: Right Strafe (in place) | blocker | pending |
 | `animation/weapon/equip` | Viewmodel — replaces procedural raise | Universal Viewmodel Template: raise/equip | polish | pending |
@@ -31,9 +18,6 @@ only, no synthesis, no invented ids.
 | `animation/weapon/inspect` | Viewmodel — F key inspect | Universal Viewmodel Template: inspect | polish | pending |
 | `animation/weapon/reload` | Viewmodel — replaces procedural reload | Universal Viewmodel Template: reload | polish | pending |
 | `animation/weapon/sprint` | Viewmodel — sprint carry pose | Universal Viewmodel Template: sprint/run | polish | pending |
-| `animation/zombie/biting_ground` | ZombieAnimator — Feeding pose (feeding stands in) | Mixamo: Zombie Biting Victim On The Ground | polish | needed |
-| `animation/zombie/stand_up_back` | ZombieAnimator — Dormant rise (idle_c stands in) | Mixamo: Zombie Stand Up, from the back | polish | needed |
-| `animation/zombie/stand_up_stomach` | ZombieAnimator — Dormant rise (idle_c stands in) | Mixamo: Zombie Stand Up, from the stomach | polish | needed |
 
 ## Audio
 
@@ -64,51 +48,4 @@ only, no synthesis, no invented ids.
 | `audio/weapons/ricochet_01` | WeaponSfx.playImpacts — one hard hit in six | freesound CC0 'ricochet' | polish | needed |
 | `audio/weapons/shell_03` | Weapon shell casing variation 3 | Kenney CC0 impact sounds: small metal drop | polish | rejected |
 
-## Character
-
-| Slot | Used by | What to look for | Priority | Status |
-| --- | --- | --- | --- | --- |
-| `character/soldier/mesh/head` | — | — | polish | needed |
-| `character/soldier/mesh/leftfoot` | — | — | polish | needed |
-| `character/soldier/mesh/lefthand` | — | — | polish | needed |
-| `character/soldier/mesh/leftlowerarm` | — | — | polish | needed |
-| `character/soldier/mesh/leftlowerleg` | — | — | polish | needed |
-| `character/soldier/mesh/leftupperarm` | — | — | polish | needed |
-| `character/soldier/mesh/leftupperleg` | — | — | polish | needed |
-| `character/soldier/mesh/lowertorso` | — | — | polish | needed |
-| `character/soldier/mesh/rightfoot` | — | — | polish | needed |
-| `character/soldier/mesh/righthand` | — | — | polish | needed |
-| `character/soldier/mesh/rightlowerarm` | — | — | polish | needed |
-| `character/soldier/mesh/rightlowerleg` | — | — | polish | needed |
-| `character/soldier/mesh/rightupperarm` | — | — | polish | needed |
-| `character/soldier/mesh/rightupperleg` | — | — | polish | needed |
-| `character/soldier/mesh/uppertorso` | — | — | polish | needed |
-| `character/soldier/meshid/head` | — | — | polish | needed |
-| `character/soldier/meshid/leftfoot` | — | — | polish | needed |
-| `character/soldier/meshid/lefthand` | — | — | polish | needed |
-| `character/soldier/meshid/leftlowerarm` | — | — | polish | needed |
-| `character/soldier/meshid/leftlowerleg` | — | — | polish | needed |
-| `character/soldier/meshid/leftupperarm` | — | — | polish | needed |
-| `character/soldier/meshid/leftupperleg` | — | — | polish | needed |
-| `character/soldier/meshid/lowertorso` | — | — | polish | needed |
-| `character/soldier/meshid/rightfoot` | — | — | polish | needed |
-| `character/soldier/meshid/righthand` | — | — | polish | needed |
-| `character/soldier/meshid/rightlowerarm` | — | — | polish | needed |
-| `character/soldier/meshid/rightlowerleg` | — | — | polish | needed |
-| `character/soldier/meshid/rightupperarm` | — | — | polish | needed |
-| `character/soldier/meshid/rightupperleg` | — | — | polish | needed |
-| `character/soldier/meshid/uppertorso` | — | — | polish | needed |
-| `character/soldier/texture/arms_color` | — | — | polish | needed |
-| `character/soldier/texture/arms_normal` | — | — | polish | needed |
-| `character/soldier/texture/arms_roughness` | — | — | polish | needed |
-| `character/soldier/texture/head_color` | — | — | polish | needed |
-| `character/soldier/texture/head_normal` | — | — | polish | needed |
-| `character/soldier/texture/head_roughness` | — | — | polish | needed |
-| `character/soldier/texture/legs_color` | — | — | polish | needed |
-| `character/soldier/texture/legs_normal` | — | — | polish | needed |
-| `character/soldier/texture/legs_roughness` | — | — | polish | needed |
-| `character/soldier/texture/torso_color` | — | — | polish | needed |
-| `character/soldier/texture/torso_normal` | — | — | polish | needed |
-| `character/soldier/texture/torso_roughness` | — | — | polish | needed |
-
-**3 blockers, 86 polish items.**
+**3 blockers, 28 polish items.**

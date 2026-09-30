@@ -145,6 +145,11 @@ local AssetIds = {
 			siren_police_rejected = 0,
 			step_gravel_loop = 75914567135656,
 		},
+		upgrade = {
+			announcer_max = 0,
+			announcer_upgrade_01 = 0,
+			announcer_upgrade_02 = 0,
+		},
 		weapons = {
 			bolt = 118765487481144,
 			casing_brass_01 = 80918178478655,

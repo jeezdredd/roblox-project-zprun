@@ -59,13 +59,30 @@ local savedAmmo: { [Player]: { [string]: AmmoSnapshot } } = {}
 -- the loadout for the current run once a pickup replaced a slot: the profile's loadout
 -- with the found weapons in, gone when the run ends (WeaponPickups, MissionService)
 local runLoadout: { [Player]: { string } } = {}
+-- the levels bought at an upgrade station this run, per weapon id: read over the
+-- profile's level for damage, gone with the run (UpgradeStations, MissionService)
+local runLevels: { [Player]: { [string]: number } } = {}
 local random = Random.new()
 local lastGongAt: { [Player]: number } = {}
+
+-- The weapon's level for this run: the level bought at a station this run, else the
+-- profile's (1 for a weapon the profile does not own, such as a found one).
+local function levelOf(player: Player, weaponId: string): number
+	local levels = runLevels[player]
+	local bought = if levels then levels[weaponId] else nil
+	if bought then
+		return bought
+	end
+	local data = ProfileManager.get(player)
+	local progress = if data then data.WeaponsOwned[weaponId] else nil
+	return if progress then progress.level else 1
+end
 
 local function syncAttributes(player: Player, state: PlayerWeaponState)
 	player:SetAttribute("WeaponId", state.weaponId)
 	player:SetAttribute("AmmoMag", state.mag)
 	player:SetAttribute("AmmoReserve", state.reserve)
+	player:SetAttribute("WeaponLevel", levelOf(player, state.weaponId))
 end
 
 local function defaultState(weaponId: string): PlayerWeaponState
@@ -268,8 +285,8 @@ local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, res
 
 	local data = ProfileManager.get(player)
 	local progress = if data then data.WeaponsOwned[config.id] else nil
-	local level = if progress then progress.level else 1
-	local damage = WeaponsConfig.damageAt(config, level)
+	-- the level bought at a station this run counts over the profile's
+	local damage = WeaponsConfig.damageAt(config, levelOf(player, config.id))
 	local headshot = part.Name == "Head"
 	if headshot then
 		damage *= config.headshotMultiplier
@@ -536,9 +553,48 @@ function WeaponService.pickUp(player: Player, weaponId: string): boolean
 	return true
 end
 
--- The run is over: the found weapons go with it and the profile's loadout is back in
--- the slots; a hand still holding a found weapon draws the profile's primary.
+-- Republishes the level attribute for the weapon in hand: after the profile loads (the
+-- default Pistol may already be current, so no equip runs) and after a Gunsmith upgrade.
+function WeaponService.refreshLevel(player: Player)
+	local state = states[player]
+	if state then
+		syncAttributes(player, state)
+	end
+end
+
+function WeaponService.carriedWeapon(player: Player): string?
+	local state = states[player]
+	return if state then state.weaponId else nil
+end
+
+function WeaponService.levelOf(player: Player, weaponId: string): number
+	return levelOf(player, weaponId)
+end
+
+-- A level bought at an upgrade station (UpgradeStations has taken the credits): it
+-- holds for the rest of the run, over the profile's level, and is never written back.
+function WeaponService.setRunLevel(player: Player, weaponId: string, level: number)
+	local levels = runLevels[player]
+	if not levels then
+		levels = {}
+		runLevels[player] = levels
+	end
+	levels[weaponId] = math.clamp(math.floor(level), 1, WeaponsConfig.MAX_LEVEL)
+	local state = states[player]
+	if state and state.weaponId == weaponId then
+		syncAttributes(player, state)
+	end
+end
+
+-- The run is over: the found weapons and the bought levels go with it and the
+-- profile's loadout is back in the slots; a hand still holding a found weapon draws
+-- the profile's primary.
 function WeaponService.clearRunLoadout(player: Player)
+	runLevels[player] = nil
+	local state = states[player]
+	if state then
+		syncAttributes(player, state)
+	end
 	if not runLoadout[player] then
 		return
 	end
@@ -600,11 +656,13 @@ function WeaponService.init()
 		if typeof(primary) == "string" and WeaponsConfig.get(primary) then
 			onEquip(player, primary)
 		end
+		WeaponService.refreshLevel(player)
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		states[player] = nil
 		savedAmmo[player] = nil
 		runLoadout[player] = nil
+		runLevels[player] = nil
 		lastGongAt[player] = nil
 	end)
 	for _, player in Players:GetPlayers() do

@@ -11,6 +11,7 @@ local DistanceTracker = require(script.Parent.DistanceTracker)
 local RoutePlan = require(script.Parent.RoutePlan)
 local AmmoCrates = require(script.Parent.AmmoCrates)
 local WeaponPickups = require(script.Parent.WeaponPickups)
+local UpgradeStations = require(script.Parent.UpgradeStations)
 local MissionState = require(script.Parent.MissionState)
 local MissionConfig = require(script.Parent.MissionConfig)
 local ChunkBudgetCounter = require(script.Parent.Parent.world.ChunkBudgetCounter)
@@ -77,6 +78,8 @@ local function spawnChunk(index: number)
 	active[index] = { model = model, locationId = entry.locationId, pooled = pooled }
 
 	AmmoCrates.spawnForChunk(index, model:GetPivot(), chunkLength, MissionConfig.getDifficulty().ammoCrateChance)
+	-- the station first, so the chunk's pickups keep clear of it
+	UpgradeStations.spawnForChunk(index, model, entry.locationId)
 	WeaponPickups.spawnForChunk(index, model, entry.locationId)
 end
 
@@ -94,6 +97,7 @@ local function despawnChunk(index: number)
 	active[index] = nil
 	AmmoCrates.clearChunk(index)
 	WeaponPickups.clearChunk(index)
+	UpgradeStations.clearChunk(index)
 end
 
 local function despawnAll()
@@ -141,6 +145,7 @@ function ChunkSpawner.configure(seed: number, locationIds: { string }?)
 	random = Random.new(seed + 1)
 	RoutePlan.configure(seed, locationIds)
 	WeaponPickups.configure(seed + 3)
+	UpgradeStations.configure(seed + 5)
 	for id, pool in pools do
 		for _, model in pool do
 			model:Destroy()
@@ -168,7 +173,7 @@ function ChunkSpawner.init()
 	chunksFolder = folder
 	-- Studio only: presets whose fog would let a chunk be seen spawning
 	ChunkBudgetCounter.checkFog()
-	WeaponPickups.init()
+	UpgradeStations.init(WeaponPickups.init())
 	RunService.Heartbeat:Connect(step)
 end
 

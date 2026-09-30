@@ -17,7 +17,6 @@ local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local BodyMath = require(ReplicatedStorage.Shared.util.BodyMath)
 local LocomotionMath = require(ReplicatedStorage.Shared.util.LocomotionMath)
 local ExertionState = require(script.Parent.ExertionState)
-local InputController = require(script.Parent.InputController)
 
 local AnimationController = {}
 
@@ -127,13 +126,19 @@ local function update(deltaTime: number)
 	local alive = humanoid ~= nil and humanoid.Health > 0
 	local running = alive and ExertionState.isRunning()
 	local speed = ExertionState.getSpeed()
-	local axis = InputController.getLateralAxis()
+	-- sideways share of the ground velocity in the character's frame
+	local axis = 0
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if root and root:IsA("BasePart") and speed > 0.5 then
+		local velocity = root.CFrame:VectorToObjectSpace(root.AssemblyLinearVelocity)
+		local ground = Vector2.new(velocity.X, velocity.Z).Magnitude
+		axis = if ground > 0.5 then math.clamp(velocity.X / ground, -1, 1) else 0
+	end
 
 	sprinting = running and BodyMath.sprintTarget(speed, AnimationsConfig.SPRINT_SPEED, AnimationsConfig.SPRINT_HYSTERESIS, sprinting)
 	local gait = LocomotionMath.gaitFor(running, speed, axis, sprinting, {
 		walkMax = AnimationsConfig.WALK_SPEED_MAX,
 		strafeAxis = AnimationsConfig.STRAFE_AXIS,
-		strafeMaxSpeed = AnimationsConfig.STRAFE_SPEED_MAX,
 	})
 	currentGait = gait
 	local set = currentSet()

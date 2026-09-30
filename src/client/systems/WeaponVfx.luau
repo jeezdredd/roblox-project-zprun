@@ -127,6 +127,12 @@ local FLASH_LIGHT_TIME = NumberRange.new(0.04, 0.06)
 local FLASH_LIGHT_BRIGHTNESS = 3.5
 local FLASH_LIGHT_RANGE = 12
 local FLASH_SPARK_CHANCE = 0.35
+-- The first-person packs are drawn at about 1.17 studs per metre (an AK is 1.03 studs)
+-- while the world is 3.57 (1 stud = 0.28 m), so a flash sized for the world gun is three
+-- times too big on the viewmodel: a flame half the rifle long and a white blot over the
+-- crosshair on every shot (the owner's recording, 2026-09-30). Every size, speed and
+-- range on a rig under the camera is scaled by this.
+local VIEWMODEL_FLASH_SCALE = 0.4
 
 local BEAM_TRANSPARENCY = NumberSequence.new({
 	NumberSequenceKeypoint.new(0, 0.05),
@@ -151,6 +157,8 @@ type MuzzleRig = {
 	lightOn: boolean,
 	lightOffAt: number,
 	listed: boolean,
+	-- 1 in the world; VIEWMODEL_FLASH_SCALE on a first-person rig
+	viewScale: number,
 }
 
 -- optional values so pruning can assign nil under strict mode
@@ -342,7 +350,27 @@ local function buildMuzzleRig(attachment: Attachment): MuzzleRig
 		lightOn = false,
 		lightOffAt = 0,
 		listed = false,
+		viewScale = 1,
 	}
+end
+
+local function scaleSequence(sequence: NumberSequence, factor: number): NumberSequence
+	local points = {}
+	for _, point in sequence.Keypoints do
+		table.insert(points, NumberSequenceKeypoint.new(point.Time, point.Value * factor, point.Envelope * factor))
+	end
+	return NumberSequence.new(points)
+end
+
+-- Shrinks a rig built for the world down to the viewmodel's scale.
+local function scaleRig(rig: MuzzleRig, factor: number)
+	rig.viewScale = factor
+	for _, emitter in { rig.core, rig.sparks, rig.wisp, rig.puff, rig.trail } do
+		emitter.Size = scaleSequence(emitter.Size, factor)
+		emitter.Speed = NumberRange.new(emitter.Speed.Min * factor, emitter.Speed.Max * factor)
+		emitter.Acceleration *= factor
+	end
+	rig.light.Range *= factor
 end
 
 -- Rigs die with their viewmodel on every weapon swap; drop the stale entries so the
@@ -365,6 +393,10 @@ local function getMuzzleRig(attachment: Attachment): MuzzleRig
 	end
 	pruneMuzzleRigs()
 	local rig = buildMuzzleRig(attachment)
+	local camera = Workspace.CurrentCamera
+	if camera and attachment:IsDescendantOf(camera) then
+		scaleRig(rig, VIEWMODEL_FLASH_SCALE)
+	end
 	muzzleRigs[attachment] = rig
 	return rig
 end
@@ -434,7 +466,7 @@ function WeaponVfx.muzzleFlash(attachment: Attachment?, weaponId: string)
 	local config = WeaponsConfig.get(weaponId)
 	local class = if config then config.class else ""
 	local rig = getMuzzleRig(attachment)
-	local scale = (FLASH_CLASS_SCALE[class] or 1) * (1 + (math.random() * 2 - 1) * FLASH_SCALE_JITTER)
+	local scale = (FLASH_CLASS_SCALE[class] or 1) * (1 + (math.random() * 2 - 1) * FLASH_SCALE_JITTER) * rig.viewScale
 	local variant = pickFlashVariant()
 	local density = VfxConfig.DENSITY
 
@@ -459,7 +491,7 @@ function WeaponVfx.muzzleFlash(attachment: Attachment?, weaponId: string)
 
 	local light = rig.light
 	light.Brightness = FLASH_LIGHT_BRIGHTNESS * (0.85 + math.random() * 0.3)
-	light.Range = FLASH_LIGHT_RANGE * math.sqrt(scale)
+	light.Range = FLASH_LIGHT_RANGE * math.sqrt(scale / rig.viewScale)
 	light.Enabled = true
 	rig.lightOn = true
 	rig.lightOffAt = now + rollRange(FLASH_LIGHT_TIME)

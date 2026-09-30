@@ -13,11 +13,9 @@ export type Gait = "idle" | "walk" | "run" | "sprint" | "strafe_left" | "strafe_
 export type Thresholds = {
 	-- below this speed a moving character walks
 	walkMax: number,
-	-- lateral input at or beyond this magnitude strafes
+	-- a sideways share of the velocity at or beyond this strafes (the auto-run swerving
+	-- at 24 forward keeps its run; moving mostly sideways side-steps)
 	strafeAxis: number,
-	-- the strafe clips are walking side steps: at or above this speed a character with
-	-- lateral input keeps its run (the auto-run swerves; it never side-steps at speed)
-	strafeMaxSpeed: number,
 }
 
 export type References = { [string]: number }
@@ -61,17 +59,19 @@ function LocomotionMath.clipId(set: string, gait: string): string
 	return set .. (SUFFIX[gait] or "")
 end
 
--- The gait the movement asks for. `sprinting` is the hysteresis decision made from the
--- sprint threshold (BodyMath.sprintTarget); a sprint never strafes.
+-- The gait the movement asks for. `lateral` is the sideways share of the ground
+-- velocity in the character's frame (-1 all left, 1 all right); `sprinting` is the
+-- hysteresis decision made from the sprint threshold (BodyMath.sprintTarget). Moving
+-- mostly sideways side-steps at any speed, since a run clip facing forward would glide.
 function LocomotionMath.gaitFor(moving: boolean, speed: number, lateral: number, sprinting: boolean, thresholds: Thresholds): Gait
 	if not moving then
 		return "idle"
 	end
+	if math.abs(lateral) >= thresholds.strafeAxis then
+		return if lateral < 0 then "strafe_left" else "strafe_right"
+	end
 	if sprinting then
 		return "sprint"
-	end
-	if math.abs(lateral) >= thresholds.strafeAxis and speed < thresholds.strafeMaxSpeed then
-		return if lateral < 0 then "strafe_left" else "strafe_right"
 	end
 	if speed < thresholds.walkMax then
 		return "walk"

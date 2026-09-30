@@ -22,7 +22,7 @@ local function group(name: string, body: () -> ())
 	print(string.format("%s %s", if failures == before then "ok  " else "FAIL", name))
 end
 
-local THRESHOLDS: LocomotionMath.Thresholds = { walkMax = 12, strafeAxis = 0.5, strafeMaxSpeed = 30 }
+local THRESHOLDS: LocomotionMath.Thresholds = { walkMax = 12, strafeAxis = 0.5 }
 local REFERENCES = { walk = 10, run = 24, sprint = 36 }
 
 local function keys(targets: { [string]: number }): string
@@ -51,12 +51,13 @@ group("gait from movement", function()
 	check("walk max is run", LocomotionMath.gaitFor(true, 12, 0, false, THRESHOLDS) == "run")
 	check("fast is run", LocomotionMath.gaitFor(true, 30, 0, false, THRESHOLDS) == "run")
 	check("sprint flag wins", LocomotionMath.gaitFor(true, 40, 0, true, THRESHOLDS) == "sprint")
-	check("sprint never strafes", LocomotionMath.gaitFor(true, 40, -1, true, THRESHOLDS) == "sprint")
+	check("sideways sprint strafes", LocomotionMath.gaitFor(true, 40, -1, true, THRESHOLDS) == "strafe_left")
+	check("swerving sprint sprints", LocomotionMath.gaitFor(true, 40, 0.3, true, THRESHOLDS) == "sprint")
 	check("left input strafes left", LocomotionMath.gaitFor(true, 24, -1, false, THRESHOLDS) == "strafe_left")
 	check("right input strafes right", LocomotionMath.gaitFor(true, 24, 0.6, false, THRESHOLDS) == "strafe_right")
 	check("small input runs", LocomotionMath.gaitFor(true, 24, 0.3, false, THRESHOLDS) == "run")
 	check("strafe while slow", LocomotionMath.gaitFor(true, 6, 1, false, THRESHOLDS) == "strafe_right")
-	check("no side step at speed", LocomotionMath.gaitFor(true, 30, 1, false, THRESHOLDS) == "run")
+	check("swerve at speed runs", LocomotionMath.gaitFor(true, 30, 0.4, false, THRESHOLDS) == "run")
 end)
 
 group("targets and fallbacks", function()

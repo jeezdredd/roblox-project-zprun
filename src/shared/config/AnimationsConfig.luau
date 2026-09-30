@@ -126,10 +126,9 @@ AnimationsConfig.SET_GAIT_REFERENCE = {
 } :: { [string]: { [string]: number } }
 -- a moving character below this speed walks
 AnimationsConfig.WALK_SPEED_MAX = 6
--- lateral input at or beyond this magnitude strafes
-AnimationsConfig.STRAFE_AXIS = 0.5
--- the strafe clips are side steps; at this speed and above lateral input keeps the run
-AnimationsConfig.STRAFE_SPEED_MAX = 10
+-- a sideways share of the ground velocity at or beyond this strafes: the run at 24 with
+-- a full A/D swerve (about 16 sideways) is 0.55 and keeps the run
+AnimationsConfig.STRAFE_AXIS = 0.7
 -- the gait turns from run to sprint above this speed (with SPRINT_HYSTERESIS either way);
 -- the body layer's lowered-gun sprint pose keeps its own ThirdPersonConfig.SPRINT
 AnimationsConfig.SPRINT_SPEED = 14

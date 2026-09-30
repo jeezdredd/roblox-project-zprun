@@ -28,11 +28,14 @@ land on the gun whichever gait plays underneath.
 
 - `setFor(class)`: `Pistol` -> `Pistol`; `Rifle`, `SMG`, `Shotgun` and no weapon ->
   `Rifle` (the SMG and the shotgun are carried two-handed).
-- `gaitFor(moving, speed, lateral, sprinting)`: not moving -> `idle`; the sprint
-  decision wins (`BodyMath.sprintTarget` against `ThirdPersonConfig.SPRINT.speed` 36
-  with its 4-stud hysteresis, the same rule the body layer uses for the sprint pose);
-  lateral input at or beyond 0.5 -> `strafe_left` / `strafe_right`; below
-  `WALK_SPEED_MAX` 12 -> `walk`; else `run`. A sprint never strafes.
+- `gaitFor(moving, speed, lateral, sprinting)`: not moving -> `idle`; `lateral` is the
+  sideways share of the ground velocity in the character's frame, and at or beyond
+  `STRAFE_AXIS` 0.7 -> `strafe_left` / `strafe_right` at any speed (the run at 24 with a
+  full swerve is about 0.55 and keeps its run); then the sprint decision
+  (`BodyMath.sprintTarget` against `AnimationsConfig.SPRINT_SPEED` 14 with a 2-stud
+  hysteresis; the body layer's lowered-gun pose keeps `ThirdPersonConfig.SPRINT`); below
+  `WALK_SPEED_MAX` 6 -> `walk`; else `run`. Playback rates come from the clip speeds
+  measured on the soldier (`SET_GAIT_REFERENCE`, 2026-09-30), clamped 0.6..2.
 - `targets(set, gait, available)`: the set's own clip; else the set's fallback gait
   (`walk`, `sprint` and the strafes fall to the set's `run`); else the generic `Run`,
   with the legacy additive `StrafeLeft` / `StrafeRight` on top when they exist. `idle`

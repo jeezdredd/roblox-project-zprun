@@ -100,6 +100,17 @@ function AmmoCrates.spawnForChunk(chunkIndex: number, chunkPivot: CFrame, chunkL
 	crates[model] = { model = model, root = root, chunkIndex = chunkIndex, taken = false }
 end
 
+-- The crates standing in a chunk (their parts are not queryable), for WeaponPickups.
+function AmmoCrates.positionsForChunk(chunkIndex: number): { Vector3 }
+	local positions: { Vector3 } = {}
+	for _, crate in crates do
+		if crate.chunkIndex == chunkIndex then
+			table.insert(positions, crate.root.Position)
+		end
+	end
+	return positions
+end
+
 function AmmoCrates.clearChunk(chunkIndex: number)
 	for model, crate in crates do
 		if crate.chunkIndex == chunkIndex then

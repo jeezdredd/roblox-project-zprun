@@ -56,6 +56,9 @@ type AmmoSnapshot = { mag: number, reserve: number, lastFireAt: number }
 
 local states: { [Player]: PlayerWeaponState } = {}
 local savedAmmo: { [Player]: { [string]: AmmoSnapshot } } = {}
+-- the loadout for the current run once a pickup replaced a slot: the profile's loadout
+-- with the found weapons in, gone when the run ends (WeaponPickups, MissionService)
+local runLoadout: { [Player]: { string } } = {}
 local random = Random.new()
 local lastGongAt: { [Player]: number } = {}
 
@@ -87,6 +90,14 @@ end
 -- Applies whatever the reload has reached by `now`: the magazine's ammo-add, each shell
 -- at its add point, and the end. Attributes are synced on every count change so the
 -- HUD ticks per shell.
+-- A full magazine and reserve, as a hub refill and a found gun give.
+local function fillWeapon(player: Player, state: PlayerWeaponState, config: WeaponsConfig.WeaponConfig)
+	state.mag = config.magSize
+	state.reserve = config.magSize * config.reserveMags
+	endReload(player, state)
+	syncAttributes(player, state)
+end
+
 local function advanceReload(player: Player, state: PlayerWeaponState, now: number)
 	local job = state.reload
 	if not job then
@@ -127,7 +138,22 @@ local function advanceReload(player: Player, state: PlayerWeaponState, now: numb
 	end
 end
 
+-- The loadout the 1 and 2 keys read: the run's once a pickup changed it, else the
+-- profile's.
+local function loadoutFor(player: Player): { string }
+	local override = runLoadout[player]
+	if override then
+		return override
+	end
+	local data = ProfileManager.get(player)
+	return if data then data.Loadout else { "Pistol" }
+end
+
 local function ownsWeapon(player: Player, weaponId: string): boolean
+	local override = runLoadout[player]
+	if override and table.find(override, weaponId) then
+		return true
+	end
 	local data = ProfileManager.get(player)
 	if not data then
 		return weaponId == "Pistol"
@@ -136,8 +162,7 @@ local function ownsWeapon(player: Player, weaponId: string): boolean
 end
 
 local function syncLoadout(player: Player)
-	local data = ProfileManager.get(player)
-	local loadout = if data then data.Loadout else { "Pistol" }
+	local loadout = loadoutFor(player)
 	player:SetAttribute("LoadoutSlot1", loadout[1] or "Pistol")
 	player:SetAttribute("LoadoutSlot2", loadout[2] or "")
 end
@@ -464,15 +489,15 @@ end
 
 function WeaponService.applyLoadout(player: Player)
 	syncLoadout(player)
-	local data = ProfileManager.get(player)
-	if not data then
+	if not ProfileManager.get(player) then
 		return
 	end
+	local loadout = loadoutFor(player)
 	local state = states[player]
-	if state and table.find(data.Loadout, state.weaponId) then
+	if state and table.find(loadout, state.weaponId) then
 		return
 	end
-	local primary = data.Loadout[1]
+	local primary = loadout[1]
 	if typeof(primary) == "string" then
 		onEquip(player, primary)
 	end
@@ -480,6 +505,45 @@ end
 
 function WeaponService.equip(player: Player, weaponId: string)
 	onEquip(player, weaponId)
+end
+
+-- A weapon found in the world (WeaponPickups): it takes the slot of the weapon in hand
+-- for the rest of the run and is equipped the way a loadout equip is, full. Finding a
+-- weapon already carried refills that one instead. False for an unknown id.
+function WeaponService.pickUp(player: Player, weaponId: string): boolean
+	local config = WeaponsConfig.get(weaponId)
+	if not config then
+		return false
+	end
+	local loadout = table.clone(loadoutFor(player))
+	local current = states[player]
+	local slot = table.find(loadout, weaponId)
+		or (if current then table.find(loadout, current.weaponId) else nil)
+		or 1
+	loadout[slot] = weaponId
+	runLoadout[player] = loadout
+	-- a found gun is full: the ammo it had the last time it was carried is forgotten
+	local saved = savedAmmo[player]
+	if saved then
+		saved[weaponId] = nil
+	end
+	if current and current.weaponId == weaponId then
+		fillWeapon(player, current, config)
+	else
+		onEquip(player, weaponId)
+	end
+	syncLoadout(player)
+	return true
+end
+
+-- The run is over: the found weapons go with it and the profile's loadout is back in
+-- the slots; a hand still holding a found weapon draws the profile's primary.
+function WeaponService.clearRunLoadout(player: Player)
+	if not runLoadout[player] then
+		return
+	end
+	runLoadout[player] = nil
+	WeaponService.applyLoadout(player)
 end
 
 function WeaponService.addReserve(player: Player, rounds: number)
@@ -506,10 +570,7 @@ function WeaponService.refillAmmo(player: Player)
 	if not config then
 		return
 	end
-	state.mag = config.magSize
-	state.reserve = config.magSize * config.reserveMags
-	endReload(player, state)
-	syncAttributes(player, state)
+	fillWeapon(player, state, config)
 end
 
 function WeaponService.init()
@@ -543,6 +604,7 @@ function WeaponService.init()
 	Players.PlayerRemoving:Connect(function(player)
 		states[player] = nil
 		savedAmmo[player] = nil
+		runLoadout[player] = nil
 		lastGongAt[player] = nil
 	end)
 	for _, player in Players:GetPlayers() do

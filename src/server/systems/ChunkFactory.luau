@@ -1168,6 +1168,9 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	WorldDressing.dress(effective.id, rng, chunkLength / 2, model)
 	WorldDecals.dress(effective.id, rng, floor, GameConstants.PLAYABLE_HALF_WIDTH, chunkLength / 2, model)
 
+	-- the footprints stay with the model (pooled chunks keep their props), for what is
+	-- placed after the build: WeaponPickups tests its spots against them
+	ChunkOccupancy.remember(model)
 	model.PrimaryPart = floor
 	ChunkBudgetCounter.report(model, effective.id)
 	return model

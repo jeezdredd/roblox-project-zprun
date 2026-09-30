@@ -18,6 +18,7 @@ local HipAim = require(script.Parent.HipAim)
 local AimAssist = require(script.Parent.AimAssist)
 local UiSfx = require(script.Parent.UiSfx)
 local UiTheme = require(script.Parent.Parent.ui.UiTheme)
+local WeaponPickupClient = require(script.Parent.WeaponPickupClient)
 
 local WeaponController = {}
 
@@ -604,6 +605,8 @@ function WeaponController.init()
 	Viewmodel.init()
 	Viewmodel.onPhase(onPhase)
 	WeaponVfx.onCasingLanded(WeaponSfx.playCasingLand)
+	-- the pickups' outlines and toasts start with the weapons
+	WeaponPickupClient.init()
 	buildHud()
 	installDebugHook()
 	task.spawn(WeaponSfx.preload)

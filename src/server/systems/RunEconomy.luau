@@ -22,6 +22,9 @@ local BALANCE_ATTRIBUTE = "RunCredits"
 
 type RunState = {
 	balance: RunEconomyMath.Balance,
+	-- distance pay already banked this run: a Continue keeps the distance, so the pay
+	-- for it is owed only once
+	distanceBanked: number,
 	kills: number,
 	streak: number,
 	lastKillAt: number?,
@@ -30,7 +33,7 @@ type RunState = {
 local runs: { [Player]: RunState } = {}
 
 local function newState(): RunState
-	return { balance = { kills = 0, distance = 0 }, kills = 0, streak = 0, lastKillAt = nil }
+	return { balance = { kills = 0, distance = 0 }, distanceBanked = 0, kills = 0, streak = 0, lastKillAt = nil }
 end
 
 local function multiplier(): number
@@ -62,14 +65,15 @@ function RunEconomy.onKill(player: Player, zombieId: string?, headshot: boolean)
 	publish(player, state)
 end
 
--- The distance pay for the furthest point reached, replacing the previous value (it
--- only ever grows with the distance).
+-- The distance pay for the furthest point reached, less what a bank earlier in the run
+-- already paid for it (the distance survives a Continue, its pay does not repeat).
 function RunEconomy.setDistance(player: Player, traveled: number)
 	local state = runs[player]
 	if not state then
 		return
 	end
-	state.balance.distance = math.max(state.balance.distance, RunEconomyMath.distanceCredits(RunEconomyConfig, traveled, multiplier()))
+	local owed = RunEconomyMath.distanceOwed(RunEconomyConfig, traveled, multiplier(), state.distanceBanked)
+	state.balance.distance = math.max(state.balance.distance, owed)
 	publish(player, state)
 end
 
@@ -101,6 +105,7 @@ function RunEconomy.bank(player: Player): number
 		return 0
 	end
 	local banked, rest = RunEconomyMath.bank(state.balance)
+	state.distanceBanked += state.balance.distance
 	state.balance = rest
 	publish(player, state)
 	return banked

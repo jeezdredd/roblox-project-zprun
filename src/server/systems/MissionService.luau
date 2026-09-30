@@ -166,6 +166,11 @@ function MissionService.stop(player: Player)
 end
 
 function MissionService.init()
+	-- the profile's session ends synchronously on PlayerRemoving and on BindToClose, so
+	-- the run is settled (banked, perks cleared) before it, while the data is still there
+	ProfileManager.onReleasing(function(player)
+		MissionService.removeFromMission(player)
+	end)
 	Players.PlayerRemoving:Connect(function(player)
 		MissionService.removeFromMission(player)
 	end)

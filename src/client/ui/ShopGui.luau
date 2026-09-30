@@ -281,7 +281,7 @@ function ShopGui.render(catalog: any)
 		local action = row:FindFirstChild("Action") :: TextButton
 
 		local suffix = ""
-		if entry.maxLevel > 0 and entry.level > 0 then
+		if entry.maxLevel > 0 and entry.level > 0 and entry.kind ~= "PerkSlot" then
 			suffix = string.format("   L%d/%d", entry.level, entry.maxLevel)
 		end
 		nameLabel.Text = string.upper(entry.displayName) .. suffix

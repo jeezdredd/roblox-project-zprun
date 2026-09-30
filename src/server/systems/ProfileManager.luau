@@ -67,6 +67,9 @@ type Profile = typeof(ProfileStore.New("", TEMPLATE):StartSessionAsync(""))
 local store = ProfileStore.New("PlayerData", TEMPLATE)
 local profiles: { [Player]: Profile } = {}
 local loadedCallbacks: { (Player, ProfileData) -> () } = {}
+-- run synchronously before a profile's session ends (the player leaving, the server
+-- closing), while the data can still be written: the run is settled here
+local releasingCallbacks: { (Player, ProfileData) -> () } = {}
 local started = false
 
 local function dataStoresAvailable(): boolean
@@ -149,6 +152,29 @@ local function onPlayerAdded(player: Player)
 	else
 		profile:EndSession()
 	end
+end
+
+-- Registers a callback that runs before EndSession() for a player leaving and for every
+-- profile on BindToClose, synchronously and in order, so credits banked in it land in the
+-- profile. A callback that errors is reported and never keeps the session from ending.
+function ProfileManager.onReleasing(callback: (Player, ProfileData) -> ()): () -> ()
+	table.insert(releasingCallbacks, callback)
+	return function()
+		local index = table.find(releasingCallbacks, callback)
+		if index then
+			table.remove(releasingCallbacks, index)
+		end
+	end
+end
+
+local function release(player: Player, profile: Profile)
+	for _, callback in releasingCallbacks do
+		local ok, err = pcall(callback, player, profile.Data)
+		if not ok then
+			warn(string.format("[TaskForceZ] profile release callback failed for %s: %s", player.Name, tostring(err)))
+		end
+	end
+	profile:EndSession()
 end
 
 function ProfileManager.get(player: Player): ProfileData?
@@ -250,13 +276,13 @@ function ProfileManager.init()
 	Players.PlayerRemoving:Connect(function(player)
 		local profile = profiles[player]
 		if profile then
-			profile:EndSession()
+			release(player, profile)
 		end
 	end)
 
 	game:BindToClose(function()
-		for _, profile in profiles do
-			profile:EndSession()
+		for player, profile in profiles do
+			release(player, profile)
 		end
 	end)
 end

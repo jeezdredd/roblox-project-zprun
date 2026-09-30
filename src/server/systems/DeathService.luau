@@ -39,13 +39,14 @@ local tokenCounter = 0
 
 -- The results: the run balance (kill pay and distance pay, already multiplied as it was
 -- earned) is banked here and the goal bonus added; a Continue starts a fresh balance,
--- so what was earned before the death is never lost.
+-- so what was earned before the death is never lost, and neither the distance already
+-- paid nor a goal bonus already paid is paid a second time.
 local function computeRewards(player: Player)
 	local distance = math.floor(DistanceTracker.getDistance(player))
 	local multiplier = RewardMultiplier.compute(MissionConfig.getDifficulty().id, MissionState.getModifiers())
 	MissionGoals.report(player, "Distance", distance)
 	local goals = MissionGoals.completed(player)
-	local bonus = MissionGoals.bonusCredits(player)
+	local bonus = MissionGoals.claimBonus(player)
 	local run = RunEconomy.snapshot(player)
 	local banked = RunEconomy.bank(player)
 	return {

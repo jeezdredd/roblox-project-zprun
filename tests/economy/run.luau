@@ -66,6 +66,45 @@ group("balance and banking", function()
 	check("bank of nothing", RunEconomyMath.bank({ kills = 0, distance = 0 }) == 0)
 end)
 
+-- The Continue case: the distance survives it, so the second death pays only the
+-- distance since the first (1000 studs -> 100, Continue, 1010 studs -> 1, not 101).
+group("distance after a Continue", function()
+	local distanceBanked = 0
+	local balance = { kills = 0, distance = RunEconomyMath.distanceOwed(C, 1000, 1, distanceBanked) }
+	check("first death pays the distance", balance.distance == 100)
+	local banked, rest = RunEconomyMath.bank(balance)
+	distanceBanked += balance.distance
+	balance = rest
+	check("first bank", banked == 100 and distanceBanked == 100)
+	balance.distance = math.max(balance.distance, RunEconomyMath.distanceOwed(C, 1010, 1, distanceBanked))
+	check("only the new distance is owed", balance.distance == 1)
+	banked, rest = RunEconomyMath.bank(balance)
+	distanceBanked += balance.distance
+	check("second death pays one", banked == 1 and distanceBanked == 101)
+	check("nothing owed at the same distance", RunEconomyMath.distanceOwed(C, 1010, 1, distanceBanked) == 0)
+	check("never below zero", RunEconomyMath.distanceOwed(C, 500, 1, 100) == 0)
+	check("multiplied distance banks the multiplied share", RunEconomyMath.distanceOwed(C, 1000, 1.5, 150) == 0)
+	check("multiplied new share", RunEconomyMath.distanceOwed(C, 1100, 1.5, 150) == 15)
+end)
+
+-- Goal bonuses are paid once per run: the death after a Continue pays only the goals
+-- completed since the first death.
+group("goal bonus paid once", function()
+	local rewards = { Distance500 = 100, Kills10 = 150, Distance1000 = 300 }
+	local bonus, paid = RunEconomyMath.unpaidBonus({ "Distance500", "Kills10" }, rewards, {})
+	check("first death pays both", bonus == 250)
+	check("both marked paid", paid.Distance500 == true and paid.Kills10 == true)
+	local again, paidAgain = RunEconomyMath.unpaidBonus({ "Distance500", "Kills10" }, rewards, paid)
+	check("second death pays nothing for the same goals", again == 0)
+	check("paid set kept", paidAgain.Distance500 == true and paidAgain.Kills10 == true)
+	local more, paidMore = RunEconomyMath.unpaidBonus({ "Distance500", "Kills10", "Distance1000" }, rewards, paid)
+	check("a goal completed after the Continue pays once", more == 300)
+	check("all three paid now", paidMore.Distance1000 == true and paidMore.Kills10 == true)
+	check("input paid set untouched", paid.Distance1000 == nil)
+	check("unknown goal pays nothing", (RunEconomyMath.unpaidBonus({ "Nope" }, rewards, {})) == 0)
+	check("no goals, no bonus", (RunEconomyMath.unpaidBonus({}, rewards, {})) == 0)
+end)
+
 group("perk prices and values", function()
 	local perk = PerksConfig.get("Toughness") :: PerksConfig.PerkConfig
 	check("level 1 price", PerksConfig.priceFor(perk, 0) == 400)

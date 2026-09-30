@@ -521,17 +521,24 @@ local function buildPerkLab(base: CFrame, size: Vector3, parent: Instance)
 		Color3.fromRGB(200, 90, 150),
 		Color3.fromRGB(150, 230, 100),
 	}
-	for i, color in flaskColors do
+	-- six benches along the back: flasks on the first four, the two monitors on the
+	-- last two (a flask and a monitor never share a bench)
+	local FLASK_BENCHES = 4
+	local benchX: { number } = {}
+	for i = 1, #flaskColors do
 		local x = -halfW + 8 + (i - 1) * 8
+		benchX[i] = x
 		local bench = makePart("Part", "LabBench", Vector3.new(6.5, 3.6, 4), base * CFrame.new(x, 2.8, halfD - 6), STEEL, Enum.Material.Metal, parent)
 		TextureUtil.applySides(bench, TexturesConfig.METAL_PLATES, 5)
-		buildFlask(base * CFrame.new(x, 4.6, halfD - 6), color, parent)
+		if i <= FLASK_BENCHES then
+			buildFlask(base * CFrame.new(x, 4.6, halfD - 6), flaskColors[i], parent)
+		end
 	end
 
 	local board = makePart("Part", "PerkBoard", Vector3.new(0.5, 8, 18), base * CFrame.new(-halfW + 2.2, 7, -2), Color3.fromRGB(232, 234, 230), Enum.Material.SmoothPlastic, parent)
 	decor(board)
 	for i = 0, 5 do
-		local line = makePart("Part", "BoardLine", Vector3.new(0.2, 0.5, 12 - (i % 3) * 2), base * CFrame.new(-halfW + 1.9, 10 - i * 1.2, -2), Color3.fromRGB(60, 90, 120), Enum.Material.SmoothPlastic, parent)
+		local line = makePart("Part", "BoardLine", Vector3.new(0.2, 0.5, 12 - (i % 3) * 2), base * CFrame.new(-halfW + 2.5, 10 - i * 1.2, -2), Color3.fromRGB(60, 90, 120), Enum.Material.SmoothPlastic, parent)
 		decor(line)
 	end
 
@@ -543,8 +550,8 @@ local function buildPerkLab(base: CFrame, size: Vector3, parent: Instance)
 		decor(seal)
 	end
 
-	buildMonitor(base * CFrame.new(halfW - 14, 6, halfD - 6), parent)
-	buildMonitor(base * CFrame.new(halfW - 8, 6, halfD - 6), parent)
+	buildMonitor(base * CFrame.new(benchX[5], 6, halfD - 6), parent)
+	buildMonitor(base * CFrame.new(benchX[6], 6, halfD - 6), parent)
 end
 
 local function buildRoom(config: VendorsConfig.VendorConfig, parent: Instance)

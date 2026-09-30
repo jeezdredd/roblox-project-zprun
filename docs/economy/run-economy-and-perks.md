@@ -21,12 +21,14 @@ recomputes the same number on death, adds the mission goal bonus and pays it thr
 | Piece | Role |
 | --- | --- |
 | `src/shared/config/RunEconomyConfig.luau` | Kill pay per zombie id, the headshot bonus, the streak window, step and cap, the distance rate |
-| `src/shared/util/RunEconomyMath.luau` | Pure: streak position, streak bonus, kill pay, distance pay, total, bank. `luau tests/economy/run.luau` |
-| `src/server/systems/RunEconomy.luau` | The per-run balance per participant (`kills` and `distance` halves), the `RunCredits` attribute, `onKill`, `setDistance`, `snapshot`, `bank`, `endRun` |
+| `src/shared/util/RunEconomyMath.luau` | Pure: streak position, streak bonus, kill pay, distance pay, distance owed after a bank, goal bonus not yet paid, total, bank. `luau tests/economy/run.luau` |
+| `src/server/systems/RunEconomy.luau` | The per-run balance per participant (`kills` and `distance` halves, the distance pay already banked), the `RunCredits` attribute, `onKill`, `setDistance`, `snapshot`, `bank`, `endRun` |
 | `WeaponService.handleHit` | On the killing shot: `RunEconomy.onKill(player, ZombieId attribute, headshot)` next to the XP and the goal report |
 | `DistanceTracker.step` | `RunEconomy.setDistance(player, traveled)` instead of writing the attribute itself |
-| `MissionService` | `beginRun` starts the balance; `removeFromMission` banks what is still unbanked through `ProfileManager.addCredits` and clears the run's perks |
-| `DeathService.computeRewards` | Snapshots and banks the balance, adds the goal bonus, passes the kill and distance halves and the kill count to the results screen |
+| `MissionService` | `beginRun` starts the balance; `removeFromMission` banks what is still unbanked through `ProfileManager.addCredits` and clears the run's perks; it is also registered with `ProfileManager.onReleasing`, so a player leaving alive settles before the profile session ends |
+| `ProfileManager.onReleasing` | Callbacks run synchronously before `EndSession()` on `PlayerRemoving` and on `BindToClose`, while the profile can still be written |
+| `MissionGoals.claimBonus` | The bonus of the completed goals not paid yet this run, marking them paid |
+| `DeathService.computeRewards` | Snapshots and banks the balance, adds the unpaid goal bonus, passes the kill and distance halves and the kill count to the results screen |
 | `DeathController` | The credits line shows the split when the run had kills |
 
 ### The pay table
@@ -54,9 +56,16 @@ what the Perk Lab prices below are set against.
 - `RunEconomy.bank` takes the balance out and leaves the run at zero. `DeathService` calls
   it on the results screen, so a Continue starts earning afresh and the second death banks
   only the new earnings; the first share is already in the profile.
+- The distance survives a Continue, its pay does not repeat: the run keeps
+  `distanceBanked`, `bank` adds the distance half to it and `setDistance` stores
+  `max(0, distanceCredits(traveled) - distanceBanked)`. Die at 1000 studs (100 CR),
+  Continue, die at 1010: the second screen pays 1, not 101. Goal bonuses are the same:
+  `MissionGoals.claimBonus` pays each completed goal once per run.
 - `MissionService.removeFromMission` banks whatever is still unbanked (a player who leaves
   the run alive, the squad's run tearing down) through `ProfileManager.addCredits`, without
-  counting a run.
+  counting a run. Because ProfileStore ends the session synchronously on `PlayerRemoving`
+  (and the profile is gone the moment it does), the settlement runs from
+  `ProfileManager.onReleasing`, before `EndSession()`, on a leave and on `BindToClose`.
 - Dying without a Continue banks everything earned. Nothing burns.
 - The HUD's "+N CR THIS RUN" is the one balance; the wallet in the corner stays the
   profile balance and is hidden during a run as before.
@@ -102,7 +111,8 @@ Profile version 4 adds `PerkLevels` (id -> level), `PerkSlots` (1..3, default 1)
 for every perk with a level, an equip row (kind `PerkEquip`, price 0). Purchases go
 through `ShopService.onPurchase`, which rebuilds the catalog server-side and dispatches
 on the matched entry's kind, so the client cannot buy a slot from the Gunsmith or equip a
-perk it has not unlocked. Every credit moves through `ProfileManager.spendCredits`. The
+perk it has not unlocked. An equip toggle is refused while the player is a run
+participant: the set is chosen before the run. Every credit moves through `ProfileManager.spendCredits`. The
 equipped set is validated by `PerksConfig.validateEquipped` (no duplicates, no unknown
 id, no level 0, no more than the slots owned) on load, on every toggle and on read, and
 cleared by `MissionService.removeFromMission`. The player attributes `PerkSlots` and
@@ -114,7 +124,8 @@ A sixth vendor-style room in `VendorsConfig` (`PerkLab`, "Perks for the next run
 by `VendorRooms` with the same shell, counter, `VendorPrompt` and `VendorId` as the
 others, on the west wall beside the Canteen at hub offset (-152, 0, 128), clear of the
 gate on the south wall. Its props: six lab benches with lit flasks (one colour per perk),
-a whiteboard, a rack of sealed cases, two monitors. The panel is `ShopGui` itself:
+a whiteboard, a rack of sealed cases, two monitors on benches of their own (the flasks
+take the first four benches). The panel is `ShopGui` itself:
 `actionTextFor` gains the three kinds (BUY SLOT, UNLOCK / UPGRADE, EQUIP FOR RUN /
 EQUIPPED), the rows, theme and purchase flow are unchanged.
 
@@ -133,10 +144,18 @@ asset is added.
 - **Results screen.** Die: the credits row shows the total with the kills, kill pay,
   distance pay and multiplier; the wallet in the hub has grown by that amount plus the
   goal bonus. Take a Continue: the readout starts from 0, die again, only the new share is
-  added. Leave a run alive (squad leave): the wallet grows by the unbanked balance and
-  the run count does not.
+  added: the distance pay for the studs before the first death and the goal bonuses
+  already paid are not paid again (die at 1000 studs, Continue, die at 1010: the
+  second screen's distance pay is 1). Leave a run alive (squad leave, or disconnect
+  mid-run): the wallet grows by the unbanked balance on the next join, the run count
+  does not, and the perks equipped for that run are cleared.
+- **No equip mid-run.** Open the Perk Lab panel during a run (a second player, or the
+  remote by hand): EQUIP FOR RUN is refused with "Perks are set before the run".
 - **Perk Lab.** The sixth room stands beside the Canteen; walk in, hold the prompt: the
-  panel lists "Perk slots 1 of 3", the six perks with UNLOCK prices, no equip rows yet.
+  panel lists "Perk slots" (no level suffix on that row), the six perks with UNLOCK
+  prices, no equip rows yet. The whiteboard lines sit on the board's face, the two
+  monitors stand on the two benches nearest the case rack with no flask under them,
+  and the crate stack outside on the hangar floor is clear of the room's doorway.
 - **Buying slot 2.** With 1500 credits, BUY SLOT 2: the wallet drops by 1500, the row
   reads "2 of 3 owned", the `PerkSlots` attribute is 2. Without the credits the button is
   red and the purchase refuses.

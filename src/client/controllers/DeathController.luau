@@ -423,7 +423,7 @@ local function onDeathBegan(rewards: any)
 			end
 			local kills = rewards.kills or 0
 			if kills > 0 then
-				creditsLabel.Text = string.format("Credits: %d  (%d kills %d · distance %d · x%.2f)", rewards.credits or 0, kills, rewards.killCredits or 0, rewards.distanceCredits or 0, rewards.multiplier or 1)
+				creditsLabel.Text = string.format("Credits: %d  (%d kills: %d · distance %d · x%.2f)", rewards.credits or 0, kills, rewards.killCredits or 0, rewards.distanceCredits or 0, rewards.multiplier or 1)
 			else
 				creditsLabel.Text = string.format("Credits: %d  (x%.2f)", rewards.credits or 0, rewards.multiplier or 1)
 			end

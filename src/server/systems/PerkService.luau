@@ -11,6 +11,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PerksConfig = require(ReplicatedStorage.Shared.config.PerksConfig)
+local MissionState = require(script.Parent.MissionState)
 local ProfileManager = require(script.Parent.ProfileManager)
 
 local PerkService = {}
@@ -153,6 +154,9 @@ function PerkService.toggleEquip(player: Player, data: ProfileManager.ProfileDat
 	local config = PerksConfig.get(perkId)
 	if not config then
 		return false, "Unknown perk"
+	end
+	if MissionState.isParticipant(player) then
+		return false, "Perks are set before the run"
 	end
 	sanitize(data)
 	local slot = table.find(data.PerksEquipped, perkId)

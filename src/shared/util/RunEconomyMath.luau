@@ -50,6 +50,26 @@ function RunEconomyMath.distanceCredits(config: Config, traveled: number, multip
 	return math.max(0, math.floor(math.max(traveled, 0) / config.STUDS_PER_CREDIT * math.max(multiplier, 0)))
 end
 
+-- The distance pay still owed once `banked` credits of it were banked earlier in the
+-- same run (a Continue keeps the distance): the whole distance's pay minus what was paid.
+function RunEconomyMath.distanceOwed(config: Config, traveled: number, multiplier: number, banked: number): number
+	return math.max(0, RunEconomyMath.distanceCredits(config, traveled, multiplier) - math.max(banked, 0))
+end
+
+-- The goal bonus not yet paid this run: the reward of every completed goal that is not
+-- in `paid`, and the paid set with those goals added, so a second death pays no goal twice.
+function RunEconomyMath.unpaidBonus(completed: { string }, rewards: { [string]: number }, paid: { [string]: boolean }): (number, { [string]: boolean })
+	local total = 0
+	local nowPaid = table.clone(paid)
+	for _, goalId in completed do
+		if not nowPaid[goalId] then
+			total += rewards[goalId] or 0
+			nowPaid[goalId] = true
+		end
+	end
+	return total, nowPaid
+end
+
 -- The one number the HUD shows: kill pay plus distance pay.
 function RunEconomyMath.total(balance: Balance): number
 	return balance.kills + balance.distance

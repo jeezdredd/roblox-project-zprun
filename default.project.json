@@ -52,7 +52,8 @@
         "ExposureCompensation": 0.15,
         "EnvironmentDiffuseScale": 0.6,
         "EnvironmentSpecularScale": 0.6,
-        "GlobalShadows": true
+        "GlobalShadows": true,
+        "LightingStyle": "Realistic"
       }
     },
     "Workspace": {
@@ -199,7 +200,8 @@
           "ColorMap": "rbxassetid://129128032496808",
           "NormalMap": "rbxassetid://89710024899225",
           "RoughnessMap": "rbxassetid://121850910757878",
-          "StudsPerTile": 14
+          "StudsPerTile": 14,
+          "MaterialPattern": "Organic"
         }
       },
       "TFZ_RoadWorn": {
@@ -219,7 +221,8 @@
           "ColorMap": "rbxassetid://112752694762911",
           "NormalMap": "rbxassetid://135087024371618",
           "RoughnessMap": "rbxassetid://85178526164228",
-          "StudsPerTile": 10
+          "StudsPerTile": 10,
+          "MaterialPattern": "Organic"
         }
       },
       "TFZ_GroundBurned": {
@@ -229,7 +232,8 @@
           "ColorMap": "rbxassetid://75863816847957",
           "NormalMap": "rbxassetid://91420481081827",
           "RoughnessMap": "rbxassetid://112932909731260",
-          "StudsPerTile": 16
+          "StudsPerTile": 16,
+          "MaterialPattern": "Organic"
         }
       },
       "TFZ_DirtDry": {
@@ -239,7 +243,8 @@
           "ColorMap": "rbxassetid://102906269640591",
           "NormalMap": "rbxassetid://86593365981751",
           "RoughnessMap": "rbxassetid://90440200060377",
-          "StudsPerTile": 14
+          "StudsPerTile": 14,
+          "MaterialPattern": "Organic"
         }
       },
       "TFZ_PlasterPeeling": {

@@ -3,6 +3,7 @@
 local MaterialService = game:GetService("MaterialService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local AssetIds = require(ReplicatedStorage.Shared.config.AssetIds)
 local TexturesConfig = require(ReplicatedStorage.Shared.config.TexturesConfig)
 
 export type PbrSet = {
@@ -117,6 +118,73 @@ MaterialUtil.sets = {
 		normal = TexturesConfig.RUST_NORMAL,
 		roughness = TexturesConfig.RUST_ROUGHNESS,
 		metalness = TexturesConfig.RUST_METALNESS,
+		studsPerTile = 6,
+	},
+	-- the 2026-09-29 variants for the environment pass (docs/world/environment.md); the
+	-- studs per tile match their declarations in default.project.json
+	{
+		name = "TFZ_AsphaltCracked",
+		baseMaterial = Enum.Material.Asphalt,
+		color = AssetIds.texture.surface.asphalt_cracked_color,
+		normal = AssetIds.texture.surface.asphalt_cracked_normal,
+		roughness = AssetIds.texture.surface.asphalt_cracked_roughness,
+		studsPerTile = 14,
+	},
+	{
+		name = "TFZ_RoadWorn",
+		baseMaterial = Enum.Material.Asphalt,
+		color = AssetIds.texture.surface.asphalt_worn_lines_color,
+		normal = AssetIds.texture.surface.asphalt_worn_lines_normal,
+		roughness = AssetIds.texture.surface.asphalt_worn_lines_roughness,
+		studsPerTile = 60,
+	},
+	{
+		name = "TFZ_ConcreteDirty",
+		baseMaterial = Enum.Material.Concrete,
+		color = AssetIds.texture.surface.concrete_dirty_color,
+		normal = AssetIds.texture.surface.concrete_dirty_normal,
+		roughness = AssetIds.texture.surface.concrete_dirty_roughness,
+		studsPerTile = 10,
+	},
+	{
+		name = "TFZ_GroundBurned",
+		baseMaterial = Enum.Material.Ground,
+		color = AssetIds.texture.surface.ground_burned_color,
+		normal = AssetIds.texture.surface.ground_burned_normal,
+		roughness = AssetIds.texture.surface.ground_burned_roughness,
+		studsPerTile = 16,
+	},
+	{
+		name = "TFZ_DirtDry",
+		baseMaterial = Enum.Material.Ground,
+		color = AssetIds.texture.surface.dirt_dry_color,
+		normal = AssetIds.texture.surface.dirt_dry_normal,
+		roughness = AssetIds.texture.surface.dirt_dry_roughness,
+		studsPerTile = 14,
+	},
+	{
+		name = "TFZ_PlasterPeeling",
+		baseMaterial = Enum.Material.Plaster,
+		color = AssetIds.texture.surface.plaster_peeling_brick_color,
+		normal = AssetIds.texture.surface.plaster_peeling_brick_normal,
+		roughness = AssetIds.texture.surface.plaster_peeling_brick_roughness,
+		studsPerTile = 12,
+	},
+	{
+		name = "TFZ_MetalRusty",
+		baseMaterial = Enum.Material.CorrodedMetal,
+		color = AssetIds.texture.surface.metal_rusty_color,
+		normal = AssetIds.texture.surface.metal_rusty_normal,
+		roughness = AssetIds.texture.surface.metal_rusty_roughness,
+		studsPerTile = 6,
+	},
+	{
+		name = "TFZ_PaintPeelingMetal",
+		baseMaterial = Enum.Material.Metal,
+		color = AssetIds.texture.surface.paint_peeling_metal_color,
+		normal = AssetIds.texture.surface.paint_peeling_metal_normal,
+		roughness = AssetIds.texture.surface.paint_peeling_metal_roughness,
+		metalness = AssetIds.texture.surface.paint_peeling_metal_metalness,
 		studsPerTile = 6,
 	},
 } :: { PbrSet }

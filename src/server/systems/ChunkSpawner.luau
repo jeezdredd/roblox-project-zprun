@@ -12,6 +12,7 @@ local RoutePlan = require(script.Parent.RoutePlan)
 local AmmoCrates = require(script.Parent.AmmoCrates)
 local MissionState = require(script.Parent.MissionState)
 local MissionConfig = require(script.Parent.MissionConfig)
+local ChunkBudgetCounter = require(script.Parent.Parent.world.ChunkBudgetCounter)
 
 local ChunkSpawner = {}
 
@@ -161,6 +162,8 @@ function ChunkSpawner.init()
 	folder.Name = "Chunks"
 	folder.Parent = Workspace
 	chunksFolder = folder
+	-- Studio only: presets whose fog would let a chunk be seen spawning
+	ChunkBudgetCounter.checkFog()
 	RunService.Heartbeat:Connect(step)
 end
 

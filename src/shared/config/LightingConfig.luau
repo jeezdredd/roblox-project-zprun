@@ -1,5 +1,9 @@
 --!strict
 
+-- Lighting presets per place and biome, day and night. LightingDirector lerps between
+-- them; PostFx reads the bloom fields. How far each preset lets you see is in
+-- VisibilityConfig, checked by FogBudget against the chunk spawn distance.
+
 export type LightingPreset = {
 	clockTime: number,
 	brightness: number,
@@ -18,6 +22,11 @@ export type LightingPreset = {
 	gradingContrast: number,
 	gradingSaturation: number,
 	gradingTint: Color3,
+	-- bloom stays inside the wiki rule: intensity at most 0.4, threshold at least 1.2
+	bloomIntensity: number,
+	bloomThreshold: number,
+	sunRays: number,
+	shadowSoftness: number,
 }
 
 local LightingConfig = {}
@@ -46,6 +55,10 @@ LightingConfig.presets = {
 		gradingContrast = 0.05,
 		gradingSaturation = 0,
 		gradingTint = Color3.fromRGB(255, 255, 255),
+		bloomIntensity = 0.2,
+		bloomThreshold = 1.4,
+		sunRays = 0.04,
+		shadowSoftness = 0.35,
 	},
 	Hub = {
 		clockTime = 20.2,
@@ -65,6 +78,10 @@ LightingConfig.presets = {
 		gradingContrast = 0.09,
 		gradingSaturation = -0.14,
 		gradingTint = Color3.fromRGB(255, 244, 232),
+		bloomIntensity = 0.34,
+		bloomThreshold = 1.25,
+		sunRays = 0.08,
+		shadowSoftness = 0.35,
 	},
 	City = {
 		clockTime = 17.6,
@@ -84,6 +101,10 @@ LightingConfig.presets = {
 		gradingContrast = 0.1,
 		gradingSaturation = -0.1,
 		gradingTint = Color3.fromRGB(255, 240, 224),
+		bloomIntensity = 0.34,
+		bloomThreshold = 1.25,
+		sunRays = 0.08,
+		shadowSoftness = 0.35,
 	},
 	Forest = {
 		clockTime = 6.6,
@@ -103,6 +124,10 @@ LightingConfig.presets = {
 		gradingContrast = 0.1,
 		gradingSaturation = -0.1,
 		gradingTint = Color3.fromRGB(255, 250, 232),
+		bloomIntensity = 0.4,
+		bloomThreshold = 1.2,
+		sunRays = 0.12,
+		shadowSoftness = 0.5,
 	},
 	Farmstead = {
 		clockTime = 17.9,
@@ -122,6 +147,10 @@ LightingConfig.presets = {
 		gradingContrast = 0.12,
 		gradingSaturation = -0.05,
 		gradingTint = Color3.fromRGB(255, 238, 210),
+		bloomIntensity = 0.36,
+		bloomThreshold = 1.25,
+		sunRays = 0.14,
+		shadowSoftness = 0.4,
 	},
 	Cornfield = {
 		clockTime = 8.4,
@@ -141,6 +170,10 @@ LightingConfig.presets = {
 		gradingContrast = 0.05,
 		gradingSaturation = -0.34,
 		gradingTint = Color3.fromRGB(248, 250, 248),
+		bloomIntensity = 0.3,
+		bloomThreshold = 1.3,
+		sunRays = 0.06,
+		shadowSoftness = 0.5,
 	},
 	Wasteland = {
 		clockTime = 14.2,
@@ -160,7 +193,12 @@ LightingConfig.presets = {
 		gradingContrast = 0.1,
 		gradingSaturation = -0.18,
 		gradingTint = Color3.fromRGB(255, 246, 224),
+		bloomIntensity = 0.3,
+		bloomThreshold = 1.3,
+		sunRays = 0.1,
+		shadowSoftness = 0.25,
 	},
+	-- night fallback for biomes without their own, and the hub at night
 	Night = {
 		clockTime = 0,
 		brightness = 0.15,
@@ -179,11 +217,141 @@ LightingConfig.presets = {
 		gradingContrast = 0.14,
 		gradingSaturation = -0.3,
 		gradingTint = Color3.fromRGB(206, 220, 255),
+		bloomIntensity = 0.34,
+		bloomThreshold = 1.25,
+		sunRays = 0,
+		shadowSoftness = 0.5,
+	},
+	-- sodium lamps and burning barrels on a blue-black street
+	CityNight = {
+		clockTime = 0.4,
+		brightness = 0.25,
+		ambient = Color3.fromRGB(6, 6, 12),
+		outdoorAmbient = Color3.fromRGB(12, 12, 20),
+		fogColor = Color3.fromRGB(6, 6, 12),
+		fogStart = 14,
+		fogEnd = 110,
+		atmosphereDensity = 0.92,
+		atmosphereOffset = 0.7,
+		atmosphereHaze = 1.4,
+		atmosphereGlare = 0,
+		atmosphereColor = Color3.fromRGB(34, 36, 58),
+		atmosphereDecay = Color3.fromRGB(12, 12, 26),
+		gradingBrightness = -0.04,
+		gradingContrast = 0.14,
+		gradingSaturation = -0.25,
+		gradingTint = Color3.fromRGB(208, 218, 255),
+		bloomIntensity = 0.4,
+		bloomThreshold = 1.2,
+		sunRays = 0,
+		shadowSoftness = 0.5,
+	},
+	-- mist between the trunks, no lamps, the flashlight does the work
+	ForestNight = {
+		clockTime = 23.6,
+		brightness = 0.2,
+		ambient = Color3.fromRGB(4, 8, 8),
+		outdoorAmbient = Color3.fromRGB(8, 14, 14),
+		fogColor = Color3.fromRGB(6, 10, 10),
+		fogStart = 10,
+		fogEnd = 80,
+		atmosphereDensity = 0.95,
+		atmosphereOffset = 0.8,
+		atmosphereHaze = 2,
+		atmosphereGlare = 0,
+		atmosphereColor = Color3.fromRGB(26, 40, 44),
+		atmosphereDecay = Color3.fromRGB(8, 16, 18),
+		gradingBrightness = -0.04,
+		gradingContrast = 0.16,
+		gradingSaturation = -0.35,
+		gradingTint = Color3.fromRGB(196, 224, 236),
+		bloomIntensity = 0.3,
+		bloomThreshold = 1.3,
+		sunRays = 0,
+		shadowSoftness = 0.6,
+	},
+	-- clear desert night, moonlit, the furthest sight of the night set
+	WastelandNight = {
+		clockTime = 1.2,
+		brightness = 0.35,
+		ambient = Color3.fromRGB(10, 10, 14),
+		outdoorAmbient = Color3.fromRGB(16, 16, 22),
+		fogColor = Color3.fromRGB(10, 10, 16),
+		fogStart = 20,
+		fogEnd = 140,
+		atmosphereDensity = 0.86,
+		atmosphereOffset = 0.6,
+		atmosphereHaze = 0.8,
+		atmosphereGlare = 0.1,
+		atmosphereColor = Color3.fromRGB(44, 46, 60),
+		atmosphereDecay = Color3.fromRGB(16, 16, 28),
+		gradingBrightness = -0.03,
+		gradingContrast = 0.12,
+		gradingSaturation = -0.3,
+		gradingTint = Color3.fromRGB(214, 220, 255),
+		bloomIntensity = 0.3,
+		bloomThreshold = 1.3,
+		sunRays = 0,
+		shadowSoftness = 0.4,
+	},
+	-- one barn lamp per barn, the rest is dark field
+	FarmsteadNight = {
+		clockTime = 0.8,
+		brightness = 0.22,
+		ambient = Color3.fromRGB(6, 6, 10),
+		outdoorAmbient = Color3.fromRGB(12, 11, 18),
+		fogColor = Color3.fromRGB(6, 6, 10),
+		fogStart = 14,
+		fogEnd = 110,
+		atmosphereDensity = 0.9,
+		atmosphereOffset = 0.72,
+		atmosphereHaze = 1.6,
+		atmosphereGlare = 0,
+		atmosphereColor = Color3.fromRGB(30, 30, 48),
+		atmosphereDecay = Color3.fromRGB(12, 10, 22),
+		gradingBrightness = -0.04,
+		gradingContrast = 0.14,
+		gradingSaturation = -0.28,
+		gradingTint = Color3.fromRGB(210, 214, 250),
+		bloomIntensity = 0.36,
+		bloomThreshold = 1.25,
+		sunRays = 0,
+		shadowSoftness = 0.5,
+	},
+	-- thick ground mist, the shortest sight in the game
+	CornfieldNight = {
+		clockTime = 0.2,
+		brightness = 0.18,
+		ambient = Color3.fromRGB(8, 9, 10),
+		outdoorAmbient = Color3.fromRGB(14, 15, 16),
+		fogColor = Color3.fromRGB(10, 11, 12),
+		fogStart = 8,
+		fogEnd = 70,
+		atmosphereDensity = 0.97,
+		atmosphereOffset = 0.85,
+		atmosphereHaze = 2.6,
+		atmosphereGlare = 0,
+		atmosphereColor = Color3.fromRGB(36, 38, 42),
+		atmosphereDecay = Color3.fromRGB(14, 14, 16),
+		gradingBrightness = -0.04,
+		gradingContrast = 0.1,
+		gradingSaturation = -0.4,
+		gradingTint = Color3.fromRGB(220, 228, 232),
+		bloomIntensity = 0.3,
+		bloomThreshold = 1.3,
+		sunRays = 0,
+		shadowSoftness = 0.6,
 	},
 } :: { [string]: LightingPreset }
 
 function LightingConfig.get(id: string): LightingPreset
 	return LightingConfig.presets[id] or LightingConfig.presets.Hub
+end
+
+-- The night preset for a biome, or the shared Night when it has none.
+function LightingConfig.nightFor(biome: string): string
+	local id = biome .. "Night"
+	return if LightingConfig.presets[id] then id else "Night"
 end
 
 return LightingConfig

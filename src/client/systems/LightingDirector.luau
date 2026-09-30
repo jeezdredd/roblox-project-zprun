@@ -13,9 +13,12 @@ local LightingDirector = {}
 local PHASE_ATTRIBUTE = "FlowPhase"
 local NIGHT_ATTRIBUTE = "NightMission"
 local BIOME_ATTRIBUTE = "Biome"
+-- Studio QA: a preset id forced from the command bar or the biome strip (nil releases it)
+local DEV_PRESET_ATTRIBUTE = "DevLightingPreset"
 
 local atmosphere: Atmosphere
 local grading: ColorCorrectionEffect
+local sunRays: SunRaysEffect
 local current: LightingConfig.LightingPreset
 local target: LightingConfig.LightingPreset
 local started = false
@@ -43,6 +46,10 @@ local function blend(from: LightingConfig.LightingPreset, to: LightingConfig.Lig
 		gradingContrast = approach(from.gradingContrast, to.gradingContrast, alpha),
 		gradingSaturation = approach(from.gradingSaturation, to.gradingSaturation, alpha),
 		gradingTint = from.gradingTint:Lerp(to.gradingTint, alpha),
+		bloomIntensity = approach(from.bloomIntensity, to.bloomIntensity, alpha),
+		bloomThreshold = approach(from.bloomThreshold, to.bloomThreshold, alpha),
+		sunRays = approach(from.sunRays, to.sunRays, alpha),
+		shadowSoftness = approach(from.shadowSoftness, to.shadowSoftness, alpha),
 	}
 end
 
@@ -54,6 +61,7 @@ local function apply(preset: LightingConfig.LightingPreset)
 	Lighting.FogColor = preset.fogColor
 	Lighting.FogStart = preset.fogStart
 	Lighting.FogEnd = preset.fogEnd
+	Lighting.ShadowSoftness = preset.shadowSoftness
 
 	atmosphere.Density = preset.atmosphereDensity
 	atmosphere.Offset = preset.atmosphereOffset
@@ -66,23 +74,29 @@ local function apply(preset: LightingConfig.LightingPreset)
 	grading.Contrast = preset.gradingContrast
 	grading.Saturation = preset.gradingSaturation
 	grading.TintColor = preset.gradingTint
+
+	sunRays.Intensity = preset.sunRays
 end
 
 local function resolveTargetId(): string
+	if RunService:IsStudio() then
+		local forced = Workspace:GetAttribute(DEV_PRESET_ATTRIBUTE)
+		if typeof(forced) == "string" and LightingConfig.presets[forced] then
+			return forced
+		end
+	end
 	if Players.LocalPlayer:GetAttribute(PHASE_ATTRIBUTE) ~= "Mission" then
 		return "Hub"
 	end
 	if Workspace:GetAttribute("SandboxActive") == true then
 		return "Sandbox"
 	end
-	if Workspace:GetAttribute(NIGHT_ATTRIBUTE) == true then
-		return "Night"
-	end
 	local biome = Workspace:GetAttribute(BIOME_ATTRIBUTE)
-	if typeof(biome) == "string" then
-		return biome
+	local biomeId = if typeof(biome) == "string" then biome else "City"
+	if Workspace:GetAttribute(NIGHT_ATTRIBUTE) == true then
+		return LightingConfig.nightFor(biomeId)
 	end
-	return "City"
+	return biomeId
 end
 
 local function refreshTarget()
@@ -116,9 +130,8 @@ function LightingDirector.init()
 	grading.Enabled = true
 	grading.Parent = Lighting
 
-	local sunRays = Instance.new("SunRaysEffect")
+	sunRays = Instance.new("SunRaysEffect")
 	sunRays.Name = "TFZ_SunRays"
-	sunRays.Intensity = 0.08
 	sunRays.Spread = 0.6
 	sunRays.Parent = Lighting
 
@@ -136,9 +149,17 @@ function LightingDirector.init()
 	Workspace:GetAttributeChangedSignal(NIGHT_ATTRIBUTE):Connect(refreshTarget)
 	Workspace:GetAttributeChangedSignal(BIOME_ATTRIBUTE):Connect(refreshTarget)
 	Workspace:GetAttributeChangedSignal("SandboxActive"):Connect(snapToTarget)
+	if RunService:IsStudio() then
+		Workspace:GetAttributeChangedSignal(DEV_PRESET_ATTRIBUTE):Connect(refreshTarget)
+	end
 	refreshTarget()
 
 	RunService.Heartbeat:Connect(step)
+end
+
+-- The preset on screen right now (mid-lerp values included), for PostFx.
+function LightingDirector.getCurrent(): LightingConfig.LightingPreset
+	return current or LightingConfig.get("Hub")
 end
 
 return LightingDirector

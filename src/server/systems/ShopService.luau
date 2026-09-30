@@ -7,6 +7,7 @@ local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local SkillsConfig = require(ReplicatedStorage.Shared.config.SkillsConfig)
 local SkinsConfig = require(ReplicatedStorage.Shared.config.SkinsConfig)
+local PerkService = require(script.Parent.PerkService)
 local ProfileManager = require(script.Parent.ProfileManager)
 local SkinService = require(script.Parent.SkinService)
 local WeaponService = require(script.Parent.WeaponService)
@@ -185,6 +186,8 @@ local function buildCatalog(player: Player, vendorId: string): Catalog?
 		entries = skillEntries(data)
 	elseif vendorId == "Merchant" or vendorId == "BubblegumMachine" or vendorId == "SodaMachine" then
 		entries = skinEntries(data)
+	elseif vendorId == PerkService.VENDOR_ID then
+		entries = PerkService.entries(data)
 	else
 		return nil
 	end
@@ -313,6 +316,12 @@ local function onPurchase(player: Player, vendorId: any, entryId: any, kind: any
 		ok, message = purchaseWeapon(player, data, entryId)
 	elseif matched.kind == "Skill" then
 		ok, message = purchaseSkill(player, data, entryId)
+	elseif matched.kind == "PerkSlot" then
+		ok, message = PerkService.purchaseSlot(player, data)
+	elseif matched.kind == "Perk" then
+		ok, message = PerkService.purchaseLevel(player, data, entryId)
+	elseif matched.kind == "PerkEquip" then
+		ok, message = PerkService.toggleEquip(player, data, entryId)
 	else
 		ok, message = purchaseSkin(player, data, entryId)
 	end
@@ -335,6 +344,7 @@ function ShopService.pushCatalog(player: Player, vendorId: string)
 end
 
 function ShopService.init()
+	PerkService.init()
 	Remotes.getFunction(Remotes.Function.ShopCatalog).OnServerInvoke = onCatalog
 	Remotes.getFunction(Remotes.Function.ShopPurchase).OnServerInvoke = onPurchase
 	Players.PlayerRemoving:Connect(function(player)

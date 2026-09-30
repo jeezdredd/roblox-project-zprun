@@ -13,7 +13,7 @@ export type VendorConfig = {
 
 local VendorsConfig = {}
 
-VendorsConfig.order = { "Medbay", "SodaMachine", "WeaponDealer", "Gunsmith", "BubblegumMachine" }
+VendorsConfig.order = { "Medbay", "SodaMachine", "WeaponDealer", "Gunsmith", "BubblegumMachine", "PerkLab" }
 
 VendorsConfig.vendors = {
 	Medbay = {
@@ -65,6 +65,18 @@ VendorsConfig.vendors = {
 		size = Vector3.new(52, 18, 40),
 		wallColor = Color3.fromRGB(80, 70, 84),
 		color = Color3.fromRGB(210, 120, 190),
+	},
+	-- perks and perk slots, Credits only (PerkService); beside the Canteen on the west
+	-- wall, clear of the gate on the south wall
+	PerkLab = {
+		id = "PerkLab",
+		displayName = "Perk Lab",
+		subtitle = "Perks for the next run",
+		offset = Vector3.new(-152, 0, 128),
+		rotationY = -math.pi / 2,
+		size = Vector3.new(56, 18, 44),
+		wallColor = Color3.fromRGB(70, 84, 92),
+		color = Color3.fromRGB(90, 190, 170),
 	},
 } :: { [string]: VendorConfig }
 

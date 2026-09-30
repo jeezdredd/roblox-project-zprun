@@ -18,6 +18,9 @@ local ForkService = require(script.Parent.ForkService)
 local WorldMeshes = require(script.Parent.WorldMeshes)
 local ZombieAI = require(script.Parent.ZombieAI)
 local DistanceTracker = require(script.Parent.DistanceTracker)
+local ProfileManager = require(script.Parent.ProfileManager)
+local RunEconomy = require(script.Parent.RunEconomy)
+local PerkService = require(script.Parent.PerkService)
 
 local MissionService = {}
 
@@ -124,6 +127,7 @@ function MissionService.startSquad(players: { Player }, config: Squad.SquadConfi
 		MissionState.addParticipant(player)
 		MissionGoals.beginRun(player)
 		DistanceTracker.beginRun(player)
+		RunEconomy.beginRun(player)
 		FlowService.setPhase(player, "Mission")
 		local lateralOffset = (index - (count + 1) / 2) * HangarConfig.SQUAD_SPAWN_SPACING
 		teleportCharacter(player, HangarConfig.RUN_START_CFRAME * CFrame.new(lateralOffset, 0, 0))
@@ -142,6 +146,13 @@ function MissionService.removeFromMission(player: Player)
 	disconnectDied(player)
 	MissionState.removeParticipant(player)
 	DistanceTracker.endRun(player)
+	-- whatever the run still holds is banked (a death has banked its share already);
+	-- the perks chosen for this run are spent with it
+	local unbanked = RunEconomy.endRun(player)
+	if unbanked > 0 then
+		ProfileManager.addCredits(player, unbanked)
+	end
+	PerkService.onRunEnd(player)
 	tearDownIfEmpty()
 end
 
@@ -155,6 +166,11 @@ function MissionService.stop(player: Player)
 end
 
 function MissionService.init()
+	-- the profile's session ends synchronously on PlayerRemoving and on BindToClose, so
+	-- the run is settled (banked, perks cleared) before it, while the data is still there
+	ProfileManager.onReleasing(function(player)
+		MissionService.removeFromMission(player)
+	end)
 	Players.PlayerRemoving:Connect(function(player)
 		MissionService.removeFromMission(player)
 	end)

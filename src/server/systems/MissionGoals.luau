@@ -4,15 +4,19 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local MissionGoalsConfig = require(ReplicatedStorage.Shared.config.MissionGoalsConfig)
+local RunEconomyMath = require(ReplicatedStorage.Shared.util.RunEconomyMath)
 
 local MissionGoals = {}
 
 type RunProgress = { [string]: number }
 
 local progress: { [Player]: RunProgress } = {}
+-- the goals whose bonus a results screen has already paid this run
+local paid: { [Player]: { [string]: boolean } } = {}
 
 function MissionGoals.beginRun(player: Player)
 	progress[player] = { Distance = 0, Kills = 0, CleanDistance = 0 }
+	paid[player] = {}
 end
 
 function MissionGoals.report(player: Player, metric: string, value: number)
@@ -53,13 +57,30 @@ function MissionGoals.bonusCredits(player: Player): number
 	return total
 end
 
+-- Pays the bonus of every completed goal not paid yet this run and marks them paid, so
+-- the death after a Continue pays only the goals completed since.
+function MissionGoals.claimBonus(player: Player): number
+	local rewards: { [string]: number } = {}
+	for _, goalId in MissionGoalsConfig.order do
+		local config = MissionGoalsConfig.get(goalId)
+		if config then
+			rewards[goalId] = config.rewardCredits
+		end
+	end
+	local total, nowPaid = RunEconomyMath.unpaidBonus(MissionGoals.completed(player), rewards, paid[player] or {})
+	paid[player] = nowPaid
+	return total
+end
+
 function MissionGoals.endRun(player: Player)
 	progress[player] = nil
+	paid[player] = nil
 end
 
 function MissionGoals.init()
 	Players.PlayerRemoving:Connect(function(player)
 		progress[player] = nil
+		paid[player] = nil
 	end)
 end
 

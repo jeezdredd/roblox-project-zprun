@@ -10,6 +10,7 @@ local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local ProfileManager = require(script.Parent.ProfileManager)
 local SkillEffects = require(script.Parent.SkillEffects)
 local MissionGoals = require(script.Parent.MissionGoals)
+local RunEconomy = require(script.Parent.RunEconomy)
 
 local WeaponService = {}
 
@@ -244,7 +245,8 @@ local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, res
 	local progress = if data then data.WeaponsOwned[config.id] else nil
 	local level = if progress then progress.level else 1
 	local damage = WeaponsConfig.damageAt(config, level)
-	if part.Name == "Head" then
+	local headshot = part.Name == "Head"
+	if headshot then
 		damage *= config.headshotMultiplier
 	end
 	local wasAlive = humanoid.Health > 0
@@ -252,6 +254,9 @@ local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, res
 	if wasAlive and humanoid.Health <= 0 then
 		ProfileManager.addKill(player)
 		MissionGoals.report(player, "Kills", 1)
+		-- the kill pays into the run balance at once (RunEconomy)
+		local zombieId = model:GetAttribute("ZombieId")
+		RunEconomy.onKill(player, if typeof(zombieId) == "string" then zombieId else nil, headshot)
 		if progress then
 			progress.xp += WeaponsConfig.XP_PER_KILL
 		end

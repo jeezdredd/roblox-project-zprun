@@ -6,6 +6,7 @@
 -- non-zero exit.
 
 local AudioMath = require("../../src/client/audio/AudioMath")
+local WeaponAudioMath = require("../../src/client/audio/WeaponAudioMath")
 
 local failures = 0
 
@@ -177,6 +178,72 @@ group("voice stealing", function()
 	check("2D voices count as in range", AudioMath.stealScore(50, 0, 0, 0) == AudioMath.stealScore(50, 5, 0, 0))
 	check("jitter centre", AudioMath.jitter(0.5, 0.1) == 1)
 	check("jitter edges", near(AudioMath.jitter(0, 0.1), 0.9, 1e-9) and near(AudioMath.jitter(1, 0.1), 1.1, 1e-9))
+end)
+
+group("weapon tail choice", function()
+	local ids = { tail_interior = 11, tail_open = 22, tail_open_rifle = 33 }
+	local function lookup(key: string): number
+		return ids[key] or 0
+	end
+	local id, share = WeaponAudioMath.tailFor("Interior", "Rifle", lookup)
+	check("interior takes the room tail", id == 11 and share == 0.34, tostring(id))
+	id, share = WeaponAudioMath.tailFor("Hangar", "Pistol", lookup)
+	check("hangar is interior", id == 11 and share == 0.34)
+	id, share = WeaponAudioMath.tailFor("Street", "Rifle", lookup)
+	check("street takes the class tail at full share", id == 33 and share == 1)
+	id, share = WeaponAudioMath.tailFor("Open", "rifle", lookup)
+	check("class name case does not matter", id == 33)
+	id, share = WeaponAudioMath.tailFor("Forest", "Pistol", lookup)
+	check("class without a tail takes the generic one, quieter", id == 22 and share == 0.46)
+	id = WeaponAudioMath.tailFor("Open", "SMG", function()
+		return 0
+	end)
+	check("no recordings is silent", id == 0)
+end)
+
+group("reflection rate limit", function()
+	local allowed, last = WeaponAudioMath.gate(-math.huge, 10, 0.09)
+	check("first fan fires", allowed and last == 10)
+	allowed, last = WeaponAudioMath.gate(last, 10.05, 0.09)
+	check("50 ms later is held", not allowed and last == 10)
+	allowed, last = WeaponAudioMath.gate(last, 10.1, 0.09)
+	check("100 ms later fires", allowed and last == 10.1)
+	-- 600 rpm is a shot every 0.1 s: every shot fires; 1200 rpm: every second one
+	local fired, at = 0, -math.huge
+	for shot = 0, 9 do
+		local ok, next = WeaponAudioMath.gate(at, shot * 0.05, 0.09)
+		at = next
+		if ok then
+			fired += 1
+		end
+	end
+	check("1200 rpm fires every second shot", fired == 5, tostring(fired))
+end)
+
+group("distance layer keys", function()
+	local ids = WeaponAudioMath.layerIds(5, 0, 0)
+	check("close only", ids.close == 5 and ids.mid == nil and ids.far == nil)
+	ids = WeaponAudioMath.layerIds(5, 6, 7)
+	check("all three", ids.close == 5 and ids.mid == 6 and ids.far == 7)
+	ids = WeaponAudioMath.layerIds(0, 0, 7)
+	check("far alone", ids.close == nil and ids.far == 7)
+	check("negative is missing", WeaponAudioMath.layerIds(5, -1, 0).mid == nil)
+	-- the engine's fallback then plays the nearest layer that exists
+	local available = { close = true }
+	check("mid falls back to close", AudioMath.fallbackLayer(available, "mid", { "close", "mid", "far" }) == "close")
+	check("far falls back to close", AudioMath.fallbackLayer(available, "far", { "close", "mid", "far" }) == "close")
+end)
+
+group("impact families", function()
+	check("concrete", WeaponAudioMath.impactFamily("Concrete") == "concrete")
+	check("unknown is concrete", WeaponAudioMath.impactFamily("Neon") == "concrete")
+	check("metal", WeaponAudioMath.impactFamily("CorrodedMetal") == "metal")
+	check("wood", WeaponAudioMath.impactFamily("WoodPlanks") == "wood")
+	check("dirt", WeaponAudioMath.impactFamily("Grass") == "dirt")
+	check("flesh", WeaponAudioMath.impactFamily("Flesh") == "flesh")
+	local keys = WeaponAudioMath.impactKeys("metal", 2)
+	check("keys are numbered", #keys == 2 and keys[1] == "impact_metal_01" and keys[2] == "impact_metal_02")
+	check("volley cap", WeaponAudioMath.impactsToPlay(8, 2) == 2 and WeaponAudioMath.impactsToPlay(1, 2) == 1 and WeaponAudioMath.impactsToPlay(0, 2) == 0)
 end)
 
 if failures > 0 then

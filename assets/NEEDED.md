@@ -27,6 +27,25 @@ only, no synthesis, no invented ids.
 | `audio/city/siren_police` | — | — | polish | rejected |
 | `audio/range/gong` | Shooting range — gong hit feedback | Freesound CC0: metal gong hit / steel target ping | blocker | rejected |
 | `audio/unused/siren_police_rejected` | — | — | polish | rejected |
+| `audio/weapons/far_pistol` | WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
+| `audio/weapons/far_rifle` | WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
+| `audio/weapons/far_shotgun` | WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
+| `audio/weapons/far_smg` | WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
+| `audio/weapons/impact_concrete_01` | WeaponSfx.playImpacts — bullet on stone (Kenney land_hard stands in) | freesound CC0 'bullet impact concrete' | polish | needed |
+| `audio/weapons/impact_concrete_02` | WeaponSfx.playImpacts — bullet on stone, variation | freesound CC0 'bullet impact concrete' | polish | needed |
+| `audio/weapons/impact_dirt_01` | WeaponSfx.playImpacts — bullet on soil (Kenney land_soft stands in) | freesound CC0 'bullet impact dirt' | polish | needed |
+| `audio/weapons/impact_dirt_02` | WeaponSfx.playImpacts — bullet on soil, variation | freesound CC0 'bullet impact dirt' | polish | needed |
+| `audio/weapons/impact_flesh_01` | WeaponSfx.playImpacts — bullet on a body (Kenney bite stands in) | freesound CC0 'bullet impact flesh' | polish | needed |
+| `audio/weapons/impact_flesh_02` | WeaponSfx.playImpacts — bullet on a body, variation | freesound CC0 'bullet impact flesh' | polish | needed |
+| `audio/weapons/impact_metal_01` | WeaponSfx.playImpacts — bullet on metal (Kenney bolt stands in) | freesound CC0 'bullet impact metal' | polish | needed |
+| `audio/weapons/impact_metal_02` | WeaponSfx.playImpacts — bullet on metal, variation | freesound CC0 'bullet impact metal' | polish | needed |
+| `audio/weapons/impact_wood_01` | WeaponSfx.playImpacts — bullet on wood (Kenney land_soft stands in) | freesound CC0 'bullet impact wood' | polish | needed |
+| `audio/weapons/impact_wood_02` | WeaponSfx.playImpacts — bullet on wood, variation | freesound CC0 'bullet impact wood' | polish | needed |
+| `audio/weapons/mid_pistol` | WeaponSfx.playDistantShot — GunshotRemote mid layer, 40..350 studs | FFSL Prepared: Walther PPQ mid-distance row, cut with tools/audio_build/build_shots_v6.py | polish | needed |
+| `audio/weapons/mid_rifle` | WeaponSfx.playDistantShot — GunshotRemote mid layer, 40..350 studs | FFSL Prepared: AK-47 C_31P.wav, cut with tools/audio_build/build_shots_v6.py | polish | needed |
+| `audio/weapons/mid_shotgun` | WeaponSfx.playDistantShot — GunshotRemote mid layer, 40..350 studs | FFSL Prepared: Benelli Nova mid-distance row, cut with tools/audio_build/build_shots_v6.py | polish | needed |
+| `audio/weapons/mid_smg` | WeaponSfx.playDistantShot — GunshotRemote mid layer, 40..350 studs | FFSL Prepared: Carl Gustav M45 mid-distance row, cut with tools/audio_build/build_shots_v6.py | polish | needed |
+| `audio/weapons/ricochet_01` | WeaponSfx.playImpacts — one hard hit in six | freesound CC0 'ricochet' | polish | needed |
 | `audio/weapons/shell_03` | Weapon shell casing variation 3 | Kenney CC0 impact sounds: small metal drop | polish | rejected |
 
-**3 blockers, 9 polish items.**
+**3 blockers, 28 polish items.**

@@ -66,8 +66,10 @@ locomotion that already runs. Built on its own branch on 2026-09-29 and brought 
 In `RunService.PreSimulation`, after the `Animator` has written its pose and skipped on
 frames where `Animator.EvaluationThrottled` says the pose was reused:
 
-1. Locomotion, unchanged: the `Run` / `Strafe` / `Stumble` / `Death` tracks,
-   `BodyMotionController`'s lean (local, `C0`), `FootPlanting` (local, hub).
+1. Locomotion: the weapon class's gait set (idle, walk, run, sprint, strafes) from
+   [[Third-Person Locomotion]], or the `Run` / `Strafe` tracks while its slots are empty,
+   plus `Stumble` / `Death`, `BodyMotionController`'s lean (local, `C0`), `FootPlanting`
+   (local, hub).
 2. Aim: the rig works out this frame's `LowerTorso` and `UpperTorso` in world space
    from the root and the joints (`C0 * Transform * C1^-1`), and the root's rotation is
    the upright frame. `Waist.Transform` turns the chest to 35 % of the pitch and 55 % of

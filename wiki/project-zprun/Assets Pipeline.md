@@ -111,7 +111,7 @@ python3 scripts/sync_configs.py [--check]
 | `ZombieSkins.luau` | `animation.zombie_sf.*`, `zombie.sketchfab.*.rig` | Skinned zombie rigs and their clips with ground speeds; a skin is used only when its rig id and idle clip are live |
 | `src/server/systems/ViewmodelPacks.luau` | `viewmodel.fps.*.rig` | First-person pack rigs, loaded with `InsertService` |
 | `WorldMeshConfig.luau` | `mesh.world.*`, `texture.world.*` | Cube 3D world props |
-| `src/client/systems/WeaponSfx.luau` | `audio.weapons.*` | Requires `AssetIds` directly and looks the branch up by string key |
+| `src/client/systems/WeaponSfx.luau` | `audio.weapons.*` | Requires `AssetIds` directly and looks the branch up by string key, including `WeaponsConfig`'s `midSound` / `farSound` names; `audio/weapons/mid_*`, `far_*`, `impact_*`, `ricochet_01` are `needed` slots with id 0 |
 
 The last row is the one deliberate exception to the alias rule: `WeaponsConfig` stores sound *names* (`shotSound = "shot_pistol"`, `closeSounds = { "close_pistol", "close_pistol_02", "close_pistol_03" }`) and `WeaponSfx` resolves them, and its phase keys (`rifle_mag_in`, `pistol_slide_release`, `casing_brass_01`, ...), against `AssetIds.audio.weapons` at runtime, falling back to generic keys (`mag_in`, `bolt`, `shell_01`). Adding a weapon class or a better recording is a config edit plus a manifest entry with a matching key, with no new alias constant.
 
@@ -159,7 +159,7 @@ Only sources whose licence permits redistribution inside a Roblox experience are
 | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey) | CC0 1.0 | 38 weapon sounds (2026-09-29): close shots and class tails (v6, from the Prepared SFX Library), the sub layers, open tail, dry fire, low-ammo and last-round cues, reload and handling foley, draw and holster |
 | Sketchfab | CC BY 4.0 | Skinned zombies by pxltiger, LxNazarov and stasbelyk13 with their 22 clips; first-person packs by DuqueCD7 (Pistol, AK-47, Saps-12) and 1Matzh (UZI 2026 remake, which uses "UZI" by Gintoki1234 and "Division Agent (Rigged)" by Blue-Spirit) |
 | Roblox Cube 3D / generative AI | Owned by the project owner | World props and the walker2 zombie meshes (Cube 3D), the carbine viewmodel meshes (generative AI output) |
-| Mixamo (Adobe) | Royalty-free for games | The "Swat Guy" first-person arms (fallback rig) |
+| Mixamo (Adobe) | Royalty-free for games | The "Swat Guy" first-person arms (fallback rig); the sixteen locomotion and zombie slots of [[Third-Person Locomotion]] (`tools/animation_pipeline/README.md`), whose provenance line is "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip <exact name>" |
 
 Licence totals across the manifest (2026-09-29, evening): CC0 204, CC BY 4.0 83, Roblox Cube 3D generation 72, CC BY 3.0 20 (congusbongus footsteps 15, Vincent Sevedge 4, GreenFireSound 1), `Original work (project owner)` 17, Mixamo 14, Public domain 12, Roblox generative AI output 10, sole proprietor 5 (the unused `animation/weapon/*` slots), and one `needed` slot with no licence yet. Every CC BY author has to be credited in the shipped game as well; `assets/LICENSES.md` notes that those credits belong in the settings panel before release.
 

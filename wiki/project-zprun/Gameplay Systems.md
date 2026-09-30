@@ -249,6 +249,8 @@ Easy used to be a frozen diorama (speed multiplier 0 and an unreachable aggro di
 
 Files: `src/server/systems/ZombieAI.luau`, `ZombieFactory.luau`, `ZombieAnimator.luau`, `ZombieRigs.luau`, `ZombieHitboxes.luau`, configs `ZombiesConfig`, `ZombieSkins`, `GameConstants`; client `src/client/systems/ZombieAudio.luau`, `ZombieVfx.luau`
 
+The Dormant rise plays `stand_up_back` / `stand_up_stomach` and the Feeding pose `biting_ground` once uploaded (`idle_c` and `feeding` until then); see [[Third-Person Locomotion]].
+
 ### Archetypes
 
 `ZombiesConfig` is an **array**, not a map: iteration order is the weight-roll order.
@@ -428,6 +430,8 @@ Checked in Studio on 2026-09-29: every 3D voice is heard once the emitters sit o
 ## Weapons
 
 Files: `src/server/systems/WeaponService.luau` (server authority), `src/server/systems/WorldWeapon.luau` (third-person model), `src/server/systems/ViewmodelPacks.luau` (pack rig loader), `src/client/systems/WeaponController.luau` (input and prediction), `Viewmodel.luau`, `PackViewmodel.luau`, `ViewmodelClipPlayer.luau`, `WeaponSfx.luau`, `WeaponVfx.luau`, configs `src/shared/config/WeaponsConfig.luau`, `ViewmodelPackConfig.luau`, clip modules `src/shared/viewmodel_clips/`
+
+Weapon sounds play through the spatial audio engine (`SfxConfig.WEAPONS_ON_ENGINE`): own shots 2D on `OwnGunshot` with a reflection fan from the muzzle, teammates' shots on `GunshotRemote` with close / mid / far layers, casings on `Casing`, impacts on `Impact`; see [[Weapon Audio]]. Locomotion clips per weapon class (the rifle set for the rifle, SMG and shotgun; the pistol set for the pistol), speed-scaled, with the generic `Run` as the fallback while a slot is empty; see [[Third-Person Locomotion]].
 
 ### Config
 

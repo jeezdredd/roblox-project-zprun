@@ -120,14 +120,14 @@ All under `src/server/systems/`.
 - `RunController.luau` drives auto-run with `Humanoid:Move`, clamps the lane, and applies the decaying lateral shove and input lock from `applyGlance`; `InputController.luau` is the only run input, a ContextAction-bound lateral axis. `GlanceController.luau` listens for `PlayerGlanced` and fans it out to `RunController`, camera, body and animation reactions.
 - `CameraController.luau` is the mission camera; `CameraEffectsController.luau` layers FOV, shake, bob, sway, tilt and breathing on top of it.
 - `ExertionState.luau` is the shared movement clock. Speed, grounded state, a 0-1 exertion accumulator and a stride phase that fires step listeners twice per cycle. Footsteps, breathing, dust and camera bob all read from it rather than recomputing speed.
-- `BodyMotionController.luau`, `FootPlanting.luau` and `AnimationController.luau` pose the character; `FirstPersonController.luau` is a bootstrap that starts `CursorMode` and disables the reset button.
+- `BodyMotionController.luau`, `FootPlanting.luau` and `AnimationController.luau` pose the character (`AnimationController` loads the generic clips and the weapon locomotion sets, picks the set by weapon class and the gait by speed, lateral input and the sprint threshold, falls back inside the set and then to `Run`, and exposes `clipSetFor(class)` for the yard; the gait feeds the `Animator` and `BodyRig` writes the aim, the weapon frame and the hand IK after it in `PreSimulation`, see [[Third-Person Locomotion]]); `FirstPersonController.luau` is a bootstrap that starts `CursorMode` and disables the reset button.
 
 ### Weapons
 
 - `WeaponController.luau` owns input and prediction: fire, reload on the same `WeaponsConfig` timeline as the server (with the shell-reload fire cancel), slot swaps, the predicted magazine, and replication of `WeaponHit` into visible effects.
 - `Viewmodel.luau` owns the first-person rig every RenderStepped: the procedural layer (recoil springs, sway, bob, drift, hip aim, equip) for both rig kinds, and the choice between a pack rig (`PackViewmodel`) and the procedural or mesh fallback (`ViewmodelBuilder`, `AnimationSequencer`, `PoseLibrary`).
 - `PackViewmodel.luau` builds a rig from `ReplicatedStorage.ViewModelPacks` and runs its clips: the idle/walk base loop, a one-shot queue, reload plans, the fire cancel, the shotgun's pump follow and the phase markers. `ViewmodelClipPlayer.luau` decodes the baked tracks in `src/shared/viewmodel_clips/` and writes `Bone.Transform` each frame.
-- `WeaponVfx.luau` (reused muzzle flash rigs, pooled casings, tracers, impacts, smoke) and `WeaponSfx.luau` (voice pools, shot takes and tails, marker-driven foley, low-ammo layer, casing landings, reverb) are the effect layers.
+- `WeaponVfx.luau` (reused muzzle flash rigs, pooled casings, tracers, impacts, smoke) and `WeaponSfx.luau` (shot takes and tails on `OwnGunshot`, teammates' shots on `GunshotRemote`, marker-driven foley, low-ammo layer, casing landings on `Casing`, bullet impacts on `Impact`, the reflection fan; legacy pools behind the switch) are the effect layers.
 
 ### Third-person body
 
@@ -146,7 +146,7 @@ All under `src/server/systems/`.
 Classes, environments, materials and platform budgets are data in `src/shared/config/SpatialAudioConfig.luau`.
 - `WeaponAudioMath.luau` is the pure part of the weapon sounds on the engine (tail choice by environment, the reflection fan's rate limit, the distance layer keys, the impact family per material), used by `src/client/systems/WeaponSfx.luau`, which plays the shooter's gun, teammates' shots, casings, the gong and bullet impacts through the engine's classes while `SfxConfig.WEAPONS_ON_ENGINE` is on and keeps its `Sound`-pool path for the switch off (see [[Weapon Audio]]).
 
-`MusicController.luau` still owns the legacy SoundGroup tree (which `WeaponSfx` plays through until it moves onto the engine, see `docs/audio/weapons-integration.md`) and mirrors every volume, mute and duck change onto the engine's buses. `PlayerSfx.luau`, `FootstepController.luau`, `BreathingController.luau`, `WorldSfx.luau`, `CityAmbience.luau`, `ZombieAudio.luau`, `DeathController.luau` and `UiSfx.luau` are the per-domain layers, each playing through the engine when the flag is on and through its old `Sound`s when it is off; `SfxPlayer.luau` is the shared helper whose `play2D` / `play3D` forward to the engine's `Generic2D` / `Generic3D` classes; `DefaultSoundMuter.luau` silences Roblox's stock character sounds so the custom layer is the only one heard.
+`MusicController.luau` still owns the legacy SoundGroup tree, which `WeaponSfx` plays through only while `SfxConfig.WEAPONS_ON_ENGINE` is off (see [[Weapon Audio]]), and mirrors every volume, mute and duck change onto the engine's buses. `PlayerSfx.luau`, `FootstepController.luau`, `BreathingController.luau`, `WorldSfx.luau`, `CityAmbience.luau`, `ZombieAudio.luau`, `DeathController.luau` and `UiSfx.luau` are the per-domain layers, each playing through the engine when the flag is on and through its old `Sound`s when it is off; `SfxPlayer.luau` is the shared helper whose `play2D` / `play3D` forward to the engine's `Generic2D` / `Generic3D` classes; `DefaultSoundMuter.luau` silences Roblox's stock character sounds so the custom layer is the only one heard.
 
 ### VFX and post
 
@@ -164,7 +164,7 @@ Classes, environments, materials and platform budgets are data in `src/shared/co
 
 Two config modules are special. `AssetIds.luau` is generated by `scripts/sync_configs.py` from `assets/manifest.json` and must not be hand edited; every consumer guards on `id > 0` so an unuploaded asset is silence, not an error. `VfxConfig.luau` is deliberately not frozen, because `SettingsApply` mutates `VfxConfig.DENSITY` at runtime through `setDensity`.
 
-The remaining shared trees are small: `net/Remotes.luau`, `types/Flow.luau` and `types/Squad.luau` (type-only modules that return an empty table), and `util/` with `LaneSectionFactory` (lane geometry shared by the start platform and chunks), `MaterialUtil` (registers the `TFZ_Asphalt`, `TFZ_Concrete`, `TFZ_Sand`, `TFZ_Metal`, `TFZ_Rust`, `TFZ_MetalPlates` and `TFZ_DarkRust` MaterialVariants and sets the Metal and CorrodedMetal base-material overrides), `TextureUtil` (face texture application), `MeshTemplates` (loads each MeshId once through `AssetService:CreateMeshPartAsync` so Rojo-mounted MeshParts render at their part size), `ZombieRig` (the only sanctioned way to find a zombie's torso or neck, so no consumer hardcodes a part name) and `RewardMultiplier` (difficulty multiplier composed with de-duplicated modifier multipliers, used by both the lobby readout and the server payout so the number the player is shown is the number they get).
+The remaining shared trees are small: `net/Remotes.luau`, `types/Flow.luau` and `types/Squad.luau` (type-only modules that return an empty table), and `util/` with `LaneSectionFactory` (lane geometry shared by the start platform and chunks), `LocomotionMath` (pure gait rules: set by class, gait by movement, clip weights with fallbacks, playback rate; `luau tests/animation/run.luau`), `MaterialUtil` (registers the `TFZ_Asphalt`, `TFZ_Concrete`, `TFZ_Sand`, `TFZ_Metal`, `TFZ_Rust`, `TFZ_MetalPlates` and `TFZ_DarkRust` MaterialVariants and sets the Metal and CorrodedMetal base-material overrides), `TextureUtil` (face texture application), `MeshTemplates` (loads each MeshId once through `AssetService:CreateMeshPartAsync` so Rojo-mounted MeshParts render at their part size), `ZombieRig` (the only sanctioned way to find a zombie's torso or neck, so no consumer hardcodes a part name) and `RewardMultiplier` (difficulty multiplier composed with de-duplicated modifier multipliers, used by both the lobby readout and the server payout so the number the player is shown is the number they get).
 
 ## Networking
 
@@ -234,7 +234,8 @@ ammo-add:     predictedMag on the client and AmmoMag on the server change at the
 fire mid-reload: magazine past ammo-add -> the shot cuts the tail on both sides
               shell loop -> WeaponReloadCancel -> WeaponsConfig.shellCancel on both sides -> buffered shot after the fast exit
 shot:         WeaponFire -> WeaponService validation -> WeaponHit to all clients -> tracers, impacts, distant shots
-              local: WeaponSfx.playShot (close take, tail, low-ammo layer) -> WeaponVfx.muzzleFlash + ejectCasing
+              local: WeaponSfx.playShot (close take, sub, tail by environment, low-ammo layer, reflection fan from the muzzle) -> WeaponVfx.muzzleFlash + ejectCasing
+              hit -> WeaponVfx.impact + WeaponSfx.playImpacts
               -> casing lands -> WeaponVfx.onCasingLanded -> WeaponSfx.playCasingLand
 ```
 

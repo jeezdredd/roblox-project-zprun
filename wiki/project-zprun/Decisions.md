@@ -455,3 +455,21 @@ from real uploads, and nothing extracted from other games. See `docs/asset-polic
 **Reason.** The run clip that every teammate plays leans the chest about 37 degrees forward, and the first version held the gun in torso space, so every running teammate pointed at the ground; its pitch split (35 / 25 / 40 over waist, neck and arms) also left the head on 60 % of the aim and the gun on 75 %, because the head and the arms both hang off the chest. Measured after the change in the gallery: a running mannequin's chest leans 15 degrees, the head and the gun are level, and both hands sit on their targets within 0.02 studs.
 
 **Consequence.** `BodyMath.spreadAim` returns the clamped aim, the chest's share and the gun's pitch (halved in a sprint); `ThirdPersonConfig.AIM` has `chestStabilize` (0.6) and `headStabilize` (0.9) instead of the neck and arm shares.
+
+## 2026-09-30: Weapon sounds and locomotion
+
+### Weapon sounds move onto the engine behind a switch
+
+**Decision.** `WeaponSfx` plays every weapon sound through the spatial audio engine while `SfxConfig.WEAPONS_ON_ENGINE` is on and keeps its `Sound`-pool path, the `Weapons` group reverb and the zone scan for the switch off. Bullet impacts use the Kenney impacts already in the manifest as stand-ins per material family, and the mid and far gunshot layers exist as `needed` manifest slots with id 0.
+
+**Reason.** The legacy path is the reference the Studio comparison needs before the transport changes for good; waiting for impact recordings would have left hits silent; a layer key that exists before its recording lets the engine's fallback play the close take at every distance until the takes are cut.
+
+**Consequence.** Step 6 of `docs/audio/weapons-integration.md` (removing the legacy branches, the `weapons` preload skip and the `Weapons` SoundGroup) waits for the listening pass. See [[Weapon Audio]].
+
+### Locomotion per weapon class, fallback to Run
+
+**Decision.** The third-person gait comes from the weapon class's clip set (rifle for the rifle, SMG and shotgun; pistol for the pistol), chosen by speed, lateral input and the body layer's sprint threshold; a set never borrows the other set's clips, the fallback is inside the set and then the generic `Run`. No pistol sprint clip is planned (the pistol run speeds up), the zombie stand-up and biting clips live with the other zombie clips under `animation/zombie/`, and the reload and hit one-shots are loaded but not wired until they are seen against the body layer's gesture.
+
+**Reason.** Every slot is empty until the Mixamo clips are retargeted, so the rules have to produce exactly today's animation with nothing uploaded and improve one slot at a time; cross-set borrowing would put a rifle carry under a pistol.
+
+**Consequence.** `LocomotionMath` holds the rules with `tests/animation/run.luau`; `AnimationController.clipSetFor(class)` gives the yard gallery the ids. See [[Third-Person Locomotion]].

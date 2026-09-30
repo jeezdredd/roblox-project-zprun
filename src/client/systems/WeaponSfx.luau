@@ -7,7 +7,12 @@ local SoundService = game:GetService("SoundService")
 local Workspace = game:GetService("Workspace")
 
 local AssetIds = require(ReplicatedStorage.Shared.config.AssetIds)
+local SfxConfig = require(ReplicatedStorage.Shared.config.SfxConfig)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
+local AudioEngine = require(script.Parent.Parent.audio.AudioEngine)
+local AudioEnvironment = require(script.Parent.Parent.audio.AudioEnvironment)
+local AudioReflections = require(script.Parent.Parent.audio.AudioReflections)
+local WeaponAudioMath = require(script.Parent.Parent.audio.WeaponAudioMath)
 local SfxPlayer = require(script.Parent.SfxPlayer)
 local MusicController = require(script.Parent.MusicController)
 
@@ -15,10 +20,26 @@ local MusicController = require(script.Parent.MusicController)
 -- recording dropped into assets/manifest.json (for example `rifle_bolt_back`) takes
 -- over from the generic placeholder without a code change. A key that is missing or 0
 -- falls back to the generic key, and to silence when that is missing too.
+--
+-- Two paths (docs/audio/weapons-integration.md). With SfxConfig.WEAPONS_ON_ENGINE the
+-- shooter's layers play on the engine's OwnGunshot class, the tail is picked by the
+-- listener's acoustic environment, a reflection fan runs from the muzzle, teammates'
+-- shots are GunshotRemote with distance layers, casings and the gong and bullet
+-- impacts take their own classes. Off, every function takes the Sound-pool path it had
+-- before, so the two can be compared in Studio.
 
 local WeaponSfx = {}
 
 local player = Players.LocalPlayer
+
+local function onEngine(): boolean
+	return SfxConfig.WEAPONS_ON_ENGINE == true and AudioEngine.enabled()
+end
+
+---------------------------------------------------------------------------------------
+-- Legacy path: a Weapons SoundGroup with a room reverb, per-id Sound pools, acoustic
+-- zones scanned from Workspace.
+
 local weaponGroup: SoundGroup? = nil
 local reverb: ReverbSoundEffect? = nil
 local acousticZones: { BasePart } = {}
@@ -150,10 +171,7 @@ local function jitteredGain(volume: number): number
 	return volume * 10 ^ (db / 20)
 end
 
-local function playOneShot(soundId: number, volume: number, pitch: number)
-	if soundId <= 0 or volume <= 0 then
-		return
-	end
+local function playPooled(soundId: number, volume: number, pitch: number)
 	local sound = acquireVoice(soundId)
 	sound.Volume = jitteredGain(volume)
 	sound.PlaybackSpeed = pitch * (1 + (math.random() * 2 - 1) * PITCH_JITTER)
@@ -161,6 +179,19 @@ local function playOneShot(soundId: number, volume: number, pitch: number)
 	pcall(function()
 		sound:Play()
 	end)
+end
+
+-- The shooter's own layers: 2D on the weapons bus through OwnGunshot (the class adds
+-- the pitch and gain jitter and feeds the duck sidechain), or the legacy pool.
+local function playOneShot(soundId: number, volume: number, pitch: number)
+	if soundId <= 0 or volume <= 0 then
+		return
+	end
+	if onEngine() then
+		AudioEngine.play({ id = soundId, class = "OwnGunshot", volume = volume, pitch = pitch })
+		return
+	end
+	playPooled(soundId, volume, pitch)
 end
 
 local function weaponSoundId(key: string): number
@@ -180,6 +211,22 @@ end
 
 function WeaponSfx.preload()
 	local weapons = AssetIds.audio.weapons :: { [string]: number }
+	if onEngine() then
+		-- the engine's own preload skips the weapons category, so it is done here
+		local assets: { string } = {}
+		for _, id in weapons do
+			if id > 0 then
+				table.insert(assets, "rbxassetid://" .. tostring(id))
+			end
+		end
+		if AssetIds.audio.range.gong > 0 then
+			table.insert(assets, "rbxassetid://" .. tostring(AssetIds.audio.range.gong))
+		end
+		pcall(function()
+			ContentProvider:PreloadAsync(assets)
+		end)
+		return
+	end
 	for _, id in weapons do
 		if id > 0 then
 			ensurePool(id)
@@ -241,25 +288,37 @@ local lastTailAt = 0
 -- the same volume and pitch they rebuild the original shot. Indoors the close shot keeps
 -- its blast and takes the room tail instead. The generic `tail_open` (another recording)
 -- stands in, quieter, for a class without its own tail.
-local function tailFor(config: WeaponsConfig.WeaponConfig, interior: boolean): (number, number)
-	if interior then
-		return weaponSoundId("tail_interior"), config.shotVolume * 0.34
-	end
-	local classTail = weaponSoundId("tail_open_" .. string.lower(config.class))
-	if classTail > 0 then
-		return classTail, config.shotVolume
-	end
-	return weaponSoundId("tail_open"), config.shotVolume * 0.46
+local function tailFor(config: WeaponsConfig.WeaponConfig, environment: string): (number, number)
+	local id, share = WeaponAudioMath.tailFor(environment, config.class, weaponSoundId)
+	return id, config.shotVolume * share
 end
 
-local function playTail(config: WeaponsConfig.WeaponConfig, interior: boolean)
+-- the legacy path only knows interior or not
+local function legacyEnvironment(interior: boolean): string
+	return if interior then "Interior" else "Open"
+end
+
+local function playTail(config: WeaponsConfig.WeaponConfig, environment: string)
 	local now = os.clock()
 	if now - lastTailAt < TAIL_COOLDOWN then
 		return
 	end
 	lastTailAt = now
-	local tailId, volume = tailFor(config, interior)
+	local tailId, volume = tailFor(config, environment)
 	playOneShot(tailId, volume, config.shotPitch)
+end
+
+-- The environment layer (the MW2019 reflections): a fan of rays from the muzzle, each
+-- hit playing the shot again from that surface. One fan per REFLECTION_INTERVAL, so
+-- automatic fire spawns a slap every second shot or so; the Reflection class caps the
+-- live slaps.
+local REFLECTION_INTERVAL = 0.09
+local REFLECTION_VOLUME = 0.6
+local lastOwnFanAt = -math.huge
+local lastRemoteFanAt = -math.huge
+
+local function fireFan(position: Vector3, id: number, config: WeaponsConfig.WeaponConfig)
+	AudioReflections.fire(position, id, "weapons", config.shotVolume * REFLECTION_VOLUME, config.shotPitch, AudioEngine.reflectionRays())
 end
 
 -- Low-ammo cue: a metallic spring layer on each shot once the mag is down to
@@ -285,26 +344,41 @@ local function playLowAmmo(config: WeaponsConfig.WeaponConfig, remaining: number
 	end
 end
 
--- `remaining` is the magazine count after this shot, for the low-ammo layer. The spent
+-- `remaining` is the magazine count after this shot, for the low-ammo layer; `muzzle`
+-- is the world position of the muzzle, the origin of the reflection fan. The spent
 -- casing's sound is no longer on a timer here: it plays when the visible casing lands
 -- (WeaponVfx.onCasingLanded -> WeaponSfx.playCasingLand).
-function WeaponSfx.playShot(weaponId: string, remaining: number?)
+function WeaponSfx.playShot(weaponId: string, remaining: number?, muzzle: Vector3?)
 	local config = WeaponsConfig.get(weaponId)
 	if not config then
 		return
 	end
-	scanZones()
-	local interior = updateTail()
+	local environment: string
+	if onEngine() then
+		environment = AudioEnvironment.environmentAt(AudioEngine.listenerPosition())
+	else
+		scanZones()
+		environment = legacyEnvironment(updateTail())
+	end
 
-	playOneShot(shotSoundId(config), config.shotVolume, config.shotPitch)
+	local id = shotSoundId(config)
+	playOneShot(id, config.shotVolume, config.shotPitch)
 	-- a little weight under the blast (spec: mech + punch + sub + tail)
 	local subVolume = SUB_VOLUME[config.class]
 	if subVolume then
 		playOneShot(weaponSoundId(SUB_KEYS[math.random(1, #SUB_KEYS)]), subVolume, 1)
 	end
-	playTail(config, interior)
+	playTail(config, environment)
 	if remaining then
 		playLowAmmo(config, remaining)
+	end
+
+	if onEngine() and muzzle and id > 0 then
+		local allowed, at = WeaponAudioMath.gate(lastOwnFanAt, os.clock(), REFLECTION_INTERVAL)
+		lastOwnFanAt = at
+		if allowed then
+			fireFan(muzzle, id, config)
+		end
 	end
 end
 
@@ -416,8 +490,10 @@ function WeaponSfx.playPhase(phase: string, class: string?, tag: string?)
 	end
 end
 
--- Casing landings: positional voices on attachments in Terrain (no Part per sound),
--- pooled like the 2D voices. With every voice busy a landing is dropped, never cut.
+-- Casing landings. On the engine: the Casing class (45 studs, culled by the engine,
+-- half-strength occlusion, 12 voices). Legacy: positional voices on attachments in
+-- Terrain (no Part per sound), pooled like the 2D voices; with every voice busy a
+-- landing is dropped, never cut.
 local CASING_VOICES = 12
 local CASING_VOLUME = 0.32
 local CASING_MIN_DISTANCE = 2
@@ -500,9 +576,12 @@ local CASING_FALLBACK_KEYS = { "shell_01", "shell_02" }
 
 -- Registered with WeaponVfx.onCasingLanded; `caliber` is the WeaponsConfig casing.
 function WeaponSfx.playCasingLand(position: Vector3, material: Enum.Material, caliber: string, impactSpeed: number)
-	local camera = Workspace.CurrentCamera
-	if camera and (camera.CFrame.Position - position).Magnitude > CASING_MAX_DISTANCE then
-		return
+	local engine = onEngine()
+	if not engine then
+		local camera = Workspace.CurrentCamera
+		if camera and (camera.CFrame.Position - position).Magnitude > CASING_MAX_DISTANCE then
+			return
+		end
 	end
 	local surface = SURFACES[material.Name] or SURFACE_DEFAULT
 	local speedFactor = math.clamp(impactSpeed / CASING_FULL_SPEED, 0.15, 1)
@@ -523,6 +602,11 @@ function WeaponSfx.playCasingLand(position: Vector3, material: Enum.Material, ca
 		end
 	end
 	if soundId <= 0 then
+		return
+	end
+
+	if engine then
+		AudioEngine.play({ id = soundId, class = "Casing", position = position, volume = volume, pitch = pitch })
 		return
 	end
 
@@ -552,9 +636,46 @@ end
 
 local DISTANT_THRESHOLD = 40
 
+-- A ghost part for the legacy 3D one-shots, gone after `lifetime` seconds.
+local function anchorAt(position: Vector3, lifetime: number): BasePart
+	local anchor = Instance.new("Part")
+	anchor.Anchored = true
+	anchor.CanCollide = false
+	anchor.CanQuery = false
+	anchor.Transparency = 1
+	anchor.Size = Vector3.one
+	anchor.Position = position
+	anchor.Parent = Workspace
+	task.delay(lifetime, function()
+		anchor:Destroy()
+	end)
+	return anchor
+end
+
+-- A teammate's shot. On the engine: GunshotRemote with the close, mid and far layers
+-- (a layer without a recording falls back to the nearest one that exists, so the close
+-- take plays at every distance until the mid and far takes land), the class's air
+-- absorption, occlusion and speed-of-sound delay, and the reflection fan from the
+-- muzzle. Legacy: nothing inside 40 studs, then a 3D take and its tail on an anchor.
 function WeaponSfx.playDistantShot(position: Vector3, weaponId: string)
 	local config = WeaponsConfig.get(weaponId)
 	if not config then
+		return
+	end
+	if onEngine() then
+		local id = shotSoundId(config)
+		AudioEngine.play({
+			layerIds = WeaponAudioMath.layerIds(id, weaponSoundId(config.midSound), weaponSoundId(config.farSound)),
+			class = "GunshotRemote",
+			position = position,
+			volume = config.shotVolume,
+			pitch = config.shotPitch,
+		})
+		local allowed, at = WeaponAudioMath.gate(lastRemoteFanAt, os.clock(), REFLECTION_INTERVAL)
+		lastRemoteFanAt = at
+		if allowed and id > 0 then
+			fireFan(position, id, config)
+		end
 		return
 	end
 	local character = player.Character
@@ -563,37 +684,90 @@ function WeaponSfx.playDistantShot(position: Vector3, weaponId: string)
 	if distance < DISTANT_THRESHOLD then
 		return
 	end
-	local anchor = Instance.new("Part")
-	anchor.Anchored = true
-	anchor.CanCollide = false
-	anchor.CanQuery = false
-	anchor.Transparency = 1
-	anchor.Size = Vector3.one
-	anchor.Position = position
-	anchor.Parent = Workspace
+	local anchor = anchorAt(position, 4)
 	SfxPlayer.play3D(anchor, shotSoundId(config), config.shotVolume * 0.8, 30, 400, 0.06)
 	-- the close part alone is a dry 0.13 s crack; the reflection is what carries at range
 	scanZones()
-	local tailId, tailVolume = tailFor(config, isInterior(position))
+	local tailId, tailVolume = tailFor(config, legacyEnvironment(isInterior(position)))
 	SfxPlayer.play3D(anchor, tailId, tailVolume * 0.8, 30, 400, 0)
-	task.delay(4, function()
-		anchor:Destroy()
-	end)
 end
 
+local GONG_VOLUME = 0.9
+
 function WeaponSfx.playGong(position: Vector3)
-	local anchor = Instance.new("Part")
-	anchor.Anchored = true
-	anchor.CanCollide = false
-	anchor.CanQuery = false
-	anchor.Transparency = 1
-	anchor.Size = Vector3.one
-	anchor.Position = position
-	anchor.Parent = Workspace
-	SfxPlayer.play3D(anchor, AssetIds.audio.range.gong, 0.9, 20, 300, 0.04)
-	task.delay(5, function()
-		anchor:Destroy()
-	end)
+	if onEngine() then
+		AudioEngine.play({ id = AssetIds.audio.range.gong, class = "Impact", position = position, volume = GONG_VOLUME, range = 300, hold = 20, pitchJitter = 0.04 })
+		return
+	end
+	local anchor = anchorAt(position, 5)
+	SfxPlayer.play3D(anchor, AssetIds.audio.range.gong, GONG_VOLUME, 20, 300, 0.04)
+end
+
+-- Bullet impacts on the Impact class (120 studs, strong air absorption, one occlusion
+-- ray, the distance delay, so a hit on a far wall arrives after the shot). The family's
+-- own recordings (`impact_<family>_01..`) when they exist, else a Kenney impact already
+-- in the manifest stands in. A volley plays its first IMPACTS_PER_VOLLEY hits, so a
+-- shotgun's pellets read as one impact. Engine path only: the legacy path never had
+-- impact sounds.
+local IMPACT_VOLUME = 0.7
+local IMPACT_FLESH_VOLUME = 0.5
+local IMPACT_VARIATIONS = 2
+local IMPACTS_PER_VOLLEY = 2
+local RICOCHET_CHANCE = 1 / 6
+local RICOCHET_VOLUME = 0.5
+
+export type Hit = { position: Vector3, normal: Vector3, material: string }
+
+-- Kenney Impact Sounds (CC0) that are already in the manifest, per family.
+local IMPACT_PLACEHOLDERS: { [string]: () -> number } = {
+	concrete = function()
+		return AssetIds.audio.foley.land_hard
+	end,
+	metal = function()
+		return AssetIds.audio.weapons.bolt
+	end,
+	wood = function()
+		return AssetIds.audio.foley.land_soft
+	end,
+	dirt = function()
+		return AssetIds.audio.foley.land_soft
+	end,
+	flesh = function()
+		return pickVariation("impact_flesh_placeholder", { "bite_01", "bite_02", "bite_03" })
+	end,
+}
+
+local function impactIdFor(family: string): (number, boolean)
+	local id = pickVariation("impact_" .. family, WeaponAudioMath.impactKeys(family, IMPACT_VARIATIONS))
+	if id > 0 then
+		return id, false
+	end
+	local placeholder = IMPACT_PLACEHOLDERS[family]
+	return if placeholder then placeholder() else 0, true
+end
+
+function WeaponSfx.playImpacts(hits: { Hit })
+	if not onEngine() then
+		return
+	end
+	local count = WeaponAudioMath.impactsToPlay(#hits, IMPACTS_PER_VOLLEY)
+	for index = 1, count do
+		local hit = hits[index]
+		local family = WeaponAudioMath.impactFamily(hit.material)
+		local id, placeholder = impactIdFor(family)
+		if id <= 0 then
+			continue
+		end
+		local volume = if family == "flesh" then IMPACT_FLESH_VOLUME else IMPACT_VOLUME
+		-- the stand-ins are foley recordings, closer to the mic than a bullet strike
+		if placeholder then
+			volume *= 0.6
+		end
+		AudioEngine.play({ id = id, class = "Impact", position = hit.position, volume = volume })
+		if (family == "concrete" or family == "metal") and math.random() < RICOCHET_CHANCE then
+			AudioEngine.play({ id = weaponSoundId("ricochet_01"), class = "Impact", position = hit.position, volume = RICOCHET_VOLUME, delay = 0.02 })
+		end
+	end
 end
 
 return WeaponSfx

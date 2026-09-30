@@ -4,6 +4,26 @@ Companion to [spatial-audio.md](spatial-audio.md). The engine landed without tou
 `WeaponSfx.luau`, `WeaponVfx.luau`, `WeaponController.luau`, `WeaponsConfig.luau`,
 `assets/manifest.json` or `AssetIds.luau`; this document is the exact change list for
 them. Everything below assumes `SfxConfig.SPATIAL_AUDIO` is on.
+
+## Status (branch `cloud/weapons-audio`, 2026-09-30)
+
+Done, behind `SfxConfig.WEAPONS_ON_ENGINE` (default on, only read while
+`SPATIAL_AUDIO` is on; off keeps every legacy path below intact so the two can be
+compared in Studio):
+
+| Section | State |
+| --- | --- |
+| 3 casings, 4 gong | `playCasingLand` on `Casing`, `playGong` on `Impact`; the legacy attachment voices and anchor parts stay on the off path |
+| 1 own gun | close take, sub, foley, low-ammo layer and tail through `OwnGunshot` (jitter comes from the class); tail by `AudioEnvironment.environmentAt(AudioEngine.listenerPosition())` through `WeaponAudioMath.tailFor`; reflection fan from the muzzle (`WeaponController` passes `Viewmodel.getMuzzlePosition()`) gated to one per 90 ms by `WeaponAudioMath.gate`; the pools, the `Weapons` group reverb and the zone scan are legacy-only |
+| 2 teammates | `playDistantShot` on `GunshotRemote` with `layerIds` from `WeaponAudioMath.layerIds`; `WeaponsConfig` carries `midSound` / `farSound` (`mid_<class>`, `far_<class>`), manifest slots exist with `assetId` 0 so the close take plays at every distance; the fan fires from the muzzle on the same gate |
+| 5 impacts | `WeaponSfx.playImpacts(hits)` from `WeaponController.onWeaponHit`: family by material (`WeaponAudioMath.impactFamily`), `impact_<family>_01..02` when uploaded, else the Kenney impacts already in the manifest (`land_hard`, `bolt`, `land_soft`, `bite_*`) at 0.6 of the volume; two hits per volley; one hard hit in six adds `ricochet_01` |
+| 6 sound lane | `SandboxWeaponGallery.playSoundLane` plays through `GunshotRemote` (with the fan), `ZombieVocal` and `Explosion` on the engine path, the wrapper on the off path; K and L were already bound |
+| 7 mid takes | not done: the FFSL repository could not be fetched from the build environment (github.com answers 403 through its proxy, raw files time out), so no take was cut; the `mid_*` / `far_*` / `impact_*` / `ricochet_01` slots are in `assets/manifest.json` as `needed` with their candidate sources and in `assets/NEEDED.md` |
+
+Pure rules in `src/client/audio/WeaponAudioMath.luau`, tested by `tests/audio/run.luau`
+(tail choice, the rate limit, the layer keys, the impact families). Step 6 of the order
+of work (removing the legacy branches, the `weapons` skip in `AudioEngine.preload` and
+the `Weapons` SoundGroup) waits for the Studio comparison.
 The engine API is `AudioEngine.play(spec): Handle` (`src/client/audio/AudioEngine.luau`,
 spec fields in section 3.2 of the design doc) and `AudioReflections.fire(position, id,
 bus, volume, pitch, rays)`.

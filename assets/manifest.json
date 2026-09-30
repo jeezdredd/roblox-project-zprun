@@ -3393,5 +3393,157 @@
     "status": "approved",
     "note": "v6 2026-09-29: outdoor tail per class, played at the close shot's volume; 2803 ms, peak -24.3 dBFS relative to the close part at -1 dBFS",
     "assetId": "84034488143189"
+  },
+  "audio/weapons/mid_pistol": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "GunshotRemote mid layer (40..350 studs) of a teammate's pistol shot; the close take plays until this exists. Candidate: the Walther PPQ 'mid distance, front of shooter' row (the near row X_39P is close_pistol); cut one shot with tools/audio_build/build_shots_v6.py the way the close takes were. The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, CC0-1.0"
+  },
+  "audio/weapons/far_pistol": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "GunshotRemote far layer (250..1400 studs) of a teammate's pistol shot; the close take, low-passed and delayed by the engine, plays until this exists. Candidate: freesound CC0 'distant gunshot' / BigSoundBank (Joseph Sardin) 'gunshot far'; or the mid take low-passed at 1.5 kHz plus tail_open if it passes a listen (docs/audio/weapons-integration.md, section 7)"
+  },
+  "audio/weapons/mid_smg": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "GunshotRemote mid layer (40..350 studs) of a teammate's smg shot; the close take plays until this exists. Candidate: the Carl Gustav M45 'mid distance, front of shooter' row (the near row G_31P is close_smg); cut one shot with tools/audio_build/build_shots_v6.py the way the close takes were. The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, CC0-1.0"
+  },
+  "audio/weapons/far_smg": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "GunshotRemote far layer (250..1400 studs) of a teammate's smg shot; the close take, low-passed and delayed by the engine, plays until this exists. Candidate: freesound CC0 'distant gunshot' / BigSoundBank (Joseph Sardin) 'gunshot far'; or the mid take low-passed at 1.5 kHz plus tail_open if it passes a listen (docs/audio/weapons-integration.md, section 7)"
+  },
+  "audio/weapons/mid_shotgun": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "GunshotRemote mid layer (40..350 studs) of a teammate's shotgun shot; the close take plays until this exists. Candidate: the Benelli Nova 'mid distance, front of shooter' row (the near row O_21P is close_shotgun); cut one shot with tools/audio_build/build_shots_v6.py the way the close takes were. The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, CC0-1.0"
+  },
+  "audio/weapons/far_shotgun": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "GunshotRemote far layer (250..1400 studs) of a teammate's shotgun shot; the close take, low-passed and delayed by the engine, plays until this exists. Candidate: freesound CC0 'distant gunshot' / BigSoundBank (Joseph Sardin) 'gunshot far'; or the mid take low-passed at 1.5 kHz plus tail_open if it passes a listen (docs/audio/weapons-integration.md, section 7)"
+  },
+  "audio/weapons/mid_rifle": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "GunshotRemote mid layer (40..350 studs) of a teammate's rifle shot; the close take plays until this exists. Candidate: the AK-47 'mid distance, front of shooter' file C_31P.wav (the near file C_28P is close_rifle); cut one shot with tools/audio_build/build_shots_v6.py the way the close takes were. The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, CC0-1.0"
+  },
+  "audio/weapons/far_rifle": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "GunshotRemote far layer (250..1400 studs) of a teammate's rifle shot; the close take, low-passed and delayed by the engine, plays until this exists. Candidate: freesound CC0 'distant gunshot' / BigSoundBank (Joseph Sardin) 'gunshot far'; or the mid take low-passed at 1.5 kHz plus tail_open if it passes a listen (docs/audio/weapons-integration.md, section 7)"
+  },
+  "audio/weapons/impact_concrete_01": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Impact class: bullet hitting concrete or stone, variation 1; WeaponSfx.playImpacts uses the Kenney impact placeholder (already in the manifest) until this exists. Candidate: freesound CC0 'bullet impact concrete'; Kenney Impact Sounds (CC0) as the placeholder"
+  },
+  "audio/weapons/impact_concrete_02": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Impact class: bullet hitting concrete or stone, variation 2; WeaponSfx.playImpacts uses the Kenney impact placeholder (already in the manifest) until this exists. Candidate: freesound CC0 'bullet impact concrete'; Kenney Impact Sounds (CC0) as the placeholder"
+  },
+  "audio/weapons/impact_metal_01": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Impact class: bullet hitting sheet or plate metal, variation 1; WeaponSfx.playImpacts uses the Kenney impact placeholder (already in the manifest) until this exists. Candidate: freesound CC0 'bullet impact metal'; Kenney Impact Sounds (CC0) as the placeholder"
+  },
+  "audio/weapons/impact_metal_02": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Impact class: bullet hitting sheet or plate metal, variation 2; WeaponSfx.playImpacts uses the Kenney impact placeholder (already in the manifest) until this exists. Candidate: freesound CC0 'bullet impact metal'; Kenney Impact Sounds (CC0) as the placeholder"
+  },
+  "audio/weapons/impact_wood_01": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Impact class: bullet hitting wood or planks, variation 1; WeaponSfx.playImpacts uses the Kenney impact placeholder (already in the manifest) until this exists. Candidate: freesound CC0 'bullet impact wood'; Kenney Impact Sounds (CC0) as the placeholder"
+  },
+  "audio/weapons/impact_wood_02": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Impact class: bullet hitting wood or planks, variation 2; WeaponSfx.playImpacts uses the Kenney impact placeholder (already in the manifest) until this exists. Candidate: freesound CC0 'bullet impact wood'; Kenney Impact Sounds (CC0) as the placeholder"
+  },
+  "audio/weapons/impact_dirt_01": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Impact class: bullet hitting soil, grass or sand, variation 1; WeaponSfx.playImpacts uses the Kenney impact placeholder (already in the manifest) until this exists. Candidate: freesound CC0 'bullet impact dirt'; Kenney Impact Sounds (CC0) as the placeholder"
+  },
+  "audio/weapons/impact_dirt_02": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Impact class: bullet hitting soil, grass or sand, variation 2; WeaponSfx.playImpacts uses the Kenney impact placeholder (already in the manifest) until this exists. Candidate: freesound CC0 'bullet impact dirt'; Kenney Impact Sounds (CC0) as the placeholder"
+  },
+  "audio/weapons/impact_flesh_01": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Impact class: bullet hitting a body, variation 1; WeaponSfx.playImpacts uses the Kenney impact placeholder (already in the manifest) until this exists. Candidate: freesound CC0 'bullet impact flesh'; Kenney Impact Sounds (CC0) as the placeholder"
+  },
+  "audio/weapons/impact_flesh_02": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Impact class: bullet hitting a body, variation 2; WeaponSfx.playImpacts uses the Kenney impact placeholder (already in the manifest) until this exists. Candidate: freesound CC0 'bullet impact flesh'; Kenney Impact Sounds (CC0) as the placeholder"
+  },
+  "audio/weapons/ricochet_01": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Impact class: a ricochet whine off hard surfaces (played on one hard hit in six). Candidate: freesound CC0 'ricochet'"
   }
 }

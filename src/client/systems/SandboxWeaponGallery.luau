@@ -20,7 +20,10 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local AssetIds = require(ReplicatedStorage.Shared.config.AssetIds)
+local SfxConfig = require(ReplicatedStorage.Shared.config.SfxConfig)
 local ViewmodelPackConfig = require(ReplicatedStorage.Shared.config.ViewmodelPackConfig)
+local AudioEngine = require(script.Parent.Parent.audio.AudioEngine)
+local AudioReflections = require(script.Parent.Parent.audio.AudioReflections)
 local ViewmodelClipPlayer = require(script.Parent.ViewmodelClipPlayer)
 local WeaponSfx = require(script.Parent.WeaponSfx)
 local SfxPlayer = require(script.Parent.SfxPlayer)
@@ -417,20 +420,37 @@ function SandboxWeaponGallery.playSoundLane()
 		-- the rifle shot is two files (the dry close part and its outdoor reflection,
 		-- WeaponSfx.tailFor) that together make the recording
 		local sounds = {
-			{ id = weapons.close_rifle or 0, tail = weapons.tail_open_rifle or 0, volume = 1 },
-			{ id = zombie.alert_bark or 0, tail = 0, volume = 1 },
-			{ id = world.distant_boom or 0, tail = 0, volume = 1 },
+			{ id = weapons.close_rifle or 0, tail = weapons.tail_open_rifle or 0, volume = 1, class = "GunshotRemote", reflect = true },
+			{ id = zombie.alert_bark or 0, tail = 0, volume = 1, class = "ZombieVocal", reflect = false },
+			{ id = world.distant_boom or 0, tail = 0, volume = 1, class = "Explosion", reflect = false },
 		}
+		-- through the engine's real classes when the weapons are on it (the remote
+		-- gunshot with its reflection fan, the zombie vocal, the explosion), else the
+		-- plain 3D wrapper
+		local onEngine = SfxConfig.WEAPONS_ON_ENGINE == true and AudioEngine.enabled()
 		for _, box in speakers do
 			local color = box.Color
 			box.Color = Color3.fromRGB(255, 190, 60)
 			box.Material = Enum.Material.Neon
 			for _, sound in sounds do
-				if sound.id > 0 then
-					SfxPlayer.play3D(box, sound.id, sound.volume, 10, 1000, 0)
-				end
-				if sound.tail > 0 then
-					SfxPlayer.play3D(box, sound.tail, sound.volume, 10, 1000, 0)
+				if onEngine then
+					if sound.id > 0 then
+						if sound.class == "ZombieVocal" then
+							AudioEngine.play({ id = sound.id, class = sound.class, follow = box, volume = sound.volume })
+						else
+							AudioEngine.play({ id = sound.id, class = sound.class, position = box.Position, volume = sound.volume })
+						end
+					end
+					if sound.reflect and sound.id > 0 then
+						AudioReflections.fire(box.Position, sound.id, "weapons", sound.volume * 0.6, 1, AudioEngine.reflectionRays())
+					end
+				else
+					if sound.id > 0 then
+						SfxPlayer.play3D(box, sound.id, sound.volume, 10, 1000, 0)
+					end
+					if sound.tail > 0 then
+						SfxPlayer.play3D(box, sound.tail, sound.volume, 10, 1000, 0)
+					end
 				end
 				task.wait(1.4)
 			end

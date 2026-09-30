@@ -99,6 +99,12 @@ SfxConfig.SPATIAL_AUDIO = true
 -- Roblox's built-in acoustic simulation (client beta) instead of the engine's own
 -- occlusion rays and bus reverb; only read while SPATIAL_AUDIO is on.
 SfxConfig.ACOUSTIC_SIMULATION = false
+-- Weapon sounds through the engine (docs/audio/weapons-integration.md): the shooter's
+-- gun on the OwnGunshot class with the reflection fan, teammates' shots on
+-- GunshotRemote, casings, the range gong and bullet impacts on their classes. Off keeps
+-- WeaponSfx on its Sound pools and Weapons SoundGroup, for comparison in Studio. Only
+-- read while SPATIAL_AUDIO is on.
+SfxConfig.WEAPONS_ON_ENGINE = true
 
 SfxConfig.MUSIC_DUCK_DB = 0.5
 SfxConfig.MUSIC_DUCK_RANGE = 60

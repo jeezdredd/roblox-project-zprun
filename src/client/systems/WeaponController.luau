@@ -235,7 +235,7 @@ local function tryFire(pressed: boolean)
 
 	Remotes.getEvent(Remotes.Event.WeaponFire):FireServer(origin, direction)
 
-	WeaponSfx.playShot(config.id, predictedMag)
+	WeaponSfx.playShot(config.id, predictedMag, Viewmodel.getMuzzlePosition())
 	Viewmodel.onFired(config)
 	WeaponVfx.muzzleFlash(Viewmodel.getMuzzleAttachment(), config.id)
 	-- the pump ejects its hull on the pump stroke instead (see the phase listener)
@@ -509,12 +509,13 @@ local function onWeaponHit(kind: string, ...: any)
 		local showTracer = not everyThird or tracerCounter % 3 == 0
 		if typeof(hits) == "table" then
 			local from = if isLocal then Viewmodel.getMuzzlePosition() else origin
-			for _, hit in hits :: { { position: Vector3, normal: Vector3, material: string } } do
+			for _, hit in hits :: { WeaponSfx.Hit } do
 				WeaponVfx.impact(hit.position, hit.normal, hit.material)
 				if showTracer then
 					WeaponVfx.tracer(from, hit.position)
 				end
 			end
+			WeaponSfx.playImpacts(hits :: { WeaponSfx.Hit })
 			if #hits == 0 and showTracer and config and typeof(origin) == "Vector3" then
 				local direction = if isLocal
 					then Workspace.CurrentCamera.CFrame.LookVector

@@ -104,6 +104,7 @@ local SHARES: BodyMath.AimShares = {
 }
 
 local PIVOT = CFrame.new(AIM.pivot)
+local IDENTITY = CFrame.new()
 local PIVOT_BACK = CFrame.new(-AIM.pivot)
 
 local function findMotor(part: Instance?, name: string): Joint?
@@ -508,7 +509,7 @@ function BodyRig.update(self: BodyRig, deltaTime: number)
 			local waistPitch = spread.waistPitch + self.snap.value * RECOIL.waistShare
 			local lean = chestRest:Inverse() * upper.Rotation
 			local keep = 1 - AIM.chestStabilize * self.weight
-			local wanted = chestRest * CFrame.fromEulerAnglesYXZ(math.rad(waistPitch), math.rad(spread.waistYaw), 0) * CFrame.identity:Lerp(lean, keep)
+			local wanted = chestRest * CFrame.fromEulerAnglesYXZ(math.rad(waistPitch), math.rad(spread.waistYaw), 0) * IDENTITY:Lerp(lean, keep)
 			local twist = twistFor(joint, motor, wanted)
 			setJoint(waist, base, twist)
 			upper = joint * twist * motor.C1:Inverse()
@@ -523,7 +524,7 @@ function BodyRig.update(self: BodyRig, deltaTime: number)
 		local joint = upper * motor.C0 * base
 		local headRest = chestRest * restOf(motor)
 		local lean = headRest:Inverse() * (joint * motor.C1:Inverse()).Rotation
-		local wanted = headRest * CFrame.fromEulerAnglesYXZ(math.rad(spread.pitch), math.rad(spread.yaw), 0) * CFrame.identity:Lerp(lean, 1 - AIM.headStabilize)
+		local wanted = headRest * CFrame.fromEulerAnglesYXZ(math.rad(spread.pitch), math.rad(spread.yaw), 0) * IDENTITY:Lerp(lean, 1 - AIM.headStabilize)
 		setJoint(neck, base, twistFor(joint, motor, wanted))
 	end
 

@@ -121,8 +121,6 @@ function SoldierBody.apply(character: Model): boolean
 			elseif child:IsA("Vector3Value") and child.Name == "OriginalSize" then
 				child.Value = info.size
 				child.Parent = part
-			elseif child:IsA("JointInstance") then
-				child.Parent = part
 			elseif child:IsA("Decal") or child:IsA("WrapTarget") or child:IsA("FaceControls") then
 				-- the block face, and cages that no longer match the mesh
 				child:Destroy()

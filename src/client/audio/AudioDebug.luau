@@ -40,7 +40,7 @@ local function build(): TextLabel
 	text.Name = "Voices"
 	text.AnchorPoint = Vector2.new(1, 0)
 	text.Position = UDim2.new(1, -12, 0, 12)
-	text.Size = UDim2.new(0, 560, 0, 720)
+	text.Size = UDim2.fromOffset(560, 720)
 	text.BackgroundColor3 = Color3.fromRGB(8, 10, 14)
 	text.BackgroundTransparency = 0.25
 	text.BorderSizePixel = 0

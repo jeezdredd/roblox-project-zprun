@@ -13,7 +13,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local AnimationsConfig = require(ReplicatedStorage.Shared.config.AnimationsConfig)
-local ThirdPersonConfig = require(ReplicatedStorage.Shared.config.ThirdPersonConfig)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local BodyMath = require(ReplicatedStorage.Shared.util.BodyMath)
 local LocomotionMath = require(ReplicatedStorage.Shared.util.LocomotionMath)
@@ -58,6 +57,28 @@ local function loadClip(foundAnimator: Animator, config: AnimationsConfig.ClipCo
 	end
 end
 
+-- The engine gives every character its default Animate script, whose run and walk
+-- tracks played under ours at full weight (two gaits blended: the stumbling run seen on
+-- 2026-09-30). The locomotion here replaces it, so it goes, with its tracks.
+local function removeDefaultAnimate(character: Model, foundAnimator: Animator)
+	local animate = character:FindFirstChild("Animate")
+	if animate and animate:IsA("LocalScript") then
+		animate:Destroy()
+	end
+	for _, track in foundAnimator:GetPlayingAnimationTracks() do
+		local ours = false
+		for _, loaded in tracks do
+			if loaded.track == track then
+				ours = true
+				break
+			end
+		end
+		if not ours and track.Priority == Enum.AnimationPriority.Core then
+			track:Stop(0)
+		end
+	end
+end
+
 local function loadClips(character: Model)
 	tracks = {}
 	available = {}
@@ -78,6 +99,14 @@ local function loadClips(character: Model)
 	end
 	for _, config in AnimationsConfig.locomotionClips do
 		loadClip(foundAnimator, config)
+	end
+	if AnimationsConfig.ENABLED and next(tracks) ~= nil then
+		removeDefaultAnimate(character, foundAnimator)
+		character.ChildAdded:Connect(function(child)
+			if child.Name == "Animate" and child:IsA("LocalScript") then
+				removeDefaultAnimate(character, foundAnimator)
+			end
+		end)
 	end
 end
 
@@ -100,14 +129,18 @@ local function update(deltaTime: number)
 	local speed = ExertionState.getSpeed()
 	local axis = InputController.getLateralAxis()
 
-	sprinting = running and BodyMath.sprintTarget(speed, ThirdPersonConfig.SPRINT.speed, ThirdPersonConfig.SPRINT.hysteresis, sprinting)
+	sprinting = running and BodyMath.sprintTarget(speed, AnimationsConfig.SPRINT_SPEED, AnimationsConfig.SPRINT_HYSTERESIS, sprinting)
 	local gait = LocomotionMath.gaitFor(running, speed, axis, sprinting, {
 		walkMax = AnimationsConfig.WALK_SPEED_MAX,
 		strafeAxis = AnimationsConfig.STRAFE_AXIS,
+		strafeMaxSpeed = AnimationsConfig.STRAFE_SPEED_MAX,
 	})
 	currentGait = gait
-	local targets = LocomotionMath.targets(currentSet(), gait, available)
-	local ratio = LocomotionMath.playbackRatio(gait, speed, AnimationsConfig.GAIT_REFERENCE, AnimationsConfig.RUN_SPEED_MIN, AnimationsConfig.RUN_SPEED_MAX)
+	local set = currentSet()
+	local targets = LocomotionMath.targets(set, gait, available)
+	-- the set's measured clip speeds, or the legacy Run's when the set has no clip
+	local references = if targets.Run then AnimationsConfig.GAIT_REFERENCE else (AnimationsConfig.SET_GAIT_REFERENCE[set] or AnimationsConfig.GAIT_REFERENCE)
+	local ratio = LocomotionMath.playbackRatio(gait, speed, references, AnimationsConfig.RUN_SPEED_MIN, AnimationsConfig.RUN_SPEED_MAX)
 
 	for id, loaded in tracks do
 		if not loaded.config.looped then

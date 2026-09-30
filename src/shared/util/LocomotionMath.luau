@@ -15,6 +15,9 @@ export type Thresholds = {
 	walkMax: number,
 	-- lateral input at or beyond this magnitude strafes
 	strafeAxis: number,
+	-- the strafe clips are walking side steps: at or above this speed a character with
+	-- lateral input keeps its run (the auto-run swerves; it never side-steps at speed)
+	strafeMaxSpeed: number,
 }
 
 export type References = { [string]: number }
@@ -67,7 +70,7 @@ function LocomotionMath.gaitFor(moving: boolean, speed: number, lateral: number,
 	if sprinting then
 		return "sprint"
 	end
-	if math.abs(lateral) >= thresholds.strafeAxis then
+	if math.abs(lateral) >= thresholds.strafeAxis and speed < thresholds.strafeMaxSpeed then
 		return if lateral < 0 then "strafe_left" else "strafe_right"
 	end
 	if speed < thresholds.walkMax then
@@ -112,8 +115,7 @@ function LocomotionMath.playbackRatio(gait: Gait, speed: number, references: Ref
 	if gait == "idle" then
 		return 1
 	end
-	local key = if gait == "strafe_left" or gait == "strafe_right" then "run" else gait
-	local reference = references[key] or references.run
+	local reference = references[gait] or references.run
 	if not reference or reference <= 0 then
 		return 1
 	end

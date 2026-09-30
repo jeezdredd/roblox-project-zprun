@@ -113,12 +113,27 @@ AnimationsConfig.locomotionSets = {
 	},
 } :: { [string]: { [string]: string } }
 
--- ground speed at which each gait clip plays at its recorded rate
+-- ground speed at which the legacy Run clip plays at its recorded rate
 AnimationsConfig.GAIT_REFERENCE = { walk = 10, run = 24, sprint = 36 }
+-- Ground speed (studs/s) each Mixamo gait clip covers at its recorded rate on the
+-- soldier body: the planted foot's speed in the clip (X Bot, In Place), scaled by the
+-- soldier's leg length (hips 93.9 cm against the X Bot's 104) at 0.03 studs per cm.
+-- Measured 2026-09-30. The game's run speed (24) is a hard run for these clips, so the
+-- rifle plays its sprint there and the pistol speeds its run up.
+AnimationsConfig.SET_GAIT_REFERENCE = {
+	Rifle = { walk = 3.3, run = 8.6, sprint = 18.9, strafe_left = 3.8, strafe_right = 2.1 },
+	Pistol = { walk = 7.2, run = 13.4, sprint = 13.4, strafe_left = 6.1, strafe_right = 6.9 },
+} :: { [string]: { [string]: number } }
 -- a moving character below this speed walks
-AnimationsConfig.WALK_SPEED_MAX = 12
+AnimationsConfig.WALK_SPEED_MAX = 6
 -- lateral input at or beyond this magnitude strafes
 AnimationsConfig.STRAFE_AXIS = 0.5
+-- the strafe clips are side steps; at this speed and above lateral input keeps the run
+AnimationsConfig.STRAFE_SPEED_MAX = 10
+-- the gait turns from run to sprint above this speed (with SPRINT_HYSTERESIS either way);
+-- the body layer's lowered-gun sprint pose keeps its own ThirdPersonConfig.SPRINT
+AnimationsConfig.SPRINT_SPEED = 14
+AnimationsConfig.SPRINT_HYSTERESIS = 2
 
 AnimationsConfig.weaponClips = {
 	Fire = {
@@ -172,7 +187,8 @@ function AnimationsConfig.weaponClip(id: string): ClipConfig?
 end
 
 AnimationsConfig.RUN_SPEED_REFERENCE = 24
-AnimationsConfig.RUN_SPEED_MIN = 0.8
-AnimationsConfig.RUN_SPEED_MAX = 1.45
+AnimationsConfig.RUN_SPEED_MIN = 0.6
+-- the pistol run covers 13.4 studs/s, so the game's 24 needs 1.8
+AnimationsConfig.RUN_SPEED_MAX = 2
 
 return AnimationsConfig

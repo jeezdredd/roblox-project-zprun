@@ -22,7 +22,7 @@ local function group(name: string, body: () -> ())
 	print(string.format("%s %s", if failures == before then "ok  " else "FAIL", name))
 end
 
-local THRESHOLDS: LocomotionMath.Thresholds = { walkMax = 12, strafeAxis = 0.5 }
+local THRESHOLDS: LocomotionMath.Thresholds = { walkMax = 12, strafeAxis = 0.5, strafeMaxSpeed = 30 }
 local REFERENCES = { walk = 10, run = 24, sprint = 36 }
 
 local function keys(targets: { [string]: number }): string
@@ -56,6 +56,7 @@ group("gait from movement", function()
 	check("right input strafes right", LocomotionMath.gaitFor(true, 24, 0.6, false, THRESHOLDS) == "strafe_right")
 	check("small input runs", LocomotionMath.gaitFor(true, 24, 0.3, false, THRESHOLDS) == "run")
 	check("strafe while slow", LocomotionMath.gaitFor(true, 6, 1, false, THRESHOLDS) == "strafe_right")
+	check("no side step at speed", LocomotionMath.gaitFor(true, 30, 1, false, THRESHOLDS) == "run")
 end)
 
 group("targets and fallbacks", function()
@@ -87,6 +88,7 @@ group("playback ratio", function()
 	check("run at reference", LocomotionMath.playbackRatio("run", 24, REFERENCES, 0.8, 1.45) == 1)
 	check("walk at reference", LocomotionMath.playbackRatio("walk", 10, REFERENCES, 0.8, 1.45) == 1)
 	check("sprint at reference", LocomotionMath.playbackRatio("sprint", 36, REFERENCES, 0.8, 1.45) == 1)
+	check("strafe uses its own reference", LocomotionMath.playbackRatio("strafe_left", 4, { run = 8, strafe_left = 4 }, 0.8, 1.45) == 1)
 	check("strafe uses the run reference", LocomotionMath.playbackRatio("strafe_left", 12, REFERENCES, 0.8, 1.45) == 0.8)
 	check("clamped high", LocomotionMath.playbackRatio("run", 60, REFERENCES, 0.8, 1.45) == 1.45)
 	check("clamped low", LocomotionMath.playbackRatio("run", 1, REFERENCES, 0.8, 1.45) == 0.8)

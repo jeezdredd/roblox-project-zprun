@@ -308,7 +308,7 @@ local function buildProps(parent: Instance)
 	local crateColor = Color3.fromRGB(96, 104, 78)
 	local drumColor = Color3.fromRGB(150, 90, 40)
 	local spots = {
-		Vector3.new(-120, 0, 120),
+		Vector3.new(-120, 0, 100),
 		Vector3.new(-96, 0, 128),
 		Vector3.new(96, 0, 124),
 		Vector3.new(124, 0, 112),

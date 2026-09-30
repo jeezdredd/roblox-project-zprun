@@ -10,8 +10,7 @@ local LocationsConfig = require(ReplicatedStorage.Shared.config.LocationsConfig)
 local DevConfig = require(ReplicatedStorage.Shared.config.DevConfig)
 local MissionState = require(script.Parent.MissionState)
 local SkillEffects = require(script.Parent.SkillEffects)
-local MissionConfig = require(script.Parent.MissionConfig)
-local RewardMultiplier = require(ReplicatedStorage.Shared.util.RewardMultiplier)
+local RunEconomy = require(script.Parent.RunEconomy)
 
 local DistanceTracker = {}
 
@@ -158,8 +157,8 @@ local function step(deltaTime: number)
 		if traveled > run.best then
 			run.best = traveled
 			updateLeaderstats(player, traveled)
-			local multiplier = RewardMultiplier.compute(MissionConfig.getDifficulty().id, MissionState.getModifiers())
-			player:SetAttribute("RunCredits", math.floor(traveled / 10 * multiplier))
+			-- the distance pay goes into the run balance next to the kill pay
+			RunEconomy.setDistance(player, traveled)
 		end
 
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")

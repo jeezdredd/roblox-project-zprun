@@ -203,8 +203,20 @@ local function actionTextFor(entry: any): (string, Color3, boolean)
 		end
 		return string.format("BUY  $%d", entry.price), (if entry.affordable then UiTheme.ACCENT else UiTheme.DANGER), entry.affordable
 	end
+	if entry.kind == "PerkEquip" then
+		if entry.equipped then
+			return "EQUIPPED  [UNEQUIP]", UiTheme.OK, true
+		end
+		return "EQUIP FOR RUN", UiTheme.ACCENT, true
+	end
 	if entry.maxLevel > 0 and entry.level >= entry.maxLevel then
 		return "MAX", UiTheme.TEXT_DIM, false
+	end
+	if entry.kind == "PerkSlot" then
+		return string.format("BUY SLOT %d  $%d", entry.level + 1, entry.price), (if entry.affordable then UiTheme.ACCENT else UiTheme.DANGER), entry.affordable
+	end
+	if entry.kind == "Perk" and not entry.owned then
+		return string.format("UNLOCK  $%d", entry.price), (if entry.affordable then UiTheme.ACCENT else UiTheme.DANGER), entry.affordable
 	end
 	if entry.kind == "Weapon" then
 		return string.format("BUY  $%d", entry.price), (if entry.affordable then UiTheme.ACCENT else UiTheme.DANGER), entry.affordable
@@ -269,7 +281,7 @@ function ShopGui.render(catalog: any)
 		local action = row:FindFirstChild("Action") :: TextButton
 
 		local suffix = ""
-		if entry.maxLevel > 0 and entry.level > 0 then
+		if entry.maxLevel > 0 and entry.level > 0 and entry.kind ~= "PerkSlot" then
 			suffix = string.format("   L%d/%d", entry.level, entry.maxLevel)
 		end
 		nameLabel.Text = string.upper(entry.displayName) .. suffix

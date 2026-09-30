@@ -22,6 +22,11 @@ export type ProfileData = {
 	EquippedSkin: string,
 	PurchaseHistory: { [string]: boolean },
 	Loadout: { string },
+	-- perks (PerkService): levels bought, slots owned (1 is free), the perks equipped
+	-- for the next run in slot order
+	PerkLevels: { [string]: number },
+	PerkSlots: number,
+	PerksEquipped: { string },
 	Settings: { [string]: any },
 	StatsLifetime: {
 		Distance: number,
@@ -31,7 +36,7 @@ export type ProfileData = {
 }
 
 local TEMPLATE: ProfileData = {
-	Version = 3,
+	Version = 4,
 	Credits = 0,
 	XP = 0,
 	WeaponsOwned = {
@@ -44,6 +49,9 @@ local TEMPLATE: ProfileData = {
 	PurchaseHistory = {},
 	-- Slot 1 primary, slot 2 sidearm; the 1 and 2 keys read these directly.
 	Loadout = { "Rifle", "Pistol" },
+	PerkLevels = {},
+	PerkSlots = 1,
+	PerksEquipped = {},
 	Settings = {},
 	StatsLifetime = {
 		Distance = 0,
@@ -59,6 +67,9 @@ type Profile = typeof(ProfileStore.New("", TEMPLATE):StartSessionAsync(""))
 local store = ProfileStore.New("PlayerData", TEMPLATE)
 local profiles: { [Player]: Profile } = {}
 local loadedCallbacks: { (Player, ProfileData) -> () } = {}
+-- run synchronously before a profile's session ends (the player leaving, the server
+-- closing), while the data can still be written: the run is settled here
+local releasingCallbacks: { (Player, ProfileData) -> () } = {}
 local started = false
 
 local function dataStoresAvailable(): boolean
@@ -93,6 +104,13 @@ local function migrate(data: ProfileData)
 			data.Loadout = { "Rifle", "Pistol" }
 		end
 		data.Version = 3
+	end
+	if data.Version < 4 then
+		-- the perk layer: one free slot, nothing bought, nothing equipped
+		data.PerkLevels = data.PerkLevels or {}
+		data.PerkSlots = math.max(data.PerkSlots or 1, 1)
+		data.PerksEquipped = data.PerksEquipped or {}
+		data.Version = 4
 	end
 end
 
@@ -134,6 +152,29 @@ local function onPlayerAdded(player: Player)
 	else
 		profile:EndSession()
 	end
+end
+
+-- Registers a callback that runs before EndSession() for a player leaving and for every
+-- profile on BindToClose, synchronously and in order, so credits banked in it land in the
+-- profile. A callback that errors is reported and never keeps the session from ending.
+function ProfileManager.onReleasing(callback: (Player, ProfileData) -> ()): () -> ()
+	table.insert(releasingCallbacks, callback)
+	return function()
+		local index = table.find(releasingCallbacks, callback)
+		if index then
+			table.remove(releasingCallbacks, index)
+		end
+	end
+end
+
+local function release(player: Player, profile: Profile)
+	for _, callback in releasingCallbacks do
+		local ok, err = pcall(callback, player, profile.Data)
+		if not ok then
+			warn(string.format("[TaskForceZ] profile release callback failed for %s: %s", player.Name, tostring(err)))
+		end
+	end
+	profile:EndSession()
 end
 
 function ProfileManager.get(player: Player): ProfileData?
@@ -235,13 +276,13 @@ function ProfileManager.init()
 	Players.PlayerRemoving:Connect(function(player)
 		local profile = profiles[player]
 		if profile then
-			profile:EndSession()
+			release(player, profile)
 		end
 	end)
 
 	game:BindToClose(function()
-		for _, profile in profiles do
-			profile:EndSession()
+		for player, profile in profiles do
+			release(player, profile)
 		end
 	end)
 end

@@ -7,6 +7,7 @@ local Workspace = game:GetService("Workspace")
 
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local RewardMultiplier = require(ReplicatedStorage.Shared.util.RewardMultiplier)
+local RunEconomy = require(script.Parent.RunEconomy)
 local MissionState = require(script.Parent.MissionState)
 local MissionConfig = require(script.Parent.MissionConfig)
 local MissionService = require(script.Parent.MissionService)
@@ -36,16 +37,24 @@ local pending: { [Player]: PendingDeath } = {}
 local revivesUsed: { [Player]: number } = {}
 local tokenCounter = 0
 
+-- The results: the run balance (kill pay and distance pay, already multiplied as it was
+-- earned) is banked here and the goal bonus added; a Continue starts a fresh balance,
+-- so what was earned before the death is never lost.
 local function computeRewards(player: Player)
 	local distance = math.floor(DistanceTracker.getDistance(player))
 	local multiplier = RewardMultiplier.compute(MissionConfig.getDifficulty().id, MissionState.getModifiers())
 	MissionGoals.report(player, "Distance", distance)
 	local goals = MissionGoals.completed(player)
 	local bonus = MissionGoals.bonusCredits(player)
+	local run = RunEconomy.snapshot(player)
+	local banked = RunEconomy.bank(player)
 	return {
 		distance = distance,
 		xp = math.floor(distance / 5),
-		credits = math.floor(distance / 10 * multiplier) + bonus,
+		credits = banked + bonus,
+		killCredits = run.kills,
+		distanceCredits = run.distance,
+		kills = run.killCount,
 		multiplier = multiplier,
 		goals = goals,
 		goalBonus = bonus,

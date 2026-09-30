@@ -4,6 +4,9 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local PerksConfig = require(ReplicatedStorage.Shared.config.PerksConfig)
 local UiTheme = require(script.Parent.UiTheme)
 
 local RunHud = {}
@@ -65,12 +68,59 @@ local function build()
 	earnings.TextColor3 = Color3.fromRGB(168, 178, 132)
 	earnings.Parent = screen
 
+	-- the run balance: kill pay and distance pay folded into one number (RunEconomy)
 	local function refreshEarnings()
 		local runCredits = Players.LocalPlayer:GetAttribute("RunCredits")
 		earnings.Text = if typeof(runCredits) == "number" then string.format("+%d CR THIS RUN", runCredits) else ""
 	end
 	Players.LocalPlayer:GetAttributeChangedSignal("RunCredits"):Connect(refreshEarnings)
 	refreshEarnings()
+
+	-- the perks riding along, as text badges under the wallet corner
+	local badges = Instance.new("Frame")
+	badges.Name = "PerkBadges"
+	badges.AnchorPoint = Vector2.new(1, 0)
+	badges.Position = UDim2.new(1, -14, 0, 76)
+	badges.Size = UDim2.fromOffset(178, 22)
+	badges.BackgroundTransparency = 1
+	badges.Parent = screen
+	local badgeLayout = Instance.new("UIListLayout")
+	badgeLayout.FillDirection = Enum.FillDirection.Horizontal
+	badgeLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+	badgeLayout.Padding = UDim.new(0, 4)
+	badgeLayout.Parent = badges
+
+	local function refreshBadges()
+		for _, child in badges:GetChildren() do
+			if child:IsA("TextLabel") then
+				child:Destroy()
+			end
+		end
+		local equipped = Players.LocalPlayer:GetAttribute("PerksEquipped")
+		if typeof(equipped) ~= "string" or equipped == "" then
+			return
+		end
+		for index, id in string.split(equipped, ",") do
+			local config = PerksConfig.get(id)
+			if not config then
+				continue
+			end
+			local badge = Instance.new("TextLabel")
+			badge.Name = "Badge_" .. id
+			badge.LayoutOrder = index
+			badge.Size = UDim2.fromOffset(34, 22)
+			badge.BackgroundColor3 = UiTheme.PANEL
+			badge.BackgroundTransparency = 0.25
+			badge.BorderSizePixel = 0
+			badge.TextSize = 13
+			badge.Text = config.badge
+			UiTheme.styleText(badge)
+			badge.TextColor3 = UiTheme.ACCENT
+			badge.Parent = badges
+		end
+	end
+	Players.LocalPlayer:GetAttributeChangedSignal("PerksEquipped"):Connect(refreshBadges)
+	refreshBadges()
 
 	healthBack = Instance.new("Frame")
 	healthBack.AnchorPoint = Vector2.new(0.5, 1)

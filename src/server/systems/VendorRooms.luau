@@ -488,6 +488,65 @@ local function buildBubblegumStand(base: CFrame, size: Vector3, parent: Instance
 	buildTableSet(base * CFrame.new(halfW - 12, 1, -4), parent)
 end
 
+-- A flask on a stand: the lab's own prop, a glass cylinder with a lit fill.
+local function buildFlask(base: CFrame, fillColor: Color3, parent: Instance)
+	local stand = makePart("Part", "FlaskStand", Vector3.new(2, 0.4, 2), base * CFrame.new(0, 0.2, 0), DARK_STEEL, Enum.Material.Metal, parent)
+	decor(stand)
+	local flask = makePart("Part", "Flask", Vector3.new(2.6, 1.6, 1.6), base * CFrame.new(0, 1.7, 0) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(220, 232, 240), Enum.Material.Glass, parent)
+	flask.Shape = Enum.PartType.Cylinder
+	flask.Transparency = 0.4
+	decor(flask)
+	local fill = makePart("Part", "FlaskFill", Vector3.new(1.4, 1.2, 1.2), base * CFrame.new(0, 1.2, 0) * CFrame.Angles(0, 0, math.rad(90)), fillColor, Enum.Material.Neon, parent)
+	fill.Shape = Enum.PartType.Cylinder
+	decor(fill)
+	local light = Instance.new("PointLight")
+	light.Color = fillColor
+	light.Range = 8
+	light.Brightness = 0.8
+	light.Parent = fill
+end
+
+-- The Perk Lab: steel benches with lit flasks along the back, a whiteboard of the six
+-- perks on one side, a rack of sealed cases on the other. Same shell and prompt as
+-- every other room; the catalog is PerkService's.
+local function buildPerkLab(base: CFrame, size: Vector3, parent: Instance)
+	local halfW = size.X / 2
+	local halfD = size.Z / 2
+
+	local flaskColors = {
+		Color3.fromRGB(90, 200, 170),
+		Color3.fromRGB(230, 120, 80),
+		Color3.fromRGB(120, 160, 240),
+		Color3.fromRGB(240, 210, 80),
+		Color3.fromRGB(200, 90, 150),
+		Color3.fromRGB(150, 230, 100),
+	}
+	for i, color in flaskColors do
+		local x = -halfW + 8 + (i - 1) * 8
+		local bench = makePart("Part", "LabBench", Vector3.new(6.5, 3.6, 4), base * CFrame.new(x, 2.8, halfD - 6), STEEL, Enum.Material.Metal, parent)
+		TextureUtil.applySides(bench, TexturesConfig.METAL_PLATES, 5)
+		buildFlask(base * CFrame.new(x, 4.6, halfD - 6), color, parent)
+	end
+
+	local board = makePart("Part", "PerkBoard", Vector3.new(0.5, 8, 18), base * CFrame.new(-halfW + 2.2, 7, -2), Color3.fromRGB(232, 234, 230), Enum.Material.SmoothPlastic, parent)
+	decor(board)
+	for i = 0, 5 do
+		local line = makePart("Part", "BoardLine", Vector3.new(0.2, 0.5, 12 - (i % 3) * 2), base * CFrame.new(-halfW + 1.9, 10 - i * 1.2, -2), Color3.fromRGB(60, 90, 120), Enum.Material.SmoothPlastic, parent)
+		decor(line)
+	end
+
+	makePart("Part", "CaseRack", Vector3.new(1, 11, 20), base * CFrame.new(halfW - 2.4, 7.5, -2), DARK_STEEL, Enum.Material.DiamondPlate, parent)
+	for i = 0, 5 do
+		local case = makePart("Part", "PerkCase", Vector3.new(2.6, 1.8, 3.6), base * CFrame.new(halfW - 4, 3 + (i % 3) * 3, -9 + math.floor(i / 3) * 12), Color3.fromRGB(64, 84, 90), Enum.Material.Metal, parent)
+		decor(case)
+		local seal = makePart("Part", "CaseSeal", Vector3.new(0.3, 0.6, 1.2), base * CFrame.new(halfW - 5.4, 3 + (i % 3) * 3, -9 + math.floor(i / 3) * 12), flaskColors[i + 1], Enum.Material.Neon, parent)
+		decor(seal)
+	end
+
+	buildMonitor(base * CFrame.new(halfW - 14, 6, halfD - 6), parent)
+	buildMonitor(base * CFrame.new(halfW - 8, 6, halfD - 6), parent)
+end
+
 local function buildRoom(config: VendorsConfig.VendorConfig, parent: Instance)
 	local base = CFrame.new(HangarConfig.HUB_CENTER + config.offset) * CFrame.Angles(0, config.rotationY, 0)
 	buildShell(base, config, parent)
@@ -502,6 +561,8 @@ local function buildRoom(config: VendorsConfig.VendorConfig, parent: Instance)
 		buildCanteen(base, config.size, parent)
 	elseif config.id == "BubblegumMachine" then
 		buildBubblegumStand(base, config.size, parent)
+	elseif config.id == "PerkLab" then
+		buildPerkLab(base, config.size, parent)
 	end
 end
 

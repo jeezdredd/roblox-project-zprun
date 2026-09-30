@@ -22,6 +22,11 @@ export type ProfileData = {
 	EquippedSkin: string,
 	PurchaseHistory: { [string]: boolean },
 	Loadout: { string },
+	-- perks (PerkService): levels bought, slots owned (1 is free), the perks equipped
+	-- for the next run in slot order
+	PerkLevels: { [string]: number },
+	PerkSlots: number,
+	PerksEquipped: { string },
 	Settings: { [string]: any },
 	StatsLifetime: {
 		Distance: number,
@@ -31,7 +36,7 @@ export type ProfileData = {
 }
 
 local TEMPLATE: ProfileData = {
-	Version = 3,
+	Version = 4,
 	Credits = 0,
 	XP = 0,
 	WeaponsOwned = {
@@ -44,6 +49,9 @@ local TEMPLATE: ProfileData = {
 	PurchaseHistory = {},
 	-- Slot 1 primary, slot 2 sidearm; the 1 and 2 keys read these directly.
 	Loadout = { "Rifle", "Pistol" },
+	PerkLevels = {},
+	PerkSlots = 1,
+	PerksEquipped = {},
 	Settings = {},
 	StatsLifetime = {
 		Distance = 0,
@@ -93,6 +101,13 @@ local function migrate(data: ProfileData)
 			data.Loadout = { "Rifle", "Pistol" }
 		end
 		data.Version = 3
+	end
+	if data.Version < 4 then
+		-- the perk layer: one free slot, nothing bought, nothing equipped
+		data.PerkLevels = data.PerkLevels or {}
+		data.PerkSlots = math.max(data.PerkSlots or 1, 1)
+		data.PerksEquipped = data.PerksEquipped or {}
+		data.Version = 4
 	end
 end
 

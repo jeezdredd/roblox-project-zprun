@@ -111,9 +111,12 @@ local function makeMannequin(template: Model, config: WeaponsConfig.WeaponConfig
 	template.Archivable = wasArchivable
 	model.Name = name
 	for _, descendant in model:GetDescendants() do
-		if descendant:IsA("BaseScript") or descendant:IsA("ForceField") or descendant:IsA("IKControl") then
-			descendant:Destroy()
-		elseif descendant:IsA("Attachment") and (descendant.Name == "BodyGripTarget" or descendant.Name == "BodySupportTarget") then
+		if
+			descendant:IsA("BaseScript")
+			or descendant:IsA("ForceField")
+			or descendant:IsA("IKControl")
+			or (descendant:IsA("Attachment") and (descendant.Name == "BodyGripTarget" or descendant.Name == "BodySupportTarget"))
+		then
 			descendant:Destroy()
 		elseif descendant:IsA("BasePart") then
 			descendant.CanQuery = false

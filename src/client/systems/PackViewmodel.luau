@@ -110,6 +110,13 @@ local SOFT_TAGS: { [string]: boolean } = {
 
 local clipCache: { [string]: ViewmodelClipPlayer.PackData } = {}
 
+local function anglesOf(degrees: Vector3?): CFrame
+	if not degrees then
+		return CFrame.identity
+	end
+	return CFrame.fromEulerAnglesYXZ(math.rad(degrees.X), math.rad(degrees.Y), math.rad(degrees.Z))
+end
+
 local function clipData(pack: ViewmodelPackConfig.ClassPack): ViewmodelClipPlayer.PackData?
 	local cached = clipCache[pack.clips]
 	if cached then
@@ -270,7 +277,7 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 		muzzleLocal = muzzleLocal,
 		ejectLocal = ejectLocal,
 		eyeInverse = (CFrame.new(pack.eye.Position * scale) * pack.eye.Rotation):Inverse(),
-		hold = CFrame.new(pack.hold or Vector3.zero),
+		hold = CFrame.new(pack.hold or Vector3.zero) * anglesOf(pack.holdAngles),
 		actionHold = CFrame.new(pack.actionHold or pack.hold or Vector3.zero),
 		-- the rig starts on the draw
 		holdBlend = 1,
@@ -599,7 +606,12 @@ function PackViewmodel.step(rig: Rig, deltaTime: number, placement: CFrame, movi
 	-- framing knob for tuning a class's `hold` from the command bar:
 	-- workspace.CurrentCamera:SetAttribute("ViewmodelHold", Vector3.new(0.05, -0.1, 0.05))
 	local tune = if camera then camera:GetAttribute("ViewmodelHold") else nil
-	local hold = if typeof(tune) == "Vector3" then CFrame.new(tune) else rig.hold:Lerp(rig.actionHold, rig.holdBlend)
+	local tuneAngles = if camera then camera:GetAttribute("ViewmodelHoldAngles") else nil
+	local hold = rig.hold:Lerp(rig.actionHold, rig.holdBlend)
+	if typeof(tune) == "Vector3" or typeof(tuneAngles) == "Vector3" then
+		local offset = if typeof(tune) == "Vector3" then tune else hold.Position
+		hold = CFrame.new(offset) * anglesOf(if typeof(tuneAngles) == "Vector3" then tuneAngles else nil)
+	end
 	rig.root.CFrame = placement * hold * rig.eyeInverse
 	local weapon = player:boneWorld(rig.pack.weaponBone)
 	if weapon then

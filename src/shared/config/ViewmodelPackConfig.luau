@@ -56,6 +56,10 @@ export type ClassPack = {
 	-- the whole rig, every clip alike. Tuned in Studio with the camera attribute
 	-- ViewmodelHold (PackViewmodel.step).
 	hold: Vector3?,
+	-- Turn of the rig about the eye, degrees (pitch, yaw, roll), applied with `hold`: a
+	-- pack whose idle carries the gun slanted across the body can be turned so the barrel
+	-- runs more along the view. Tuned with the camera attribute ViewmodelHoldAngles.
+	holdAngles: Vector3?,
 	-- The same offset while a reload, a draw or an inspect plays (nil keeps `hold`): a
 	-- hold that brings an idle gun closer can push those clips, which already bring the
 	-- gun in, into the camera. The rig blends between the two over about 0.1 s.
@@ -148,6 +152,12 @@ ViewmodelPackConfig.classes = {
 		asset = "rifle",
 		clips = "RifleClips",
 		eye = CFrame.new(0, 4.72, -0.066),
+		-- the pack's idle carries the AK slanted across the body with the left forearm
+		-- reaching in from the bottom-left corner (the owner's recording, 2026-09-30):
+		-- 10 cm farther, a little down and right, turned 10 degrees left and pitched 4 up,
+		-- it reads as a hip carry with the muzzle near the crosshair
+		hold = Vector3.new(0.04, -0.04, -0.1),
+		holdAngles = Vector3.new(4, 10, 0),
 		weaponBone = "Grip_01",
 		weaponMesh = "^SK_AK%-47_Material%.007",
 		equip = "Equip",

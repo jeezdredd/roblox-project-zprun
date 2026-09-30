@@ -438,7 +438,12 @@ local function refreshHud()
 	local nameLabel = weaponLabel
 	if nameLabel then
 		local config = currentConfig()
-		nameLabel.Text = if config then string.upper(config.displayName) else ""
+		local level = player:GetAttribute("WeaponLevel")
+		local upgraded = typeof(level) == "number" and level > 1
+		nameLabel.Text = if config
+			then string.upper(config.displayName) .. (if upgraded then string.format("  L%d", level) else "")
+			else ""
+		nameLabel.TextColor3 = if upgraded then UiTheme.ACCENT else Color3.fromRGB(150, 150, 144)
 	end
 end
 
@@ -669,6 +674,7 @@ function WeaponController.init()
 		refreshHud()
 	end)
 	player:GetAttributeChangedSignal("AmmoReserve"):Connect(refreshHud)
+	player:GetAttributeChangedSignal("WeaponLevel"):Connect(refreshHud)
 
 	Remotes.getEvent(Remotes.Event.WeaponHit).OnClientEvent:Connect(onWeaponHit)
 	Remotes.getEvent(Remotes.Event.AmmoPickup).OnClientEvent:Connect(function(rounds, position)

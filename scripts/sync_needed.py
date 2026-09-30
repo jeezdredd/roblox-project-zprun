@@ -74,6 +74,9 @@ GUIDE = {
     "animation/zombie/stand_up_back": ("ZombieAnimator — Dormant rise (idle_c stands in)", "Mixamo: Zombie Stand Up, from the back", "polish"),
     "animation/zombie/stand_up_stomach": ("ZombieAnimator — Dormant rise (idle_c stands in)", "Mixamo: Zombie Stand Up, from the stomach", "polish"),
     "animation/zombie/biting_ground": ("ZombieAnimator — Feeding pose (feeding stands in)", "Mixamo: Zombie Biting Victim On The Ground", "polish"),
+    "audio/upgrade/announcer_upgrade_01": ("UpgradeStations / WeaponPickupClient — announcer on a successful upgrade, take 1", "Kenney Voiceover Pack (CC0) 'power up' / 'excellent'; freesound CC0 'announcer upgrade'; a recorded line. Never generated speech", "polish"),
+    "audio/upgrade/announcer_upgrade_02": ("UpgradeStations / WeaponPickupClient — announcer on a successful upgrade, take 2", "Kenney Voiceover Pack (CC0) 'upgrade' / 'nice'; freesound CC0 'announcer upgrade'; a recorded line. Never generated speech", "polish"),
+    "audio/upgrade/announcer_max": ("UpgradeStations / WeaponPickupClient — announcer when the weapon is at max level", "Kenney Voiceover Pack (CC0) 'max' / 'that is the limit'; freesound CC0 'announcer maximum'; a recorded line. Never generated speech", "polish"),
 }
 
 CATEGORY_TITLES = {

@@ -27,6 +27,9 @@ only, no synthesis, no invented ids.
 | `audio/city/siren_police` | — | — | polish | rejected |
 | `audio/range/gong` | Shooting range — gong hit feedback | Freesound CC0: metal gong hit / steel target ping | blocker | rejected |
 | `audio/unused/siren_police_rejected` | — | — | polish | rejected |
+| `audio/upgrade/announcer_max` | UpgradeStations / WeaponPickupClient — announcer when the weapon is at max level | Kenney Voiceover Pack (CC0) 'max' / 'that is the limit'; freesound CC0 'announcer maximum'; a recorded line. Never generated speech | polish | needed |
+| `audio/upgrade/announcer_upgrade_01` | UpgradeStations / WeaponPickupClient — announcer on a successful upgrade, take 1 | Kenney Voiceover Pack (CC0) 'power up' / 'excellent'; freesound CC0 'announcer upgrade'; a recorded line. Never generated speech | polish | needed |
+| `audio/upgrade/announcer_upgrade_02` | UpgradeStations / WeaponPickupClient — announcer on a successful upgrade, take 2 | Kenney Voiceover Pack (CC0) 'upgrade' / 'nice'; freesound CC0 'announcer upgrade'; a recorded line. Never generated speech | polish | needed |
 | `audio/weapons/far_pistol` | WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
 | `audio/weapons/far_rifle` | WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
 | `audio/weapons/far_shotgun` | WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
@@ -48,4 +51,4 @@ only, no synthesis, no invented ids.
 | `audio/weapons/ricochet_01` | WeaponSfx.playImpacts — one hard hit in six | freesound CC0 'ricochet' | polish | needed |
 | `audio/weapons/shell_03` | Weapon shell casing variation 3 | Kenney CC0 impact sounds: small metal drop | polish | rejected |
 
-**3 blockers, 28 polish items.**
+**3 blockers, 31 polish items.**

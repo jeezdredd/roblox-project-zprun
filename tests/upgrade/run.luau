@@ -130,7 +130,30 @@ group("seeded placement", function()
 			check("faces the road", math.abs(spot.yaw - facing) <= math.rad(UpgradeStationConfig.YAW_JITTER) + 1e-6)
 		end
 	end
-	check("the station radius covers the bench and the generator", UpgradeStationConfig.RADIUS >= 7)
+	-- the footprint radius covers every part: its offset plus half its footprint
+	-- diagonal (a cylinder rolled upright stands on its y and z sizes)
+	local function extentOf(spec: any, offsetX: number, offsetZ: number): number
+		local at = spec.at
+		local x, z = offsetX + at[1], offsetZ + at[3]
+		if spec.kind == "mesh" then
+			local most = 0
+			for _, fallback in spec.fallback or {} do
+				most = math.max(most, extentOf(fallback, x, z))
+			end
+			return most
+		end
+		local size = spec.size or { 1, 1, 1 }
+		local upright = spec.kind == "cylinder" and math.abs(spec.roll or 0) > 45
+		local fx = if upright then size[2] else size[1]
+		local fz = size[3]
+		return math.sqrt(x * x + z * z) + 0.5 * math.sqrt(fx * fx + fz * fz)
+	end
+	local extent = 0
+	for _, spec in UpgradeStationConfig.parts do
+		extent = math.max(extent, extentOf(spec, 0, 0))
+	end
+	check("the station radius covers every part", UpgradeStationConfig.RADIUS >= extent, string.format("extent %.2f, radius %d", extent, UpgradeStationConfig.RADIUS))
+	check("the radius is not slack", UpgradeStationConfig.RADIUS <= extent + 2, string.format("extent %.2f", extent))
 	check("prompt inside the server's reach", UpgradeStationConfig.USE_DISTANCE >= UpgradeStationConfig.PROMPT_DISTANCE)
 	check("announcer lines named", #UpgradeStationConfig.ANNOUNCER_UPGRADE >= 1 and UpgradeStationConfig.ANNOUNCER_MAX ~= "")
 end)

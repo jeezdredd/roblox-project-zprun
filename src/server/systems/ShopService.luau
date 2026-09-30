@@ -314,6 +314,9 @@ local function onPurchase(player: Player, vendorId: any, entryId: any, kind: any
 		end
 	elseif matched.kind == "Weapon" or matched.kind == "WeaponUpgrade" then
 		ok, message = purchaseWeapon(player, data, entryId)
+		if ok then
+			WeaponService.refreshLevel(player)
+		end
 	elseif matched.kind == "Skill" then
 		ok, message = purchaseSkill(player, data, entryId)
 	elseif matched.kind == "PerkSlot" then

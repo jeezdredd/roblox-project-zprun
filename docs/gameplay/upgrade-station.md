@@ -23,12 +23,16 @@ and a spend, and what it buys is gone with the run.
   (16), facing the road with `YAW_JITTER` (12 degrees).
 - `src/server/systems/UpgradeStations.luau` is called by `ChunkSpawner` once the chunk
   stands, before the chunk's pickups, with its own `Random.new(runSeed + 4 + chunkIndex
-  * 7919)` (mesh picks on a second Random off the same base), so which chunks get a
-  station and their candidate spots depend on the run seed and the chunk index alone.
+  * 7907)` (its own salt and chunk step, so no station stream equals a pickup plan's or
+  a drop roll's; mesh picks on a second Random off the same base), so which chunks get
+  a station and their candidate spots depend on the run seed and the chunk index alone.
   It takes the first candidate free of the chunk's remembered footprints
-  (`ChunkOccupancy.isFreeFor`) and of anything queryable of the chunk or of
-  `Workspace.Pickups` in a box above the floor; the pickups placed after it see it in
-  that folder and keep clear. The station lives in `Workspace.Pickups` too, tagged
+  (`ChunkOccupancy.isFreeFor`), of the chunk's ammo crates by radius
+  (`AmmoCrates.positionsForChunk`, they are spawned first and are not queryable) and of
+  anything queryable of the chunk or of `Workspace.Pickups` in a box above the floor;
+  the pickups placed after it keep clear of it by radius
+  (`UpgradeStations.footprintsForChunk`, since the lamp, the mat and the vise are not
+  queryable) and through that folder. The station lives in `Workspace.Pickups` too, tagged
   `WeaponPickup` with `Kind` `Station`, and goes with its chunk.
 
 ## 2. The station
@@ -101,11 +105,13 @@ seed differs, no spots without a station, shoulder and end bounds, facing).
   CR (short)"; earn 400: the text changes to "Upgrade to L2 · 400 CR" without moving.
 - **Hold to upgrade** (0.6 s): "+N CR THIS RUN" drops by 400, the toast reads "R4
   CARBINE UPGRADED TO L2", the name under the ammo readout reads "R4 CARBINE  L2" in the
-  accent colour, two bursts at the bench; a Walker now takes floor(damage x 1.08) per
-  hit. Hold again: 750, then 1100, 1450; at L5 the prompt reads "At the top" and a hold
+  accent colour, two bursts at the bench; a Walker now takes damage x 1.08 per hit
+  (`TakeDamage` is not floored). Hold again: 750, then 1100, 1450; at L5 the prompt reads "At the top" and a hold
   toasts "ALREADY AT THE TOP, L5".
 - **Run only.** Die and return to the hub: the Gunsmith shows the weapon at its profile
-  level, the HUD name has no level suffix; a new run starts at the profile level.
+  level and the HUD name shows that level (no suffix at profile L1, "L3" for a profile
+  L3 weapon: `WeaponLevel` is refreshed on load and after a Gunsmith upgrade); a new run
+  starts at the profile level.
 - **Other weapon.** Swap to the sidearm at the station: the quote is the sidearm's.
 - **Found weapon.** Pick up a found carbine after upgrading the carbine: it keeps L2.
 - **Announcer silent** (ids 0) until the slots are filled; nothing errors.

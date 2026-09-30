@@ -25,6 +25,7 @@ local RunEconomy = require(script.Parent.RunEconomy)
 local RunPromptGuard = require(script.Parent.RunPromptGuard)
 local WeaponService = require(script.Parent.WeaponService)
 local SceneParts = require(script.Parent.SceneParts)
+local UpgradeStations = require(script.Parent.UpgradeStations)
 local WorldMeshes = require(script.Parent.WorldMeshes)
 
 local WeaponPickups = {}
@@ -278,8 +279,8 @@ end
 -- Whether the spot is free: of the chunk's footprints remembered at its build (the
 -- query below cannot see non-queryable dressing such as corn walls, dry grass and
 -- undergrowth), of any queryable part of the chunk or of another pickup inside a box
--- of the footprint above the floor, of the pickups already standing (their small parts
--- are not queryable either) and of the chunk's ammo crates.
+-- of the footprint above the floor, of the pickups and upgrade stations already
+-- standing (their small parts are not queryable either) and of the chunk's ammo crates.
 local function spotIsFree(chunk: Model, chunkIndex: number, localX: number, localZ: number, position: Vector3, radius: number): boolean
 	if not ChunkOccupancy.isFreeFor(chunk, localX, localZ, radius) then
 		return false
@@ -294,6 +295,14 @@ local function spotIsFree(chunk: Model, chunkIndex: number, localX: number, loca
 	for _, crate in AmmoCrates.positionsForChunk(chunkIndex) do
 		local reach = radius + CRATE_RADIUS
 		local delta = crate - position
+		if delta.X * delta.X + delta.Z * delta.Z < reach * reach then
+			return false
+		end
+	end
+	-- the station's lamp, mat and vise are not queryable either
+	for _, station in UpgradeStations.footprintsForChunk(chunkIndex) do
+		local reach = radius + station.radius
+		local delta = station.position - position
 		if delta.X * delta.X + delta.Z * delta.Z < reach * reach then
 			return false
 		end

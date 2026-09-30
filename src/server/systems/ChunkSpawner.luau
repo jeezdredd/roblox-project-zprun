@@ -145,7 +145,7 @@ function ChunkSpawner.configure(seed: number, locationIds: { string }?)
 	random = Random.new(seed + 1)
 	RoutePlan.configure(seed, locationIds)
 	WeaponPickups.configure(seed + 3)
-	UpgradeStations.configure(seed + 4)
+	UpgradeStations.configure(seed + 5)
 	for id, pool in pools do
 		for _, model in pool do
 			model:Destroy()

@@ -45,7 +45,9 @@ UpgradeStationConfig.END_CLEARANCE = 16
 UpgradeStationConfig.SHOULDER_INSET = { 6, 11 }
 UpgradeStationConfig.YAW_JITTER = 12
 UpgradeStationConfig.CANDIDATES = 3
-UpgradeStationConfig.RADIUS = 7
+-- covers every part in `parts` (the generator reaches about 8.4 studs from the
+-- origin); tests/upgrade computes the extent from the parts
+UpgradeStationConfig.RADIUS = 9
 
 -- The prompt: hold this long from this far; the server accepts a trigger from a little
 -- further than the prompt shows, for the latency of a running player.

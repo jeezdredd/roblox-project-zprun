@@ -18,6 +18,7 @@ local UpgradeStationConfig = require(ReplicatedStorage.Shared.config.UpgradeStat
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local UpgradeStationMath = require(ReplicatedStorage.Shared.world.UpgradeStationMath)
+local AmmoCrates = require(script.Parent.AmmoCrates)
 local ChunkOccupancy = require(script.Parent.ChunkOccupancy)
 local RunEconomy = require(script.Parent.RunEconomy)
 local RunPromptGuard = require(script.Parent.RunPromptGuard)
@@ -32,12 +33,18 @@ UpgradeStations.PROMPT_NAME = "UpgradePrompt"
 local FLOOR_TOP = 0.5
 local CHECK_FLOOR = 1
 local CHECK_HEIGHT = 7
-local CHUNK_SEED_STEP = 7919
+-- the station's own chunk step, off the pickups' 7919, so no station stream ever
+-- equals a pickup plan's or a drop roll's for any chunk
+local CHUNK_SEED_STEP = 7907
 local SEED_MESH = 2
+-- an ammo crate's footprint, for the spot check
+local CRATE_RADIUS = 3
 
 type Station = {
 	model: Model,
 	anchor: BasePart,
+	-- the scene origin on the floor, the footprint's centre
+	origin: Vector3,
 	chunkIndex: number,
 }
 
@@ -117,11 +124,11 @@ local function onTriggered(station: Station, player: Player)
 	tell(player, "Upgrade", weaponId, position, quote.level)
 end
 
-local function register(model: Model, anchor: BasePart, prompt: ProximityPrompt, chunkIndex: number)
+local function register(model: Model, anchor: BasePart, prompt: ProximityPrompt, origin: Vector3, chunkIndex: number)
 	model:SetAttribute("Kind", "Station")
 	model:SetAttribute("Taken", false)
 	CollectionService:AddTag(model, UpgradeStations.TAG)
-	local station: Station = { model = model, anchor = anchor, chunkIndex = chunkIndex }
+	local station: Station = { model = model, anchor = anchor, origin = origin, chunkIndex = chunkIndex }
 	stations[model] = station
 	prompt.Triggered:Connect(function(player)
 		onTriggered(station, player)
@@ -144,14 +151,23 @@ local function buildStation(base: CFrame, rng: Random, chunkIndex: number)
 	prompt.MaxActivationDistance = UpgradeStationConfig.PROMPT_DISTANCE
 	prompt.RequiresLineOfSight = false
 	prompt.Parent = anchor
-	register(model, anchor, prompt, chunkIndex)
+	register(model, anchor, prompt, base.Position, chunkIndex)
 end
 
--- The same spot check the pickups make (their footprints and crates aside: the station
--- is placed before the pickups of its chunk, they avoid it through Workspace.Pickups).
-local function spotIsFree(chunk: Model, localX: number, localZ: number, position: Vector3, radius: number): boolean
+-- The same spot check the pickups make: the chunk's remembered footprints, the chunk's
+-- ammo crates (spawned first, not queryable) by radius, then the overlap query. The
+-- station is placed before the pickups of its chunk; they avoid it through
+-- footprintsForChunk and Workspace.Pickups.
+local function spotIsFree(chunk: Model, chunkIndex: number, localX: number, localZ: number, position: Vector3, radius: number): boolean
 	if not ChunkOccupancy.isFreeFor(chunk, localX, localZ, radius) then
 		return false
+	end
+	for _, crate in AmmoCrates.positionsForChunk(chunkIndex) do
+		local reach = radius + CRATE_RADIUS
+		local delta = crate - position
+		if delta.X * delta.X + delta.Z * delta.Z < reach * reach then
+			return false
+		end
 	end
 	local params = OverlapParams.new()
 	params.FilterType = Enum.RaycastFilterType.Include
@@ -181,11 +197,28 @@ function UpgradeStations.spawnForChunk(chunkIndex: number, chunk: Model, biome: 
 	local pivot = chunk:GetPivot()
 	for _, spot in spots do
 		local position = pivot.Position + Vector3.new(spot.x, FLOOR_TOP, spot.z)
-		if spotIsFree(chunk, spot.x, spot.z, position, UpgradeStationConfig.RADIUS) then
+		if spotIsFree(chunk, chunkIndex, spot.x, spot.z, position, UpgradeStationConfig.RADIUS) then
 			buildStation(CFrame.new(position) * CFrame.Angles(0, spot.yaw, 0), meshRng, chunkIndex)
 			return
 		end
 	end
+end
+
+export type Footprint = {
+	position: Vector3,
+	radius: number,
+}
+
+-- The stations standing in a chunk (the lamp, the mat and the vise are not queryable),
+-- for the pickups' spot check.
+function UpgradeStations.footprintsForChunk(chunkIndex: number): { Footprint }
+	local footprints: { Footprint } = {}
+	for _, station in stations do
+		if station.chunkIndex == chunkIndex then
+			table.insert(footprints, { position = station.origin, radius = UpgradeStationConfig.RADIUS })
+		end
+	end
+	return footprints
 end
 
 function UpgradeStations.clearChunk(chunkIndex: number)

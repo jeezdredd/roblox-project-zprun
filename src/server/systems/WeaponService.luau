@@ -553,6 +553,15 @@ function WeaponService.pickUp(player: Player, weaponId: string): boolean
 	return true
 end
 
+-- Republishes the level attribute for the weapon in hand: after the profile loads (the
+-- default Pistol may already be current, so no equip runs) and after a Gunsmith upgrade.
+function WeaponService.refreshLevel(player: Player)
+	local state = states[player]
+	if state then
+		syncAttributes(player, state)
+	end
+end
+
 function WeaponService.carriedWeapon(player: Player): string?
 	local state = states[player]
 	return if state then state.weaponId else nil
@@ -647,6 +656,7 @@ function WeaponService.init()
 		if typeof(primary) == "string" and WeaponsConfig.get(primary) then
 			onEquip(player, primary)
 		end
+		WeaponService.refreshLevel(player)
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		states[player] = nil

@@ -228,17 +228,20 @@ member is dropped whole, so a half cluster never ships.
 Edge row co-existence: `buildCorridorEdge` today builds elements back to back and the
 whole 8-stud strip is then reserved. It changes to record each element's real z extent as a
 box and to leave a gap of 6..18 studs after each element, so about a third of the strip is
-free for clusters. Nothing else about the row changes.
+free for clusters. Nothing else about the row changes. Scattered members try three spots
+before they are dropped; a cluster's anchor is never detail tier, so every cluster leaves
+something on mobile.
 
 Collision and shadows follow the zone table. Props also get tags: `TFZ_Prop` (every placed
 prop), `TFZ_Detail` (shoulder and sidewalk clutter, the third and later members of a cluster,
 decal cards) which the mobile tier removes, and `TFZ_ShadowNear` (edge and apron props that
 cast) which the mobile tier switches to no shadow.
 
-Lane obstacles gain mesh variants with the same footprints: City `buildDivider` places a
-`barrier` mesh when loaded, `buildCrash` a `car_burned`, Wasteland rubble the `rubble` prop,
-and a new `buildBlock` kind puts `hedgehog` + `sandbags` across a lane in City and
-Wasteland. Every one keeps its primitive fallback.
+Lane obstacles gain mesh variants with the same footprints: `buildDivider` places a line
+of `barrier` meshes when loaded, `buildCrash` a `car_burned` (then `car_wreck`),
+`buildRubblePile` the `rubble` prop, and a new `buildBlock` kind puts two `hedgehog`s and a
+`sandbags` wall across a lane in the City and the Wasteland. Every one keeps its primitive
+fallback.
 
 ### 5.2 Material variants
 
@@ -312,9 +315,10 @@ chunk, so the mobile tier keeps a little.
 
 ### 5.5 Lighting presets
 
-`LightingConfig.LightingPreset` gains `visibility` (studs, the distance at which the
-preset's fog swallows a 10-stud object, confirmed in Studio), `bloomIntensity`,
-`bloomThreshold`, `sunRays`, `shadowSoftness`. `PostFx` reads bloom from the active preset
+`LightingConfig.LightingPreset` gains `bloomIntensity`, `bloomThreshold`, `sunRays` and
+`shadowSoftness`. Each preset's `visibility` (studs, the distance at which its fog swallows
+a 10-stud object, confirmed in Studio) lives in `VisibilityConfig`, a module without
+`Color3`, so the pure fog check can load it. `PostFx` reads bloom from the active preset
 (today it hard-codes 0.34/1.25 with a Forest exception); `LightingDirector` lerps the new
 fields with the old ones. `LightingDirector` picks `<Biome>Night` when `NightMission` is
 set and the preset exists, else `Night`; in Studio a `DevLightingPreset` string attribute on
@@ -411,8 +415,9 @@ ChunkFactory.build
 ```
 
 New files: `src/shared/config/DressingConfig.luau`, `src/shared/config/DecalsConfig.luau`,
-`src/shared/world/DressingPlanner.luau`, `src/shared/world/ChunkBudget.luau`,
-`src/shared/world/FogBudget.luau`, `src/server/world/WorldDressing.luau`,
+`src/shared/config/VisibilityConfig.luau`, `src/shared/world/DressingPlanner.luau`,
+`src/shared/world/ChunkBudget.luau`, `src/shared/world/FogBudget.luau`,
+`src/server/world/WorldDressing.luau`,
 `src/server/world/WorldDecals.luau`, `src/server/world/ChunkBudgetCounter.luau`,
 `src/client/systems/EnvironmentQuality.luau`, `src/server/systems/SandboxBiomeStrip.luau`,
 `tests/world/run.luau`. Edited: `ChunkFactory`, `WorldFlanks`, `MaterialUtil`,
@@ -420,10 +425,12 @@ New files: `src/shared/config/DressingConfig.luau`, `src/shared/config/DecalsCon
 `default.project.json` (variant patterns, `LightingStyle`).
 
 Tests (`luau tests/world/run.luau`): planner keeps every placement inside its zone and off
-the lanes, respects occupancy and spacing, drops half clusters, never repeats a gap, is
-deterministic per seed; ground height per zone; budget estimate arithmetic and the over
-list; fog budget over every preset and the constants; decal id lookup treats missing keys
-as 0; material assignment names only registered sets.
+the lanes, respects occupancy and spacing, drops half clusters, numbers clusters in order,
+keeps anchors on the base tier, is deterministic per seed and falls back to primitives
+when nothing is loaded; ground height per zone; budget estimate arithmetic, the over list
+and the printed line; fog budget over every preset and the constants; decal id lookup
+treats missing, zero, negative and non-number keys as 0; every recipe names known zones,
+groups and sizes.
 
 ## 6. Screenshot test plan
 
@@ -463,3 +470,6 @@ lists what must be true; the PR carries the same list for the owner.
 - `default.project.json` adds `LightingStyle = Realistic` next to `Technology = Future`;
   both are Studio-only properties, so nothing in Luau depends on either.
 - Light ranges stay at the wiki's 60 even though the engine now allows 120.
+- The pure modules take `DressingConfig` as an argument instead of requiring it: a
+  `script`-relative require does not run under the Luau CLI, and a string require is not
+  something this project relies on in Studio.

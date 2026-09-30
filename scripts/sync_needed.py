@@ -58,6 +58,22 @@ GUIDE = {
     "audio/weapons/impact_flesh_01": ("WeaponSfx.playImpacts — bullet on a body (Kenney bite stands in)", "freesound CC0 'bullet impact flesh'", "polish"),
     "audio/weapons/impact_flesh_02": ("WeaponSfx.playImpacts — bullet on a body, variation", "freesound CC0 'bullet impact flesh'", "polish"),
     "audio/weapons/ricochet_01": ("WeaponSfx.playImpacts — one hard hit in six", "freesound CC0 'ricochet'", "polish"),
+    "animation/player/rifle_idle": ("AnimationController — rifle set idle", "Mixamo: Rifle Idle (In Place)", "polish"),
+    "animation/player/rifle_walk": ("AnimationController — rifle set walk", "Mixamo: Rifle Walk (In Place)", "polish"),
+    "animation/player/rifle_run": ("AnimationController — rifle set run, replaces Run", "Mixamo: Rifle Run (In Place)", "polish"),
+    "animation/player/rifle_sprint": ("AnimationController — rifle set sprint", "Mixamo: Sprint Forward, rifle carry (In Place)", "polish"),
+    "animation/player/rifle_strafe_left": ("AnimationController — rifle set strafe", "Mixamo: Strafe, rifle walk, left (In Place)", "polish"),
+    "animation/player/rifle_strafe_right": ("AnimationController — rifle set strafe", "Mixamo: Strafe, rifle walk, right (In Place)", "polish"),
+    "animation/player/rifle_reload": ("AnimationController.playAction — rifle reload", "Mixamo: Reloading, rifle standing", "polish"),
+    "animation/player/pistol_idle": ("AnimationController — pistol set idle", "Mixamo: Pistol Idle (In Place)", "polish"),
+    "animation/player/pistol_walk": ("AnimationController — pistol set walk", "Mixamo: Pistol Walk (In Place)", "polish"),
+    "animation/player/pistol_run": ("AnimationController — pistol set run, replaces Run", "Mixamo: Pistol Run (In Place)", "polish"),
+    "animation/player/pistol_strafe_left": ("AnimationController — pistol set strafe", "Mixamo: Pistol Strafe, left (In Place)", "polish"),
+    "animation/player/pistol_strafe_right": ("AnimationController — pistol set strafe", "Mixamo: Pistol Strafe, right (In Place)", "polish"),
+    "animation/player/hit_rifle": ("AnimationController.playAction — hit reaction", "Mixamo: Hit Reaction, holding a rifle", "polish"),
+    "animation/zombie/stand_up_back": ("ZombieAnimator — Dormant rise (idle_c stands in)", "Mixamo: Zombie Stand Up, from the back", "polish"),
+    "animation/zombie/stand_up_stomach": ("ZombieAnimator — Dormant rise (idle_c stands in)", "Mixamo: Zombie Stand Up, from the stomach", "polish"),
+    "animation/zombie/biting_ground": ("ZombieAnimator — Feeding pose (feeding stands in)", "Mixamo: Zombie Biting Victim On The Ground", "polish"),
 }
 
 CATEGORY_TITLES = {

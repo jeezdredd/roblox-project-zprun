@@ -3545,5 +3545,133 @@
     "assetId": 0,
     "status": "needed",
     "note": "Impact class: a ricochet whine off hard surfaces (played on one hard hit in six). Candidate: freesound CC0 'ricochet'"
+  },
+  "animation/player/rifle_idle": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Rifle Idle",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/rifle_idle.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "loop, In Place; the standing gait of the rifle set; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/player/rifle_walk": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Rifle Walk",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/rifle_walk.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "loop, In Place; below WALK_SPEED_MAX; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/player/rifle_run": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Rifle Run",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/rifle_run.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "loop, In Place; replaces the generic Run while a rifle-class weapon is held; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/player/rifle_sprint": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Sprint Forward",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/rifle_sprint.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "the rifle-carry Sprint Forward; loop, In Place; above ThirdPersonConfig.SPRINT.speed; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/player/rifle_strafe_left": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Strafe",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/rifle_strafe_left.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "the rifle walk Strafe, left variant; loop, In Place; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/player/rifle_strafe_right": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Strafe",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/rifle_strafe_right.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "the rifle walk Strafe, right variant; loop, In Place; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/player/rifle_reload": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Reloading",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/rifle_reload.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "the rifle standing Reloading; one-shot, root kept; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/player/pistol_idle": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Pistol Idle",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/pistol_idle.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "loop, In Place; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/player/pistol_walk": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Pistol Walk",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/pistol_walk.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "loop, In Place; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/player/pistol_run": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Pistol Run",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/pistol_run.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "loop, In Place; replaces the generic Run while a pistol is held; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/player/pistol_strafe_left": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Pistol Strafe",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/pistol_strafe_left.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "left variant; loop, In Place; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/player/pistol_strafe_right": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Pistol Strafe",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/pistol_strafe_right.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "right variant; loop, In Place; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/player/hit_rifle": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Hit Reaction",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/hit_rifle.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "while holding a rifle; one-shot; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/zombie/stand_up_back": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Zombie Stand Up",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/zombie/stand_up_back.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "the from-the-back variant; one-shot, root kept; the Dormant rise, ZombieAnimator; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/zombie/stand_up_stomach": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Zombie Stand Up",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/zombie/stand_up_stomach.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "the from-the-stomach variant; one-shot, root kept; the Dormant rise, ZombieAnimator; retargeted with tools/animation_pipeline/retarget_mixamo.py"
+  },
+  "animation/zombie/biting_ground": {
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Zombie Biting Victim On The Ground",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/zombie/biting_ground.rbxmx",
+    "assetId": 0,
+    "status": "needed",
+    "note": "loop; the Feeding pose, ZombieAnimator; retargeted with tools/animation_pipeline/retarget_mixamo.py"
   }
 }

@@ -33,7 +33,7 @@ After the 2026-09-29 review the work runs in stages, one area at a time, each he
 | --- | --- | --- |
 | 0. Test yard | A Studio yard in place of the run, with every texture, prop, weapon and animation on show and weapons to fire | Done (da0ea7e) |
 | 1. Regressions | Casing size, animations that looked broken, muffled gunshots | Casings checked at real size; gunshots rebuilt (v6), waiting for a listen; first-person clips checked frame by frame; the weapon gallery's rigs hung above their posts and now stand on them; the Uzi (stock against the cheek) and pistol (too far) reframed; recoil made frame-rate independent and set near MW2019 hip fire, the shotgun's clip kick cut from 34 to about 15 degrees |
-| 2. Sound in space | Distance curves per class, air absorption, speed-of-sound delay, occlusion, reflections, environment tails and reverb, a bus mix with ducking and a limiter, for every sound | Engine in (70feddb), checked in Studio for audibility and voice use; waiting for a listen, then the weapons move onto it |
+| 2. Sound in space | Distance curves per class, air absorption, speed-of-sound delay, occlusion, reflections, environment tails and reverb, a bus mix with ducking and a limiter, for every sound | Engine in (70feddb) and the weapons on it behind `SfxConfig.WEAPONS_ON_ENGINE` ([[Weapon Audio]]); waiting for the listening pass, then the legacy paths go |
 | 3. Animation | Everything that moves: first-person packs, zombies, the third-person player, procedural layers; the best available sources | Third-person body layer on (the place keeps the avatar joint upgrade off for `Motor6D` joints), holds being tuned ([[Third-Person Body]]) |
 | 4. Weapons and ammunition | Behaviour and feel, the remaining MW spec items (mech and punch layers, hit and kill markers, wall pull-back, the first raise) | Planned |
 | 5. Environment | Props in the road chunks, textures and decals, map and lighting | Environment pass in (a371ee6): road dressing clusters, material variants per biome, mesh middle row and ruins, decal layer, night presets per biome, chunk budgets and the yard's biome strip ([[Environment]]); the screenshot plan and the missing decals are open |
@@ -42,7 +42,8 @@ Carried over from the MW2019 pass:
 
 | Item | Detail |
 | --- | --- |
-| Skinned zombie gaps | No rise or feeding clips, so riser and feast formations spawn as idle zombies and corpse feeders stand still; the Hazmat has no death clip. Needs clips per skin |
+| Skinned zombie gaps | No rise or feeding clips, so riser and feast formations spawn as idle zombies and corpse feeders stand still; the Hazmat has no death clip. Mixamo has Zombie Stand Up (three variants) and Zombie Biting Victim On The Ground (`docs/research/animation-sources-2026-09-30.md`) |
+| Animation sources | Searched 2026-09-30 under the asset policy (`docs/research/animation-sources-2026-09-30.md`): no free CC0 / CC BY first-person pack reaches MW2019; the packs at that level are engine-bound Fab listings. Shortlist: Mixamo for every third-person clip, Cransh AK-74m and 1Matzh 9mm Pistol / Scorpion for first person, UTPS.dsk for native R15 reloads |
 | In-game credits | Every Sketchfab asset is CC BY 4.0, and the footsteps, the OpenGameArt shots and the mag drop are CC BY 3.0; `assets/LICENSES.md` says the credits belong in the settings panel before release |
 | Ship switches and gate | Set `WeaponsConfig.ALL_WEAPONS_UNLOCKED` back to false; run `selene src/`, `python3 tools/validate_api.py` and `rojo build` before each commit |
 | Shotgun pack | Stays the Saps-12: teenjust500's 870 has the same broken shared skin and no idle or walk clips; revisit if a clean pump pack turns up |

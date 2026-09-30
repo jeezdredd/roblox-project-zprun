@@ -32,6 +32,8 @@ export type Entry = {
 	tag: string?,
 	phases: { ViewmodelPackConfig.Phase }?,
 	blendOut: number?,
+	-- ViewmodelClipPlayer weight: share of the clip's move that is applied
+	weight: number?,
 }
 
 export type ReloadPlan = {
@@ -65,6 +67,8 @@ export type Rig = {
 	muzzleLocal: CFrame,
 	ejectLocal: CFrame,
 	eyeInverse: CFrame,
+	-- the class's `hold` offset, applied between the camera and the eye point
+	hold: CFrame,
 	-- looping clip underneath (idle or walk), nil while a one-shot plays
 	base: string?,
 	queue: { Entry },
@@ -174,6 +178,7 @@ local function start(rig: Rig, entry: Entry): boolean
 		from = entry.from,
 		to = entry.to,
 		fade = entry.fade,
+		weight = entry.weight,
 	})
 	if ok then
 		rig.base = nil
@@ -260,6 +265,7 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 		muzzleLocal = muzzleLocal,
 		ejectLocal = ejectLocal,
 		eyeInverse = (CFrame.new(pack.eye.Position * scale) * pack.eye.Rotation):Inverse(),
+		hold = CFrame.new(pack.hold or Vector3.zero),
 		base = nil,
 		queue = {},
 		entry = nil,
@@ -336,7 +342,7 @@ function PackViewmodel.fire(rig: Rig, interval: number?)
 	local fade = currentFireFade(rig)
 	local follow = pack.fireFollow
 	if not follow or not player:has(follow) then
-		playEntry(rig, { name = pack.fire, fade = fade, tag = "fire" })
+		playEntry(rig, { name = pack.fire, fade = fade, tag = "fire", weight = pack.fireWeight })
 		return
 	end
 	local fireTo = pack.fireTo or 1
@@ -346,7 +352,7 @@ function PackViewmodel.fire(rig: Rig, interval: number?)
 		speed = math.clamp(natural / (interval * FOLLOW_BUDGET), 1, MAX_FOLLOW_SPEED)
 	end
 	runQueue(rig, {
-		{ name = pack.fire, speed = speed, to = fireTo, fade = fade, tag = "fire" },
+		{ name = pack.fire, speed = speed, to = fireTo, fade = fade, tag = "fire", weight = pack.fireWeight },
 		{ name = follow, speed = speed, fade = CHAIN_FADE, tag = "fire" },
 	})
 end
@@ -577,15 +583,11 @@ function PackViewmodel.step(rig: Rig, deltaTime: number, placement: CFrame, movi
 		end
 	end
 
-	local rootCFrame = placement * rig.eyeInverse
-	rig.root.CFrame = rootCFrame
-	-- Skinned MeshParts draw where their bones are, but the part itself stays where the
-	-- rig was imported (next to the world origin) and Roblox picks the level of detail
-	-- (RenderFidelity Automatic) from the part's position. Away from the origin (the run
-	-- at x -4000, the test yard at x 3000) the arms and weapon fell to their lowest LOD.
-	for _, part in rig.parts do
-		part.CFrame = rootCFrame
-	end
+	-- framing knob for tuning a class's `hold` from the command bar:
+	-- workspace.CurrentCamera:SetAttribute("ViewmodelHold", Vector3.new(0.05, -0.1, 0.05))
+	local tune = if camera then camera:GetAttribute("ViewmodelHold") else nil
+	local hold = if typeof(tune) == "Vector3" then CFrame.new(tune) else rig.hold
+	rig.root.CFrame = placement * hold * rig.eyeInverse
 	local weapon = player:boneWorld(rig.pack.weaponBone)
 	if weapon then
 		rig.muzzle.CFrame = weapon * rig.muzzleLocal

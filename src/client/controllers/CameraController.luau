@@ -117,6 +117,10 @@ local function updateCamera(deltaTime: number)
 		if typeof(shot) == "CFrame" then
 			camera.CameraType = Enum.CameraType.Scriptable
 			camera.CFrame = shot
+			-- a fixed shot of the third-person body (V in the test yard) has to show it
+			if Workspace:GetAttribute("DevThirdPerson") == true then
+				unhideCharacter()
+			end
 			return
 		end
 	end
@@ -147,8 +151,10 @@ local function updateCamera(deltaTime: number)
 			localPlayer.CameraMode = Enum.CameraMode.Classic
 		end
 		if localPlayer.CameraMaxZoomDistance < 24 then
-			localPlayer.CameraMinZoomDistance = 6
+			-- maximum first: Roblox clamps a new minimum to the current maximum (0.5 while
+			-- first person is held), which left the camera inside the head
 			localPlayer.CameraMaxZoomDistance = 24
+			localPlayer.CameraMinZoomDistance = 6
 		end
 		unhideCharacter()
 		return

@@ -26,6 +26,9 @@ local rig: ViewmodelBuilder.Rig? = nil
 -- class ViewmodelPackConfig lists once the server has loaded its model
 local packRig: PackViewmodel.Rig? = nil
 local isVisible = true
+-- what the caller last asked for (the test yard's third-person view hides the rig); a
+-- rig built later keeps it, and a dead character hides the rig regardless
+local wantVisible = true
 local sequencer = AnimationSequencer.new("Pistol")
 -- listeners get (phase, weapon class, tag); the tag says what the clip was doing
 -- ("fire", "tactical", "empty", "shell", "chamber", "equip") so a pump after a shot can
@@ -43,9 +46,9 @@ local drawnAt = 0
 local active = false
 local pendingWeaponId: string? = nil
 
-local function makeSpring(id: string)
+local function makeSpring(id: string, maxStep: number?)
 	local setting = ViewmodelConfig.spring(id)
-	return Spring.vector(setting.stiffness, setting.damping)
+	return Spring.vector(setting.stiffness, setting.damping, nil, maxStep)
 end
 
 local swayRot = makeSpring("sway")
@@ -53,8 +56,9 @@ local swayPos = makeSpring("sway")
 local lagRot = makeSpring("lag")
 local movePos = makeSpring("movePos")
 local moveRot = makeSpring("moveRot")
-local recoilPos = makeSpring("recoilPos")
-local recoilRot = makeSpring("recoilRot")
+-- the recoil springs integrate in small steps so a shot kicks the same at any frame rate
+local recoilPos = makeSpring("recoilPos", 1 / 240)
+local recoilRot = makeSpring("recoilRot", 1 / 240)
 local tiltRoll = makeSpring("tiltRoll")
 local impactPos = makeSpring("impactPos")
 local breathe = makeSpring("breathe")
@@ -124,6 +128,25 @@ local function destroyRig()
 	sequencer:stop()
 end
 
+local function applyVisible(visible: boolean)
+	local pack = packRig
+	if pack then
+		if isVisible ~= visible then
+			isVisible = visible
+			PackViewmodel.setVisible(pack, visible)
+		end
+		return
+	end
+	local current = rig
+	if not current or isVisible == visible then
+		return
+	end
+	isVisible = visible
+	for _, node in current.nodes do
+		node.part.LocalTransparencyModifier = if visible then 0 else 1
+	end
+end
+
 function Viewmodel.setWeapon(weaponId: string)
 	local config = WeaponsConfig.get(weaponId)
 	if not config then
@@ -160,6 +183,9 @@ function Viewmodel.setWeapon(weaponId: string)
 		rig = ViewmodelBuilder.build(config, camera)
 	end
 	isVisible = true
+	if not wantVisible then
+		applyVisible(false)
+	end
 	drawnAt = os.clock()
 
 	recoilRotScale = ViewmodelConfig.recoilRotScale(config.class)
@@ -219,10 +245,11 @@ function Viewmodel.setActive(value: boolean)
 end
 
 function Viewmodel.onFired(config: WeaponsConfig.WeaponConfig)
+	local kickScale = ViewmodelConfig.recoilKick(config.class)
 	recoilPos:Impulse(Vector3.new(
 		(math.random() - 0.5) * config.recoilSnap * 0.2,
-		config.recoilKick * 0.4,
-		config.recoilKick * 1.5
+		config.recoilKick * 0.4 * kickScale,
+		config.recoilKick * 1.5 * kickScale
 	))
 	recoilRot:Impulse(Vector3.new(
 		config.recoilSnap * 2.2,
@@ -346,22 +373,8 @@ function Viewmodel.getEjectAttachment(): Attachment?
 end
 
 function Viewmodel.setVisible(visible: boolean)
-	local pack = packRig
-	if pack then
-		if isVisible ~= visible then
-			isVisible = visible
-			PackViewmodel.setVisible(pack, visible)
-		end
-		return
-	end
-	local current = rig
-	if not current or isVisible == visible then
-		return
-	end
-	isVisible = visible
-	for _, node in current.nodes do
-		node.part.LocalTransparencyModifier = if visible then 0 else 1
-	end
+	wantVisible = visible
+	applyVisible(visible)
 end
 
 local function updateChannels(deltaTime: number, cameraCFrame: CFrame)
@@ -499,10 +512,10 @@ local function step(deltaTime: number)
 		local character = player.Character
 		local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
 		if not humanoid or humanoid.Health <= 0 then
-			Viewmodel.setVisible(false)
+			applyVisible(false)
 			return
 		end
-		Viewmodel.setVisible(true)
+		applyVisible(wantVisible)
 		stepPack(pack, deltaTime, camera)
 		return
 	end
@@ -513,10 +526,10 @@ local function step(deltaTime: number)
 	local character = player.Character
 	local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
 	if not humanoid or humanoid.Health <= 0 then
-		Viewmodel.setVisible(false)
+		applyVisible(false)
 		return
 	end
-	Viewmodel.setVisible(true)
+	applyVisible(wantVisible)
 
 	local cameraCFrame = camera.CFrame
 	pushCameraHistory(cameraCFrame)

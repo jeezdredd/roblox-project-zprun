@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Gunshots v6: natural outdoor shots from the FFSL Prepared SFX Library.
 
 The v5 layered shots measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the
@@ -15,12 +16,15 @@ Channels: the two mics are 1-3 ms apart; the later one is delayed back into line
 transient stays mono-compatible, and both are matched in RMS over the blast. 96 kHz ->
 48 kHz, 30 Hz high-pass, peak -1 dBFS on the close part, the same gain on the tail.
 """
-import json, os, subprocess
+import json, os, subprocess, sys
 import numpy as np, soundfile as sf
 from scipy.signal import correlate, resample_poly, butter, sosfilt
 
-LIB = '/home/claude/ffsl_prep/Prepared SFX Library'
-OUT = '/home/claude/agents/audio/v6'
+# usage: build_shots_v6.py "<FFSL>/Prepared SFX Library" <out dir>
+# (the library: https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, CC0)
+LIB = sys.argv[1]
+OUT = sys.argv[2]
+os.makedirs(OUT, exist_ok=True)
 SR_OUT = 48000
 PRE = 0.003            # s kept before the onset
 XF_START, XF_END = 0.110, 0.130   # crossfade window after the onset

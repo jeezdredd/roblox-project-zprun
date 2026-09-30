@@ -1,7 +1,14 @@
 --!strict
 
+-- Shared one-shot playback. With the spatial audio engine on, both calls are thin
+-- wrappers over AudioEngine.play (classes Generic2D and Generic3D, the old rolloff
+-- distances mapped onto range and hold), so call sites that were never moved onto the
+-- engine still propagate. With it off, the pooled 2D Sounds and the per-call 3D Sound
+-- from before the engine are unchanged.
+
 local SoundService = game:GetService("SoundService")
 
+local AudioEngine = require(script.Parent.Parent.audio.AudioEngine)
 local MusicController = require(script.Parent.MusicController)
 
 local SfxPlayer = {}
@@ -29,6 +36,10 @@ function SfxPlayer.play2D(soundId: number, volume: number, pitchJitter: number?)
 	if soundId <= 0 then
 		return
 	end
+	if AudioEngine.enabled() then
+		AudioEngine.play({ id = soundId, class = "Generic2D", volume = volume, pitchJitter = pitchJitter or 0 })
+		return
+	end
 	ensurePool()
 	poolIndex = (poolIndex % #pool) + 1
 	local sound = pool[poolIndex]
@@ -44,6 +55,18 @@ end
 
 function SfxPlayer.play3D(parent: BasePart, soundId: number, volume: number, rollOffMin: number, rollOffMax: number, pitchJitter: number?)
 	if soundId <= 0 or not parent.Parent then
+		return
+	end
+	if AudioEngine.enabled() then
+		AudioEngine.play({
+			id = soundId,
+			class = "Generic3D",
+			follow = parent,
+			volume = volume,
+			range = rollOffMax,
+			hold = rollOffMin,
+			pitchJitter = pitchJitter or 0,
+		})
 		return
 	end
 	local sound = Instance.new("Sound")

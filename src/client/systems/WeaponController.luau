@@ -551,6 +551,15 @@ local function installDebugHook()
 			tryReload()
 		elseif command == "inspect" then
 			Viewmodel.toggleInspect()
+		elseif command == "preview_tactical" or command == "preview_empty" then
+			-- the reload animation alone, with no reload behind it: slowed down with the
+			-- camera's ViewmodelTimeScale it is not cut short when the server's reload ends
+			local config = currentConfig()
+			if config then
+				local empty = command == "preview_empty"
+				local shells = if config.reloadStyle == "shell" then math.min(3, config.magSize) else 0
+				Viewmodel.playReload({ config = config, empty = empty, shells = shells, scale = 1 })
+			end
 		elseif command == "empty" then
 			predictedMag = 0
 			holdPredictionUntil = os.clock() + 5

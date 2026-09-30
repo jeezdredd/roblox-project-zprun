@@ -17,6 +17,7 @@ local CameraEffectsController = require(script.Parent.CameraEffectsController)
 local CursorMode = require(script.Parent.Parent.systems.CursorMode)
 local UiSfx = require(script.Parent.Parent.systems.UiSfx)
 local DeathGore = require(script.Parent.Parent.systems.DeathGore)
+local AudioEngine = require(script.Parent.Parent.audio.AudioEngine)
 local MusicController = require(script.Parent.Parent.systems.MusicController)
 
 local DeathController = {}
@@ -311,6 +312,10 @@ end
 
 local function playScream()
 	if AudioConfig.DEATH_SCREAM_ID <= 0 then
+		return
+	end
+	if AudioEngine.enabled() then
+		AudioEngine.play({ id = AudioConfig.DEATH_SCREAM_ID, class = "Scream", volume = 1 })
 		return
 	end
 	local sound = Instance.new("Sound")

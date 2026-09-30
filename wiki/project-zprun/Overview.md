@@ -30,7 +30,7 @@ The project is built with Rojo + Wally + Selene in Luau `--!strict`. Server code
 - **Asset manifest pipeline.** Every asset is registered in `assets/manifest.json`, uploaded by `scripts/upload_assets.py`, and written into `src/shared/config/AssetIds.luau` and `assets/LICENSES.md` by `scripts/sync_configs.py`. Audio must be real licensed files, never generated. Consumers guard on `assetId > 0` so a missing id degrades silently.
 - **Luau `--!strict`** at the top of every module.
 - **Pre-commit gate:** `selene src/`, `python3 tools/validate_api.py`, `rojo build`.
-- **Commits are authored by the user only**: no co-author trailer, no mention of Claude.
+- **Commits are authored by the user only**: no co-author trailer.
 
 ## Pages
 

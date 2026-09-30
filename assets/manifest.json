@@ -749,7 +749,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Walther PPQ X_39P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 1.412 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (0.98 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/close_pistol_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_pistol; 133 ms, RMS -22.5 dBFS",
     "previousAssetId": "86631815895310",
     "assetId": "140425800708531"
@@ -758,7 +758,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 0.312 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.24 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/close_smg_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_smg; 133 ms, RMS -20.5 dBFS",
     "previousAssetId": "95787912547318",
     "assetId": "138019058475822"
@@ -767,7 +767,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, AK-47 C_28P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 0.610 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.92 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/close_rifle_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_rifle; 133 ms, RMS -19.8 dBFS",
     "previousAssetId": "94851895053394",
     "assetId": "74351622653742"
@@ -776,7 +776,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Benelli Nova O_21P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 0.436 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (3.33 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/close_shotgun_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_shotgun; 133 ms, RMS -18.8 dBFS",
     "previousAssetId": "119624422295402",
     "assetId": "139031577665682"
@@ -803,7 +803,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Walther PPQ X_39P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 6.446 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (0.98 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/close_pistol_02_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_pistol; 133 ms, RMS -21.2 dBFS",
     "previousAssetId": "104257622758067",
     "assetId": "71310663165178"
@@ -812,7 +812,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Walther PPQ X_39P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 10.664 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (0.93 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/close_pistol_03_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_pistol; 133 ms, RMS -21.3 dBFS",
     "previousAssetId": "109599073979097",
     "assetId": "91275769479992"
@@ -821,7 +821,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, AK-47 C_28P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 3.258 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.86 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/close_rifle_02_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_rifle; 133 ms, RMS -19.7 dBFS",
     "previousAssetId": "117614776691145",
     "assetId": "97564265256784"
@@ -830,7 +830,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, AK-47 C_28P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 6.026 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.96 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/close_rifle_03_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_rifle; 133 ms, RMS -20.0 dBFS",
     "previousAssetId": "116272257357981",
     "assetId": "130840182225955"
@@ -839,7 +839,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 3.506 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.16 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/close_smg_02_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_smg; 133 ms, RMS -21.1 dBFS",
     "previousAssetId": "87740059790533",
     "assetId": "113548570793732"
@@ -848,7 +848,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 6.730 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.29 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/close_smg_03_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_smg; 133 ms, RMS -20.8 dBFS",
     "previousAssetId": "72344741872009",
     "assetId": "133282540281128"
@@ -857,7 +857,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Benelli Nova O_21P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 3.466 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (3.42 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/close_shotgun_02_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_shotgun; 133 ms, RMS -19.2 dBFS",
     "previousAssetId": "131278557705255",
     "assetId": "90281415540683"
@@ -866,7 +866,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Benelli Nova O_17P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 3.718 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (0.62 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/close_shotgun_03_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: replaces the v5 layered shot, which measured as 0.7 s of dense noise with nothing above ~6.5 kHz (the muffled, room-like report); natural outdoor shot split at the gap before the reflection, the reflection is tail_open_shotgun; 133 ms, RMS -17.0 dBFS",
     "previousAssetId": "71304188783053",
     "assetId": "125564729072106"
@@ -1161,7 +1161,7 @@
     "status": "approved"
   },
   "zombie/mesh/head": {
-    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "source": "Own work: modelled procedurally in Blender 5.2, 2026-09-10 (assets/zombies/zombie_walker.blend)",
     "license": "Original work (project owner)",
     "file": "assets/zombies/source/head.glb",
     "assetId": "95712390166129",
@@ -1169,7 +1169,7 @@
     "note": "Reduced R15 zombie part head: low-poly gaunt body, Roblox material and colour applied at build time"
   },
   "zombie/mesh/uppertorso": {
-    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "source": "Own work: modelled procedurally in Blender 5.2, 2026-09-10 (assets/zombies/zombie_walker.blend)",
     "license": "Original work (project owner)",
     "file": "assets/zombies/source/uppertorso.glb",
     "assetId": "114830023596782",
@@ -1177,7 +1177,7 @@
     "note": "Reduced R15 zombie part uppertorso: low-poly gaunt body, Roblox material and colour applied at build time"
   },
   "zombie/mesh/lowertorso": {
-    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "source": "Own work: modelled procedurally in Blender 5.2, 2026-09-10 (assets/zombies/zombie_walker.blend)",
     "license": "Original work (project owner)",
     "file": "assets/zombies/source/lowertorso.glb",
     "assetId": "88177840359535",
@@ -1185,7 +1185,7 @@
     "note": "Reduced R15 zombie part lowertorso: low-poly gaunt body, Roblox material and colour applied at build time"
   },
   "zombie/mesh/leftupperarm": {
-    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "source": "Own work: modelled procedurally in Blender 5.2, 2026-09-10 (assets/zombies/zombie_walker.blend)",
     "license": "Original work (project owner)",
     "file": "assets/zombies/source/leftupperarm.glb",
     "assetId": "80940480427866",
@@ -1193,7 +1193,7 @@
     "note": "Reduced R15 zombie part leftupperarm: low-poly gaunt body, Roblox material and colour applied at build time"
   },
   "zombie/mesh/rightupperarm": {
-    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "source": "Own work: modelled procedurally in Blender 5.2, 2026-09-10 (assets/zombies/zombie_walker.blend)",
     "license": "Original work (project owner)",
     "file": "assets/zombies/source/rightupperarm.glb",
     "assetId": "86624069201074",
@@ -1201,7 +1201,7 @@
     "note": "Reduced R15 zombie part rightupperarm: low-poly gaunt body, Roblox material and colour applied at build time"
   },
   "zombie/mesh/leftupperleg": {
-    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "source": "Own work: modelled procedurally in Blender 5.2, 2026-09-10 (assets/zombies/zombie_walker.blend)",
     "license": "Original work (project owner)",
     "file": "assets/zombies/source/leftupperleg.glb",
     "assetId": "128590082509641",
@@ -1209,7 +1209,7 @@
     "note": "Reduced R15 zombie part leftupperleg: low-poly gaunt body, Roblox material and colour applied at build time"
   },
   "zombie/mesh/rightupperleg": {
-    "source": "Own work: modelled procedurally in Blender 5.2 through the Blender MCP add-on, 2026-09-10 (assets/zombies/zombie_walker.blend)",
+    "source": "Own work: modelled procedurally in Blender 5.2, 2026-09-10 (assets/zombies/zombie_walker.blend)",
     "license": "Original work (project owner)",
     "file": "assets/zombies/source/rightupperleg.glb",
     "assetId": "124381019901683",
@@ -1280,7 +1280,7 @@
     "textureAssetId": "112861416574183",
     "assetId": "106667262972265",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/tree_oak": {
     "source": "cube3d",
@@ -1297,7 +1297,7 @@
     "textureAssetId": "116065031802589",
     "assetId": "119384854014678",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/tree_birch": {
     "source": "cube3d",
@@ -1314,7 +1314,7 @@
     "textureAssetId": "121575405799929",
     "assetId": "118255712726163",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/tree_pine": {
     "source": "cube3d",
@@ -1331,7 +1331,7 @@
     "textureAssetId": "87743481345358",
     "assetId": "71409537556706",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/tree_dead": {
     "source": "cube3d",
@@ -1348,7 +1348,7 @@
     "textureAssetId": "102034065993976",
     "assetId": "115572590916976",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/bush": {
     "source": "cube3d",
@@ -1365,7 +1365,7 @@
     "textureAssetId": "120219545000443",
     "assetId": "139040145331146",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/rock_boulder": {
     "source": "cube3d",
@@ -1382,7 +1382,7 @@
     "textureAssetId": "134975378871906",
     "assetId": "72640520469934",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/car_sedan": {
     "source": "cube3d",
@@ -1399,7 +1399,7 @@
     "textureAssetId": "123081575425798",
     "assetId": "93348585797128",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/car_pickup": {
     "source": "cube3d",
@@ -1416,7 +1416,7 @@
     "textureAssetId": "91127534950766",
     "assetId": "124603025541086",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/car_police": {
     "source": "cube3d",
@@ -1433,7 +1433,7 @@
     "textureAssetId": "72367574690490",
     "assetId": "109051637159684",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/crop_corn_row": {
     "source": "cube3d",
@@ -1457,7 +1457,7 @@
     "textureAssetId": "89422155107112",
     "assetId": "77115867106393",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/building_brick": {
     "source": "cube3d",
@@ -1474,7 +1474,7 @@
     "textureAssetId": "112272325139356",
     "assetId": "112611390983512",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/grass_dry": {
     "source": "cube3d",
@@ -1491,7 +1491,7 @@
     "textureAssetId": "102988574085048",
     "assetId": "76396547925130",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/car_hatch": {
     "source": "cube3d",
@@ -1508,7 +1508,7 @@
     "textureAssetId": "111222932214505",
     "assetId": "104057069655872",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/car_van": {
     "source": "cube3d",
@@ -1525,7 +1525,7 @@
     "textureAssetId": "89430733760290",
     "assetId": "105457964594240",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/building_concrete": {
     "source": "cube3d",
@@ -1542,7 +1542,7 @@
     "textureAssetId": "98654315346198",
     "assetId": "75166075809292",
     "status": "approved",
-    "note": "Generated 2026-09-28 through Studio MCP generate_mesh; world dressing for ChunkFactory and WorldFlanks"
+    "note": "Generated 2026-09-28 with Cube 3D in Studio; world dressing for ChunkFactory and WorldFlanks"
   },
   "texture/world/building_townhouse": {
     "source": "cube3d",
@@ -3366,7 +3366,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, AK-47 C_28P.wav, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, the same shot as close_rifle from 0.11 s: the range's reflection and its decay to the next shot, padded with 0.11 s of silence so close_rifle + tail_open_rifle played together rebuild the original shot; 0.45 s fade-out, same gain as close_rifle, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/tail_open_rifle_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: outdoor tail per class, played at the close shot's volume; 2600 ms, peak -24.2 dBFS relative to the close part at -1 dBFS",
     "assetId": "83478871552010"
   },
@@ -3374,7 +3374,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Walther PPQ X_39P.wav, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, the same shot as close_pistol from 0.11 s: the range's reflection and its decay to the next shot, padded with 0.11 s of silence so close_pistol + tail_open_pistol played together rebuild the original shot; 0.45 s fade-out, same gain as close_pistol, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/tail_open_pistol_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: outdoor tail per class, played at the close shot's volume; 2803 ms, peak -31.7 dBFS relative to the close part at -1 dBFS",
     "assetId": "71625818861588"
   },
@@ -3382,7 +3382,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Benelli Nova O_21P.wav, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, the same shot as close_shotgun from 0.11 s: the range's reflection and its decay to the next shot, padded with 0.11 s of silence so close_shotgun + tail_open_shotgun played together rebuild the original shot; 0.45 s fade-out, same gain as close_shotgun, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/tail_open_shotgun_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: outdoor tail per class, played at the close shot's volume; 2803 ms, peak -26.4 dBFS relative to the close part at -1 dBFS",
     "assetId": "121089221722939"
   },
@@ -3390,7 +3390,7 @@
     "source": "The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav, https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, the same shot as close_smg from 0.11 s: the range's reflection and its decay to the next shot, padded with 0.11 s of silence so close_smg + tail_open_smg played together rebuild the original shot; 0.45 s fade-out, same gain as close_smg, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py)",
     "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
     "file": "assets/audio/weapons/tail_open_smg_v6.ogg",
-    "status": "reviewing",
+    "status": "approved",
     "note": "v6 2026-09-29: outdoor tail per class, played at the close shot's volume; 2803 ms, peak -24.3 dBFS relative to the close part at -1 dBFS",
     "assetId": "84034488143189"
   }

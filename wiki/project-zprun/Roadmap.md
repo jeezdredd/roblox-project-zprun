@@ -25,20 +25,26 @@ Shipped layers, roughly in the order they landed:
 - **Skinned zombies (2026-09-29, uncommitted)**: three CC BY 4.0 Sketchfab characters with 22 authored clips (`ZombieSkins`, `ZombieRigs`), bone-driven hit boxes and static torso blockers (`ZombieHitboxes`), walk/run choice by ground speed, attack swing, Hazmat scream, Ghoul flinch, held death poses and posed corpse props. See [[Gameplay Systems]].
 - **MW2019 weapon pass (2026-09-29, uncommitted)**: first-person packs for all four classes (`PackViewmodel`, `ViewmodelClipPlayer`), tactical and empty reloads with ammo-add, shell-by-shell shotgun with fire cancel, draw time, pooled visible casings with landing sounds, a new muzzle flash, marker-driven foley, the low-ammo layer, and 32 CC0 recordings from The Free Firearm Sound Library. See [[Gameplay Systems]] and [[Decisions]].
 
-## Now: finish the 2026-09-29 pass
+## Now: quality pass in stages
 
-Open items from the skinned-zombie and MW2019 weapon work, roughly in order:
+After the 2026-09-29 review the work runs in stages, one area at a time, each held to the standard of the best current shooters:
+
+| Stage | Scope | Status |
+| --- | --- | --- |
+| 0. Test yard | A Studio yard in place of the run, with every texture, prop, weapon and animation on show and weapons to fire | Done (da0ea7e) |
+| 1. Regressions | Casing size, animations that looked broken, muffled gunshots | Casings checked at real size; gunshots rebuilt (v6), waiting for a listen; first-person clips checked frame by frame; the weapon gallery's rigs hung above their posts and now stand on them; the Uzi (stock against the cheek) and pistol (too far) reframed; recoil made frame-rate independent and set near MW2019 hip fire, the shotgun's clip kick cut from 34 to about 15 degrees |
+| 2. Sound in space | Distance curves per class, air absorption, speed-of-sound delay, occlusion, reflections, environment tails and reverb, a bus mix with ducking and a limiter, for every sound | Engine in (uncommitted), checked in Studio for audibility and voice use; waiting for a listen, then the weapons move onto it |
+| 3. Animation | Everything that moves: first-person packs, zombies, the third-person player, procedural layers; the best available sources | Third-person body layer on (the place keeps the avatar joint upgrade off for `Motor6D` joints), holds being tuned ([[Third-Person Body]]) |
+| 4. Weapons and ammunition | Behaviour and feel, the remaining MW spec items (mech and punch layers, hit and kill markers, wall pull-back, the first raise) | Planned |
+| 5. Environment | Props in the road chunks, textures and decals, map and lighting | Planned; 16 props and 8 material variants are ready |
+
+Carried over from the MW2019 pass:
 
 | Item | Detail |
 | --- | --- |
-| Tactical cut points | The AK (`to` 0.55) and pistol (0.76) cuts in `ViewmodelPackConfig` are estimates; step the Reload clips frame by frame and move the cut and the ammo-add time together |
-| Casing drop and gear foley | In progress. The code already asks for `casing_brass_01..03`, `casing_shotgun_01..02` and `mag_drop`; sling and gear rattle on steps, landings and fast looks is still to add |
-| Props and textures batch | In progress |
-| Moderation | All 32 Free Firearm Sound Library entries are `reviewing`; run `scripts/refresh_status.py`, then `sync_configs.py`, once they clear |
 | Skinned zombie gaps | No rise or feeding clips, so riser and feast formations spawn as idle zombies and corpse feeders stand still; the Hazmat has no death clip. Needs clips per skin |
-| Remaining MW spec items | Mech, punch and sub shot layers; reflection raycasts with slap delays; sidechain ducking and a master limiter; teammate distance layers; hit and kill markers; wall pull-back; the first raise |
-| In-game credits | Every Sketchfab asset is CC BY 4.0 and the footsteps and the OpenGameArt shots are CC BY 3.0; `assets/LICENSES.md` says the credits belong in the settings panel before release |
-| Ship switches and gate | Set `WeaponsConfig.ALL_WEAPONS_UNLOCKED` back to false; run `selene src/` locally (it was not run in the cloud session); `rojo build` passes |
+| In-game credits | Every Sketchfab asset is CC BY 4.0, and the footsteps, the OpenGameArt shots and the mag drop are CC BY 3.0; `assets/LICENSES.md` says the credits belong in the settings panel before release |
+| Ship switches and gate | Set `WeaponsConfig.ALL_WEAPONS_UNLOCKED` back to false; run `selene src/`, `python3 tools/validate_api.py` and `rojo build` before each commit |
 | Shotgun pack | Stays the Saps-12: teenjust500's 870 has the same broken shared skin and no idle or walk clips; revisit if a clean pump pack turns up |
 
 ## Next: Zombies layer
@@ -51,7 +57,7 @@ A new server service holding a per-run credit balance separate from the profile 
 
 ### 2. Perks
 
-Six starter perks (Toughness, Sprinter, Fast Hands, Field Medic, Scavenger, Steady Aim), levels 1-3. Slot 1 is free, slots 2 and 3 are bought with Credits. Perks and slots are **Credits only, never Robux**: the no-pay-to-win rule in `CLAUDE.md`. Build order inside the item: config module → Perk Lab station in the hangar (a sixth vendor-style room, same `VendorPrompt` pattern as `src/server/systems/VendorRooms.luau`) → HUD readout.
+Six starter perks (Toughness, Sprinter, Fast Hands, Field Medic, Scavenger, Steady Aim), levels 1-3. Slot 1 is free, slots 2 and 3 are bought with Credits. Perks and slots are **Credits only, never Robux**: the no-pay-to-win rule in the project rules. Build order inside the item: config module → Perk Lab station in the hangar (a sixth vendor-style room, same `VendorPrompt` pattern as `src/server/systems/VendorRooms.luau`) → HUD readout.
 
 Open question to settle before writing the config: four of the six names overlap the persistent skills already in `src/shared/config/SkillsConfig.luau` (Toughness, Endurance, FastHands, Scavenger), which are applied through `src/server/systems/SkillEffects.luau`. Either perks subsume skills or perks are the per-run layer over them; shipping both under near-identical names would be confusing.
 
@@ -75,7 +81,7 @@ Repeat runs play a compressed ~5s version with skip voting. The crash is faked e
 
 ### 5. Upgrade station
 
-A Pack-a-Punch-style station reachable mid-run that upgrades the carried weapon for run credits, with an announcer voice on use. The weapon level ladder it drives already exists (`WeaponsConfig.MAX_LEVEL = 5`, `upgradePrice`, `damageAt`), so the work is the station, the in-run spend path and the audio. Announcer lines are **owner-blocked**: `CLAUDE.md` requires real licensed audio files through the manifest pipeline, never generated speech.
+A Pack-a-Punch-style station reachable mid-run that upgrades the carried weapon for run credits, with an announcer voice on use. The weapon level ladder it drives already exists (`WeaponsConfig.MAX_LEVEL = 5`, `upgradePrice`, `damageAt`), so the work is the station, the in-run spend path and the audio. Announcer lines are **owner-blocked**: the project rules require real licensed audio files through the manifest pipeline, never generated speech.
 
 ## Planned: Route forks
 
@@ -96,6 +102,6 @@ Branching route choice at biome boundaries: the squad votes with their feet betw
 | --- | --- | --- |
 | Continue product, VIP and Supporter passes | Ids must exist in the Creator Dashboard | Create the items, paste ids into `ProductsConfig` |
 | Player strafe clips | No strafe loop in the CC0 library | Download Mixamo `Rifle Strafe Left/Right`, run the retarget pipeline, upload |
-| Upgrade station announcer voice | Audio must be a real licensed file; generated speech is banned by `CLAUDE.md` | Source or record licensed lines, add them to `assets/manifest.json` |
+| Upgrade station announcer voice | Audio must be a real licensed file; generated speech is banned | Source or record licensed lines, add them to `assets/manifest.json` |
 | Real receipt testing | Studio purchase testing does not exercise the live receipt pipeline | Publish the place and re-run the cases in `docs/monetization-test-plan.md` with a non-owner account |
 | Maturity questionnaire | Stylised blood and dismemberment need the experience rated before wider release | Complete the questionnaire at publish time |

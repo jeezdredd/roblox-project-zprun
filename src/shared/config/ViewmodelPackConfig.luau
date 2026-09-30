@@ -50,6 +50,12 @@ export type ClassPack = {
 	asset: string,
 	clips: string,
 	eye: CFrame,
+	-- Where the rig sits relative to the pack camera, in camera space (studs of the scaled
+	-- rig; +X right, +Y up, -Z away). The packs frame their guns for their own camera,
+	-- which puts some of them in the middle of the view or against the face; this moves
+	-- the whole rig, every clip alike. Tuned in Studio with the camera attribute
+	-- ViewmodelHold (PackViewmodel.step).
+	hold: Vector3?,
 	-- Rotation of the rig's rest (bind) pose relative to the upright clip pose, when
 	-- Roblox built the bones turned (the Uzi's bind A-pose comes in turned -90 degrees
 	-- about X). Only the weapon anchors read it; the clips always pose the rig upright.
@@ -60,6 +66,8 @@ export type ClassPack = {
 	idle: string,
 	move: string?,
 	fire: string,
+	-- share of the Fire clip's move that is applied (1 = as authored)
+	fireWeight: number?,
 	-- fraction of `fire` played before `fireFollow` takes over (the shotgun keeps only
 	-- the recoil of its Fire clip and hands over to the pump)
 	fireTo: number?,
@@ -103,6 +111,9 @@ ViewmodelPackConfig.classes = {
 		asset = "pistol",
 		clips = "PistolClips",
 		eye = CFrame.new(0, 4.72, -0.066),
+		-- the pack holds the pistol at arm's length in the middle of the view (hands 32 cm
+		-- out, the gun 55-65 cm): 12 cm closer and a little right and up, near MW's hip
+		hold = Vector3.new(0.03, 0.05, 0.14),
 		weaponBone = "DEF_Cuerpo_02",
 		weaponMesh = "^Pistol_",
 		equip = "Equip",
@@ -168,6 +179,9 @@ ViewmodelPackConfig.classes = {
 		idle = "Idle",
 		move = "Walk",
 		fire = "Fire",
+		-- the clip kicks the gun 34 degrees (22 by 0.08, 34 at 0.17): at the hip that reads
+		-- as a cartoon, so it plays at 45 %, about 15 degrees, like MW's pump guns
+		fireWeight = 0.45,
 		fireTo = 0.2,
 		fireFollow = "AccionFire",
 		followReady = 0.48,
@@ -194,6 +208,10 @@ ViewmodelPackConfig.classes = {
 		asset = "smg",
 		clips = "SMGClips",
 		eye = CFrame.new(0, 4.42, -0.066),
+		-- the pack's camera sits on the sights with the extended stock against the cheek;
+		-- lowered and moved right into a hip hold, the stock leaves the view at the
+		-- bottom right
+		hold = Vector3.new(0.08, -0.16, -0.08),
 		restTilt = CFrame.Angles(-math.pi / 2, 0, 0),
 		weaponBone = "UZI Body_0725",
 		weaponMesh = "^UZI_UZI_0$",

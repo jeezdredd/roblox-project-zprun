@@ -67,11 +67,13 @@ local function ensureGroup(): SoundGroup
 	created.Volume = 1
 	created.Parent = MusicController.getSfxGroup()
 
+	-- a room, so indoors only (updateTail): outdoors the recordings carry their own space
 	local reverbEffect = Instance.new("ReverbSoundEffect")
-	reverbEffect.DecayTime = 0.4
+	reverbEffect.Enabled = false
+	reverbEffect.DecayTime = 1.5
 	reverbEffect.Density = 0.6
 	reverbEffect.Diffusion = 0.7
-	reverbEffect.WetLevel = -18
+	reverbEffect.WetLevel = -8
 	reverbEffect.DryLevel = 0
 	reverbEffect.Parent = created
 
@@ -195,13 +197,7 @@ local function updateTail(): boolean
 
 	local reverbEffect = reverb
 	if reverbEffect then
-		if interior then
-			reverbEffect.DecayTime = 1.5
-			reverbEffect.WetLevel = -8
-		else
-			reverbEffect.DecayTime = 0.4
-			reverbEffect.WetLevel = -18
-		end
+		reverbEffect.Enabled = interior
 	end
 	return interior
 end
@@ -240,17 +236,30 @@ end
 local TAIL_COOLDOWN = 0.55
 local lastTailAt = 0
 
+-- `tail_open_<class>` is the rest of the same outdoor recording as the close shot: the
+-- range's reflection and its decay, padded so both start at the blast. Played together at
+-- the same volume and pitch they rebuild the original shot. Indoors the close shot keeps
+-- its blast and takes the room tail instead. The generic `tail_open` (another recording)
+-- stands in, quieter, for a class without its own tail.
+local function tailFor(config: WeaponsConfig.WeaponConfig, interior: boolean): (number, number)
+	if interior then
+		return weaponSoundId("tail_interior"), config.shotVolume * 0.34
+	end
+	local classTail = weaponSoundId("tail_open_" .. string.lower(config.class))
+	if classTail > 0 then
+		return classTail, config.shotVolume
+	end
+	return weaponSoundId("tail_open"), config.shotVolume * 0.46
+end
+
 local function playTail(config: WeaponsConfig.WeaponConfig, interior: boolean)
 	local now = os.clock()
 	if now - lastTailAt < TAIL_COOLDOWN then
 		return
 	end
 	lastTailAt = now
-	local tailId = weaponSoundId(if interior then "tail_interior" else "tail_open")
-	if tailId <= 0 then
-		return
-	end
-	playOneShot(tailId, config.shotVolume * (if interior then 0.34 else 0.46), 1)
+	local tailId, volume = tailFor(config, interior)
+	playOneShot(tailId, volume, config.shotPitch)
 end
 
 -- Low-ammo cue: a metallic spring layer on each shot once the mag is down to
@@ -258,7 +267,8 @@ end
 -- joins it. Both keys stay silent until their recordings exist (the lock falls back to
 -- the generic bolt only on the pistol, whose slide really locks back).
 local SUB_KEYS = { "gunshot_sub_01", "gunshot_sub_02" }
-local SUB_VOLUME: { [string]: number } = { Pistol = 0.25, SMG = 0.3, Rifle = 0.45, Shotgun = 0.6 }
+-- kept light: the recordings carry their own low end
+local SUB_VOLUME: { [string]: number } = { Pistol = 0.08, SMG = 0.1, Rifle = 0.15, Shotgun = 0.2 }
 
 local LOW_AMMO_VOLUME = 0.22
 local LAST_ROUND_VOLUME = 0.4
@@ -287,8 +297,7 @@ function WeaponSfx.playShot(weaponId: string, remaining: number?)
 	local interior = updateTail()
 
 	playOneShot(shotSoundId(config), config.shotVolume, config.shotPitch)
-	-- the low-end body under the close shot (spec: mech + punch + sub + tail); the dry
-	-- outdoor recordings lose their weight after ~50 ms without it
+	-- a little weight under the blast (spec: mech + punch + sub + tail)
 	local subVolume = SUB_VOLUME[config.class]
 	if subVolume then
 		playOneShot(weaponSoundId(SUB_KEYS[math.random(1, #SUB_KEYS)]), subVolume, 1)
@@ -563,6 +572,10 @@ function WeaponSfx.playDistantShot(position: Vector3, weaponId: string)
 	anchor.Position = position
 	anchor.Parent = Workspace
 	SfxPlayer.play3D(anchor, shotSoundId(config), config.shotVolume * 0.8, 30, 400, 0.06)
+	-- the close part alone is a dry 0.13 s crack; the reflection is what carries at range
+	scanZones()
+	local tailId, tailVolume = tailFor(config, isInterior(position))
+	SfxPlayer.play3D(anchor, tailId, tailVolume * 0.8, 30, 400, 0)
 	task.delay(4, function()
 		anchor:Destroy()
 	end)

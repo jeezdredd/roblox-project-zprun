@@ -94,7 +94,7 @@ Related: [[Architecture]], [[Performance]], [[Progress]], [[Roadmap]].
 
 ### The server is authoritative for ammo, damage and credits
 
-**Decision.** A hard rule, also recorded in `CLAUDE.md`. The client predicts and displays; it never decides. `src/server/systems/WeaponService.luau` owns mag and reserve counts, runs the damage raycast, and validates every fire request: fire rate within a 3% tolerance, direction magnitude in the 0.9 to 1.1 band, the claimed muzzle origin within 5 studs of the character's head or root, and an unobstructed raycast between the character and that origin.
+**Decision.** A hard rule. The client predicts and displays; it never decides. `src/server/systems/WeaponService.luau` owns mag and reserve counts, runs the damage raycast, and validates every fire request: fire rate within a 3% tolerance, direction magnitude in the 0.9 to 1.1 band, the claimed muzzle origin within 5 studs of the character's head or root, and an unobstructed raycast between the character and that origin.
 
 **Reason.** Everything in the game converts into credits, and credits buy permanent progression. Any client-trusted number is a direct exploit into the economy.
 
@@ -234,7 +234,7 @@ Related: [[Architecture]], [[Performance]], [[Progress]], [[Roadmap]].
 
 ### Boot stages are isolated, commits are authored by the user
 
-**Decision.** `src/server/init.server.luau` wraps every `init()` in a `runStage(name, fn)` pcall so a failing system warns instead of killing boot. `selene src/`, `python3 tools/validate_api.py` and `rojo build` all run before a commit, and commits carry no Claude co-author trailer or mention.
+**Decision.** `src/server/init.server.luau` wraps every `init()` in a `runStage(name, fn)` pcall so a failing system warns instead of killing boot. `selene src/`, `python3 tools/validate_api.py` and `rojo build` all run before a commit, and commits carry no co-author trailer.
 
 **Reason.** A single bad `Instance.new` used to take the whole server down: the crash that motivated `tools/validate_api.py`, which statically checks every constructed class and assigned property against the downloaded API dump. Isolating stages turns a hard crash into a missing subsystem.
 
@@ -371,3 +371,87 @@ from real uploads, and nothing extracted from other games. See `docs/asset-polic
 **Reason.** It skips an Animation upload and moderation round per clip (the zombie route needs one per slot), and cuts, stretching and cross-fades are plain code. Roblox's importer drops unweighted bones and folds their transforms into the children, so baked local transforms would not match the imported rig; storing each bone's model-space change against its own rest pose does.
 
 **Consequence.** About 2.3 MB of clip data ships in `ReplicatedStorage.Shared`. The five `animation/weapon/*` manifest slots are unused. A pack with a broken shared skin (the Uzi) needs a solved skin fix before either its rig or its clips are usable, and the same fix file has to be used for both.
+
+### Gunshots are natural recordings split at the reflection
+
+**Decision.** Each close shot is a single shot from the Free Firearm Sound Library's Prepared SFX Library, cut at the quiet gap between the blast and the range's reflection: `close_<class>` holds the blast and the mechanism (0.13 s), `tail_open_<class>` holds the reflection and its decay, padded so both start together. No designed body layer, and no reverb on weapon sounds outdoors.
+
+**Reason.** The v5 shots layered a legacy designed report, low-passed to 3.5 kHz and bus-compressed, under a short near-field crack. Measured, the result was 0.7 s of dense noise at -5 to -15 dB with nothing above about 6.5 kHz, played through a small-room reverb that ran on every weapon sound, and it read as muffled and indoors. A shot recorded outdoors has a broadband blast that falls 40 dB within 0.1 s, then near silence, then the reflection. Splitting at that gap keeps the recording intact (the two files add back to the original) while leaving the tail to the environment.
+
+**Consequence.** The tail layer is where the environment lives: indoors it is swapped for `tail_interior` and the room reverb, and the spatial audio stage can route it through reflections and distance filtering without touching the close shot. The natural shots are less dense than the layered ones, so shot volumes went up 4 dB; loudness is settled by listening, not by measurement.
+
+## 2026-09-29: Spatial audio
+
+### The audio API, not Sound, for every propagated voice
+
+**Decision.** The spatial audio engine (`src/client/audio/`) plays through `AudioPlayer`, `AudioEmitter`, `AudioListener`, `Wire` and the `Audio*` effects. `Sound` and `SoundGroup` stay only on the legacy path behind `SfxConfig.SPATIAL_AUDIO` and under `WeaponSfx` until it moves onto the engine.
+
+**Reason.** Natural propagation needs things `Sound` cannot do per voice: a custom distance curve (`SetDistanceAttenuation`, up to 400 points), a low-pass that follows distance and occlusion (`AudioFilter`), a sample-accurate delayed start for the speed of sound (`Play(GetMixerTime() + delay)`), and a sidechain compressor and a limiter on the buses. Roblox marks `Sound` as the older set and the audio API as the one to build on.
+
+**Consequence.** Two mixes coexist until the weapons move: `MusicController` mirrors every volume, mute and duck change onto both trees. Scripts cannot set `SoundService.DefaultListenerLocation` (plugin security), so the engine makes its own listeners under the camera and keeps every emitter in a `TFZ_<bus>` interaction group, which also gives one listener per bus.
+
+### Emitters on attachments, and loops that hand their voice back
+
+**Decision.** Each voice's `AudioEmitter` is parented to its own `Attachment` in `Terrain`, which the engine moves onto the source (every frame for a followed part). A 3D loop that goes out of range releases its voice and is kept as a record; every 15 frames a record whose source is back in range takes a voice again, starting at a random point with a 0.3 s fade-in.
+
+**Reason.** The first version set `AudioEmitter.PositionType = Instance` and `PositionInstance`. Both are in the API dump, but in Studio on 2026-09-29 setting them prints "AudioEmitter.PositionType is not enabled yet" and the emitter stays silent (`GetAudibilityFor` 0), so every 3D sound was mute. Parenting the emitter to the zombie itself would destroy it with the model. Loops that kept a muted voice while out of range held the pool: a long run fills it with growls nobody can hear.
+
+**Consequence.** One attachment per pool voice lives in `Terrain` for the whole session. A zombie that walks back into range growls again from a random point of the loop, so a group never restarts in step. When Roblox enables `PositionType`, the attachment write can go.
+
+### Our own rays and bus reverb, with the acoustic-simulation beta behind a switch
+
+**Decision.** Occlusion is a budgeted raycast per voice with a material table and attack / release smoothing; the environment is an id from the `AcousticSpace` zones, the biome and the phase, driving an `AudioReverb` and `AudioEcho` per bus; reflections are a ray fan that replays the shot from each hit point. `SfxConfig.ACOUSTIC_SIMULATION` turns Roblox's simulation on instead (emitter and listener flags, `SoundService.AcousticSimulationEnabled`) and the engine then skips its rays, doorway loss and bus reverb.
+
+**Reason.** The project takes an engine feature only once it is out of beta, and the simulation is a client beta (DevForum threads 3634265 and 4307121); the public roadmap puts the `Sound` version in late 2026. A hand-rolled path also gives the MW2019 discrete slaps and per-class occlusion strength the beta does not expose.
+
+**Consequence.** The occlusion cost is bounded (8 rays a frame desktop, 4 mobile) and readable in the overlay; the beta is one flag away for an A/B in the yard, and if it wins, the material table and the environment presets stay useful for the reflections.
+
+### Per-class curves and an exaggerated air absorption
+
+**Decision.** Every sound class has its own range, hold radius, curve shape, absorption strength and occlusion strength (`SpatialAudioConfig.classes`). Air absorption is a single low-pass whose cutoff follows ISO 9613-1 at six times the physical figure past a 25 m knee, so shots stay bright to 25 m, soften to 4.5 kHz at 50 m and read as a thump at 3 kHz past 70 m.
+
+**Reason.** One rolloff for everything was the "muffled, as if indoors" complaint; real air removes 2 dB at 4 kHz over 70 m, which is inaudible in a map that is 56 m across at 200 studs, and Hunt: Showdown's "none, light, strong" bands and Wwise's and Unreal's distance low-pass all depart from physics for readability. The numbers and their sources are in `docs/audio/spatial-audio.md` section 1.4.
+
+**Consequence.** Tuning is per class in one table; the schedule is testable in `tests/audio/run.luau`, and the yard's sound lane plays it at 25 to 400 studs.
+
+### Many-to-one wiring only, and reflections reuse the shot
+
+**Decision.** No source pin in the bus graph feeds two wires: ambience and music sum into one duck group under one sidechain compressor, and the duck sidechain is a per-voice send from classes marked `duck`. Reflections play the event's own recording, pitched down 4 % and low-passed by the surface, until dedicated slap recordings exist.
+
+**Reason.** The audio guides document fan-in (several players through one effect); fan-out from one output pin is not documented, and a graph that depended on it would fail silently. The shot recording already contains the transient a slap needs, and the asset policy forbids inventing ids.
+
+**Consequence.** Ducking reacts to the voice's pre-spatialisation level, so a far remote shot ducks as much as a near one (weapons and explosions only, for at most 600 ms); `AudioAnalyzer` meters are not wired for the same reason and the overlay shows computed activity instead.
+
+## 2026-09-30: First-person framing and recoil
+
+### A per-class hold, not a moved eye point
+
+**Decision.** `ViewmodelPackConfig` keeps each pack's `eye` as the pack camera and adds `hold`, a camera-space offset applied between the camera and the eye point. The Uzi and the pistol use it.
+
+**Reason.** The packs frame their guns for their own cameras: the Uzi's sits on the sights with the extended stock against the cheek, the pistol's holds the gun at arm's length in the middle of the view. Moving the eye would have made the weapon gallery (which stands every rig on its eye point) wrong as well; a camera-space offset is the same move a viewmodel artist makes, is tuned live with the `ViewmodelHold` camera attribute, and reads in studs on screen.
+
+**Consequence.** The clips play unchanged; every clip of a class moves by the same offset.
+
+### Recoil springs integrated in small steps, scaled to MW2019 hip fire
+
+**Decision.** The two recoil springs integrate in 1/240 s steps (`Spring.vector`'s `maxStep`) and the per-class scale sets the viewmodel pitch per shot: rifle 3 degrees, SMG 1.8, pistol 1.5 over its clip, shotgun 2.5 over its clip. The shotgun's Fire clip plays at 45 %.
+
+**Reason.** At the shared 1/30 s cap an impulse loses most of its velocity to damping in the first step, so the kick depended on the frame rate (a rifle shot 0.86 degrees at 60 fps, 0.26 at 15) and the rifle and SMG, whose Fire clips barely move the gun, looked dead when firing. The shotgun's clip kicked 34 degrees, a cartoon at the hip.
+
+**Consequence.** The other viewmodel springs keep the 1/30 cap and their tuning; recoil feels the same on a 30 fps phone and a 144 Hz monitor. `recoilKick` in `WeaponsConfig` stays the third-person body's input, the viewmodel multiplies it per class.
+
+### The third-person layer on, with the avatar joint upgrade off
+
+**Decision.** The place keeps `StarterPlayer.AvatarJointUpgrade = Disabled` and the third-person body layer is on (`ThirdPersonConfig.ENABLED = true`). Supporting the upgrade's `AnimationConstraint` joints is not planned.
+
+**Reason.** With the upgrade on, Studio builds every character with kinematic `AnimationConstraint` joints and no `Motor6D`s, so the layer's waist and neck writes found nothing. Turning the upgrade off gives back the `Motor6D` rig the layer, `FootPlanting`, `BodyMotionController` and the zombie code already write. The first day the layer stayed behind the flag, off, until this was found.
+
+**Consequence.** The property is set by hand in Studio and saved with the place, and written in `default.project.json` for `rojo build`; the Rojo plugin cannot set it on a live sync, so a new place needs the Studio click. See [[Third-Person Body]].
+
+### The body aimed from the root's upright frame
+
+**Decision.** The third-person chest turns to 35 % of the pitch and 55 % of the yaw over the root's upright frame and keeps 40 % of the locomotion clip's lean while a gun is held; the head and the gun end on the whole aim over the same frame. The frames come from the root and the joints (`C0 * Transform * C1^-1`) for the frame's pose, not from the parts.
+
+**Reason.** The run clip that every teammate plays leans the chest about 37 degrees forward, and the first version held the gun in torso space, so every running teammate pointed at the ground; its pitch split (35 / 25 / 40 over waist, neck and arms) also left the head on 60 % of the aim and the gun on 75 %, because the head and the arms both hang off the chest. Measured after the change in the gallery: a running mannequin's chest leans 15 degrees, the head and the gun are level, and both hands sit on their targets within 0.02 studs.
+
+**Consequence.** `BodyMath.spreadAim` returns the clamped aim, the chest's share and the gun's pitch (halved in a sprint); `ThirdPersonConfig.AIM` has `chestStabilize` (0.6) and `headStabilize` (0.9) instead of the neck and arm shares.

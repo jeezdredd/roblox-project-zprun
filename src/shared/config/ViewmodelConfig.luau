@@ -89,21 +89,38 @@ ViewmodelConfig.FILL_LIGHT = {
 	color = Color3.fromRGB(255, 246, 226),
 }
 
--- recoilRot holds the angular kick in radians. The raw spring peak is around 2.3 degrees
--- for the rifle, which is the right order of magnitude for a viewmodel but too much for
--- a sidearm and far too little for the shotgun, so the trim is per class instead of the
--- single hard-coded constant that used to sit in the render path.
-ViewmodelConfig.RECOIL_ROTATION_SCALE_DEFAULT = 0.30
+-- recoilRot holds the angular kick in radians. The raw spring peak per shot, from
+-- WeaponsConfig's snap and spring, is rifle 1.26 degrees, SMG 0.59, pistol 0.98 and
+-- shotgun 2.56 (the recoil springs integrate in 1/240 s steps, so this holds at any frame
+-- rate). The AK and Uzi Fire clips barely move the gun, the pistol clip kicks it 8
+-- degrees and the shotgun clip 34 (played at 45 %). The per-class scale sets the
+-- viewmodel's pitch per shot near MW2019's hip fire: rifle 3 degrees, SMG 1.8 (at 11
+-- rounds a second the kicks stack), pistol 1.5 over its clip, shotgun 2.5 over its clip.
+-- Yaw and roll jitter scale with it.
+ViewmodelConfig.RECOIL_ROTATION_SCALE_DEFAULT = 1
 
 ViewmodelConfig.recoilRotationScale = {
-	Pistol = 0.30,
-	SMG = 0.22,
-	Rifle = 0.28,
-	Shotgun = 0.45,
+	Pistol = 1.5,
+	SMG = 3,
+	Rifle = 2.4,
+	Shotgun = 1,
 } :: { [string]: number }
 
 function ViewmodelConfig.recoilRotScale(class: string): number
 	return ViewmodelConfig.recoilRotationScale[class] or ViewmodelConfig.RECOIL_ROTATION_SCALE_DEFAULT
+end
+
+-- The kick back per shot, over WeaponsConfig.recoilKick (which the third-person body reads
+-- too): rifle 2.7 to 3.6 cm, SMG 1.4 to 1.8, pistol 2.2 to 1.8, shotgun 6.2 as it is.
+ViewmodelConfig.recoilKickScale = {
+	Pistol = 0.8,
+	SMG = 1.3,
+	Rifle = 1.35,
+	Shotgun = 1,
+} :: { [string]: number }
+
+function ViewmodelConfig.recoilKick(class: string): number
+	return ViewmodelConfig.recoilKickScale[class] or 1
 end
 
 ViewmodelConfig.springs = {

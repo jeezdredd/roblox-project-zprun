@@ -27,6 +27,8 @@ export type VectorSpring = {
 	target: Vector3,
 	stiffness: number,
 	damping: number,
+	-- integration step cap; nil is MAX_STEP (see Spring.vector)
+	maxStep: number?,
 	SetTarget: (VectorSpring, Vector3) -> (),
 	Impulse: (VectorSpring, Vector3) -> (),
 	SetProperties: (VectorSpring, number, number) -> (),
@@ -94,8 +96,9 @@ end
 
 function VectorImpl:Update(deltaTime: number): Vector3
 	local remaining = math.min(deltaTime, 0.25)
+	local maxStep = self.maxStep or MAX_STEP
 	while remaining > 0 do
-		local step = math.min(remaining, MAX_STEP)
+		local step = math.min(remaining, maxStep)
 		remaining -= step
 		local displacement = self.value - self.target
 		self.velocity -= (displacement * self.stiffness + self.velocity * self.damping) * step
@@ -115,7 +118,11 @@ function Spring.number(stiffness: number, damping: number, initial: number?): Nu
 	return (spring :: any) :: NumberSpring
 end
 
-function Spring.vector(stiffness: number, damping: number, initial: Vector3?): VectorSpring
+-- `maxStep` caps the integration step. At the default 1/30 an impulse loses most of its
+-- velocity to the damping term in the first step, so the response depends on the frame
+-- rate (a recoil kick peaks at 0.86 degrees at 60 fps and 0.26 at 15). Springs driven by
+-- impulses that must feel the same at any frame rate pass a small step such as 1/240.
+function Spring.vector(stiffness: number, damping: number, initial: Vector3?, maxStep: number?): VectorSpring
 	local start = initial or Vector3.zero
 	local spring = setmetatable({
 		value = start,
@@ -123,6 +130,7 @@ function Spring.vector(stiffness: number, damping: number, initial: Vector3?): V
 		target = start,
 		stiffness = stiffness,
 		damping = damping,
+		maxStep = maxStep,
 	}, VectorImpl)
 	return (spring :: any) :: VectorSpring
 end

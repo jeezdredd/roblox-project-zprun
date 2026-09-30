@@ -394,7 +394,34 @@ Every `loadTrack` returns `nil` when the asset id is 0, and every consumer is ni
 
 `src/client/systems/UiSfx.luau` also watches the horde: its `Heartbeat` loop ducks the music whenever an aggro'd zombie is within `MUSIC_DUCK_RANGE`.
 
+With `SfxConfig.SPATIAL_AUDIO` on (2026-09-29) the growl is a `ZombieLoop` voice and the moans, barks and bites are `ZombieVocal` / `Bite` voices of the spatial audio engine, following the torso: they get the class curve (140 studs for vocals, 90 for the growl), air absorption, an occlusion ray, the doorway loss across an `AcousticSpace` boundary and the speed-of-sound delay; the walla is a 2D ambience bed. A growl whose zombie is out of range hands its voice back and takes one again when the zombie comes within range. See [Spatial audio](#spatial-audio).
+
 ---
+
+## Spatial audio
+
+Files: `src/client/audio/` (`AudioMath`, `AudioBus`, `AudioEnvironment`, `AudioEngine`, `AudioReflections`, `AudioDebug`), config `src/shared/config/SpatialAudioConfig.luau`, tests `tests/audio/run.luau`, design and Studio test plan `docs/audio/spatial-audio.md`, weapon-side changes `docs/audio/weapons-integration.md`. Flag `SfxConfig.SPATIAL_AUDIO` (on); `SfxConfig.ACOUSTIC_SIMULATION` swaps the engine's own occlusion and reverb for Roblox's client-beta simulation.
+
+Every non-weapon sound is played through `AudioEngine.play({ key or id, class, position or follow, volume, pitch, delay, loop })`, which returns a handle (`stop(fade)`, `setVolume`, `setPitch`, `fade`, `setPosition`, `isPlaying`). A voice is `AudioPlayer -> AudioFilter (Lowpass12dB) -> AudioEmitter` for 3D, or the bus fader for 2D, from a fixed pool (48 desktop, 24 mobile; steals by priority, then by distance and age, class limits first). The emitter sits on the voice's own `Attachment` in `Terrain`, moved onto the source (every frame for a followed part): `AudioEmitter.PositionType` and `AudioListener.PositionType` are in the API dump, but setting them to `Instance` prints "not enabled yet" and the emitter stays silent. Per class (`SpatialAudioConfig.classes`): bus, audible range and hold radius, curve shape (`natural` inverse with taper, `power` for loud sources, `linear` for loops), air absorption strength, occlusion strength, reflections, priority, voice limit, speed-of-sound delay, duck send, jitter, and optional close / mid / far layer bands.
+
+What a 3D voice gets every update (near voices every frame, far every fourth; mobile every second and sixth):
+
+| Effect | Mechanism | Numbers |
+| --- | --- | --- |
+| Distance | `AudioEmitter:SetDistanceAttenuation` with the class curve, 13 points | e.g. `ZombieVocal` 140 studs, hold 8; `GunshotRemote` 1400, hold 24; `Explosion` 2600, hold 60 |
+| Air absorption | filter cutoff from ISO 9613-1 at 6x, 25 m knee, scaled by the class `air` | 22 kHz to 90 studs, 11.7 kHz at 107, 4.5 kHz at 180, 3.2 kHz at 250, 1.2 kHz floor |
+| Occlusion | one ray listener to source (two for gunshots and explosions), material table, smoothed (open 0.12 s, close 0.25 s) | stone -30 dB / 600 Hz, metal -26 / 900, wood -18 / 1500, glass -16 / 3000, soft -10 / 2500 |
+| Doorway | source and listener in different `AcousticSpace` zones | -9 dB, 2.5 kHz, 0.3 s glide |
+| Delay | `AudioPlayer:Play(SoundService:GetMixerTime() + distance / 1225)` on one-shots | 36 studs 29 ms, 154 studs 125 ms, 357 studs 292 ms |
+| Layers | equal-power crossfade of close / mid / far keys; a missing key falls back to the nearest one | `GunshotRemote` 0..60 / 40..350 / 250..1400 |
+| Loops | out of range the voice goes back to the pool and the loop lives on as a record; every 15 frames a loop back in range takes a voice (stealing only from voices 10 priority points below it) and resumes at a random point with a 0.3 s fade-in | growls never restart in step |
+| Reflections | a 6-ray fan (3 mobile) from gunshots and explosions, one `Reflection` voice per hit, delayed by the extra path, filtered by the surface, taps under 40 ms dropped, at most two indoors | range 140, gain 0.55, live cap 12 (6 mobile) |
+| Environment | listener zone, biome and phase pick `Hangar`, `Interior`, `Street`, `Forest` or `Open`; the bus reverb and slapback glide to the preset in 0.5 s | Street: decay 0.9 s, wet -20 dB, slap 85 ms; Interior: 1.4 s, -12 dB; Open: 0.3 s, -30 dB |
+| Mix | ambience and music duck under weapons and explosions through a sidechain compressor (threshold -24 dB, ratio 4, 5 ms / 600 ms); ui joins after it; master limiter -1 dB | settings drive the master and music faders through `MusicController` |
+
+The per-frame budget: 8 occlusion rays (4 mobile), at most one filter and one volume write per updated voice. In the test yard K toggles `AudioDebug`, which lists every voice with its distance, delay, occlusion, cutoff and volume, and L fires `AudioDebug.fireTestShot()`, a remote rifle shot with its reflection fan 30 studs ahead.
+
+Checked in Studio on 2026-09-29: every 3D voice is heard once the emitters sit on attachments (`GetAudibilityFor` on the voices bus 1.0 at 4 studs, 0.25 at 28, 0.13 at 62), growls hold voices from 4 to 71 studs on a zombie wave, and the console stays clean. The listening pass in `docs/audio/spatial-audio.md` section 6 is still open.
 
 ## Weapons
 
@@ -502,11 +529,13 @@ Each pack's skinned rig is a Model asset (`viewmodel/fps/<class>/rig`). Rojo can
 `PackViewmodel` owns the clips on top of that: the idle or walk loop underneath, and a queue of one-shot entries (clip section, speed or duration, fade, tag, phase markers, `blendOut`). When the queue runs dry the base loop blends back in over the last entry's `blendOut`, which is how a cut reload returns to the ready pose.
 
 - `reload(plan)` fits the tactical or empty cut to the config time minus its blend-out, or for the shotgun queues enter, one loop section per shell, leave, and the chambering pump from empty.
-- `fire` snaps in over 0.03 s (0.12 s when it interrupts an equip, reload or inspect). For the shotgun it keeps only the recoil part of Fire (`fireTo` 0.2) and chains the AccionFire pump, sped up together (at most 1.5x) so the action is closed by `followReady` inside 90% of the fire interval; that is why the shotgun fires at 1.25/s rather than 1.5.
+- `fire` snaps in over 0.03 s (0.12 s when it interrupts an equip, reload or inspect). For the shotgun it keeps only the recoil part of Fire (`fireTo` 0.2, played at 45 % through `fireWeight`, because the clip kicks the gun 34 degrees) and chains the AccionFire pump, sped up together (at most 1.5x) so the action is closed by `followReady` inside 90% of the fire interval; that is why the shotgun fires at 1.25/s rather than 1.5.
 - `cancelReload` trims a shell loop just past its `ShellIn` marker, then blends back or into the pump.
 - Phase markers (`MagOut`, `MagIn`, `BoltBack`, `BoltForward`, `SlideRelease`, `ShellIn`), stored as clip fractions measured from the magazine and bolt bones, fire through `Viewmodel.onPhase` however the clip is cut or stretched, tagged with the entry (`fire`, `tactical`, `empty`, `shell`, `chamber`, `equip`, `inspect`). `WeaponController` ejects the shotgun hull on `BoltBack` tagged `fire`, and `WeaponSfx` plays the foley.
 
 The rigs are uploaded at about 2.2x life size with a common arm span (UnitScale nodes: AK 2.961, Saps-12 1.2218, Uzi 3.0, pistol native), and each clone is scaled by `RIG_SCALE` 0.4 so the arms do not reach into walls and cars beside the camera. `eye` is the view point in the rig's RootPart space; `restTilt` corrects the Uzi, whose bind A-pose came in turned -90 degrees about X. Muzzle and eject attachments are placed from the front and top of the weapon mesh and follow `weaponBone` through every clip. `Viewmodel.luau` keeps the procedural layer (recoil springs, sway, drift, hip aim) for both kinds of rig and hands `PackViewmodel.step` the camera-space placement each frame; for packs the procedural translations are scaled by `PROCEDURAL_POSITION_SCALE` 1.1 and the procedural bob is damped to 25% (`BOB_SCALE`), because the Walk clip carries its own.
+
+The packs frame their guns for their own camera, which put the Uzi's stock against the cheek and the pistol at arm's length in the middle of the view. A class's `hold` moves the whole rig in camera space between the camera and the eye point (every clip alike): Uzi (0.08, -0.16, -0.08), pistol (0.03, 0.05, 0.14). `workspace.CurrentCamera:SetAttribute("ViewmodelHold", Vector3.new(...))` overrides it live for tuning.
 
 ### Viewmodel
 
@@ -524,7 +553,7 @@ The camera is forward-locked, so its frame delta is zero and three other inputs 
 
 `src/client/systems/HipAim.luau` picks the nearest live zombie inside a cone in front of the camera (`ViewmodelConfig.hipAim`: range 70, cone 42°, line-of-sight raycast), keeps it for `hold` 0.35 s after it leaves so the gun does not flick between targets, and blends a lock value at `blendRate` 6. `HipAim.angles` turns the target into yaw and pitch relative to the camera, clamped to ±24° and ±14° and scaled by the lock (38°/22° in the first cut read as the gun snapping sideways). `Viewmodel` feeds that into the `aimRot` spring (stiffness 28, damping 10, near-critical) with coupled roll (`rollCouple` 0.15), a lateral `shift` 0.1 and a `dip` 0.03, so the weapon visibly swings toward the zombie the way Into the Dead's hip aim does. The crosshair follows: `HipAim.bindCrosshair` moves the HUD dot to the projected aim point and back to screen centre otherwise. `WeaponController.tryFire` shoots along `HipAim.fireDirection(origin)` once the lock passes `fireLock` 0.55 and falls back to `AimAssist.adjustFireDirection`; the server's cone check (`MAX_YAW_COSINE` = cos 100°) accepts anything inside the cone; the visual clamp only limits how far the gun turns, the shot still goes to the target. Measured 2026-09-06: shots left along the aimed direction, crosshair excursion up to 656 px at 2245 px width, never off screen because the 42° cone is narrower than the 54° horizontal half-FOV.
 
-**Recoil.** `Viewmodel.onFired` impulses `recoilPos` (back 1.5 x `recoilKick`, up 0.4 x) and `recoilRot` (pitch 2.2 x `recoilSnap`, with only ±0.25/±0.35 x of random yaw and roll), and each weapon's `recoilDamping` in `WeaponsConfig` is now 1.8 x sqrt(`recoilStiffness`) (Pistol 28, SMG 29, Shotgun 22, Rifle 25), so the springs settle without ringing. The camera no longer gets a random three-axis shake per shot: `CameraEffectsController.recoil(kick)` drives a critically damped pitch spring (`ViewmodelConfig.cameraRecoil`: stiffness 70, damping 17, pitch 0.55 rad/s per unit of `cameraKick`, yaw jitter ±0.08) that lifts the view about half a degree per rifle shot and returns smoothly; the FOV kick dropped to 0.25 x kick. The old `impulse` shake stays for hits and landings only.
+**Recoil.** The recoil springs integrate in 1/240 s steps, so a shot kicks the same at any frame rate, and `ViewmodelConfig.recoilRotationScale` / `recoilKickScale` set the pitch and kick per class (rifle 3 degrees and 3.6 cm, SMG 1.8 and 1.8, pistol 1.5 over its clip's 8 and 1.8, shotgun 2.5 over its clip and 6.2). `Viewmodel.onFired` impulses `recoilPos` (back 1.5 x `recoilKick`, up 0.4 x, times the kick scale) and `recoilRot` (pitch 2.2 x `recoilSnap`, with only ±0.25/±0.35 x of random yaw and roll), and each weapon's `recoilDamping` in `WeaponsConfig` is now 1.8 x sqrt(`recoilStiffness`) (Pistol 28, SMG 29, Shotgun 22, Rifle 25), so the springs settle without ringing. The camera no longer gets a random three-axis shake per shot: `CameraEffectsController.recoil(kick)` drives a critically damped pitch spring (`ViewmodelConfig.cameraRecoil`: stiffness 70, damping 17, pitch 0.55 rad/s per unit of `cameraKick`, yaw jitter ±0.08) that lifts the view about half a degree per rifle shot and returns smoothly; the FOV kick dropped to 0.25 x kick. The old `impulse` shake stays for hits and landings only.
 
 Three pieces get overridden offsets during animation, computed in `animatedOffsets`:
 
@@ -544,43 +573,41 @@ At 74% of the reload the slide/pump racks once more. `setVisible` uses `LocalTra
 
 `src/client/systems/WeaponSfx.luau`.
 
-Sound selection: every sound is resolved by its `AssetIds.audio.weapons` key at play time, so a recording added to the manifest under an expected key takes over with no code change. Each weapon config lists three `closeSounds` (dry, near-field takes from The Free Firearm Sound Library); `shotSoundId` picks one that has an id, never the same one twice in a row, and falls back to the older `shotSound`. Ids of 0 no-op.
+Sound selection: every sound is resolved by its `AssetIds.audio.weapons` key at play time, so a recording added to the manifest under an expected key takes over with no code change. Each weapon config lists three `closeSounds`; since v6 (2026-09-29) they are single shots from the Free Firearm Sound Library's Prepared SFX Library cut to the blast and the mechanism (the first 0.13 s, stereo, full bandwidth). `shotSoundId` picks one that has an id, never the same one twice in a row, and falls back to the older `shotSound`. Ids of 0 no-op.
 
 Voices (2026-09-29): each sound id gets a pool of 4 `Sound`s, growing to 8, played round-robin with ±4% pitch and ±1.5 dB of jitter. A voice that is still playing is never restarted, since that chops its tail; only past eight voices is the one furthest into its playback reused. `WeaponSfx.preload` builds the pools for every weapon id at client start.
 
-The tail is a separate one-shot layered on top, chosen by acoustic space:
+The tail is a separate one-shot on top, chosen by acoustic space (`tailFor`). `tail_open_<class>` is the rest of the same recording as the close shot, the range's reflection and its decay, padded with silence so both start at the blast; played together at the same volume and pitch they rebuild the original shot:
 
 ```
-tail id     = interior and "tail_interior" or "tail_open"
-tail volume = shotVolume * (interior and 0.34 or 0.46)
+interior:              tail_interior        shotVolume * 0.34
+open, class tail:      tail_open_<class>    shotVolume
+open, no class tail:   tail_open            shotVolume * 0.46
 ```
 
-rate-limited by `TAIL_COOLDOWN` 0.55s so automatic fire does not stack tails.
+rate-limited by `TAIL_COOLDOWN` 0.55 s so automatic fire does not stack tails. A light sub layer (`gunshot_sub_01/02`, 0.08 for the pistol up to 0.2 for the shotgun) sits under every shot.
 
 `isInterior(position)` walks a cached list of every `BasePart` in the Workspace carrying an `AcousticSpace` attribute (currently `HangarInteriorZone` and `RangeInteriorZone`), transforms the point into each zone's object space, and box-tests against `Size / 2`. The list is iterated **backwards**, so the most recently added zone wins on overlap, and dead zones are pruned in the same pass. `Workspace.DescendantAdded` keeps the cache live.
 
-The same interior flag also retunes a `ReverbSoundEffect` on the `Weapons` SoundGroup:
-
-| | Interior | Open |
-| --- | --- | --- |
-| `DecayTime` | 1.5 | 0.4 |
-| `WetLevel` | -8 | -18 |
+The same interior flag switches a `ReverbSoundEffect` on the `Weapons` SoundGroup (decay 1.5 s, wet -8 dB): on indoors, off outdoors, where the recordings carry their own space. Until 2026-09-29 it also ran outdoors (decay 0.4 s, wet -18 dB) and put a small room around every weapon sound.
 
 Other layers (2026-09-29):
 
 - **Reload and handling foley** comes from clip markers, not timers. `playPhase(phase, class, tag)` looks up the class key first (`rifle_bolt_back`, `pistol_slide_release`, `shotgun_shell_in`, ...), then the generic key (`mag_out`, `mag_in`, `bolt`) at a per-class placeholder pitch; an empty class key means silence for that phase (a pump has no magazine to pull). `Draw` and `Holster` play `weapon_draw` / `weapon_holster` on swaps. On an empty reload, `MagOut` also schedules `mag_drop` 0.5 s later.
 - **Low ammo.** At or below `config.lowAmmo` rounds each shot adds `low_ammo_click`, rising to +3 dB and 6% pitch on the last round, where `last_round` joins (the pistol falls back to the bolt sound pitched up, since its slide really locks back). Shell weapons skip the last-round clack. A trigger press on an empty magazine plays one `dryfire` per press.
-- **Casing landings.** `WeaponVfx.onCasingLanded` reports each casing's first two impacts with the surface material and impact speed; `playCasingLand` plays a brass (`casing_brass_*`) or hull (`casing_shotgun_*`) variation on one of 12 positional voices on Terrain attachments, within 45 studs, scaled by surface (metal rings, wood is dull, grass, sand and mud are near silent) and by speed. Until those recordings exist it falls back to Kenney `shell_01` / `shell_02`, pitched down and softer for hulls.
-- `playDistantShot` for other players' fire more than 40 studs away, played as a 3D sound at the replicated origin at 80% volume with 30-400 stud rolloff; and `playGong` for range hits (the gong recording was rejected by moderation, so it is silent until replaced).
+- **Casing landings.** `WeaponVfx.onCasingLanded` reports each casing's first two impacts with the surface material and impact speed; `playCasingLand` plays a brass (`casing_brass_*`) or hull (`casing_shotgun_*`) variation on one of 12 positional voices on Terrain attachments, within 45 studs, scaled by surface (metal rings, wood is dull, grass, sand and mud are near silent) and by speed. The brass takes are BigSoundBank recordings and the hulls freesound ones; Kenney `shell_01` / `shell_02` remain the fallback, pitched down and softer for hulls.
+- `playDistantShot` for other players' fire more than 40 studs away: the close shot and its tail (`tailFor` at the shot's position), 3D at the replicated origin at 80% volume with 30-400 stud rolloff; and `playGong` for range hits (the gong recording was rejected by moderation, so it is silent until replaced).
 
 To add a new acoustic space, create a part, set `AcousticSpace = "Interior"`, and parent it into the Workspace: no code change needed.
+
+The spatial audio engine reads the same zones (`AudioEnvironment.zoneAt`, with `HangarInteriorZone` mapped to the `Hangar` preset and any other zone to `Interior`); `docs/audio/weapons-integration.md` lists how `WeaponSfx` moves onto it, after which the `Weapons` SoundGroup and its `ReverbSoundEffect` go.
 
 ### Weapon VFX
 
 `src/client/systems/WeaponVfx.luau`, rebuilt 2026-09-29 against the MW spec:
 
 - **Muzzle flash.** One rig per `Muzzle` attachment, built once and re-triggered: white-hot core sprites that live about two frames (`FLASH_CORE_TIME` 0.028 s), a forward tongue and 3 to 5 flame petals drawn as `Beam`s from one of four shape variants (never the same twice running) with random roll and ±20% scale, a `PointLight` for 0.04..0.06 s, sparks on 35% of shots and a faint smoke wisp. Class scale: pistol 0.8, SMG 0.85, rifle 1, shotgun 1.5. Every emitter is `LockedToPart`, because at 24 studs/s a world-space flash is left almost a stud behind the muzzle. Every shotgun shot leaves a denser puff; `burstSmoke` exposes the same puff (not called anywhere yet) and `barrelSmoke` still rises after a burst of 3+ shots followed by 0.35 s of quiet.
-- **Casings.** Pooled per caliber: `9mm` brass, `762x39` lacquered steel thrown harder and slightly forward, `12ga` red hull with a brass head, which the pump ejects on its `BoltBack` stroke instead of the shot (`ejectOnFire = false`). A casing spawns at the `Eject` attachment in camera space at 60% size (a world-size casing next to the eye would cover the screen), flies there for 0.25..0.35 s under camera-relative gravity, then hands off to world space with the runner's velocity added, falls on a parabola at half `Workspace.Gravity` and bounces up to twice off raycast hits (restitution 0.3, friction 0.45, random scatter) before settling. No physics parts, which tunnel through floors. All casings move with one `BulkMoveTo` per frame and live about 3 s, fading over the last 0.25 s.
+- **Casings.** Pooled per caliber: `9mm` brass, `762x39` lacquered steel thrown harder and slightly forward, `12ga` red hull with a brass head, which the pump ejects on its `BoltBack` stroke instead of the shot (`ejectOnFire = false`). A casing spawns at the `Eject` attachment in camera space at the viewmodel's own scale (about 1.17 studs per metre times 1.25; at world scale a casing next to the eye looked bigger than the gun), flies there for 0.25..0.35 s under camera-relative gravity, then hands off to world space with the runner's velocity added, falls on a parabola at half `Workspace.Gravity` and bounces up to twice off raycast hits (restitution 0.3, friction 0.45, random scatter) before settling. No physics parts, which tunnel through floors. All casings move with one `BulkMoveTo` per frame and live about 3 s, fading over the last 0.25 s.
 - Neon tracer beams (`TRACER_COLOR` 255/214/140) from muzzle to impact, and material-aware impact effects that branch on the `"Flesh"` marker the server sends.
 
 ---

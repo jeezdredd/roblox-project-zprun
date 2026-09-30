@@ -126,9 +126,23 @@ All under `src/server/systems/`.
 - `PackViewmodel.luau` builds a rig from `ReplicatedStorage.ViewModelPacks` and runs its clips: the idle/walk base loop, a one-shot queue, reload plans, the fire cancel, the shotgun's pump follow and the phase markers. `ViewmodelClipPlayer.luau` decodes the baked tracks in `src/shared/viewmodel_clips/` and writes `Bone.Transform` each frame.
 - `WeaponVfx.luau` (reused muzzle flash rigs, pooled casings, tracers, impacts, smoke) and `WeaponSfx.luau` (voice pools, shot takes and tails, marker-driven foley, low-ammo layer, casing landings, reverb) are the effect layers.
 
+### Third-person body
+
+`src/client/body/` (`BodyController`, `BodyRig`, `AimReplicator`) layers weapon handling on the visible characters: the chest, head and gun aimed from the root's upright frame on the waist and neck `Motor6D`s, a weapon frame with recoil and gestures, and two `IKControl`s for the hands; `src/server/systems/BodyAimRelay.luau` relays the aim over an `UnreliableRemoteEvent`; data in `ThirdPersonConfig`, pure math in `src/shared/util/BodyMath.luau`, the gun builder in `WorldWeaponModel`. On (`ThirdPersonConfig.ENABLED`); it needs the place's `StarterPlayer.AvatarJointUpgrade` off, so characters have `Motor6D` joints (see [[Third-Person Body]]).
+
 ### Audio
 
-`MusicController.luau` owns the SoundGroup tree and the mute/duck/volume controls everything else routes through. `PlayerSfx.luau`, `FootstepController.luau`, `BreathingController.luau`, `WorldSfx.luau`, `CityAmbience.luau`, `ZombieAudio.luau` and `UiSfx.luau` are the per-domain layers; `SfxPlayer.luau` is the shared pooled playback helper; `DefaultSoundMuter.luau` silences Roblox's stock character sounds so the custom layer is the only one heard.
+`src/client/audio/` is the spatial audio engine (2026-09-29; design, research and Studio test plan in `docs/audio/spatial-audio.md`), built on the Roblox audio API (`AudioPlayer`, `AudioEmitter`, `AudioListener`, `Wire`, the `Audio*` effects) behind `SfxConfig.SPATIAL_AUDIO`:
+
+- `AudioMath.luau` is the pure propagation math (attenuation curves, air-absorption cutoff, speed-of-sound delay, layer crossfades, occlusion smoothing, reflection timing), with no Roblox services so `luau tests/audio/run.luau` runs it outside Studio.
+- `AudioBus.luau` builds the bus graph once under `SoundService.TFZ_Audio`: one `AudioListener` per 3D bus (weapons, sfx, voices, ambience; interaction groups `TFZ_<bus>`) on the camera, faders, environment reverb and street slapback on the weapons, sfx and voices buses, a shared duck group for ambience and music under a sidechain `AudioCompressor`, the ui bus after it, a master fader and `AudioLimiter` into one `AudioDeviceOutput`.
+- `AudioEnvironment.luau` resolves a position into `Hangar`, `Interior`, `Street`, `Forest` or `Open` from the `AcousticSpace` zones, the biome and the flow phase, holds the material table, and runs the occlusion raycasts inside a per-frame budget.
+- `AudioEngine.luau` owns the voice pool (48 desktop, 24 mobile; each voice is `AudioPlayer -> AudioFilter -> AudioEmitter` for 3D, the emitter on the voice's own `Attachment` in `Terrain`, or the bus fader for 2D), the one play API (`AudioEngine.play(spec): Handle`), priorities and class limits, distance layers, loops that hand their voice back out of range and take one again when the source returns, and the per-frame propagation update (curve, absorption, occlusion, doorway loss, delay via `AudioPlayer:Play(mixerTime + delay)`).
+- `AudioReflections.luau` casts a ray fan from gunshots and explosions and plays delayed, filtered reflections from the hit points; `AudioDebug.luau` is the overlay (K in the test yard) and the test shot (L).
+
+Classes, environments, materials and platform budgets are data in `src/shared/config/SpatialAudioConfig.luau`.
+
+`MusicController.luau` still owns the legacy SoundGroup tree (which `WeaponSfx` plays through until it moves onto the engine, see `docs/audio/weapons-integration.md`) and mirrors every volume, mute and duck change onto the engine's buses. `PlayerSfx.luau`, `FootstepController.luau`, `BreathingController.luau`, `WorldSfx.luau`, `CityAmbience.luau`, `ZombieAudio.luau`, `DeathController.luau` and `UiSfx.luau` are the per-domain layers, each playing through the engine when the flag is on and through its old `Sound`s when it is off; `SfxPlayer.luau` is the shared helper whose `play2D` / `play3D` forward to the engine's `Generic2D` / `Generic3D` classes; `DefaultSoundMuter.luau` silences Roblox's stock character sounds so the custom layer is the only one heard.
 
 ### VFX and post
 
@@ -226,7 +240,7 @@ shot:         WeaponFire -> WeaponService validation -> WeaponHit to all clients
 
 `src/server/init.server.luau` requires every service at the top, then runs each initialiser through a `runStage(name, fn)` helper that wraps the call in `pcall` and `warn`s on failure. A system that throws during init degrades the game instead of killing the boot.
 
-Order is: `MaterialUtil.register`, `ViewmodelPacks` (starts the pack rig loads as early as possible), then `ProfileManager`, `SettingsPersistence`, `MissionConfig`, `FlowService`, `DistanceTracker`, `ZombieAI`, `WorldMeshes`, `ChunkSpawner`, `ForkService`, `MissionService`, `DeathService`, `SkinService`, `WeaponService`, `ShopService`, `MonetizationService`, `AmmoCrates`, `MissionGoals`, `WorldWeapon`. World builders run last, in their own stages: the `Hangar` stage calls `HangarBuilder.build()` and passes the returned helicopters straight into `SquadService.init(helicopters)`, then `VendorRooms.build`, `CityDiorama.build`, `DesertBase.build`, and finally the Studio test bench `DevBench`. `ZombieRigs` has no stage: it starts loading the skinned rigs as soon as `ZombieFactory` requires it, when the entry script requires `ZombieAI`.
+Order is: `MaterialUtil.register`, `ViewmodelPacks` (starts the pack rig loads as early as possible), then `ProfileManager`, `SettingsPersistence`, `MissionConfig`, `FlowService`, `DistanceTracker`, `ZombieAI`, `WorldMeshes`, `ChunkSpawner`, `ForkService`, `MissionService`, `DeathService`, `SkinService`, `WeaponService`, `ShopService`, `MonetizationService`, `AmmoCrates`, `MissionGoals`, `WorldWeapon`, `BodyAimRelay`. World builders run last, in their own stages: the `Hangar` stage calls `HangarBuilder.build()` and passes the returned helicopters straight into `SquadService.init(helicopters)`, then `VendorRooms.build`, `CityDiorama.build`, `DesertBase.build`, the Studio test bench `DevBench`, and finally the Studio test yard `Sandbox`, which does nothing unless `DevConfig.SANDBOX.enabled` (then it builds the yard at x 3000 and moves each player into it while the run stays frozen; its client half is `SandboxInput`, started after `WeaponController`). `ZombieRigs` has no stage: it starts loading the skinned rigs as soon as `ZombieFactory` requires it, when the entry script requires `ZombieAI`.
 
 Two ordering facts matter. `ProfileManager` is first among the services because most others hang their behaviour off `ProfileManager.onLoaded`. And `SquadService.init` is the only caller of `Remotes.init()`, so every remote instance in the game is created as a side effect of the `Hangar` stage succeeding.
 
@@ -236,9 +250,9 @@ Two ordering facts matter. `ProfileManager` is first among the services because 
 
 `src/client/init.client.luau` blocks on `BootState.awaitReady(BootConfig.READY_TIMEOUT)` (8 seconds) and then initialises in a fixed order:
 
-1. Settings and audio foundation: `SettingsService`, `MusicController`, `FpsCounter`, `SettingsApply`, then `GoreController`, `DefaultSoundMuter`, `LightingDirector`, `CityAmbience`, `ZombieAudio`, `FlashlightController`, `FirstPersonController`.
+1. Settings and audio foundation: `SettingsService`, `AudioEngine` (the bus graph and voice pool, before anything plays), `MusicController`, `FpsCounter`, `SettingsApply`, then `GoreController`, `DefaultSoundMuter`, `LightingDirector`, `CityAmbience`, `ZombieAudio`, `FlashlightController`, `FirstPersonController`.
 2. Feel layer: `ExertionState` first, because `BodyMotionController`, `FootPlanting`, `CameraEffectsController`, `MotionVfx`, `WorldVfx`, `PostFx`, `PlayerSfx`, `WorldSfx`, `UiSfx`, `ZombieVfx`, `AnimationController`, `FootstepController` and `BreathingController` all read from it.
-3. Features: `GlanceController`, `FlowController`, `SquadController`, `DeathController`, `WeaponController`, `ShopGui`, `VendorInteraction`.
+3. Features: `GlanceController`, `FlowController`, `SquadController`, `DeathController`, `WeaponController`, `BodyController`, `SandboxInput`, `ShopGui`, `VendorInteraction`.
 4. HUD: `HudGui`, `RunHud`, `ForkHud`, then `GoreWarningGui.showOnce()` last so the content warning sits above everything already on screen (skipped in Studio while `DevConfig.SKIP_GORE_WARNING` is on).
 
 Unlike the server, the client entry point has no `pcall` isolation: an error in an early init aborts the rest of the sequence.

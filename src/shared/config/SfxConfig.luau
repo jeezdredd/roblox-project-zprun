@@ -93,6 +93,13 @@ SfxConfig.UI_COUNTDOWN_GO_ID = AssetIds.audio.ui.countdown_go
 SfxConfig.UI_REWARD_TICK_ID = AssetIds.audio.ui.reward_tick
 SfxConfig.UI_VOLUME = 0.45
 
+-- Spatial audio engine (src/client/audio, docs/audio/spatial-audio.md). Off means every
+-- consumer takes the Sound-based path it had before the engine existed.
+SfxConfig.SPATIAL_AUDIO = true
+-- Roblox's built-in acoustic simulation (client beta) instead of the engine's own
+-- occlusion rays and bus reverb; only read while SPATIAL_AUDIO is on.
+SfxConfig.ACOUSTIC_SIMULATION = false
+
 SfxConfig.MUSIC_DUCK_DB = 0.5
 SfxConfig.MUSIC_DUCK_RANGE = 60
 SfxConfig.MUSIC_DUCK_RELEASE = 3

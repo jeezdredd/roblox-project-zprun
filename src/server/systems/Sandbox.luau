@@ -260,7 +260,7 @@ local KEY_LINES = {
 	"1-4 weapons   R reload   F inspect",
 	"G zombie wave   J calm   H reset   T back here",
 	"V third person   Z slow motion   B sound lane",
-	"Shift+P free camera (Studio)",
+	"K audio   L test shot   Shift+P free cam",
 	"West: range, material walls, weapon clips",
 	"East: surfaces, zombie clips, sound lane",
 	"North: props at real size, texture wall",
@@ -325,8 +325,10 @@ end
 
 local function buildSoundLane(parent: Instance)
 	local pad = origin + Vector3.new(300, 0, 40)
-	part("ListeningPad", Vector3.new(8, 0.3, 8), CFrame.new(pad + Vector3.new(0, 0.15, 0)), Color3.fromRGB(200, 170, 60), Enum.Material.SmoothPlastic, parent)
-	label("LISTEN HERE (B plays the lane)", pad + Vector3.new(0, 6, 0), parent)
+	local listeningPad = part("ListeningPad", Vector3.new(8, 0.3, 8), CFrame.new(pad + Vector3.new(0, 0.15, 0)), Color3.fromRGB(200, 170, 60), Enum.Material.SmoothPlastic, parent)
+	-- B brings the player here first (SandboxWeaponGallery.playSoundLane)
+	CollectionService:AddTag(listeningPad, "SandboxListeningPad")
+	label("LISTEN HERE (B brings you here and plays the lane)", pad + Vector3.new(0, 6, 0), parent)
 	for index, distance in SOUND_DISTANCES do
 		speaker(parent, pad + Vector3.new(0, 0, -distance), index, string.format("%d studs", distance))
 	end

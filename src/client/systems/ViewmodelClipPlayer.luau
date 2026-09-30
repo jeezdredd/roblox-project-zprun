@@ -33,6 +33,9 @@ export type PlayOptions = {
 	-- end fraction of a one-shot: the clip reports finished there and the caller blends
 	-- to the next clip (a tactical reload stops before the bolt pull)
 	to: number?,
+	-- share of the clip's move away from the pose it started in (1 = as authored): a
+	-- lighter version of an authored motion, such as a kick that is too big
+	weight: number?,
 }
 
 local B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
@@ -120,6 +123,7 @@ export type Player = typeof(setmetatable(
 		leftover: number,
 		fade: number,
 		fadeTime: number,
+		weight: number,
 		from: { [string]: CFrame },
 		applied: { [string]: CFrame },
 		world: { [string]: CFrame },
@@ -164,6 +168,7 @@ function ViewmodelClipPlayer.new(pack: PackData, root: BasePart, scale: number?)
 		leftover = 0,
 		fade = 0,
 		fadeTime = 0,
+		weight = 1,
 		from = {},
 		applied = {},
 		world = {},
@@ -245,6 +250,7 @@ function ViewmodelClipPlayer.play(self: Player, name: string, options: PlayOptio
 	end
 	self.fadeTime = opts.fade or 0.1
 	self.fade = 0
+	self.weight = math.clamp(opts.weight or 1, 0, 1)
 	return true
 end
 
@@ -293,13 +299,15 @@ local function sample(track: Track, frame: number): CFrame
 	return values[lo]:Lerp(values[hi], u)
 end
 
--- The current model-space change of a track (blended through the crossfade).
+-- The current model-space change of a track (blended through the crossfade, and held at
+-- the clip's weight from the pose it started in).
 local function delta(self: Player, clip: Clip, name: string, frame: number): CFrame
 	local track = clip.tracks[name]
 	local target = if track then sample(track, frame) else CFrame.identity
 	local from = self.from[name]
-	if from and self.fade < 1 then
-		target = from:Lerp(target, self.fade)
+	local blend = math.min(self.fade, self.weight)
+	if from and blend < 1 then
+		target = from:Lerp(target, blend)
 	end
 	return target
 end

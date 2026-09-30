@@ -26,9 +26,11 @@ assets/viewmodels/arms/source/*.fbx
 tools/arms_rig/tex/
 tools/arms_rig/__pycache__/
 
-# scratch files the session could not delete (delete by hand)
+# scratch files to delete by hand
 _to_delete/
 
-# local tool state
-.claude/settings.local.json
+# python caches
 __pycache__/
+
+# selene std generated locally (selene generate-roblox-std)
+roblox.yml

@@ -12,7 +12,7 @@ Everything below is currently inert on purpose: `src/shared/config/ProductsConfi
 
 Developer Products live under the experience → Monetization → Developer Products. Game Passes under Monetization → Passes. Copy the numeric id from the URL of each item's page and paste it into `ProductsConfig`.
 
-Both passes are cosmetic-only by design (`cosmeticOnly = true`). Credits, weapons, weapon upgrades, skills and perk slots must never be sold for Robux — that rule is in `CLAUDE.md` and is the reason `MonetizationService` has no credit-granting handler.
+Both passes are cosmetic-only by design (`cosmeticOnly = true`). Credits, weapons, weapon upgrades, skills and perk slots must never be sold for Robux — that rule is the reason `MonetizationService` has no credit-granting handler.
 
 ## 2. Enable Studio purchase testing
 

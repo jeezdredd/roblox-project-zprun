@@ -1,5 +1,10 @@
 --!strict
 
+-- The burning city outside the hangar: siren patrols orbiting on invisible parts in
+-- bursts, and the rotor loop of every patrol chopper. With the spatial audio engine on
+-- each one is an AmbienceSource voice following its part (long linear curve, air
+-- absorption, occluded by the hangar); with it off the Sounds from before stay.
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -7,13 +12,17 @@ local Workspace = game:GetService("Workspace")
 
 local AudioConfig = require(ReplicatedStorage.Shared.config.AudioConfig)
 local HangarConfig = require(ReplicatedStorage.Shared.config.HangarConfig)
+local AudioEngine = require(script.Parent.Parent.audio.AudioEngine)
 local MusicController = require(script.Parent.MusicController)
 
 local CityAmbience = {}
 
 type Patrol = {
 	part: BasePart,
-	sound: Sound,
+	soundId: number,
+	volume: number,
+	sound: Sound?,
+	handle: AudioEngine.Handle?,
 	radius: number,
 	speed: number,
 	phase: number,
@@ -22,11 +31,20 @@ type Patrol = {
 	playing: boolean,
 }
 
+type Rotor = {
+	part: BasePart,
+	sound: Sound?,
+	handle: AudioEngine.Handle?,
+}
+
 local PHASE_ATTRIBUTE = "FlowPhase"
+local ROTOR_HOLD = 60
+local ROTOR_RANGE = 1100
+local BURST_FADE = 0.4
 
 local random = Random.new()
 local patrols: { Patrol } = {}
-local staticSounds: { Sound } = {}
+local rotors: { Rotor } = {}
 local active = false
 local elapsed = 0
 
@@ -60,14 +78,21 @@ local function createPatrol(index: number, soundId: number, volume: number): Pat
 	part.CanTouch = false
 	part.Parent = Workspace
 
-	local sound = Instance.new("Sound")
-	sound.Name = "Siren"
-	configureSound(sound, soundId, volume, random:NextNumber(0.94, 1.06))
-	sound.Parent = part
+	local sound: Sound? = nil
+	if not AudioEngine.enabled() then
+		local created = Instance.new("Sound")
+		created.Name = "Siren"
+		configureSound(created, soundId, volume, random:NextNumber(0.94, 1.06))
+		created.Parent = part
+		sound = created
+	end
 
 	return {
 		part = part,
+		soundId = soundId,
+		volume = volume,
 		sound = sound,
+		handle = nil,
 		radius = random:NextNumber(AudioConfig.SIREN_PATROL_RADIUS_MIN, AudioConfig.SIREN_PATROL_RADIUS_MAX),
 		speed = random:NextNumber(AudioConfig.SIREN_PATROL_SPEED_MIN, AudioConfig.SIREN_PATROL_SPEED_MAX)
 			* (if index % 2 == 0 then -1 else 1),
@@ -79,17 +104,88 @@ local function createPatrol(index: number, soundId: number, volume: number): Pat
 	}
 end
 
+local function startPatrol(patrol: Patrol)
+	local pitch = random:NextNumber(0.92, 1.08)
+	if AudioEngine.enabled() then
+		patrol.handle = AudioEngine.play({
+			id = patrol.soundId,
+			class = "AmbienceSource",
+			follow = patrol.part,
+			volume = patrol.volume,
+			pitch = pitch,
+			loop = true,
+			range = AudioConfig.AMBIENCE_ROLLOFF_MAX,
+			hold = AudioConfig.AMBIENCE_ROLLOFF_MIN,
+			fadeIn = BURST_FADE,
+		})
+	end
+	local sound = patrol.sound
+	if sound then
+		sound.PlaybackSpeed = pitch
+		pcall(function()
+			sound:Play()
+		end)
+	end
+	patrol.playing = true
+end
+
+local function stopPatrol(patrol: Patrol)
+	local handle = patrol.handle
+	if handle then
+		handle:stop(BURST_FADE)
+		patrol.handle = nil
+	end
+	local sound = patrol.sound
+	if sound and sound.IsPlaying then
+		sound:Stop()
+	end
+	patrol.playing = false
+end
+
+local function startRotor(rotor: Rotor)
+	if AudioEngine.enabled() then
+		local handle = rotor.handle
+		if handle and handle:isPlaying() then
+			return
+		end
+		rotor.handle = AudioEngine.play({
+			id = AudioConfig.HELI_LOOP_ID,
+			class = "AmbienceSource",
+			follow = rotor.part,
+			volume = AudioConfig.HELI_VOLUME,
+			loop = true,
+			range = ROTOR_RANGE,
+			hold = ROTOR_HOLD,
+			fadeIn = BURST_FADE,
+		})
+		return
+	end
+	local sound = rotor.sound
+	if sound and not sound.IsPlaying then
+		pcall(function()
+			sound:Play()
+		end)
+	end
+end
+
+local function stopRotor(rotor: Rotor)
+	local handle = rotor.handle
+	if handle then
+		handle:stop(BURST_FADE)
+		rotor.handle = nil
+	end
+	local sound = rotor.sound
+	if sound and sound.IsPlaying then
+		sound:Stop()
+	end
+end
+
 local function stopAll()
 	for _, patrol in patrols do
-		if patrol.sound.IsPlaying then
-			patrol.sound:Stop()
-		end
-		patrol.playing = false
+		stopPatrol(patrol)
 	end
-	for _, sound in staticSounds do
-		if sound.IsPlaying then
-			sound:Stop()
-		end
+	for _, rotor in rotors do
+		stopRotor(rotor)
 	end
 end
 
@@ -109,15 +205,10 @@ local function step(deltaTime: number)
 
 		if elapsed >= patrol.nextToggle then
 			if patrol.playing then
-				patrol.sound:Stop()
-				patrol.playing = false
+				stopPatrol(patrol)
 				patrol.nextToggle = elapsed + random:NextNumber(AudioConfig.SIREN_GAP_MIN, AudioConfig.SIREN_GAP_MAX)
 			else
-				patrol.sound.PlaybackSpeed = random:NextNumber(0.92, 1.08)
-				pcall(function()
-					patrol.sound:Play()
-				end)
-				patrol.playing = true
+				startPatrol(patrol)
 				patrol.nextToggle = elapsed + random:NextNumber(AudioConfig.SIREN_BURST_MIN, AudioConfig.SIREN_BURST_MAX)
 			end
 		end
@@ -131,13 +222,26 @@ local function onPhaseChanged()
 		stopAll()
 		return
 	end
-	for _, sound in staticSounds do
-		if not sound.IsPlaying then
-			pcall(function()
-				sound:Play()
-			end)
-		end
+	for _, rotor in rotors do
+		startRotor(rotor)
 	end
+end
+
+local function createRotor(part: BasePart): Rotor?
+	if not isPlayableId(AudioConfig.HELI_LOOP_ID) then
+		return nil
+	end
+	local sound: Sound? = nil
+	if not AudioEngine.enabled() then
+		local created = Instance.new("Sound")
+		created.Name = "RotorLoop"
+		configureSound(created, AudioConfig.HELI_LOOP_ID, AudioConfig.HELI_VOLUME, 1)
+		created.RollOffMinDistance = ROTOR_HOLD
+		created.RollOffMaxDistance = ROTOR_RANGE
+		created.Parent = part
+		sound = created
+	end
+	return { part = part, sound = sound, handle = nil }
 end
 
 function CityAmbience.init()
@@ -161,13 +265,10 @@ function CityAmbience.init()
 
 		for _, model in diorama:GetChildren() do
 			if model:IsA("Model") and model.Name == "PatrolChopper" and model.PrimaryPart then
-				local sound = Instance.new("Sound")
-				sound.Name = "RotorLoop"
-				configureSound(sound, AudioConfig.HELI_LOOP_ID, AudioConfig.HELI_VOLUME, 1)
-				sound.RollOffMinDistance = 60
-				sound.RollOffMaxDistance = 1100
-				sound.Parent = model.PrimaryPart
-				table.insert(staticSounds, sound)
+				local rotor = createRotor(model.PrimaryPart)
+				if rotor then
+					table.insert(rotors, rotor)
+				end
 			end
 		end
 

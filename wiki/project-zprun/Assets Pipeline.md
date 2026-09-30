@@ -1,6 +1,6 @@
 # Assets Pipeline
 
-> Status 2026-09-29: the manifest holds 302 entries (247 `approved`, 43 `reviewing`, 7 `pending`, 4 `rejected`, 1 `needed`). Zombie clips now come from the Sketchfab packs (22 `animation/zombie_sf/*` entries), first-person clips are baked into Luau instead of uploaded, and the only pending animation slots are the two player strafe loops and five unused `animation/weapon/*` slots. New sections at the end cover the zombie and first-person pack pipelines and the Free Firearm Sound Library audio.
+> Status 2026-09-29 (evening): the manifest holds 438 entries (421 `approved`, 5 `reviewing`, 7 `pending`, 4 `rejected`, 1 `needed`). Zombie clips now come from the Sketchfab packs (22 `animation/zombie_sf/*` entries), first-person clips are baked into Luau instead of uploaded, and the only pending animation slots are the two player strafe loops and five unused `animation/weapon/*` slots. New sections at the end cover the zombie and first-person pack pipelines and the Free Firearm Sound Library audio.
 
 Every texture, sound and animation in Task Force Z goes through one path: a manifest entry, an Open Cloud upload, and a generated config module. No Roblox asset id is ever typed into gameplay code by hand.
 
@@ -13,7 +13,7 @@ assets/manifest.json
   -> gameplay code              (guards on id > 0, degrades silently)
 ```
 
-The rule from `CLAUDE.md` is unconditional: every new asset is registered in the manifest, uploaded by the script, listed in `assets/LICENSES.md`, and audio must be a real CC0/licensed file, never generated.
+The rule is unconditional: every new asset is registered in the manifest, uploaded by the script, listed in `assets/LICENSES.md`, and audio must be a real CC0/licensed file, never generated.
 
 ## The manifest
 
@@ -156,12 +156,12 @@ Only sources whose licence permits redistribution inside a Roblox experience are
 | Kenney | CC0 | Impact and interface sound packs: gear foley, landings, cloth whoosh, magazine in/out, bolt, shells (the generic weapon fallbacks), all five UI sounds; the Kenney dry fire was replaced by a Free Firearm Sound Library take |
 | OpenGameArt | CC0 / CC BY 3.0 | Menu and mission music, death scream, zombie noises, facility siren, wind, distant explosion, hangar roomtone, radio call, and the gunshot pack |
 | Wikimedia Commons | Public domain | Breathing loops, heartbeat, civil-defence siren, helicopter, fire crackle, gong, one zombie growl |
-| The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey) | CC0 1.0 | 32 weapon sounds (2026-09-29): close shots, open tail, dry fire, low-ammo and last-round cues, reload and handling foley, draw and holster |
+| The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey) | CC0 1.0 | 38 weapon sounds (2026-09-29): close shots and class tails (v6, from the Prepared SFX Library), the sub layers, open tail, dry fire, low-ammo and last-round cues, reload and handling foley, draw and holster |
 | Sketchfab | CC BY 4.0 | Skinned zombies by pxltiger, LxNazarov and stasbelyk13 with their 22 clips; first-person packs by DuqueCD7 (Pistol, AK-47, Saps-12) and 1Matzh (UZI 2026 remake, which uses "UZI" by Gintoki1234 and "Division Agent (Rigged)" by Blue-Spirit) |
 | Roblox Cube 3D / generative AI | Owned by the project owner | World props and the walker2 zombie meshes (Cube 3D), the carbine viewmodel meshes (generative AI output) |
 | Mixamo (Adobe) | Royalty-free for games | The "Swat Guy" first-person arms (fallback rig) |
 
-Licence totals across the manifest (2026-09-29): CC0 122, Roblox Cube 3D generation 72, CC BY 4.0 29, CC BY 3.0 20 (congusbongus footsteps 15, Vincent Sevedge 5), `Original work (project owner)` 17, Mixamo 14, Public domain 12, Roblox generative AI output 10, sole proprietor 5 (the unused `animation/weapon/*` slots), and one `needed` slot with no licence yet. Every CC BY author has to be credited in the shipped game as well; `assets/LICENSES.md` notes that those credits belong in the settings panel before release.
+Licence totals across the manifest (2026-09-29, evening): CC0 204, CC BY 4.0 83, Roblox Cube 3D generation 72, CC BY 3.0 20 (congusbongus footsteps 15, Vincent Sevedge 4, GreenFireSound 1), `Original work (project owner)` 17, Mixamo 14, Public domain 12, Roblox generative AI output 10, sole proprietor 5 (the unused `animation/weapon/*` slots), and one `needed` slot with no licence yet. Every CC BY author has to be credited in the shipped game as well; `assets/LICENSES.md` notes that those credits belong in the settings panel before release.
 
 **Audio must be real licensed files, never generated.** Synthesised audio reads as thin and tonally wrong next to recorded material, and it makes the licence column meaningless. No entry carries `source: "generated"` any more (2026-09-29): the footsteps are congusbongus and Fantozzi recordings, the police siren slot is rejected and waiting for a stylised replacement, and the ambulance siren is `needed` because every candidate found was CC BY-SA.
 
@@ -213,7 +213,7 @@ See also: [[Overview]], [[Architecture]], [[Gameplay Systems]], [[Performance]],
 
 ## World props from Cube 3D (2026-09-28)
 
-Studio MCP `generate_mesh` publishes the result under the owner's account, so the MeshPart it inserts already carries a permanent `MeshId` and `TextureID`. That skips the localhost export and Open Cloud upload the viewmodel flow in `tools/cube3d/README.md` needs. Steps:
+Cube 3D generation in Studio publishes the result under the owner's account, so the MeshPart it inserts already carries a permanent `MeshId` and `TextureID`. That skips the localhost export and Open Cloud upload the viewmodel flow in `tools/cube3d/README.md` needs. Steps:
 
 1. `generate_mesh` with `segmentation: none`, a size close to the real object, a `maxTriangles` cap, and the house prompt suffix "realistic game asset, flat neutral albedo texture without baked lighting, no floating parts".
 2. Look at it in Edit next to the others (screenshot). Re-roll anything off-style.
@@ -252,3 +252,5 @@ Each weapon class uses a Sketchfab pack (CC BY 4.0) that holds arms, weapon and 
 **Broken shared skins.** Some Sketchfab exports share one skin between several meshes but keep the inverse bind matrices of only one of them. The Uzi pack's belong to its Background plane (scale about 710 x 358 x 372), and its arm and gun vertices are stored in a mirrored, scaled space, so on import the bones came in about 1000 times smaller than the mesh. `tools/fps_pack/skin_fixes/smg.json` holds the vertex transform and an inverse-bind correction solved on 2026-09-29 from the pack's source FBX (cluster Transform / TransformLink, vertices matched to the glb within 2e-5). `strip_glb.py --skin-fix` writes the repaired rig, `build_clips.py` bakes with the same file (`gltf_anim.py bake --skin-fix`), and the repaired rig is asset 118961607883385. teenjust500's 870 pump pack has the same broken skin and no idle or walk clips, so it was not used.
 
 **Quaternion normalisation.** The baked quaternions are rounded to 5 decimals, and unnormalised they differed from themselves by about 0.3 degrees, which defeated the 0.25-degree key reduction. `emit_luau.py` now normalises every quaternion before reducing.
+
+**Gunshots v6 (2026-09-29).** `tools/audio_build/build_shots_v6.py "<FFSL>/Prepared SFX Library" <out dir>` cuts single shots from the Prepared SFX Library files (AK-47 `C_28P`, Walther PPQ `X_39P`, Benelli Nova `O_21P` and `O_17P`, Carl Gustav M45 `G_31P`) into `close_<class>[_02|_03]` (blast and mechanism, 0.13 s) and `tail_open_<class>` (the reflection and decay, padded with 0.11 s of silence). The two microphones are aligned (1..3.4 ms apart) and matched in RMS so the blast stays mono-compatible; 96 kHz becomes 48 kHz stereo OGG Vorbis q6, with a 30 Hz high-pass and the close part peaking at -1 dBFS (the tail keeps the same gain). The manifest fragment is `tools/audio_fragments/gunshots_v6.json`; the replaced v5 ids stay in `previousAssetId`.

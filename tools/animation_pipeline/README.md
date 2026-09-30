@@ -1,6 +1,6 @@
 # Animation pipeline — Mixamo to Roblox R15
 
-Owner-facing steps. Claude Code maintains the slot list and the script; downloading, running Blender and uploading are manual.
+Owner-facing steps. The slot list and the script live in the repo; downloading, running Blender and uploading are manual.
 
 ## 1. What to download
 
@@ -32,7 +32,7 @@ Every slot below is currently empty (`assetId = 0`). The Mixamo search phrase is
 
 These come from the Universal Viewmodel Template rather than Mixamo, because they must match the viewmodel rig rather than R15. Slots: `fire`, `reload`, `equip`, `inspect`, `sprint`.
 
-**Before converting our viewmodel to Motor6D, send Claude Code the template's joint dump** — the Motor6D names and hierarchy. Roblox binds animation by joint name, so our rig has to match the template or carry a mapping table.
+**Before converting our viewmodel to Motor6D, take the template's joint dump** — the Motor6D names and hierarchy. Roblox binds animation by joint name, so our rig has to match the template or carry a mapping table.
 
 ## 2. Mixamo export settings
 

@@ -6,7 +6,9 @@
 --   V third person on/off (the stock orbit camera, viewmodel hidden, body visible);
 --   Z slow motion: 1, 1/4, 1/10 for the viewmodel, casings, both clip galleries and the
 --     treadmills (camera ViewmodelTimeScale, workspace DevTimeScale, server gallery);
---   B plays the sound lane.
+--   B plays the sound lane;
+--   K shows the audio engine overlay (every live voice with its distance, delay,
+--     occlusion and filter), L fires a remote rifle shot 30 studs ahead with reflections.
 -- Studio's own free camera (Shift+P) works too. Does nothing outside Studio or when the
 -- yard is off.
 
@@ -19,6 +21,8 @@ local Workspace = game:GetService("Workspace")
 local DevConfig = require(ReplicatedStorage.Shared.config.DevConfig)
 local Viewmodel = require(script.Parent.Viewmodel)
 local SandboxWeaponGallery = require(script.Parent.SandboxWeaponGallery)
+local SandboxBodyGallery = require(script.Parent.SandboxBodyGallery)
+local AudioDebug = require(script.Parent.Parent.audio.AudioDebug)
 
 local SandboxInput = {}
 
@@ -93,6 +97,7 @@ function SandboxInput.init()
 		return
 	end
 	SandboxWeaponGallery.init()
+	SandboxBodyGallery.init()
 	task.spawn(function()
 		local remote = ReplicatedStorage:WaitForChild("SandboxCommand", 15)
 		if not remote or not remote:IsA("RemoteEvent") then
@@ -112,12 +117,10 @@ function SandboxInput.init()
 				setTimeScale(timeIndex % #TIME_SCALES + 1, remote)
 			elseif input.KeyCode == Enum.KeyCode.B then
 				SandboxWeaponGallery.playSoundLane()
-			end
-		end)
-		-- a weapon swap builds a fresh, visible viewmodel
-		Players.LocalPlayer:GetAttributeChangedSignal("WeaponId"):Connect(function()
-			if thirdPerson then
-				task.defer(Viewmodel.setVisible, false)
+			elseif input.KeyCode == Enum.KeyCode.K then
+				AudioDebug.toggle()
+			elseif input.KeyCode == Enum.KeyCode.L then
+				AudioDebug.fireTestShot()
 			end
 		end)
 	end)

@@ -1,4 +1,4 @@
-Rig dump taken from Studio with the Roblox_Studio MCP server, from Workspace.Pistol_VM.
+Rig dump taken from Studio, from Workspace.Pistol_VM.
 Geometry is the free Glock mesh set the project owner supplied; markers and joints were
 assembled by script. Positions are relative to Main, which is the model's PrimaryPart.
 

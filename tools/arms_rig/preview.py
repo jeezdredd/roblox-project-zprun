@@ -11,7 +11,7 @@ def cylinder(center, axis, radius, length, seg=24):
     for k in range(seg):
         a,b=k,(k+1)%seg; tris+= [(a,b,seg+a),(b,seg+b,seg+a)]
     return np.array(pts),np.array(tris)
-def show(Vp, T, extra=None, dist=40, ortho=11, path='/tmp/claude-0/pose.png', views=None):
+def show(Vp, T, extra=None, dist=40, ortho=11, path='/tmp/pose.png', views=None):
     pos=Vp; tris=tri_v[T]; uvs=tri_uv[T]; tm=tri_mat[T]; tx=list(texs())+[np.full((4,4,3),150,np.uint8)]
     if extra is not None:
         ep,et=extra; off=len(pos); pos=np.vstack([pos,ep]); tris=np.vstack([tris,et+off])

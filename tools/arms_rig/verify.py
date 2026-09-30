@@ -17,4 +17,4 @@ for s in ('R','L'):
     pos=np.vstack([Ph,Pf]); F=np.vstack([Fh,Ff+len(Ph)]); UV=np.vstack([Uh,Uf]); UV=UV.copy(); UV[:,1]=1-UV[:,1]
     for eye in ([1.2,1.0,2.2] if s=='R' else [-1.2,1.0,2.2], [0,3,0.01]):
         ims.append(render(pos,F,UV[F],[tex],np.zeros(len(F),int),look(np.array(eye),np.array([0,0,0.5])),ortho=1.1,size=(400,400)))
-out=Image.new('RGB',(800,800)); [out.paste(im,((i%2)*400,(i//2)*400)) for i,im in enumerate(ims)]; out.save('/tmp/claude-0/verify.png')
+out=Image.new('RGB',(800,800)); [out.paste(im,((i%2)*400,(i//2)*400)) for i,im in enumerate(ims)]; out.save('/tmp/verify.png')

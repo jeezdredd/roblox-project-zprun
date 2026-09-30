@@ -9,6 +9,7 @@ local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local LocationsConfig = require(ReplicatedStorage.Shared.config.LocationsConfig)
 local DevConfig = require(ReplicatedStorage.Shared.config.DevConfig)
 local MissionState = require(script.Parent.MissionState)
+local MissionGoals = require(script.Parent.MissionGoals)
 local SkillEffects = require(script.Parent.SkillEffects)
 local RunEconomy = require(script.Parent.RunEconomy)
 
@@ -23,6 +24,10 @@ type RunState = {
 	lastCheckAt: number,
 	lastCheckBest: number,
 	strikes: number,
+	-- the health seen last frame and the distance at the last drop of it, for the
+	-- CleanDistance goal metric (studs since the last hit)
+	lastHealth: number,
+	lastHitDistance: number,
 }
 
 local STUCK_CHECK_INTERVAL = 2
@@ -44,6 +49,8 @@ local function newRun(): RunState
 		lastCheckAt = os.clock(),
 		lastCheckBest = 0,
 		strikes = 0,
+		lastHealth = math.huge,
+		lastHitDistance = 0,
 	}
 end
 
@@ -159,9 +166,19 @@ local function step(deltaTime: number)
 			updateLeaderstats(player, traveled)
 			-- the distance pay goes into the run balance next to the kill pay
 			RunEconomy.setDistance(player, traveled)
+			MissionGoals.report(player, "Distance", traveled)
 		end
 
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+		-- a drop in health is a hit: the clean distance starts again from here
+		if humanoid then
+			if humanoid.Health < run.lastHealth - 0.01 then
+				run.lastHitDistance = run.best
+			end
+			run.lastHealth = humanoid.Health
+			MissionGoals.report(player, "CleanDistance", run.best - run.lastHitDistance)
+		end
 
 		if now - run.lastCheckAt >= STUCK_CHECK_INTERVAL then
 			local progressed = run.best - run.lastCheckBest

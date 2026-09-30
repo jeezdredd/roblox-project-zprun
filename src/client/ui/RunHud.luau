@@ -6,7 +6,9 @@ local TweenService = game:GetService("TweenService")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local MissionGoalsConfig = require(ReplicatedStorage.Shared.config.MissionGoalsConfig)
 local PerksConfig = require(ReplicatedStorage.Shared.config.PerksConfig)
+local GoalsHudMath = require(ReplicatedStorage.Shared.util.GoalsHudMath)
 local UiTheme = require(script.Parent.UiTheme)
 
 local RunHud = {}
@@ -121,6 +123,64 @@ local function build()
 	end
 	Players.LocalPlayer:GetAttributeChangedSignal("PerksEquipped"):Connect(refreshBadges)
 	refreshBadges()
+
+	-- the run's goals with their progress, top left, one line each; the server packs
+	-- them into the GoalsProgress attribute (docs/gameplay/goals-hud-and-ladder.md)
+	local goals = Instance.new("Frame")
+	goals.Name = "Goals"
+	goals.AnchorPoint = Vector2.new(0, 0)
+	-- under the FPS counter (12, 88), clear of the wallet row above it
+	goals.Position = UDim2.new(0, 16, 0, 116)
+	goals.Size = UDim2.fromOffset(250, 18 * #MissionGoalsConfig.order + 20)
+	goals.BackgroundTransparency = 1
+	goals.Parent = screen
+	local goalsLayout = Instance.new("UIListLayout")
+	goalsLayout.FillDirection = Enum.FillDirection.Vertical
+	goalsLayout.Padding = UDim.new(0, 2)
+	goalsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	goalsLayout.Parent = goals
+
+	local goalsTitle = Instance.new("TextLabel")
+	goalsTitle.Name = "Title"
+	goalsTitle.LayoutOrder = 0
+	goalsTitle.Size = UDim2.new(1, 0, 0, 16)
+	goalsTitle.BackgroundTransparency = 1
+	goalsTitle.TextSize = 11
+	goalsTitle.TextXAlignment = Enum.TextXAlignment.Left
+	goalsTitle.Text = "GOALS"
+	UiTheme.styleText(goalsTitle, true)
+	goalsTitle.TextTransparency = 0.35
+	goalsTitle.Parent = goals
+
+	local goalRows: { [string]: TextLabel } = {}
+	for index, id in MissionGoalsConfig.order do
+		local row = Instance.new("TextLabel")
+		row.Name = "Goal_" .. id
+		row.LayoutOrder = index
+		row.Size = UDim2.new(1, 0, 0, 16)
+		row.BackgroundTransparency = 1
+		row.TextSize = 13
+		row.TextXAlignment = Enum.TextXAlignment.Left
+		row.Text = ""
+		UiTheme.styleText(row, true)
+		row.Parent = goals
+		goalRows[id] = row
+	end
+
+	local function refreshGoals()
+		local encoded = Players.LocalPlayer:GetAttribute("GoalsProgress")
+		local values = GoalsHudMath.decode(if typeof(encoded) == "string" then encoded else "")
+		for _, goalRow in GoalsHudMath.rows(MissionGoalsConfig, values) do
+			local label = goalRows[goalRow.id]
+			if label then
+				label.Text = string.format("%s  %s%s", string.upper(goalRow.displayName), goalRow.text, if goalRow.done then "  DONE" else "")
+				label.TextColor3 = if goalRow.done then UiTheme.ACCENT else UiTheme.TEXT_DIM
+				label.TextTransparency = if goalRow.done then 0 else 0.15
+			end
+		end
+	end
+	Players.LocalPlayer:GetAttributeChangedSignal("GoalsProgress"):Connect(refreshGoals)
+	refreshGoals()
 
 	healthBack = Instance.new("Frame")
 	healthBack.AnchorPoint = Vector2.new(0.5, 1)

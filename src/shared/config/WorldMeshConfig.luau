@@ -66,6 +66,12 @@ local WorldMeshConfig = {
 			texture = AssetIds.texture.props.car_wreck,
 			collision = Enum.CollisionFidelity.Box,
 		},
+		-- the crashed supply drop (WeaponPickups); a Cube 3D box, placed by height
+		supply_crate = {
+			mesh = AssetIds.mesh.props.supply_crate,
+			texture = 0,
+			collision = Enum.CollisionFidelity.Box,
+		},
 		crop_corn_row = entry("crop_corn_row", Enum.CollisionFidelity.Box),
 		grass_dry = entry("grass_dry", Enum.CollisionFidelity.Box),
 		car_hatch = entry("car_hatch", Enum.CollisionFidelity.Box),
@@ -103,6 +109,7 @@ local WorldMeshConfig = {
 		boulder = { "rock_boulder" },
 		car = { "car_sedan", "car_hatch", "car_pickup", "car_sedan", "car_hatch", "car_van" },
 		car_police = { "car_police" },
+		supply_crate = { "supply_crate" },
 		car_wreck = { "car_wreck" },
 		corn = { "crop_corn_row" },
 		grass_dry = { "grass_dry" },

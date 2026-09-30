@@ -27,6 +27,9 @@ Remotes.Event = table.freeze({
 	ShopSync = "ShopSync",
 	PromptPurchase = "PromptPurchase",
 	AmmoPickup = "AmmoPickup",
+	-- server -> client: a weapon pickup's outcome ("Weapon" weaponId position, "Drop"
+	-- weaponId position, or "Refused" message position)
+	WeaponPickup = "WeaponPickup",
 	PlayerGlanced = "PlayerGlanced",
 })
 

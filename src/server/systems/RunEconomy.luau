@@ -97,6 +97,23 @@ function RunEconomy.snapshot(player: Player): Snapshot
 	}
 end
 
+-- Spends run credits (a supply drop): false, and nothing changes, when the balance
+-- does not cover it. The distance half spent counts as banked distance pay.
+function RunEconomy.spend(player: Player, amount: number): boolean
+	local state = runs[player]
+	if not state then
+		return false
+	end
+	local ok, rest, distanceBanked = RunEconomyMath.spend(state.balance, state.distanceBanked, amount)
+	if not ok then
+		return false
+	end
+	state.balance = rest
+	state.distanceBanked = distanceBanked
+	publish(player, state)
+	return true
+end
+
 -- Takes the balance out of the run: returns what the caller pays into the profile and
 -- leaves the run at zero, so a Continue earns afresh and a second bank pays nothing.
 function RunEconomy.bank(player: Player): number

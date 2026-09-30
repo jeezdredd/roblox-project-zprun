@@ -9,13 +9,13 @@
 local ChunkOccupancy = {}
 
 local circles: { { number } } = {}
+-- the claims of every built chunk, keyed by the chunk model (weak: a destroyed chunk
+-- takes its list with it; a pooled one keeps it, its props stay where they were), so
+-- things placed after the build (WeaponPickups) can avoid what the query cannot see
+local remembered: { [any]: { { number } } } = setmetatable({}, { __mode = "k" }) :: any
 
-function ChunkOccupancy.reset()
-	table.clear(circles)
-end
-
-function ChunkOccupancy.isFree(x: number, z: number, radius: number): boolean
-	for _, c in circles do
+local function freeAmong(list: { { number } }, x: number, z: number, radius: number): boolean
+	for _, c in list do
 		local dx, dz = x - c[1], z - c[2]
 		local reach = radius + c[3]
 		if dx * dx + dz * dz < reach * reach then
@@ -23,6 +23,14 @@ function ChunkOccupancy.isFree(x: number, z: number, radius: number): boolean
 		end
 	end
 	return true
+end
+
+function ChunkOccupancy.reset()
+	table.clear(circles)
+end
+
+function ChunkOccupancy.isFree(x: number, z: number, radius: number): boolean
+	return freeAmong(circles, x, z, radius)
 end
 
 -- Takes the circle when it is free. Returns whether it was taken.
@@ -58,6 +66,29 @@ function ChunkOccupancy.reserveBox(x0: number, z0: number, x1: number, z1: numbe
 			table.insert(circles, { minX + r, minZ + d * i / steps, r })
 		end
 	end
+end
+
+-- Keeps a copy of the current claims under `key` (the chunk model) for isFreeFor.
+function ChunkOccupancy.remember(key: any)
+	local copy: { { number } } = {}
+	for _, c in circles do
+		table.insert(copy, { c[1], c[2], c[3] })
+	end
+	remembered[key] = copy
+end
+
+function ChunkOccupancy.forget(key: any)
+	remembered[key] = nil
+end
+
+-- Whether the circle is free of the claims remembered under `key` (true when nothing
+-- was remembered: a chunk built before this existed).
+function ChunkOccupancy.isFreeFor(key: any, x: number, z: number, radius: number): boolean
+	local list = remembered[key]
+	if not list then
+		return true
+	end
+	return freeAmong(list, x, z, radius)
 end
 
 -- Tries a few random spots from `sample` and claims the first free one.

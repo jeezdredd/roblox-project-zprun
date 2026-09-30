@@ -87,6 +87,24 @@ group("distance after a Continue", function()
 	check("multiplied new share", RunEconomyMath.distanceOwed(C, 1100, 1.5, 150) == 15)
 end)
 
+-- Spending run credits on a supply drop: kills first, then distance, and the distance
+-- spent counts as banked so the same studs never pay for the drop.
+group("spending the run balance", function()
+	local ok, rest, banked = RunEconomyMath.spend({ kills = 200, distance = 50 }, 0, 120)
+	check("kills pay first", ok and rest.kills == 80 and rest.distance == 50 and banked == 0)
+	ok, rest, banked = RunEconomyMath.spend({ kills = 100, distance = 60 }, 10, 130)
+	check("the rest comes from distance", ok and rest.kills == 0 and rest.distance == 30 and banked == 40)
+	check("distance spent is owed no more", RunEconomyMath.distanceOwed(C, 600, 1, banked) == 20)
+	ok, rest, banked = RunEconomyMath.spend({ kills = 100, distance = 60 }, 0, 161)
+	check("too poor refuses", not ok and rest.kills == 100 and rest.distance == 60 and banked == 0)
+	ok, rest = RunEconomyMath.spend({ kills = 100, distance = 60 }, 0, 160)
+	check("exactly enough", ok and RunEconomyMath.total(rest) == 0)
+	ok, rest = RunEconomyMath.spend({ kills = 5, distance = 5 }, 0, 0)
+	check("free is fine", ok and RunEconomyMath.total(rest) == 10)
+	ok, rest = RunEconomyMath.spend({ kills = 5, distance = 5 }, 0, -40)
+	check("negative is free", ok and RunEconomyMath.total(rest) == 10)
+end)
+
 -- Goal bonuses are paid once per run: the death after a Continue pays only the goals
 -- completed since the first death.
 group("goal bonus paid once", function()

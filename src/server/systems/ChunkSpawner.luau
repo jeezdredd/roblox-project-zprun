@@ -10,6 +10,7 @@ local ChunkFactory = require(script.Parent.ChunkFactory)
 local DistanceTracker = require(script.Parent.DistanceTracker)
 local RoutePlan = require(script.Parent.RoutePlan)
 local AmmoCrates = require(script.Parent.AmmoCrates)
+local WeaponPickups = require(script.Parent.WeaponPickups)
 local MissionState = require(script.Parent.MissionState)
 local MissionConfig = require(script.Parent.MissionConfig)
 local ChunkBudgetCounter = require(script.Parent.Parent.world.ChunkBudgetCounter)
@@ -76,6 +77,7 @@ local function spawnChunk(index: number)
 	active[index] = { model = model, locationId = entry.locationId, pooled = pooled }
 
 	AmmoCrates.spawnForChunk(index, model:GetPivot(), chunkLength, MissionConfig.getDifficulty().ammoCrateChance)
+	WeaponPickups.spawnForChunk(index, model, entry.locationId)
 end
 
 local function despawnChunk(index: number)
@@ -91,6 +93,7 @@ local function despawnChunk(index: number)
 	end
 	active[index] = nil
 	AmmoCrates.clearChunk(index)
+	WeaponPickups.clearChunk(index)
 end
 
 local function despawnAll()
@@ -137,6 +140,7 @@ end
 function ChunkSpawner.configure(seed: number, locationIds: { string }?)
 	random = Random.new(seed + 1)
 	RoutePlan.configure(seed, locationIds)
+	WeaponPickups.configure(seed + 3)
 	for id, pool in pools do
 		for _, model in pool do
 			model:Destroy()
@@ -164,6 +168,7 @@ function ChunkSpawner.init()
 	chunksFolder = folder
 	-- Studio only: presets whose fog would let a chunk be seen spawning
 	ChunkBudgetCounter.checkFog()
+	WeaponPickups.init()
 	RunService.Heartbeat:Connect(step)
 end
 

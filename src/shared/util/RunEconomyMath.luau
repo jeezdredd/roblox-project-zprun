@@ -70,6 +70,23 @@ function RunEconomyMath.unpaidBonus(completed: { string }, rewards: { [string]: 
 	return total, nowPaid
 end
 
+-- Spends `amount` of the run balance (a supply drop): the kill half goes first, the
+-- rest comes out of the distance half and counts as banked distance pay, since the
+-- distance itself stays and must not pay for it again. Returns whether it could, the
+-- balance after and the new distanceBanked.
+function RunEconomyMath.spend(balance: Balance, distanceBanked: number, amount: number): (boolean, Balance, number)
+	local cost = math.max(math.floor(amount), 0)
+	if cost == 0 then
+		return true, { kills = balance.kills, distance = balance.distance }, distanceBanked
+	end
+	if RunEconomyMath.total(balance) < cost then
+		return false, { kills = balance.kills, distance = balance.distance }, distanceBanked
+	end
+	local fromKills = math.min(balance.kills, cost)
+	local fromDistance = cost - fromKills
+	return true, { kills = balance.kills - fromKills, distance = balance.distance - fromDistance }, distanceBanked + fromDistance
+end
+
 -- The one number the HUD shows: kill pay plus distance pay.
 function RunEconomyMath.total(balance: Balance): number
 	return balance.kills + balance.distance

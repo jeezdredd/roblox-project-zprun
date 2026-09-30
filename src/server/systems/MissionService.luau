@@ -21,6 +21,7 @@ local DistanceTracker = require(script.Parent.DistanceTracker)
 local ProfileManager = require(script.Parent.ProfileManager)
 local RunEconomy = require(script.Parent.RunEconomy)
 local PerkService = require(script.Parent.PerkService)
+local WeaponService = require(script.Parent.WeaponService)
 
 local MissionService = {}
 
@@ -153,6 +154,7 @@ function MissionService.removeFromMission(player: Player)
 		ProfileManager.addCredits(player, unbanked)
 	end
 	PerkService.onRunEnd(player)
+	WeaponService.clearRunLoadout(player)
 	tearDownIfEmpty()
 end
 

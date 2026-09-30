@@ -38,6 +38,24 @@ local IDLE_VARIANTS = { AssetIds.animation.zombie.idle_a, AssetIds.animation.zom
 local WALK_VARIANTS = { AssetIds.animation.zombie.walk_shuffle }
 local RUN_VARIANTS = { AssetIds.animation.zombie.run_ragged }
 
+-- The Dormant rise and the Feeding pose take the Mixamo clips once they are uploaded
+-- (docs/animation/third-person-locomotion.md) and the Quaternius clips until then.
+local function uploaded(ids: { number }): { number }
+	local out = {}
+	for _, id in ids do
+		if id > 0 then
+			table.insert(out, id)
+		end
+	end
+	return out
+end
+
+local RISE_VARIANTS = uploaded({ AssetIds.animation.zombie.stand_up_back, AssetIds.animation.zombie.stand_up_stomach })
+if #RISE_VARIANTS == 0 then
+	RISE_VARIANTS = { AssetIds.animation.zombie.idle_c }
+end
+local FEEDING_ID = if AssetIds.animation.zombie.biting_ground > 0 then AssetIds.animation.zombie.biting_ground else AssetIds.animation.zombie.feeding
+
 -- Ground speed each clip covers at playback speed 1 on the walker2 rig (FULL_SCALE 0.92),
 -- measured 2026-09-28 from the planted foot's travel over 60 samples of the cycle: walk
 -- 2.56 studs/s on the leading foot (the shuffle drags the other), run about 4.3. The old
@@ -219,8 +237,8 @@ function ZombieAnimator.setup(model: Model, humanoid: Humanoid, rng: Random): Zo
 		tracks.walk = loadTrack(animator, pickVariant(WALK_VARIANTS, rng), true, Enum.AnimationPriority.Movement)
 		tracks.run = loadTrack(animator, pickVariant(RUN_VARIANTS, rng), true, Enum.AnimationPriority.Movement)
 		tracks.attack = loadTrack(animator, AssetIds.animation.zombie.attack_lunge, false, Enum.AnimationPriority.Action)
-		tracks.feeding = loadTrack(animator, AssetIds.animation.zombie.feeding, true, Enum.AnimationPriority.Action2)
-		tracks.rise = loadTrack(animator, AssetIds.animation.zombie.idle_c, false, Enum.AnimationPriority.Action3)
+		tracks.feeding = loadTrack(animator, FEEDING_ID, true, Enum.AnimationPriority.Action2)
+		tracks.rise = loadTrack(animator, pickVariant(RISE_VARIANTS, rng), false, Enum.AnimationPriority.Action3)
 		tracks.base = loadTrack(animator, pickVariant(IDLE_VARIANTS, rng), true, Enum.AnimationPriority.Core)
 	end
 

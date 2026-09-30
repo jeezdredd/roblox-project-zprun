@@ -28,6 +28,33 @@ Every slot below is currently empty (`assetId = 0`). The Mixamo search phrase is
 | `stumble` | `Stumble Backwards` | non-loop |
 | `death` | `Falling Back Death` | non-loop, lands on the back — the death cam expects a supine pose |
 
+### Weapon locomotion sets — `AssetIds.animation.player` (docs/animation/third-person-locomotion.md)
+
+| Slot | Mixamo search | Notes |
+| --- | --- | --- |
+| `rifle_idle` | `Rifle Idle` | loop, in-place |
+| `rifle_walk` | `Rifle Walk` | loop, in-place |
+| `rifle_run` | `Rifle Run` | loop, in-place; replaces `run` while a rifle-class weapon is held |
+| `rifle_sprint` | `Sprint Forward` (the rifle-carry one) | loop, in-place |
+| `rifle_strafe_left`, `rifle_strafe_right` | `Strafe` (rifle walk strafe, left and right) | loop, in-place |
+| `rifle_reload` | `Reloading` (rifle, standing) | non-loop |
+| `pistol_idle` | `Pistol Idle` | loop, in-place |
+| `pistol_walk` | `Pistol Walk` | loop, in-place |
+| `pistol_run` | `Pistol Run` | loop, in-place; replaces `run` while a pistol is held |
+| `pistol_strafe_left`, `pistol_strafe_right` | `Pistol Strafe` (left and right) | loop, in-place |
+| `hit_rifle` | `Hit Reaction` (holding a rifle) | non-loop |
+
+### Zombie extras — `AssetIds.animation.zombie`
+
+| Slot | Mixamo search | Notes |
+| --- | --- | --- |
+| `stand_up_back`, `stand_up_stomach` | `Zombie Stand Up` (both variants) | non-loop; the Dormant rise, `idle_c` stands in until uploaded |
+| `biting_ground` | `Zombie Biting Victim On The Ground` | loop; the Feeding pose, `feeding` stands in until uploaded |
+
+Name the FBX files after the slot with the folder as a prefix (`player_rifle_run.fbx`,
+`zombie_stand_up_back.fbx`); the loop and in-place slots are listed in `LOOP_SLOTS` in
+`retarget_mixamo.py`.
+
 ### Weapon viewmodel — `AssetIds.animation.weapon`
 
 These come from the Universal Viewmodel Template rather than Mixamo, because they must match the viewmodel rig rather than R15. Slots: `fire`, `reload`, `equip`, `inspect`, `sprint`.

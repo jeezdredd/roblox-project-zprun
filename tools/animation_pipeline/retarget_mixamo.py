@@ -52,9 +52,22 @@ LOOP_SLOTS = {
     "zombie_walk_shuffle",
     "zombie_run_ragged",
     "zombie_feeding",
+    "zombie_biting_ground",
     "player_run",
     "player_strafe_left",
     "player_strafe_right",
+    # weapon locomotion sets (docs/animation/third-person-locomotion.md)
+    "player_rifle_idle",
+    "player_rifle_walk",
+    "player_rifle_run",
+    "player_rifle_sprint",
+    "player_rifle_strafe_left",
+    "player_rifle_strafe_right",
+    "player_pistol_idle",
+    "player_pistol_walk",
+    "player_pistol_run",
+    "player_pistol_strafe_left",
+    "player_pistol_strafe_right",
 }
 
 IN_PLACE_SLOTS = LOOP_SLOTS

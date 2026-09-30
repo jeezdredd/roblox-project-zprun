@@ -26,6 +26,12 @@
       "AnimationClips": {
         "$path": "assets/animation"
       },
+      "CharacterMeshes": {
+        "$className": "Folder",
+        "Soldier": {
+          "$path": "assets/character/soldier.model.json"
+        }
+      },
       "ZombieMeshes": {
         "$className": "Folder",
         "Walker": {

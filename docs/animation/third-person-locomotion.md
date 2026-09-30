@@ -50,25 +50,32 @@ them yet, since the body layer's reload gesture is the reload the game shows tod
 
 ## 3. What the owner runs
 
-1. Download each clip from Mixamo (exact search phrases in
-   `tools/animation_pipeline/README.md`): **Format** FBX Binary, **Skin** Without Skin,
-   **FPS** 30, **Keyframe Reduction** none, **In Place** on for every loop (idle, walk,
-   run, sprint, strafes, biting), off for the one-shots (reload, hit reaction, the two
-   stand-ups, whose root travel is part of the move). Save as
-   `tools/animation_pipeline/input/player_rifle_run.fbx`, `zombie_stand_up_back.fbx`
-   and so on.
-2. `cd tools/animation_pipeline && blender -b -P retarget_mixamo.py -- --input input
-   --output output`: the Mixamo bones are mapped onto R15, the root motion of the loop
-   slots stripped, seams and frame rate checked. The script reports per clip and fails
-   hard only on a broken file.
-3. Import each output into Studio, publish from the Animation Editor, put the id into
-   `assets/manifest.json` under the slot with `"status": "approved"`, then `python3
-   scripts/sync_configs.py` and `python3 scripts/sync_needed.py`. No code change
-   follows: every consumer reads `AssetIds` at load.
+Done on 2026-09-30 for all sixteen slots, without Blender:
 
-The retarget scale and calibration are whatever the pipeline and the Studio importer
-apply today; nothing here changes them. If a clip's stride reads too long or too short
-at speed, the lever is `AnimationsConfig.GAIT_REFERENCE`.
+1. Each clip exported from Mixamo on the X Bot: **Format** Collada (.dae), **Skin**
+   With Skin (the retarget needs the bind pose), **FPS** 30, **Keyframe Reduction**
+   none, **In Place** on for every loop (idle, walk, run, sprint, strafes, biting), off
+   for the one-shots (reload, hit reaction, the two stand-ups, whose root travel is part
+   of the move). Saved as `tools/animation_pipeline/input/player_rifle_run.dae`,
+   `zombie_stand_up_back.dae` and so on (git-ignored: Mixamo clips are not
+   redistributed).
+2. `python3 tools/animation_pipeline/dae_to_keyframes.py --output assets/animation
+   --clip "tools/animation_pipeline/input/player_rifle_run.dae=player/rifle_run:loop"
+   ...` (`:once` for the one-shots): writes `assets/animation/<slot>.rbxmx`, which Rojo
+   mirrors into `ReplicatedStorage.AnimationClips` for an Edit-mode look.
+3. What is left for the owner: `python3 scripts/upload_assets.py --only animation/`,
+   then `python3 scripts/refresh_status.py`, `python3 scripts/sync_configs.py` and
+   `python3 scripts/sync_needed.py`. No code change follows: every consumer reads
+   `AssetIds` at load.
+
+The retarget fix of 2026-09-30: R15 rests with the arms hanging down, the Mixamo bind
+is a T-pose, and the converter took every arm rotation from the T-pose as if it started
+from arms-down, so the Mixamo arms came out folded against the chest (a pistol aim with
+the hands at the collar). The arm, forearm and hand now carry a rest offset (straight
+down onto the bone's bind direction) before the parent-relative step; the upper and
+lower arm directions of `pistol_idle`, `rifle_idle` and `rifle_reload` match the source
+to 0.0 degrees. If a clip's stride reads too long or too short at speed, the lever is
+`AnimationsConfig.GAIT_REFERENCE`.
 
 ## 4. Studio check list
 

@@ -1,0 +1,432 @@
+{
+ "studsPerCm": 0.03,
+ "parts": {
+  "Head": {
+   "centre": [
+    -0.0,
+    4.9734,
+    -0.0792
+   ],
+   "size": [
+    0.6746,
+    0.9478,
+    0.7846
+   ],
+   "group": "Head",
+   "tris": 6933
+  },
+  "UpperTorso": {
+   "centre": [
+    -0.0,
+    4.0188,
+    0.0073
+   ],
+   "size": [
+    1.6074,
+    1.359,
+    1.1446
+   ],
+   "group": "Torso",
+   "tris": 7084
+  },
+  "LowerTorso": {
+   "centre": [
+    -0.0,
+    3.0502,
+    -0.0586
+   ],
+   "size": [
+    1.235,
+    1.3102,
+    1.0766
+   ],
+   "group": "Torso",
+   "tris": 3949
+  },
+  "LeftUpperArm": {
+   "centre": [
+    -0.6604,
+    3.9147,
+    0.2056
+   ],
+   "size": [
+    0.4692,
+    1.035,
+    0.7478
+   ],
+   "group": "Arms",
+   "tris": 3818
+  },
+  "LeftLowerArm": {
+   "centre": [
+    -0.6528,
+    3.2034,
+    0.1406
+   ],
+   "size": [
+    0.4539,
+    0.9158,
+    0.3599
+   ],
+   "group": "Arms",
+   "tris": 2366
+  },
+  "LeftHand": {
+   "centre": [
+    -0.5333,
+    2.6003,
+    0.1322
+   ],
+   "size": [
+    0.4034,
+    0.5558,
+    0.3885
+   ],
+   "group": "Arms",
+   "tris": 1824
+  },
+  "RightUpperArm": {
+   "centre": [
+    0.6604,
+    3.9147,
+    0.2057
+   ],
+   "size": [
+    0.4691,
+    1.035,
+    0.7479
+   ],
+   "group": "Arms",
+   "tris": 3818
+  },
+  "RightLowerArm": {
+   "centre": [
+    0.6527,
+    3.2029,
+    0.1396
+   ],
+   "size": [
+    0.4538,
+    0.9168,
+    0.36
+   ],
+   "group": "Arms",
+   "tris": 2366
+  },
+  "RightHand": {
+   "centre": [
+    0.5707,
+    2.5544,
+    0.1252
+   ],
+   "size": [
+    0.3273,
+    0.6477,
+    0.3757
+   ],
+   "group": "Arms",
+   "tris": 1824
+  },
+  "LeftUpperLeg": {
+   "centre": [
+    -0.4014,
+    2.1397,
+    -0.0217
+   ],
+   "size": [
+    0.8289,
+    1.7765,
+    0.7675
+   ],
+   "group": "Legs",
+   "tris": 4182
+  },
+  "LeftLowerLeg": {
+   "centre": [
+    -0.4711,
+    0.9418,
+    0.1279
+   ],
+   "size": [
+    0.5892,
+    1.2413,
+    0.7855
+   ],
+   "group": "Legs",
+   "tris": 2858
+  },
+  "LeftFoot": {
+   "centre": [
+    -0.5001,
+    0.2781,
+    -0.1315
+   ],
+   "size": [
+    0.4124,
+    0.5562,
+    0.936
+   ],
+   "group": "Legs",
+   "tris": 1495
+  },
+  "RightUpperLeg": {
+   "centre": [
+    0.3883,
+    2.1397,
+    -0.0217
+   ],
+   "size": [
+    0.8551,
+    1.7765,
+    0.7675
+   ],
+   "group": "Legs",
+   "tris": 4201
+  },
+  "RightLowerLeg": {
+   "centre": [
+    0.4711,
+    0.9418,
+    0.1279
+   ],
+   "size": [
+    0.5892,
+    1.2413,
+    0.7855
+   ],
+   "group": "Legs",
+   "tris": 2893
+  },
+  "RightFoot": {
+   "centre": [
+    0.5001,
+    0.2781,
+    -0.1315
+   ],
+   "size": [
+    0.4124,
+    0.5562,
+    0.936
+   ],
+   "group": "Legs",
+   "tris": 1493
+  },
+  "HumanoidRootPart": {
+   "centre": [
+    -0.0,
+    2.8551,
+    -0.0176
+   ],
+   "size": [
+    2,
+    2,
+    1
+   ],
+   "group": null,
+   "tris": 0
+  }
+ },
+ "joints": [
+  {
+   "name": "Root",
+   "part0": "HumanoidRootPart",
+   "part1": "LowerTorso",
+   "pivot": [
+    -0.0,
+    2.8551,
+    -0.0176
+   ]
+  },
+  {
+   "name": "Waist",
+   "part0": "LowerTorso",
+   "part1": "UpperTorso",
+   "pivot": [
+    -0.0,
+    3.5617,
+    0.0442
+   ]
+  },
+  {
+   "name": "Neck",
+   "part0": "UpperTorso",
+   "part1": "Head",
+   "pivot": [
+    -0.0,
+    4.4858,
+    0.1251
+   ]
+  },
+  {
+   "name": "LeftShoulder",
+   "part0": "UpperTorso",
+   "part1": "LeftUpperArm",
+   "pivot": [
+    -0.5827,
+    4.2774,
+    0.1394
+   ]
+  },
+  {
+   "name": "LeftElbow",
+   "part0": "LeftUpperArm",
+   "part1": "LeftLowerArm",
+   "pivot": [
+    -0.5827,
+    3.5288,
+    0.1394
+   ]
+  },
+  {
+   "name": "LeftWrist",
+   "part0": "LeftLowerArm",
+   "part1": "LeftHand",
+   "pivot": [
+    -0.5827,
+    2.7845,
+    0.1394
+   ]
+  },
+  {
+   "name": "LeftHip",
+   "part0": "LowerTorso",
+   "part1": "LeftUpperLeg",
+   "pivot": [
+    -0.402,
+    2.6739,
+    0.0042
+   ]
+  },
+  {
+   "name": "LeftKnee",
+   "part0": "LeftUpperLeg",
+   "part1": "LeftLowerLeg",
+   "pivot": [
+    -0.402,
+    1.4421,
+    0.0191
+   ]
+  },
+  {
+   "name": "LeftAnkle",
+   "part0": "LeftLowerLeg",
+   "part1": "LeftFoot",
+   "pivot": [
+    -0.4463,
+    0.346,
+    0.1066
+   ]
+  },
+  {
+   "name": "RightShoulder",
+   "part0": "UpperTorso",
+   "part1": "RightUpperArm",
+   "pivot": [
+    0.5827,
+    4.2774,
+    0.1394
+   ]
+  },
+  {
+   "name": "RightElbow",
+   "part0": "RightUpperArm",
+   "part1": "RightLowerArm",
+   "pivot": [
+    0.5827,
+    3.5288,
+    0.1394
+   ]
+  },
+  {
+   "name": "RightWrist",
+   "part0": "RightLowerArm",
+   "part1": "RightHand",
+   "pivot": [
+    0.5827,
+    2.7845,
+    0.1394
+   ]
+  },
+  {
+   "name": "RightHip",
+   "part0": "LowerTorso",
+   "part1": "RightUpperLeg",
+   "pivot": [
+    0.402,
+    2.6739,
+    0.0063
+   ]
+  },
+  {
+   "name": "RightKnee",
+   "part0": "RightUpperLeg",
+   "part1": "RightLowerLeg",
+   "pivot": [
+    0.402,
+    1.4421,
+    0.0219
+   ]
+  },
+  {
+   "name": "RightAnkle",
+   "part0": "RightLowerLeg",
+   "part1": "RightFoot",
+   "pivot": [
+    0.4463,
+    0.346,
+    0.1043
+   ]
+  }
+ ],
+ "groups": {
+  "Head": {
+   "parts": [
+    "Head"
+   ],
+   "texelScale": 0.4923
+  },
+  "Torso": {
+   "parts": [
+    "UpperTorso",
+    "LowerTorso"
+   ],
+   "texelScale": 0.2592
+  },
+  "Arms": {
+   "parts": [
+    "LeftUpperArm",
+    "LeftLowerArm",
+    "LeftHand",
+    "RightUpperArm",
+    "RightLowerArm",
+    "RightHand"
+   ],
+   "texelScale": 0.3571
+  },
+  "Legs": {
+   "parts": [
+    "LeftUpperLeg",
+    "LeftLowerLeg",
+    "LeftFoot",
+    "RightUpperLeg",
+    "RightLowerLeg",
+    "RightFoot"
+   ],
+   "texelScale": 0.2212
+  }
+ },
+ "grips": {
+  "Left": [
+   0.0803,
+   0.0067,
+   0.0413
+  ],
+  "Right": [
+   -0.0839,
+   0.0528,
+   0.0361
+  ]
+ },
+ "hipHeight": 1.8551,
+ "height": 5.4473
+}

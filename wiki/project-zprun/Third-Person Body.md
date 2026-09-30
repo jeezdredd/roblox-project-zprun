@@ -8,7 +8,9 @@ locomotion that already runs. Built on its own branch on 2026-09-29 and brought 
 
 ## Status (2026-09-30): on
 
-`ThirdPersonConfig.ENABLED` is true. What it took, in the order the yard showed it:
+`ThirdPersonConfig.ENABLED` is true. The body it runs on becomes the Mixamo soldier once
+its meshes are uploaded ([[Soldier Body]]); the holds below were tuned on the block
+body and get retuned then. What it took, in the order the yard showed it:
 
 - **Motor6D joints.** The avatars Studio built had kinematic `AnimationConstraint`
   joints (the avatar joint upgrade) and no `Motor6D`, so the waist and neck writes found

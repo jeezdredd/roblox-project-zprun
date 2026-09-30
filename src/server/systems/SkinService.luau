@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local SkinsConfig = require(ReplicatedStorage.Shared.config.SkinsConfig)
+local SoldierBody = require(ReplicatedStorage.Shared.util.SoldierBody)
 local ProfileManager = require(script.Parent.ProfileManager)
 
 local SkinService = {}
@@ -56,6 +57,18 @@ end
 local function applyToCharacter(player: Player, character: Model)
 	local humanoid = character:WaitForChild("Humanoid", 10)
 	if not humanoid or not humanoid:IsA("Humanoid") then
+		return
+	end
+	-- the soldier body is meshes, not catalog parts: ApplyDescription would swap it back
+	-- to blocks, so the skin tints the uniform instead
+	if character:GetAttribute(SoldierBody.ATTRIBUTE) then
+		for _, child in character:GetChildren() do
+			if child:IsA("Accessory") or child:IsA("Clothing") or child:IsA("ShirtGraphic") then
+				child:Destroy()
+			end
+		end
+		local skin = getSkin(player)
+		SoldierBody.tint(character, skin.torsoColor, skin.legColor)
 		return
 	end
 	local ok, err = pcall(function()

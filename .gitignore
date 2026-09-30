@@ -23,8 +23,15 @@ docs/research/ITD2_*.txt
 
 # Mixamo source for the first-person arms (115 MB, re-download from Mixamo)
 assets/viewmodels/arms/source/*.fbx
+# Mixamo clips waiting for the retarget (tools/animation_pipeline/README.md): the
+# public repository must not redistribute them, re-download from Mixamo
+tools/animation_pipeline/input/*.fbx
+tools/animation_pipeline/input/*.dae
 tools/arms_rig/tex/
 tools/arms_rig/__pycache__/
+# Edit-mode preview data for the soldier body (tools/character_rig/studio_preview.py)
+src/shared/_SoldierPreview/
+tools/character_rig/preview.png
 
 # scratch files to delete by hand
 _to_delete/

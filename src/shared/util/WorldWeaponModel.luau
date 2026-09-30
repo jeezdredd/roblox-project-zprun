@@ -20,7 +20,22 @@ WorldWeaponModel.CLASS_ATTRIBUTE = "WeaponClass"
 -- its -y (the fingers' way), the barrel along the forearm. It sat 0.9 studs out before
 -- (2026-09-30), which left the hand under the stock and the grip floating ahead of it
 -- once the body layer put the hands on the gun.
-WorldWeaponModel.HAND_OFFSET = CFrame.new(0, -0.3, -0.1) * CFrame.Angles(math.rad(-80), 0, 0)
+local HAND_ROTATION = CFrame.Angles(math.rad(-80), 0, 0)
+WorldWeaponModel.HAND_OFFSET = CFrame.new(0, -0.3, -0.1) * HAND_ROTATION
+-- A hand carrying this Vector3 attribute (the soldier body, SoldierBody.GRIP_ATTRIBUTE)
+-- has a modelled fist: the grip sits at that point of the hand instead, same rotation.
+WorldWeaponModel.GRIP_ATTRIBUTE = "GripOffset"
+
+local function gripOffsetOf(hand: Instance?): Vector3?
+	local offset = if hand then hand:GetAttribute(WorldWeaponModel.GRIP_ATTRIBUTE) else nil
+	return if typeof(offset) == "Vector3" then offset else nil
+end
+
+-- The grip part relative to `hand`.
+function WorldWeaponModel.handOffsetFor(hand: Instance?): CFrame
+	local offset = gripOffsetOf(hand)
+	return if offset then CFrame.new(offset) * HAND_ROTATION else WorldWeaponModel.HAND_OFFSET
+end
 
 -- Lengths along the barrel in studs: receiver, barrel, stock (0 for none). Sized to the
 -- default R15 body, whose arms reach about 1.8 studs from the shoulder joint across a
@@ -70,32 +85,40 @@ local function socket(name: string, cframe: CFrame, parent: Instance): Attachmen
 	return attachment
 end
 
--- The support hand's orientation on the gun: the right hand's, rolled about the barrel.
-local function supportFrame(position: Vector3, roll: number): CFrame
-	local hand = WorldWeaponModel.HAND_OFFSET:Inverse()
-	return CFrame.new(position) * hand.Rotation * CFrame.Angles(0, 0, math.rad(roll))
+-- The support hand's frame on the gun: the right hand's orientation rolled about the
+-- barrel, placed so the hand's fist (`supportGrip`, zero for a block hand) lands on
+-- `position`.
+local function supportFrame(position: Vector3, roll: number, supportGrip: Vector3): CFrame
+	return CFrame.new(position) * HAND_ROTATION:Inverse() * CFrame.Angles(0, 0, math.rad(roll)) * CFrame.new(-supportGrip)
 end
 
-local function addSockets(grip: BasePart, config: WeaponsConfig.WeaponConfig, bodyLength: number, barrelLength: number)
-	socket("GripSocket", WorldWeaponModel.HAND_OFFSET:Inverse(), grip)
+local function addSockets(
+	grip: BasePart,
+	config: WeaponsConfig.WeaponConfig,
+	bodyLength: number,
+	barrelLength: number,
+	handOffset: CFrame,
+	supportGrip: Vector3
+)
+	socket("GripSocket", handOffset:Inverse(), grip)
 	socket("Muzzle", CFrame.new(0, 0.62, -bodyLength - barrelLength + 0.3), grip)
 	local spec = ThirdPersonConfig.getClass(config.class)
 	if not spec then
 		return
 	end
-	socket("SupportSocket", supportFrame(spec.support, spec.supportRoll), grip)
-	socket("MagazineSocket", supportFrame(spec.magazine, spec.supportRoll), grip)
+	socket("SupportSocket", supportFrame(spec.support, spec.supportRoll, supportGrip), grip)
+	socket("MagazineSocket", supportFrame(spec.magazine, spec.supportRoll, supportGrip), grip)
 	local charge = spec.charge
 	if charge then
-		socket("ChargeSocket", supportFrame(charge, spec.supportRoll), grip)
+		socket("ChargeSocket", supportFrame(charge, spec.supportRoll, supportGrip), grip)
 	end
 	local port = spec.port
 	if port then
-		socket("PortSocket", supportFrame(port, spec.supportRoll), grip)
+		socket("PortSocket", supportFrame(port, spec.supportRoll, supportGrip), grip)
 	end
 	local pump = spec.pump
 	if pump then
-		socket("PumpSocket", supportFrame(pump, spec.supportRoll), grip)
+		socket("PumpSocket", supportFrame(pump, spec.supportRoll, supportGrip), grip)
 	end
 end
 
@@ -123,7 +146,8 @@ function WorldWeaponModel.build(character: Model, config: WeaponsConfig.WeaponCo
 	local barrelLength = lengths.barrel
 
 	local grip = makePart("Grip", Vector3.new(0.3, 0.7, 0.34), COLOR_GRIP, Enum.Material.SmoothPlastic, model)
-	local handOffset = WorldWeaponModel.HAND_OFFSET
+	local handOffset = WorldWeaponModel.handOffsetFor(hand)
+	local supportGrip = gripOffsetOf(character:FindFirstChild("LeftHand")) or Vector3.zero
 	weldTo(hand, grip, handOffset)
 
 	local receiver = makePart("Receiver", Vector3.new(0.28, 0.46, bodyLength), COLOR_METAL, Enum.Material.Metal, model)
@@ -149,7 +173,7 @@ function WorldWeaponModel.build(character: Model, config: WeaponsConfig.WeaponCo
 		weldTo(hand, magazine, handOffset * CFrame.new(0, 0.2, -bodyLength / 2 + 0.1))
 	end
 
-	addSockets(grip, config, bodyLength, barrelLength)
+	addSockets(grip, config, bodyLength, barrelLength, handOffset, supportGrip)
 	model.PrimaryPart = grip
 	model.Parent = character
 	return model

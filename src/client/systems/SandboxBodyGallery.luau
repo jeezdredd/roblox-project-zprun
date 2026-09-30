@@ -45,6 +45,8 @@ type Station = {
 	started: boolean,
 	pending: number,
 	track: AnimationTrack?,
+	-- updates since the label was last written
+	labelAge: number,
 }
 
 -- clear ground south of the props at real size (the first spot, z -170, stood among them)
@@ -198,6 +200,7 @@ local function buildStation(parent: Instance, template: Model, class: string, co
 		started = false,
 		pending = 0,
 		track = playRunClip(model, spec.clip),
+		labelAge = 0,
 	}
 	table.insert(stations, station)
 end
@@ -301,7 +304,11 @@ local function step(deltaTime: number)
 		station.rig:update(station.pending)
 		station.pending = 0
 		updated += 1
-		if frame % 6 == 0 then
+		-- per station, not per frame: with the round robin a station and a frame
+		-- multiple rarely met, and the labels froze for seconds
+		station.labelAge += 1
+		if station.labelAge >= 4 then
+			station.labelAge = 0
 			updateLabel(station)
 		end
 	end

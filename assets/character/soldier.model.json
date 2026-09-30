@@ -1,0 +1,380 @@
+{
+  "className": "Model",
+  "children": [
+    {
+      "className": "MeshPart",
+      "name": "Head",
+      "properties": {
+        "Size": [
+          0.6746,
+          0.9478,
+          0.7846
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "UpperTorso",
+      "properties": {
+        "Size": [
+          1.6074,
+          1.359,
+          1.1446
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "LowerTorso",
+      "properties": {
+        "Size": [
+          1.235,
+          1.3102,
+          1.0766
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftUpperArm",
+      "properties": {
+        "Size": [
+          0.4692,
+          1.035,
+          0.7478
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftLowerArm",
+      "properties": {
+        "Size": [
+          0.4539,
+          0.9158,
+          0.3599
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftHand",
+      "properties": {
+        "Size": [
+          0.4034,
+          0.5558,
+          0.3885
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightUpperArm",
+      "properties": {
+        "Size": [
+          0.4691,
+          1.035,
+          0.7479
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightLowerArm",
+      "properties": {
+        "Size": [
+          0.4538,
+          0.9168,
+          0.36
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightHand",
+      "properties": {
+        "Size": [
+          0.3273,
+          0.6477,
+          0.3757
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftUpperLeg",
+      "properties": {
+        "Size": [
+          0.8289,
+          1.7765,
+          0.7675
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftLowerLeg",
+      "properties": {
+        "Size": [
+          0.5892,
+          1.2413,
+          0.7855
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "LeftFoot",
+      "properties": {
+        "Size": [
+          0.4124,
+          0.5562,
+          0.936
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightUpperLeg",
+      "properties": {
+        "Size": [
+          0.8551,
+          1.7765,
+          0.7675
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightLowerLeg",
+      "properties": {
+        "Size": [
+          0.5892,
+          1.2413,
+          0.7855
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    },
+    {
+      "className": "MeshPart",
+      "name": "RightFoot",
+      "properties": {
+        "Size": [
+          0.4124,
+          0.5562,
+          0.936
+        ],
+        "Anchored": true,
+        "CanCollide": false,
+        "CanQuery": false,
+        "CanTouch": false,
+        "MeshId": "rbxassetid://0"
+      },
+      "children": [
+        {
+          "className": "SurfaceAppearance",
+          "name": "SurfaceAppearance",
+          "properties": {
+            "AlphaMode": "Overlay"
+          }
+        }
+      ]
+    }
+  ]
+}

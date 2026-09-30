@@ -14,7 +14,9 @@ Same transfer as glb_to_keyframes.py: every R15 part takes its source bone's wor
 rotation change from the rest pose, expressed relative to its parent part's change, in
 Roblox axes. Rest is the bind pose (inverse bind matrices); Mixamo writes the first frame
 of the clip into the node matrices, so those are not a rest pose. Mixamo exports are Y-up
-in centimetres facing +Z; Roblox faces -Z, so axes turn 180 degrees about Y.
+in centimetres facing +Z; Roblox faces -Z, so axes turn 180 degrees about Y. R15 rests
+with the arms down while the Mixamo bind is a T-pose, so the arm, forearm and hand carry a
+rest offset (straight down onto the bone's bind direction) before the parent-relative step.
 """
 
 import argparse
@@ -234,17 +236,58 @@ def scale_rotation(r, factor):
     return quat_to_mat(np.array([*(axis * np.sin(a / 2)), np.cos(a / 2)]))
 
 
-def sample_pose(dae, t, rest_rot, rest_hips, spec, scale, posture):
+# R15 rests with the arms hanging straight down, the Mixamo bind is a T-pose. The arm,
+# forearm and hand take a rest offset: the rotation that turns "straight down" onto the
+# bone's bind direction, so a clip's delta from the T-pose lands on the arms-down rig.
+REST_CHILD = {
+    "LeftUpperArm": ("LeftArm", "LeftForeArm"),
+    "LeftLowerArm": ("LeftForeArm", "LeftHand"),
+    "LeftHand": ("LeftHand", "LeftHandMiddle1"),
+    "RightUpperArm": ("RightArm", "RightForeArm"),
+    "RightLowerArm": ("RightForeArm", "RightHand"),
+    "RightHand": ("RightHand", "RightHandMiddle1"),
+}
+
+
+def rotation_between(a, b):
+    a = a / np.linalg.norm(a)
+    b = b / np.linalg.norm(b)
+    v = np.cross(a, b)
+    c = float(np.dot(a, b))
+    if c < -0.999999:
+        axis = np.cross(a, [1.0, 0.0, 0.0])
+        if np.linalg.norm(axis) < 1e-6:
+            axis = np.cross(a, [0.0, 0.0, 1.0])
+        axis /= np.linalg.norm(axis)
+        return 2 * np.outer(axis, axis) - np.eye(3)
+    k = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+    return np.eye(3) + k + k @ k / (1 + c)
+
+
+def rest_offsets(dae):
+    """Roblox-axis rotation per part from the R15 rest onto the Mixamo bind pose."""
+    offsets = {part: np.eye(3) for part in PART_BONE}
+    down = np.array([0.0, -1.0, 0.0])
+    for part, (bone, child) in REST_CHILD.items():
+        if bone in dae.bind and child in dae.bind:
+            direction = FLIP @ (dae.bind[child][:3, 3] - dae.bind[bone][:3, 3])
+            offsets[part] = rotation_between(down, direction)
+    offsets["LeftHand"] = offsets["LeftLowerArm"] if "LeftHandMiddle1" not in dae.bind else offsets["LeftHand"]
+    offsets["RightHand"] = offsets["RightLowerArm"] if "RightHandMiddle1" not in dae.bind else offsets["RightHand"]
+    return offsets
+
+
+def sample_pose(dae, t, rest_rot, rest_hips, spec, scale, posture, offsets):
     world = dae.world_at(t)
-    delta = {}
+    placed = {}
     for part, bone in PART_BONE.items():
         current = orthonormal(world[bone][:3, :3])
-        delta[part] = current @ rest_rot[bone].T
+        delta = FLIP @ (current @ rest_rot[bone].T) @ FLIP
+        placed[part] = delta @ offsets[part]
     poses = {}
     for part in PART_BONE:
         parent = PART_TREE[part]
-        local = delta[part] if parent not in delta else delta[parent].T @ delta[part]
-        rotation = FLIP @ local @ FLIP
+        rotation = placed[part] if parent not in placed else placed[parent].T @ placed[part]
         if part in posture:
             rotation = scale_rotation(rotation, posture[part])
         translation = np.zeros(3)
@@ -330,6 +373,7 @@ def main():
             raise SystemExit(f"{spec.source}: no bind pose for {missing}")
         rest_rot = {b: orthonormal(dae.bind[b][:3, :3]) for b in PART_BONE.values()}
         rest_hips = dae.bind[PART_BONE["LowerTorso"]][:3, 3]
+        offsets = rest_offsets(dae)
         start, end = spec.trim if spec.trim else (0.0, dae.duration)
         end = min(end, dae.duration)
         duration = end - start
@@ -339,7 +383,7 @@ def main():
             t = i / args.fps
             if t > duration + 1e-6:
                 break
-            frames.append((t, sample_pose(dae, start + t, rest_rot, rest_hips, spec, args.scale, posture)))
+            frames.append((t, sample_pose(dae, start + t, rest_rot, rest_hips, spec, args.scale, posture, offsets)))
         if spec.loop and len(frames) > 1 and abs(frames[-1][0] - duration) > 1e-6:
             frames.append((duration, frames[0][1]))
         path = os.path.join(args.output, spec.slot + ".rbxmx")

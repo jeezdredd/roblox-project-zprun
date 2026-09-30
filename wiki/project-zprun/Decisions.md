@@ -473,3 +473,22 @@ from real uploads, and nothing extracted from other games. See `docs/asset-polic
 **Reason.** Every slot is empty until the Mixamo clips are retargeted, so the rules have to produce exactly today's animation with nothing uploaded and improve one slot at a time; cross-set borrowing would put a rifle carry under a pistol.
 
 **Consequence.** `LocomotionMath` holds the rules with `tests/animation/run.luau`; `AnimationController.clipSetFor(class)` gives the yard gallery the ids. See [[Third-Person Locomotion]].
+
+## 2026-09-30: The soldier body
+
+### A Mixamo soldier split into R15 parts, as the StarterCharacter
+
+**Decision.** Every player spawns as the Mixamo Swat Guy split into the fifteen R15 parts (`tools/character_rig/soldier.py`), built once by the server as `StarterPlayer.StarterCharacter` from a converted stock R15. Rigid parts with overlapping seam triangles, arms re-posed to hang down, one `SurfaceAppearance` atlas per body group. Skins tint the uniform instead of applying a `HumanoidDescription`.
+
+**Reason.** The block body came from `SkinService` setting every body part id to 0; the owner wants human characters. A catalog body would still look like a Roblox avatar and needs ids nobody can check here; a skinned single mesh needs the Studio importer by hand and a rig our body layer and clips were not written for. The Swat Guy is already in the project for the first-person arms, so the arms the player sees match the body teammates see. The arms-down rest keeps every R15 clip and the body layer working unchanged.
+
+**Consequence.** Seams can show at a sharply bent joint (triangles are duplicated, not blended). A skin can darken or shift the hue of the camo but not whiten it. The third-person holds were tuned on the block body and are retuned on the soldier after the upload. See [[Soldier Body]].
+
+### Mixamo clips through Collada, no Blender
+
+**Decision.** Mixamo clips are exported as Collada With Skin and converted by `dae_to_keyframes.py`, with a rest offset on the arm chain for the T-pose bind.
+
+**Reason.** The FBX route needed Blender and the Roblox add-on on the owner's machine; the Collada export carries the bind pose in plain XML, which numpy reads. The rest offset is what the arms-down R15 rest requires; without it every Mixamo arm pose was wrong.
+
+**Consequence.** The retarget runs anywhere with Python and numpy; the Blender path in the same folder stays for the old FBX clips.
+

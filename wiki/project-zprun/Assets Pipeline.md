@@ -240,6 +240,10 @@ The three zombies are CC BY 4.0 Sketchfab characters that ship with their own cl
 
 One fix was needed after the bake: every Ghoul clip holds `Bone.009` 3.08 studs below its bind pose (the same constant in all 11 clips), so the skin carries an `offset` of (0, 3.077, -0.2) that `ZombieFactory` applies when placing the rig.
 
+## Soldier body: `tools/character_rig` (2026-09-30)
+
+The third-person body is the Mixamo Swat Guy split into the fifteen R15 parts by `tools/character_rig/soldier.py` (arms skinned down, seam triangles in both parts, four 1024 atlases with colour, normal and roughness). Rows: `character/soldier/mesh/<part>` (Model uploads of the GLBs), `character/soldier/meshid/<part>` (read back in Studio), `character/soldier/texture/<group>_<map>`. `scripts/build_soldier_rig.py` turns them into `assets/character/soldier.model.json` and `SoldierRigConfig`. See [[Soldier Body]].
+
 ## First-person weapon packs: `tools/fps_pack` (2026-09-29)
 
 Each weapon class uses a Sketchfab pack (CC BY 4.0) that holds arms, weapon and clips in one glb: DuqueCD7's Pistol, AK-47 and Saps-12 packs and 1Matzh's UZI 2026 remake. The rig goes through the asset pipeline; the clips do not. Steps, also in `tools/fps_pack/README.md`:

@@ -64,4 +64,51 @@ only, no synthesis, no invented ids.
 | `audio/weapons/ricochet_01` | WeaponSfx.playImpacts — one hard hit in six | freesound CC0 'ricochet' | polish | needed |
 | `audio/weapons/shell_03` | Weapon shell casing variation 3 | Kenney CC0 impact sounds: small metal drop | polish | rejected |
 
-**3 blockers, 44 polish items.**
+## Character
+
+| Slot | Used by | What to look for | Priority | Status |
+| --- | --- | --- | --- | --- |
+| `character/soldier/mesh/head` | — | — | polish | needed |
+| `character/soldier/mesh/leftfoot` | — | — | polish | needed |
+| `character/soldier/mesh/lefthand` | — | — | polish | needed |
+| `character/soldier/mesh/leftlowerarm` | — | — | polish | needed |
+| `character/soldier/mesh/leftlowerleg` | — | — | polish | needed |
+| `character/soldier/mesh/leftupperarm` | — | — | polish | needed |
+| `character/soldier/mesh/leftupperleg` | — | — | polish | needed |
+| `character/soldier/mesh/lowertorso` | — | — | polish | needed |
+| `character/soldier/mesh/rightfoot` | — | — | polish | needed |
+| `character/soldier/mesh/righthand` | — | — | polish | needed |
+| `character/soldier/mesh/rightlowerarm` | — | — | polish | needed |
+| `character/soldier/mesh/rightlowerleg` | — | — | polish | needed |
+| `character/soldier/mesh/rightupperarm` | — | — | polish | needed |
+| `character/soldier/mesh/rightupperleg` | — | — | polish | needed |
+| `character/soldier/mesh/uppertorso` | — | — | polish | needed |
+| `character/soldier/meshid/head` | — | — | polish | needed |
+| `character/soldier/meshid/leftfoot` | — | — | polish | needed |
+| `character/soldier/meshid/lefthand` | — | — | polish | needed |
+| `character/soldier/meshid/leftlowerarm` | — | — | polish | needed |
+| `character/soldier/meshid/leftlowerleg` | — | — | polish | needed |
+| `character/soldier/meshid/leftupperarm` | — | — | polish | needed |
+| `character/soldier/meshid/leftupperleg` | — | — | polish | needed |
+| `character/soldier/meshid/lowertorso` | — | — | polish | needed |
+| `character/soldier/meshid/rightfoot` | — | — | polish | needed |
+| `character/soldier/meshid/righthand` | — | — | polish | needed |
+| `character/soldier/meshid/rightlowerarm` | — | — | polish | needed |
+| `character/soldier/meshid/rightlowerleg` | — | — | polish | needed |
+| `character/soldier/meshid/rightupperarm` | — | — | polish | needed |
+| `character/soldier/meshid/rightupperleg` | — | — | polish | needed |
+| `character/soldier/meshid/uppertorso` | — | — | polish | needed |
+| `character/soldier/texture/arms_color` | — | — | polish | needed |
+| `character/soldier/texture/arms_normal` | — | — | polish | needed |
+| `character/soldier/texture/arms_roughness` | — | — | polish | needed |
+| `character/soldier/texture/head_color` | — | — | polish | needed |
+| `character/soldier/texture/head_normal` | — | — | polish | needed |
+| `character/soldier/texture/head_roughness` | — | — | polish | needed |
+| `character/soldier/texture/legs_color` | — | — | polish | needed |
+| `character/soldier/texture/legs_normal` | — | — | polish | needed |
+| `character/soldier/texture/legs_roughness` | — | — | polish | needed |
+| `character/soldier/texture/torso_color` | — | — | polish | needed |
+| `character/soldier/texture/torso_normal` | — | — | polish | needed |
+| `character/soldier/texture/torso_roughness` | — | — | polish | needed |
+
+**3 blockers, 86 polish items.**

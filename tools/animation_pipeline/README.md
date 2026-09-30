@@ -108,7 +108,25 @@ Every `Animator:LoadAnimation` in the codebase reads its id from `AssetIds`, so 
 
 Mixamo animations are free to use in games under Adobe's licence, including commercial ones, with no attribution required. Record `https://www.mixamo.com/` as the manifest source and `Mixamo (Adobe) free licence` as the licence so `LICENSES.md` stays accurate.
 
-## 7. CC0 libraries without Mixamo: `glb_to_keyframes.py`
+## 7. Mixamo without Blender: `dae_to_keyframes.py`
+
+The path used for the weapon locomotion set (2026-09-30). Export each clip from Mixamo
+on the X Bot as Collada (.dae), With Skin, 30 fps, no keyframe reduction, In Place on
+for loops; the skin carries the bind pose the transfer is measured from. numpy only:
+
+```bash
+python3 tools/animation_pipeline/dae_to_keyframes.py --output assets/animation \
+  --clip "tools/animation_pipeline/input/player_rifle_run.dae=player/rifle_run:loop" \
+  --clip "tools/animation_pipeline/input/player_rifle_reload.dae=player/rifle_reload:once"
+```
+
+Each R15 part takes its bone's world rotation change from the bind pose, relative to its
+parent part's, in Roblox axes (the Mixamo +Z facing turned 180 degrees about Y). The
+arm, forearm and hand also carry a rest offset, because R15 rests with the arms down
+while the bind is a T-pose. Flags as in section 8 (`loop`, `once`, `priority=`,
+`trim=A-B` in seconds); `--posture PART=scale` scales a joint's whole rotation.
+
+## 8. CC0 libraries without Mixamo: `glb_to_keyframes.py`
 
 Since the 2026-09-07 policy revision the zombie and player clips come from the
 Quaternius Universal Animation Library 1 and 2 (CC0), downloaded from OpenGameArt

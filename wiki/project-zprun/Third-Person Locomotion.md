@@ -41,10 +41,12 @@ returns the ids per gait so the yard gallery can adopt them.
 
 ## Owner's steps
 
-Mixamo export: FBX Binary, Without Skin, 30 fps, no keyframe reduction, In Place on for
-loops and off for the one-shots; files named `player_<slot>.fbx` / `zombie_<slot>.fbx`
-in `tools/animation_pipeline/input/`; `blender -b -P retarget_mixamo.py`; publish from
-Studio; ids into the manifest; `sync_configs.py`, `sync_needed.py`.
+Done on 2026-09-30: all sixteen clips exported from the Mixamo X Bot as Collada (With
+Skin, 30 fps, no keyframe reduction, In Place on the loops, off the one-shots) and
+converted by `tools/animation_pipeline/dae_to_keyframes.py` into `assets/animation/`
+(the arm rest offset fixed on the way, see [[Decisions]]). Left for the owner:
+`python3 scripts/upload_assets.py --only animation/`, `refresh_status.py`,
+`sync_configs.py`, `sync_needed.py`.
 
 ## Trade-offs (owner's calls made here)
 

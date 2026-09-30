@@ -3994,5 +3994,29 @@
     "assetId": "84277745061280",
     "status": "approved",
     "note": "SurfaceAppearance RoughnessMap for the soldier's legs parts (1024 atlas)"
+  },
+  "audio/upgrade/announcer_upgrade_01": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Upgrade station announcer line on a successful upgrade (UpgradeStationConfig.ANNOUNCER_UPGRADE, played 2D by WeaponPickupClient when the id is non-zero; silent until then). A real licensed voice file only, never generated speech. Candidates: Kenney Voiceover Pack (CC0, https://kenney.nl/assets/voiceover-pack): 'power up', 'excellent', 'upgrade'; freesound CC0 search 'announcer voice upgrade' / 'weapon upgraded'; or a line recorded by the owner. Two takes wanted, this is take 1."
+  },
+  "audio/upgrade/announcer_upgrade_02": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Upgrade station announcer line on a successful upgrade (UpgradeStationConfig.ANNOUNCER_UPGRADE, played 2D by WeaponPickupClient when the id is non-zero; silent until then). A real licensed voice file only, never generated speech. Candidates: Kenney Voiceover Pack (CC0, https://kenney.nl/assets/voiceover-pack): 'power up', 'excellent', 'upgrade'; freesound CC0 search 'announcer voice upgrade' / 'weapon upgraded'; or a line recorded by the owner. Two takes wanted, this is take 2 (a different word from take 1)."
+  },
+  "audio/upgrade/announcer_max": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Upgrade station announcer line when the carried weapon is already at WeaponsConfig.MAX_LEVEL (UpgradeStationConfig.ANNOUNCER_MAX, played 2D when the id is non-zero; silent until then). A real licensed voice file only, never generated speech. Candidates: Kenney Voiceover Pack (CC0, https://kenney.nl/assets/voiceover-pack): 'max', 'that's the limit', 'no'; freesound CC0 search 'announcer max level' / 'maximum'; or a line recorded by the owner."
   }
 }

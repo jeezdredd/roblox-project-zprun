@@ -1,22 +1,30 @@
 --!strict
 
--- The client half of the weapon pickups (docs/gameplay/weapon-pickups.md): the
--- Highlight outlines that let a scene read through the fog, pooled below Roblox's
--- limit of 31 rendered Highlights and handed to the nearest scenes by the pure
--- HighlightBudget; and the toast when the server hands over a weapon or refuses a
--- supply drop. The prompt itself is the server's ProximityPrompt.
+-- The client half of the weapon pickups (docs/gameplay/weapon-pickups.md) and the
+-- upgrade station (docs/gameplay/upgrade-station.md): the Highlight outlines that let
+-- a scene or a station read through the fog, pooled below Roblox's limit of 31
+-- rendered Highlights and handed to the nearest by the pure HighlightBudget; the toast
+-- when the server hands over a weapon, upgrades one or refuses; the announcer line and
+-- the burst on an upgrade; and the station prompt's quote, written into the prompt's
+-- action text locally for this player's weapon. The prompts are the server's.
 
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
+local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
+local AssetIds = require(ReplicatedStorage.Shared.config.AssetIds)
 local PickupScenesConfig = require(ReplicatedStorage.Shared.config.PickupScenesConfig)
+local UpgradeStationConfig = require(ReplicatedStorage.Shared.config.UpgradeStationConfig)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local HighlightBudget = require(ReplicatedStorage.Shared.util.HighlightBudget)
+local UpgradeStationMath = require(ReplicatedStorage.Shared.world.UpgradeStationMath)
+local AudioEngine = require(script.Parent.Parent.audio.AudioEngine)
+local SfxPlayer = require(script.Parent.SfxPlayer)
 local UiSfx = require(script.Parent.UiSfx)
 local WeaponVfx = require(script.Parent.WeaponVfx)
 local UiTheme = require(script.Parent.Parent.ui.UiTheme)
@@ -24,6 +32,7 @@ local UiTheme = require(script.Parent.Parent.ui.UiTheme)
 local WeaponPickupClient = {}
 
 local TAG = "WeaponPickup"
+local UPGRADE_PROMPT = "UpgradePrompt"
 
 local player = Players.LocalPlayer
 
@@ -131,8 +140,13 @@ local function pass()
 		local model = scenes[id]
 		local highlight = if model then acquireHighlight() else nil
 		if model and highlight then
-			local drop = model:GetAttribute("Kind") == "Drop"
-			highlight.OutlineColor = color(if drop then PickupScenesConfig.HIGHLIGHT_OUTLINE_DROP else PickupScenesConfig.HIGHLIGHT_OUTLINE)
+			local kind = model:GetAttribute("Kind")
+			highlight.OutlineColor = color(
+				if kind == "Drop"
+					then PickupScenesConfig.HIGHLIGHT_OUTLINE_DROP
+					elseif kind == "Station" then UpgradeStationConfig.HIGHLIGHT_OUTLINE
+					else PickupScenesConfig.HIGHLIGHT_OUTLINE
+			)
 			highlight.Adornee = model
 			highlight.Enabled = true
 			held[id] = highlight
@@ -179,16 +193,60 @@ local function toast(text: string, tint: Color3)
 	end)
 end
 
-local function onPickup(kind: any, payload: any, position: any)
+-- An announcer line, 2D, when its id is non-zero (the slots are `needed` in the
+-- manifest until real licensed files exist; nothing plays until then).
+local function announce(key: string)
+	local ids = AssetIds.audio.upgrade :: { [string]: number }
+	local id = ids[key]
+	if typeof(id) ~= "number" or id <= 0 then
+		return
+	end
+	if AudioEngine.enabled() then
+		AudioEngine.play({ id = id, class = "UI", volume = UpgradeStationConfig.ANNOUNCER_VOLUME })
+		return
+	end
+	SfxPlayer.play2D(id, UpgradeStationConfig.ANNOUNCER_VOLUME)
+end
+
+-- The station prompt's action text is this player's quote: the level bought and its
+-- price, or why not, from the attributes the server keeps (WeaponLevel, RunCredits).
+local function quotePrompt(prompt: ProximityPrompt)
+	local level = player:GetAttribute("WeaponLevel")
+	local credits = player:GetAttribute("RunCredits")
+	local quote = UpgradeStationMath.quote(WeaponsConfig, if typeof(level) == "number" then level else 1, if typeof(credits) == "number" then credits else 0)
+	if quote.ok then
+		prompt.ActionText = string.format("Upgrade to L%d · %d CR", quote.level, quote.price)
+	elseif quote.price > 0 then
+		prompt.ActionText = string.format("L%d · %d CR (short)", quote.level, quote.price)
+	else
+		prompt.ActionText = "At the top"
+	end
+end
+
+local function onPickup(kind: any, payload: any, position: any, level: any)
 	if typeof(kind) ~= "string" or typeof(payload) ~= "string" then
 		return
 	end
 	if kind == "Refused" then
 		toast(string.upper(payload), UiTheme.DANGER)
+		if typeof(level) == "number" and level >= WeaponsConfig.MAX_LEVEL then
+			announce(UpgradeStationConfig.ANNOUNCER_MAX)
+		end
 		return
 	end
 	local config = WeaponsConfig.get(payload)
 	local name = if config then string.upper(config.displayName) else string.upper(payload)
+	if kind == "Upgrade" then
+		toast(string.format("%s UPGRADED TO L%d", name, if typeof(level) == "number" then level else 0), color(UpgradeStationConfig.HIGHLIGHT_OUTLINE))
+		UiSfx.rewardTick()
+		local lines = UpgradeStationConfig.ANNOUNCER_UPGRADE
+		announce(lines[math.random(1, #lines)])
+		if typeof(position) == "Vector3" then
+			WeaponVfx.pickupBurst(position)
+			WeaponVfx.pickupBurst(position + Vector3.new(0, 1.2, 0))
+		end
+		return
+	end
 	if kind == "Drop" then
 		toast("SUPPLY DROP: " .. name, color(PickupScenesConfig.HIGHLIGHT_OUTLINE_DROP))
 	else
@@ -217,6 +275,24 @@ function WeaponPickupClient.init()
 	end)
 
 	Remotes.getEvent(Remotes.Event.WeaponPickup).OnClientEvent:Connect(onPickup)
+
+	ProximityPromptService.PromptShown:Connect(function(prompt)
+		if prompt.Name == UPGRADE_PROMPT then
+			quotePrompt(prompt)
+		end
+	end)
+	for _, attribute in { "WeaponLevel", "RunCredits", "WeaponId" } do
+		player:GetAttributeChangedSignal(attribute):Connect(function()
+			for _, model in scenes do
+				if model:GetAttribute("Kind") == "Station" then
+					local prompt = model:FindFirstChild(UPGRADE_PROMPT, true)
+					if prompt and prompt:IsA("ProximityPrompt") then
+						quotePrompt(prompt)
+					end
+				end
+			end
+		end)
+	end
 end
 
 -- For the debug overlay and tests in Studio: highlights live right now.

@@ -21,12 +21,17 @@ local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local PickupPlanner = require(ReplicatedStorage.Shared.world.PickupPlanner)
 local AmmoCrates = require(script.Parent.AmmoCrates)
 local ChunkOccupancy = require(script.Parent.ChunkOccupancy)
-local MissionState = require(script.Parent.MissionState)
 local RunEconomy = require(script.Parent.RunEconomy)
+local RunPromptGuard = require(script.Parent.RunPromptGuard)
 local WeaponService = require(script.Parent.WeaponService)
+local SceneParts = require(script.Parent.SceneParts)
+local UpgradeStations = require(script.Parent.UpgradeStations)
 local WorldMeshes = require(script.Parent.WorldMeshes)
 
 local WeaponPickups = {}
+
+local color = SceneParts.color
+local makePart = SceneParts.makePart
 
 WeaponPickups.TAG = "WeaponPickup"
 WeaponPickups.PROMPT_NAME = "PickupPrompt"
@@ -58,81 +63,6 @@ type Pickup = {
 local pickups: { [Model]: Pickup } = {}
 local seed = 0
 local folder: Folder? = nil
-
-local function color(spec: { number }?): Color3
-	if not spec then
-		return Color3.fromRGB(120, 120, 120)
-	end
-	return Color3.fromRGB(spec[1], spec[2], spec[3])
-end
-
-local function material(name: string?): Enum.Material
-	if name then
-		local ok, value = pcall(function()
-			return (Enum.Material :: any)[name]
-		end)
-		if ok and typeof(value) == "EnumItem" then
-			return value :: Enum.Material
-		end
-	end
-	return Enum.Material.SmoothPlastic
-end
-
-local function frame(spec: PickupScenesConfig.PartSpec): CFrame
-	return CFrame.new(spec.at[1], spec.at[2], spec.at[3])
-		* CFrame.Angles(math.rad(spec.pitch or 0), math.rad(spec.yaw or 0), math.rad(spec.roll or 0))
-end
-
-local function makePart(spec: PickupScenesConfig.PartSpec, base: CFrame, parent: Instance): BasePart
-	local part = Instance.new("Part")
-	part.Name = spec.name
-	if spec.kind == "cylinder" then
-		part.Shape = Enum.PartType.Cylinder
-	elseif spec.kind == "ball" then
-		part.Shape = Enum.PartType.Ball
-	end
-	local size = spec.size or { 1, 1, 1 }
-	part.Size = Vector3.new(size[1], size[2], size[3])
-	part.CFrame = base * frame(spec)
-	part.Anchored = true
-	part.CanCollide = spec.collide == true
-	part.CanQuery = spec.collide == true
-	part.CanTouch = false
-	part.CastShadow = true
-	part.Color = color(spec.color)
-	part.Material = material(spec.material)
-	part.TopSurface = Enum.SurfaceType.Smooth
-	part.BottomSurface = Enum.SurfaceType.Smooth
-	part.Parent = parent
-	return part
-end
-
-local function buildSpecs(specs: { PickupScenesConfig.PartSpec }, base: CFrame, rng: Random, parent: Instance)
-	for _, spec in specs do
-		if spec.kind == "mesh" then
-			local name = if spec.group then WorldMeshes.pick(spec.group, rng) else nil
-			local at = base * frame(spec)
-			local placed: MeshPart? = nil
-			if name then
-				local options = { collide = spec.collide == true, shadow = true, sink = 0.15 }
-				if spec.length then
-					placed = WorldMeshes.placeByLength(name, at, spec.length, parent, options)
-				elseif spec.height then
-					placed = WorldMeshes.place(name, at, spec.height, parent, options)
-				else
-					placed = WorldMeshes.placeNatural(name, at, parent, options)
-				end
-			end
-			if placed then
-				placed.Name = spec.name
-			elseif spec.fallback then
-				buildSpecs(spec.fallback, at, rng, parent)
-			end
-		else
-			makePart(spec, base, parent)
-		end
-	end
-end
 
 -- The gun itself, as a sub-model the pickup removes when taken.
 local function buildWeaponProp(weaponId: string, base: CFrame, parent: Instance): Model
@@ -241,19 +171,7 @@ local function canTake(player: Player, pickup: Pickup): boolean
 	if pickup.taken then
 		return false
 	end
-	if not MissionState.isActive() or not MissionState.isParticipant(player) then
-		return false
-	end
-	if player:GetAttribute("FlowPhase") ~= "Mission" then
-		return false
-	end
-	local character = player.Character
-	local root = character and character:FindFirstChild("HumanoidRootPart")
-	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-	if not root or not root:IsA("BasePart") or not humanoid or humanoid.Health <= 0 then
-		return false
-	end
-	return (root.Position - pickup.anchor.Position).Magnitude <= PickupScenesConfig.PICKUP_DISTANCE
+	return RunPromptGuard.canUse(player, pickup.anchor.Position, PickupScenesConfig.PICKUP_DISTANCE)
 end
 
 local function take(pickup: Pickup)
@@ -337,7 +255,7 @@ local function buildScene(sceneId: string, base: CFrame, rng: Random, chunkIndex
 	local model = Instance.new("Model")
 	model.Name = "PickupScene_" .. sceneId
 	model:SetAttribute("SceneId", sceneId)
-	buildSpecs(config.parts, base, rng, model)
+	SceneParts.build(config.parts, base, rng, model)
 	local weaponAt = base
 		* CFrame.new(config.weaponAt[1], config.weaponAt[2], config.weaponAt[3])
 		* CFrame.Angles(math.rad(config.weaponPitch or 0), math.rad(config.weaponYaw or 0), math.rad(config.weaponRoll or 0))
@@ -361,8 +279,8 @@ end
 -- Whether the spot is free: of the chunk's footprints remembered at its build (the
 -- query below cannot see non-queryable dressing such as corn walls, dry grass and
 -- undergrowth), of any queryable part of the chunk or of another pickup inside a box
--- of the footprint above the floor, of the pickups already standing (their small parts
--- are not queryable either) and of the chunk's ammo crates.
+-- of the footprint above the floor, of the pickups and upgrade stations already
+-- standing (their small parts are not queryable either) and of the chunk's ammo crates.
 local function spotIsFree(chunk: Model, chunkIndex: number, localX: number, localZ: number, position: Vector3, radius: number): boolean
 	if not ChunkOccupancy.isFreeFor(chunk, localX, localZ, radius) then
 		return false
@@ -377,6 +295,14 @@ local function spotIsFree(chunk: Model, chunkIndex: number, localX: number, loca
 	for _, crate in AmmoCrates.positionsForChunk(chunkIndex) do
 		local reach = radius + CRATE_RADIUS
 		local delta = crate - position
+		if delta.X * delta.X + delta.Z * delta.Z < reach * reach then
+			return false
+		end
+	end
+	-- the station's lamp, mat and vise are not queryable either
+	for _, station in UpgradeStations.footprintsForChunk(chunkIndex) do
+		local reach = radius + station.radius
+		local delta = station.position - position
 		if delta.X * delta.X + delta.Z * delta.Z < reach * reach then
 			return false
 		end
@@ -430,11 +356,13 @@ function WeaponPickups.clearChunk(chunkIndex: number)
 	end
 end
 
-function WeaponPickups.init()
+-- Returns the folder, shared with the upgrade stations so both spot checks see both.
+function WeaponPickups.init(): Folder
 	local created = Instance.new("Folder")
 	created.Name = "Pickups"
 	created.Parent = Workspace
 	folder = created
+	return created
 end
 
 return WeaponPickups

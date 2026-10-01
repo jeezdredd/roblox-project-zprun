@@ -44,6 +44,7 @@ Related: [[Overview]], [[Roadmap]], [[Decisions]].
 | --- | --- |
 | `1df5e80` | Themed biome locations with props, transitions, wider lane |
 | `07c116c` | First real CC0 textures via Open Cloud for roads, aprons, buildings, hangar |
+| `cloud/city-import` | Prebuilt maps: `tools/city_import/split_scene.py` splits a GLB/glTF scene into 64-stud cells (world-space flattening, small meshes merged per material, meshes over 18k triangles split or simplified with locked borders, textures capped at 1024), one GLB per cell plus `layout.json`, pending manifest rows and a generated Luau layout; `PrebuiltMaps` places the uploaded cells as Atomic-streamed Models under `Workspace.PrebuiltMaps/<map>` with collision from the hint and a budget line per cell. See [[Prebuilt Maps]] |
 | `185f247` | Wide open run field, lane-based obstacles, glazed hangar gate, textured zombies |
 | `e1158f3` | Forced first person, sealed hangar, night blackout with flashlight, glowing zombie eyes |
 

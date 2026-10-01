@@ -144,3 +144,5 @@ per biome at `SandboxOrigin + (0, 0, -560)`, chunk centres at x = -520, -260, 0,
 - Light ranges stay at the wiki's 60 although the engine now allows 120.
 - Preset visibility lives in `VisibilityConfig`, not in the preset table, so the pure fog
   check can load it without `Color3`.
+
+Large static scenes split into streamed cells are a separate path: [[Prebuilt Maps]].

@@ -82,6 +82,23 @@ GUIDE = {
     "audio/upgrade/announcer_max": ("UpgradeStations / WeaponPickupClient: announcer when the weapon is at max level", "Kenney Voiceover Pack (CC0) 'max' / 'that is the limit'; freesound CC0 'announcer maximum'; a recorded line. Never generated speech", "polish"),
 }
 
+MEGASCANS_PREFIX = "texture/surface/megascans/"
+
+
+def guide_for(key):
+    """The GUIDE row, or for an imported Megascans map (docs/environment/megascans.md)
+    a row that points at the upload: the file already exists on the owner's machine."""
+    if key in GUIDE:
+        return GUIDE[key]
+    if key.startswith(MEGASCANS_PREFIX):
+        return (
+            "MaterialUtil: a TFZ_MS_ MaterialVariant, declared once every map of the set has an id",
+            "Imported (assets/fab/, owner's machine only): python3 scripts/upload_assets.py --only " + MEGASCANS_PREFIX,
+            "polish",
+        )
+    return ("none", "none", "polish")
+
+
 CATEGORY_TITLES = {
     "animation": "Animation",
     "audio": "Audio",
@@ -133,11 +150,11 @@ def render(slots):
         lines.append("| Slot | Used by | What to look for | Priority | Status |")
         lines.append("| --- | --- | --- | --- | --- |")
         for key, status in grouped[category]:
-            used_by, search, priority = GUIDE.get(key, ("none", "none", "polish"))
+            used_by, search, priority = guide_for(key)
             lines.append(f"| `{key}` | {used_by} | {search} | {priority} | {status} |")
         lines.append("")
 
-    blockers = [key for key, _ in slots if GUIDE.get(key, ("", "", "polish"))[2] == "blocker"]
+    blockers = [key for key, _ in slots if guide_for(key)[2] == "blocker"]
     lines.append(f"**{len(blockers)} blockers, {len(slots) - len(blockers)} polish items.**")
     lines.append("")
     return "\n".join(lines)

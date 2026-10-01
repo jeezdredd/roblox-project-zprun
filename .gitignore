@@ -46,3 +46,9 @@ AGENTS.md
 CLAUDE.md
 .codex/
 .claude/
+
+# Fab content (Fab Standard License): never committed, the repository is public.
+# tools/megascans/import_surface.py writes the processed maps and the generated
+# material list here, on the owner's machine only (docs/environment/megascans.md)
+assets/fab/
+src/shared/fab/

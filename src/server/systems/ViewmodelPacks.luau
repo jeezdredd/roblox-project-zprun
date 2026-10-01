@@ -5,6 +5,7 @@
 -- for the client's PackViewmodel to clone. Skinned MeshParts and their Bone tree cannot
 -- be written by Rojo, so they come in through InsertService at server start.
 
+local AssetService = game:GetService("AssetService")
 local InsertService = game:GetService("InsertService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -13,8 +14,34 @@ local ViewmodelPackConfig = require(ReplicatedStorage.Shared.config.ViewmodelPac
 
 local ViewmodelPacks = {}
 
+-- The importer leaves RenderFidelity on Automatic, which drops a mesh to a coarser level of
+-- detail by distance; the arms fill the screen, so every mesh is reapplied at full detail.
+-- The skin weights travel with the mesh data, the part keeps its size, textures and bones.
+local function fullDetail(part: MeshPart)
+	if part.RenderFidelity == Enum.RenderFidelity.Precise then
+		return
+	end
+	local ok, fresh = pcall(function()
+		return AssetService:CreateMeshPartAsync(part.MeshContent, {
+			CollisionFidelity = Enum.CollisionFidelity.Box,
+			RenderFidelity = Enum.RenderFidelity.Precise,
+		})
+	end)
+	if not ok or not fresh then
+		warn(`[ViewmodelPacks] {part.Name} kept its render fidelity: {fresh}`)
+		return
+	end
+	local size = part.Size
+	part:ApplyMesh(fresh)
+	part.Size = size
+	fresh:Destroy()
+end
+
 local function prepare(model: Model)
 	for _, item in model:GetDescendants() do
+		if item:IsA("MeshPart") then
+			fullDetail(item)
+		end
 		if item:IsA("BasePart") then
 			item.Anchored = true
 			item.CanCollide = false

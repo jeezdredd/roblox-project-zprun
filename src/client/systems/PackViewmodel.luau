@@ -11,6 +11,7 @@
 -- last entry's `blendOut`, which is how a cut reload returns to the ready pose.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local ViewmodelPackConfig = require(ReplicatedStorage.Shared.config.ViewmodelPackConfig)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
@@ -62,6 +63,9 @@ export type Rig = {
 	root: BasePart,
 	player: ViewmodelClipPlayer.Player,
 	parts: { BasePart },
+	-- each part's CFrame relative to the root; the parts follow the root every frame
+	offsets: { CFrame },
+	placed: { CFrame },
 	muzzle: Attachment,
 	eject: Attachment,
 	muzzleLocal: CFrame,
@@ -242,13 +246,21 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 	end
 	local scale = ViewmodelPackConfig.RIG_SCALE
 	model:ScaleTo(scale)
-	root.CFrame = CFrame.identity
+	-- The parts are anchored, so moving the root leaves them where the template had them.
+	-- The skinned meshes still draw on the bones, but the engine picks each mesh's level
+	-- of detail (and its bounds) from the part: left near the world origin, thousands of
+	-- studs from the camera, the arms rendered from the lowest detail level and parts of
+	-- the left arm flickered into the view for single frames (the owner's recording,
+	-- 2026-10-01). The parts are carried with the root every frame instead.
 	local parts: { BasePart } = {}
+	local offsets: { CFrame } = {}
 	for _, item in model:GetDescendants() do
 		if item:IsA("BasePart") and item ~= root then
 			table.insert(parts, item)
+			table.insert(offsets, root.CFrame:ToObjectSpace(item.CFrame))
 		end
 	end
+	root.CFrame = CFrame.identity
 
 	local player = ViewmodelClipPlayer.new(data, root, scale)
 	local boneRest = player:restWorld(pack.weaponBone) or CFrame.identity
@@ -272,6 +284,8 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 		root = root,
 		player = player,
 		parts = parts,
+		offsets = offsets,
+		placed = table.create(#parts),
 		muzzle = muzzle,
 		eject = eject,
 		muzzleLocal = muzzleLocal,
@@ -612,7 +626,12 @@ function PackViewmodel.step(rig: Rig, deltaTime: number, placement: CFrame, movi
 		local offset = if typeof(tune) == "Vector3" then tune else hold.Position
 		hold = CFrame.new(offset) * anglesOf(if typeof(tuneAngles) == "Vector3" then tuneAngles else nil)
 	end
-	rig.root.CFrame = placement * hold * rig.eyeInverse
+	local rootCFrame = placement * hold * rig.eyeInverse
+	rig.root.CFrame = rootCFrame
+	for index, offset in rig.offsets do
+		rig.placed[index] = rootCFrame * offset
+	end
+	Workspace:BulkMoveTo(rig.parts, rig.placed, Enum.BulkMoveMode.FireCFrameChanged)
 	local weapon = player:boneWorld(rig.pack.weaponBone)
 	if weapon then
 		rig.muzzle.CFrame = weapon * rig.muzzleLocal

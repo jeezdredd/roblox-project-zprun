@@ -126,6 +126,10 @@ local FLASH_CORE_TIME = 0.028
 local FLASH_LIGHT_TIME = NumberRange.new(0.04, 0.06)
 local FLASH_LIGHT_BRIGHTNESS = 3.5
 local FLASH_LIGHT_RANGE = 12
+-- the first-person muzzle sits half a stud from the sleeves: at the world brightness the
+-- light washed the arms and the ground in front orange for three frames on every shot
+-- (the owner's recording, 2026-10-01)
+local VIEWMODEL_LIGHT_BRIGHTNESS = 1.2
 local FLASH_SPARK_CHANCE = 0.35
 -- The first-person packs are drawn at about 1.17 studs per metre (an AK is 1.03 studs)
 -- while the world is 3.57 (1 stud = 0.28 m), so a flash sized for the world gun is three
@@ -490,7 +494,8 @@ function WeaponVfx.muzzleFlash(attachment: Attachment?, weaponId: string)
 	rig.framesShown = 0
 
 	local light = rig.light
-	light.Brightness = FLASH_LIGHT_BRIGHTNESS * (0.85 + math.random() * 0.3)
+	local brightness = if rig.viewScale < 1 then VIEWMODEL_LIGHT_BRIGHTNESS else FLASH_LIGHT_BRIGHTNESS
+	light.Brightness = brightness * (0.85 + math.random() * 0.3)
 	light.Range = FLASH_LIGHT_RANGE * math.sqrt(scale / rig.viewScale)
 	light.Enabled = true
 	rig.lightOn = true

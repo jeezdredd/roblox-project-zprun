@@ -7,6 +7,7 @@ local Workspace = game:GetService("Workspace")
 
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
+local HitMarkerMath = require(ReplicatedStorage.Shared.util.HitMarkerMath)
 local ProfileManager = require(script.Parent.ProfileManager)
 local SkillEffects = require(script.Parent.SkillEffects)
 local MissionGoals = require(script.Parent.MissionGoals)
@@ -260,7 +261,10 @@ local function findZombieModel(instance: Instance): Model?
 	return nil
 end
 
-local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, result: RaycastResult)
+-- Applies one ray's hit. Returns what it did to a zombie (the damage dealt, a head hit,
+-- a kill) for the shooter's hit marker, or nil when it hurt none; the damage rules are
+-- unchanged, the outcome is read from them after the fact.
+local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, result: RaycastResult): HitMarkerMath.Confirm?
 	local part = result.Instance
 	if part.Name == "RangeGong" then
 		local now = os.clock()
@@ -268,19 +272,19 @@ local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, res
 			lastGongAt[player] = now
 			Remotes.getEvent(Remotes.Event.WeaponHit):FireAllClients("Gong", result.Position)
 		end
-		return
+		return nil
 	end
 
 	local model = findZombieModel(part)
 	if not model then
-		return
+		return nil
 	end
 	local humanoid = model:FindFirstChildOfClass("Humanoid")
 	if not humanoid or humanoid.Health <= 0 then
-		return
+		return nil
 	end
 	if Players:GetPlayerFromCharacter(model) then
-		return
+		return nil
 	end
 
 	local data = ProfileManager.get(player)
@@ -292,8 +296,10 @@ local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, res
 		damage *= config.headshotMultiplier
 	end
 	local wasAlive = humanoid.Health > 0
+	local before = humanoid.Health
 	humanoid:TakeDamage(damage)
-	if wasAlive and humanoid.Health <= 0 then
+	local killed = wasAlive and humanoid.Health <= 0
+	if killed then
 		ProfileManager.addKill(player)
 		MissionGoals.report(player, "Kills", 1)
 		-- the kill pays into the run balance at once (RunEconomy)
@@ -303,6 +309,7 @@ local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, res
 			progress.xp += WeaponsConfig.XP_PER_KILL
 		end
 	end
+	return { damage = math.max(before - humanoid.Health, 0), headshot = headshot, killed = killed }
 end
 
 local function onFire(player: Player, origin: any, direction: any)
@@ -404,13 +411,18 @@ local function onFire(player: Player, origin: any, direction: any)
 	params.FilterDescendantsInstances = filter
 
 	local hits: { { position: Vector3, normal: Vector3, material: string } } = {}
+	-- what each pellet did to a zombie, summed into the shooter's hit confirmation
+	local outcomes: { HitMarkerMath.Confirm } = {}
 	for _ = 1, config.pellets do
 		local shotDirection = if config.pellets > 1 or config.spreadDeg > 0
 			then applySpread(direction.Unit, config.spreadDeg)
 			else direction.Unit
 		local result = Workspace:Raycast(origin, shotDirection * config.range, params)
 		if result then
-			handleHit(player, config, result)
+			local outcome = handleHit(player, config, result)
+			if outcome then
+				table.insert(outcomes, outcome)
+			end
 			local zombieModel = findZombieModel(result.Instance)
 			local isZombie = zombieModel ~= nil and Players:GetPlayerFromCharacter(zombieModel) == nil
 			table.insert(hits, {
@@ -421,7 +433,10 @@ local function onFire(player: Player, origin: any, direction: any)
 		end
 	end
 
-	Remotes.getEvent(Remotes.Event.WeaponHit):FireAllClients("Shot", origin, hits, player, state.weaponId)
+	-- the sixth value is the server's own confirmation of this shot (damage dealt, a
+	-- head hit, a kill) for the shooter's hit marker, nil when it hurt no zombie; the
+	-- client never sends any of it
+	Remotes.getEvent(Remotes.Event.WeaponHit):FireAllClients("Shot", origin, hits, player, state.weaponId, HitMarkerMath.combine(outcomes))
 end
 
 local function onReload(player: Player)

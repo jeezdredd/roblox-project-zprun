@@ -137,7 +137,9 @@ local AssetIds = {
 			click = 133624826489555,
 			countdown_go = 129265379079595,
 			countdown_tick = 82455130321663,
+			hit_marker = 0,
 			hover = 114789742656759,
+			kill_marker = 0,
 			reward_tick = 113785737468412,
 		},
 		unused = {

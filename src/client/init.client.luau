@@ -49,6 +49,7 @@ local CabinGui = require(script.ui.CabinGui)
 local IntermissionCamera = require(script.systems.IntermissionCamera)
 local HudGui = require(script.ui.HudGui)
 local RunHud = require(script.ui.RunHud)
+local HitMarkers = require(script.ui.HitMarkers)
 local ForkHud = require(script.ui.ForkHud)
 local GoreWarningGui = require(script.ui.GoreWarningGui)
 
@@ -98,6 +99,7 @@ IntermissionCamera.init()
 
 HudGui.init()
 RunHud.init()
+HitMarkers.init()
 ForkHud.init()
 if not (RunService:IsStudio() and DevConfig.SKIP_GORE_WARNING) then
 	GoreWarningGui.showOnce()

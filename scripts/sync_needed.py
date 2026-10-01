@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regenerate assets/NEEDED.md — the shopping list of empty asset slots.
+"""Regenerate assets/NEEDED.md: the shopping list of empty asset slots.
 
 An empty slot is any manifest entry whose assetId is 0 or missing. Rejected
 uploads count as empty too: the id exists but must not be used.
@@ -20,61 +20,63 @@ OUTPUT = os.path.join(ROOT, "assets", "NEEDED.md")
 
 # Per-slot guidance: where the slot is consumed, what to search for, priority.
 GUIDE = {
-    "animation/player/run": ("AnimationController — run cycle", "Mixamo: Running (in place, rifle carry)", "blocker"),
-    "animation/player/strafe_left": ("AnimationController — lateral dodge", "Mixamo: Left Strafe (in place)", "blocker"),
-    "animation/player/strafe_right": ("AnimationController — lateral dodge", "Mixamo: Right Strafe (in place)", "blocker"),
+    "animation/player/run": ("AnimationController: run cycle", "Mixamo: Running (in place, rifle carry)", "blocker"),
+    "animation/player/strafe_left": ("AnimationController: lateral dodge", "Mixamo: Left Strafe (in place)", "blocker"),
+    "animation/player/strafe_right": ("AnimationController: lateral dodge", "Mixamo: Right Strafe (in place)", "blocker"),
+    "audio/ui/hit_marker": ("HitMarkers: the hit tick on a confirmed hit", "Kenney Interface Sounds (CC0) tick; freesound CC0 'hitmarker'; a recording. Never synthesized", "polish"),
+    "audio/ui/kill_marker": ("HitMarkers: the kill marker on a confirmed kill", "Kenney Impact Sounds (CC0) soft impact; freesound CC0 'kill confirm'; a recording. Never synthesized", "polish"),
     "animation/player/sit_idle": ("AnimationController: seated idle in the helicopter cabin (SIT_CLIP)", "Mixamo: Sitting Idle (in place); Quaternius UAL (CC0) sit", "polish"),
-    "animation/player/stumble": ("AnimationController — obstacle clip", "Mixamo: Stumble Backwards", "polish"),
-    "animation/player/death": ("DeathService / DeathController — supine death pose", "Mixamo: Falling Back Death", "blocker"),
-    "animation/zombie/idle_a": ("ZombieAnimator — idle variation", "Mixamo: Zombie Idle", "blocker"),
-    "animation/zombie/idle_b": ("ZombieAnimator — idle variation", "Mixamo: Zombie Neck Bite (idle part)", "polish"),
-    "animation/zombie/idle_c": ("ZombieAnimator — rise from ground", "Mixamo: Zombie Stand Up", "polish"),
-    "animation/zombie/walk_shuffle": ("ZombieAnimator — walker gait", "Mixamo: Zombie Walk (in place)", "blocker"),
-    "animation/zombie/run_ragged": ("ZombieAnimator — runner gait", "Mixamo: Zombie Running (in place)", "blocker"),
-    "animation/zombie/attack_lunge": ("ZombieAI — touch attack", "Mixamo: Zombie Attack", "blocker"),
-    "animation/zombie/feeding": ("DeathService — corpse feeding loop", "Mixamo: Zombie Feeding", "blocker"),
-    "animation/weapon/fire": ("Viewmodel — clip layer over spring recoil", "Universal Viewmodel Template: fire", "polish"),
-    "animation/weapon/reload": ("Viewmodel — replaces procedural reload", "Universal Viewmodel Template: reload", "polish"),
-    "animation/weapon/equip": ("Viewmodel — replaces procedural raise", "Universal Viewmodel Template: raise/equip", "polish"),
-    "animation/weapon/inspect": ("Viewmodel — F key inspect", "Universal Viewmodel Template: inspect", "polish"),
-    "animation/weapon/sprint": ("Viewmodel — sprint carry pose", "Universal Viewmodel Template: sprint/run", "polish"),
-    "audio/range/gong": ("Shooting range — gong hit feedback", "Freesound CC0: metal gong hit / steel target ping", "blocker"),
+    "animation/player/stumble": ("AnimationController: obstacle clip", "Mixamo: Stumble Backwards", "polish"),
+    "animation/player/death": ("DeathService / DeathController: supine death pose", "Mixamo: Falling Back Death", "blocker"),
+    "animation/zombie/idle_a": ("ZombieAnimator: idle variation", "Mixamo: Zombie Idle", "blocker"),
+    "animation/zombie/idle_b": ("ZombieAnimator: idle variation", "Mixamo: Zombie Neck Bite (idle part)", "polish"),
+    "animation/zombie/idle_c": ("ZombieAnimator: rise from ground", "Mixamo: Zombie Stand Up", "polish"),
+    "animation/zombie/walk_shuffle": ("ZombieAnimator: walker gait", "Mixamo: Zombie Walk (in place)", "blocker"),
+    "animation/zombie/run_ragged": ("ZombieAnimator: runner gait", "Mixamo: Zombie Running (in place)", "blocker"),
+    "animation/zombie/attack_lunge": ("ZombieAI: touch attack", "Mixamo: Zombie Attack", "blocker"),
+    "animation/zombie/feeding": ("DeathService: corpse feeding loop", "Mixamo: Zombie Feeding", "blocker"),
+    "animation/weapon/fire": ("Viewmodel: clip layer over spring recoil", "Universal Viewmodel Template: fire", "polish"),
+    "animation/weapon/reload": ("Viewmodel: replaces procedural reload", "Universal Viewmodel Template: reload", "polish"),
+    "animation/weapon/equip": ("Viewmodel: replaces procedural raise", "Universal Viewmodel Template: raise/equip", "polish"),
+    "animation/weapon/inspect": ("Viewmodel: F key inspect", "Universal Viewmodel Template: inspect", "polish"),
+    "animation/weapon/sprint": ("Viewmodel: sprint carry pose", "Universal Viewmodel Template: sprint/run", "polish"),
+    "audio/range/gong": ("Shooting range: gong hit feedback", "Freesound CC0: metal gong hit / steel target ping", "blocker"),
     "audio/weapons/shell_03": ("Weapon shell casing variation 3", "Kenney CC0 impact sounds: small metal drop", "polish"),
-    "audio/weapons/mid_pistol": ("WeaponSfx.playDistantShot — GunshotRemote mid layer, 40..350 studs", "FFSL Prepared: Walther PPQ mid-distance row, cut with tools/audio_build/build_shots_v6.py", "polish"),
-    "audio/weapons/mid_smg": ("WeaponSfx.playDistantShot — GunshotRemote mid layer, 40..350 studs", "FFSL Prepared: Carl Gustav M45 mid-distance row, cut with tools/audio_build/build_shots_v6.py", "polish"),
-    "audio/weapons/mid_shotgun": ("WeaponSfx.playDistantShot — GunshotRemote mid layer, 40..350 studs", "FFSL Prepared: Benelli Nova mid-distance row, cut with tools/audio_build/build_shots_v6.py", "polish"),
-    "audio/weapons/mid_rifle": ("WeaponSfx.playDistantShot — GunshotRemote mid layer, 40..350 studs", "FFSL Prepared: AK-47 C_31P.wav, cut with tools/audio_build/build_shots_v6.py", "polish"),
-    "audio/weapons/far_pistol": ("WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs", "freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far'", "polish"),
-    "audio/weapons/far_smg": ("WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs", "freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far'", "polish"),
-    "audio/weapons/far_shotgun": ("WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs", "freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far'", "polish"),
-    "audio/weapons/far_rifle": ("WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs", "freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far'", "polish"),
-    "audio/weapons/impact_concrete_01": ("WeaponSfx.playImpacts — bullet on stone (Kenney land_hard stands in)", "freesound CC0 'bullet impact concrete'", "polish"),
-    "audio/weapons/impact_concrete_02": ("WeaponSfx.playImpacts — bullet on stone, variation", "freesound CC0 'bullet impact concrete'", "polish"),
-    "audio/weapons/impact_metal_01": ("WeaponSfx.playImpacts — bullet on metal (Kenney bolt stands in)", "freesound CC0 'bullet impact metal'", "polish"),
-    "audio/weapons/impact_metal_02": ("WeaponSfx.playImpacts — bullet on metal, variation", "freesound CC0 'bullet impact metal'", "polish"),
-    "audio/weapons/impact_wood_01": ("WeaponSfx.playImpacts — bullet on wood (Kenney land_soft stands in)", "freesound CC0 'bullet impact wood'", "polish"),
-    "audio/weapons/impact_wood_02": ("WeaponSfx.playImpacts — bullet on wood, variation", "freesound CC0 'bullet impact wood'", "polish"),
-    "audio/weapons/impact_dirt_01": ("WeaponSfx.playImpacts — bullet on soil (Kenney land_soft stands in)", "freesound CC0 'bullet impact dirt'", "polish"),
-    "audio/weapons/impact_dirt_02": ("WeaponSfx.playImpacts — bullet on soil, variation", "freesound CC0 'bullet impact dirt'", "polish"),
-    "audio/weapons/impact_flesh_01": ("WeaponSfx.playImpacts — bullet on a body (Kenney bite stands in)", "freesound CC0 'bullet impact flesh'", "polish"),
-    "audio/weapons/impact_flesh_02": ("WeaponSfx.playImpacts — bullet on a body, variation", "freesound CC0 'bullet impact flesh'", "polish"),
-    "audio/weapons/ricochet_01": ("WeaponSfx.playImpacts — one hard hit in six", "freesound CC0 'ricochet'", "polish"),
-    "animation/player/rifle_idle": ("AnimationController — rifle set idle", "Mixamo: Rifle Idle (In Place)", "polish"),
-    "animation/player/rifle_walk": ("AnimationController — rifle set walk", "Mixamo: Rifle Walk (In Place)", "polish"),
-    "animation/player/rifle_run": ("AnimationController — rifle set run, replaces Run", "Mixamo: Rifle Run (In Place)", "polish"),
-    "animation/player/rifle_sprint": ("AnimationController — rifle set sprint", "Mixamo: Sprint Forward, rifle carry (In Place)", "polish"),
-    "animation/player/rifle_strafe_left": ("AnimationController — rifle set strafe", "Mixamo: Strafe, rifle walk, left (In Place)", "polish"),
-    "animation/player/rifle_strafe_right": ("AnimationController — rifle set strafe", "Mixamo: Strafe, rifle walk, right (In Place)", "polish"),
-    "animation/player/rifle_reload": ("AnimationController.playAction — rifle reload", "Mixamo: Reloading, rifle standing", "polish"),
-    "animation/player/pistol_idle": ("AnimationController — pistol set idle", "Mixamo: Pistol Idle (In Place)", "polish"),
-    "animation/player/pistol_walk": ("AnimationController — pistol set walk", "Mixamo: Pistol Walk (In Place)", "polish"),
-    "animation/player/pistol_run": ("AnimationController — pistol set run, replaces Run", "Mixamo: Pistol Run (In Place)", "polish"),
-    "animation/player/pistol_strafe_left": ("AnimationController — pistol set strafe", "Mixamo: Pistol Strafe, left (In Place)", "polish"),
-    "animation/player/pistol_strafe_right": ("AnimationController — pistol set strafe", "Mixamo: Pistol Strafe, right (In Place)", "polish"),
-    "animation/player/hit_rifle": ("AnimationController.playAction — hit reaction", "Mixamo: Hit Reaction, holding a rifle", "polish"),
-    "animation/zombie/stand_up_back": ("ZombieAnimator — Dormant rise (idle_c stands in)", "Mixamo: Zombie Stand Up, from the back", "polish"),
-    "animation/zombie/stand_up_stomach": ("ZombieAnimator — Dormant rise (idle_c stands in)", "Mixamo: Zombie Stand Up, from the stomach", "polish"),
-    "animation/zombie/biting_ground": ("ZombieAnimator — Feeding pose (feeding stands in)", "Mixamo: Zombie Biting Victim On The Ground", "polish"),
+    "audio/weapons/mid_pistol": ("WeaponSfx.playDistantShot: GunshotRemote mid layer, 40..350 studs", "FFSL Prepared: Walther PPQ mid-distance row, cut with tools/audio_build/build_shots_v6.py", "polish"),
+    "audio/weapons/mid_smg": ("WeaponSfx.playDistantShot: GunshotRemote mid layer, 40..350 studs", "FFSL Prepared: Carl Gustav M45 mid-distance row, cut with tools/audio_build/build_shots_v6.py", "polish"),
+    "audio/weapons/mid_shotgun": ("WeaponSfx.playDistantShot: GunshotRemote mid layer, 40..350 studs", "FFSL Prepared: Benelli Nova mid-distance row, cut with tools/audio_build/build_shots_v6.py", "polish"),
+    "audio/weapons/mid_rifle": ("WeaponSfx.playDistantShot: GunshotRemote mid layer, 40..350 studs", "FFSL Prepared: AK-47 C_31P.wav, cut with tools/audio_build/build_shots_v6.py", "polish"),
+    "audio/weapons/far_pistol": ("WeaponSfx.playDistantShot: GunshotRemote far layer, 250..1400 studs", "freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far'", "polish"),
+    "audio/weapons/far_smg": ("WeaponSfx.playDistantShot: GunshotRemote far layer, 250..1400 studs", "freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far'", "polish"),
+    "audio/weapons/far_shotgun": ("WeaponSfx.playDistantShot: GunshotRemote far layer, 250..1400 studs", "freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far'", "polish"),
+    "audio/weapons/far_rifle": ("WeaponSfx.playDistantShot: GunshotRemote far layer, 250..1400 studs", "freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far'", "polish"),
+    "audio/weapons/impact_concrete_01": ("WeaponSfx.playImpacts: bullet on stone (Kenney land_hard stands in)", "freesound CC0 'bullet impact concrete'", "polish"),
+    "audio/weapons/impact_concrete_02": ("WeaponSfx.playImpacts: bullet on stone, variation", "freesound CC0 'bullet impact concrete'", "polish"),
+    "audio/weapons/impact_metal_01": ("WeaponSfx.playImpacts: bullet on metal (Kenney bolt stands in)", "freesound CC0 'bullet impact metal'", "polish"),
+    "audio/weapons/impact_metal_02": ("WeaponSfx.playImpacts: bullet on metal, variation", "freesound CC0 'bullet impact metal'", "polish"),
+    "audio/weapons/impact_wood_01": ("WeaponSfx.playImpacts: bullet on wood (Kenney land_soft stands in)", "freesound CC0 'bullet impact wood'", "polish"),
+    "audio/weapons/impact_wood_02": ("WeaponSfx.playImpacts: bullet on wood, variation", "freesound CC0 'bullet impact wood'", "polish"),
+    "audio/weapons/impact_dirt_01": ("WeaponSfx.playImpacts: bullet on soil (Kenney land_soft stands in)", "freesound CC0 'bullet impact dirt'", "polish"),
+    "audio/weapons/impact_dirt_02": ("WeaponSfx.playImpacts: bullet on soil, variation", "freesound CC0 'bullet impact dirt'", "polish"),
+    "audio/weapons/impact_flesh_01": ("WeaponSfx.playImpacts: bullet on a body (Kenney bite stands in)", "freesound CC0 'bullet impact flesh'", "polish"),
+    "audio/weapons/impact_flesh_02": ("WeaponSfx.playImpacts: bullet on a body, variation", "freesound CC0 'bullet impact flesh'", "polish"),
+    "audio/weapons/ricochet_01": ("WeaponSfx.playImpacts: one hard hit in six", "freesound CC0 'ricochet'", "polish"),
+    "animation/player/rifle_idle": ("AnimationController: rifle set idle", "Mixamo: Rifle Idle (In Place)", "polish"),
+    "animation/player/rifle_walk": ("AnimationController: rifle set walk", "Mixamo: Rifle Walk (In Place)", "polish"),
+    "animation/player/rifle_run": ("AnimationController: rifle set run, replaces Run", "Mixamo: Rifle Run (In Place)", "polish"),
+    "animation/player/rifle_sprint": ("AnimationController: rifle set sprint", "Mixamo: Sprint Forward, rifle carry (In Place)", "polish"),
+    "animation/player/rifle_strafe_left": ("AnimationController: rifle set strafe", "Mixamo: Strafe, rifle walk, left (In Place)", "polish"),
+    "animation/player/rifle_strafe_right": ("AnimationController: rifle set strafe", "Mixamo: Strafe, rifle walk, right (In Place)", "polish"),
+    "animation/player/rifle_reload": ("AnimationController.playAction: rifle reload", "Mixamo: Reloading, rifle standing", "polish"),
+    "animation/player/pistol_idle": ("AnimationController: pistol set idle", "Mixamo: Pistol Idle (In Place)", "polish"),
+    "animation/player/pistol_walk": ("AnimationController: pistol set walk", "Mixamo: Pistol Walk (In Place)", "polish"),
+    "animation/player/pistol_run": ("AnimationController: pistol set run, replaces Run", "Mixamo: Pistol Run (In Place)", "polish"),
+    "animation/player/pistol_strafe_left": ("AnimationController: pistol set strafe", "Mixamo: Pistol Strafe, left (In Place)", "polish"),
+    "animation/player/pistol_strafe_right": ("AnimationController: pistol set strafe", "Mixamo: Pistol Strafe, right (In Place)", "polish"),
+    "animation/player/hit_rifle": ("AnimationController.playAction: hit reaction", "Mixamo: Hit Reaction, holding a rifle", "polish"),
+    "animation/zombie/stand_up_back": ("ZombieAnimator: Dormant rise (idle_c stands in)", "Mixamo: Zombie Stand Up, from the back", "polish"),
+    "animation/zombie/stand_up_stomach": ("ZombieAnimator: Dormant rise (idle_c stands in)", "Mixamo: Zombie Stand Up, from the stomach", "polish"),
+    "animation/zombie/biting_ground": ("ZombieAnimator: Feeding pose (feeding stands in)", "Mixamo: Zombie Biting Victim On The Ground", "polish"),
     "audio/upgrade/announcer_upgrade_01": ("UpgradeStations / WeaponPickupClient: announcer on a successful upgrade, take 1", "Kenney Voiceover Pack (CC0) 'power up' / 'excellent'; freesound CC0 'announcer upgrade'; a recorded line. Never generated speech", "polish"),
     "audio/upgrade/announcer_upgrade_02": ("UpgradeStations / WeaponPickupClient: announcer on a successful upgrade, take 2", "Kenney Voiceover Pack (CC0) 'upgrade' / 'nice'; freesound CC0 'announcer upgrade'; a recorded line. Never generated speech", "polish"),
     "audio/upgrade/announcer_max": ("UpgradeStations / WeaponPickupClient: announcer when the weapon is at max level", "Kenney Voiceover Pack (CC0) 'max' / 'that is the limit'; freesound CC0 'announcer maximum'; a recorded line. Never generated speech", "polish"),
@@ -116,7 +118,7 @@ def render(slots):
     ]
 
     if not slots:
-        lines.append("Nothing outstanding — every manifest slot has an approved asset.")
+        lines.append("Nothing outstanding: every manifest slot has an approved asset.")
         lines.append("")
         return "\n".join(lines)
 
@@ -131,7 +133,7 @@ def render(slots):
         lines.append("| Slot | Used by | What to look for | Priority | Status |")
         lines.append("| --- | --- | --- | --- | --- |")
         for key, status in grouped[category]:
-            used_by, search, priority = GUIDE.get(key, ("—", "—", "polish"))
+            used_by, search, priority = GUIDE.get(key, ("none", "none", "polish"))
             lines.append(f"| `{key}` | {used_by} | {search} | {priority} | {status} |")
         lines.append("")
 

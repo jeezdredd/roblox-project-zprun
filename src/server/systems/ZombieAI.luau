@@ -11,6 +11,7 @@ local LocationsConfig = require(ReplicatedStorage.Shared.config.LocationsConfig)
 local ZombiesConfig = require(ReplicatedStorage.Shared.config.ZombiesConfig)
 local ZombieBehaviourConfig = require(ReplicatedStorage.Shared.config.ZombieBehaviourConfig)
 local ZombieRig = require(ReplicatedStorage.Shared.util.ZombieRig)
+local IntermissionMath = require(ReplicatedStorage.Shared.util.IntermissionMath)
 local ZombieSpawnConfig = require(ReplicatedStorage.Shared.config.ZombieSpawnConfig)
 local RoutePlan = require(script.Parent.RoutePlan)
 local ModifiersConfig = require(ReplicatedStorage.Shared.config.ModifiersConfig)
@@ -151,13 +152,19 @@ end
 local GLANCE_MIN = 0.35
 local rightAxis = GameConstants.RUN_DIRECTION:Cross(Vector3.yAxis)
 
+-- A player waking at the wreck (GraceUntil, server time, set by IntermissionService)
+-- is neither chased nor hurt until the window closes.
+local function inGrace(player: Player): boolean
+	return IntermissionMath.inGrace(player:GetAttribute("GraceUntil"), Workspace:GetServerTimeNow())
+end
+
 local function onTouched(state: ZombieState, hit: BasePart)
 	local character = hit.Parent
 	if not character or not character:IsA("Model") then
 		return
 	end
 	local player = Players:GetPlayerFromCharacter(character)
-	if not player then
+	if not player or inGrace(player) then
 		return
 	end
 
@@ -433,7 +440,7 @@ local function findNearestPlayer(position: Vector3): Player?
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-		if not root or not root:IsA("BasePart") or not humanoid or humanoid.Health <= 0 then
+		if not root or not root:IsA("BasePart") or not humanoid or humanoid.Health <= 0 or inGrace(player) then
 			continue
 		end
 		local distance = (root.Position - position).Magnitude

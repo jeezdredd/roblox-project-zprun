@@ -32,6 +32,12 @@ Remotes.Event = table.freeze({
 	-- or "Refused" message position level?)
 	WeaponPickup = "WeaponPickup",
 	PlayerGlanced = "PlayerGlanced",
+	-- the helicopter intermission (IntermissionService): client -> server, a boolean
+	-- (ready or not) during the ready check; client -> server, no args, a skip vote
+	-- during a skippable crash; server -> client, the cabin snapshot or nil when over
+	IntermissionReady = "IntermissionReady",
+	IntermissionSkip = "IntermissionSkip",
+	IntermissionState = "IntermissionState",
 })
 
 Remotes.Function = table.freeze({

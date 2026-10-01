@@ -14,8 +14,8 @@ local Squad = require(ReplicatedStorage.Shared.types.Squad)
 local RewardMultiplier = require(ReplicatedStorage.Shared.util.RewardMultiplier)
 local HangarBuilder = require(script.Parent.HangarBuilder)
 local FriendCache = require(script.Parent.FriendCache)
+local IntermissionService = require(script.Parent.IntermissionService)
 local MissionState = require(script.Parent.MissionState)
-local MissionService = require(script.Parent.MissionService)
 
 type SquadRecord = {
 	index: number,
@@ -190,6 +190,13 @@ local function leave(player: Player)
 end
 
 local function doLaunch(squad: SquadRecord)
+	-- another squad's intermission or run took the helicopter first: the squad stays
+	-- as it was and the leader can launch again later
+	if MissionState.isActive() or IntermissionService.isBusy() then
+		abortLaunch(squad)
+		pushSnapshot(squad)
+		return
+	end
 	local members = table.clone(squad.members)
 	local config = squad.config
 	local seed = Random.new():NextInteger(1, 2147483646)
@@ -199,7 +206,9 @@ local function doLaunch(squad: SquadRecord)
 		snapshotEvent:FireClient(player, nil)
 	end
 	resetSquad(squad)
-	MissionService.startSquad(members, config, seed)
+	-- the helicopter cabin first; IntermissionService starts the run after the ready
+	-- check and the crash (docs/gameplay/heli-intermission.md)
+	IntermissionService.begin(members, config, seed)
 end
 
 local function requestLaunch(player: Player)
@@ -211,7 +220,7 @@ local function requestLaunch(player: Player)
 	if not isLeader(squad, player) or squad.state ~= "Filling" then
 		return
 	end
-	if MissionState.isActive() then
+	if MissionState.isActive() or IntermissionService.isBusy() then
 		return
 	end
 	squad.state = "Launching"

@@ -8,12 +8,16 @@ local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local WeaponLadderText = require(ReplicatedStorage.Shared.util.WeaponLadderText)
 local SkillsConfig = require(ReplicatedStorage.Shared.config.SkillsConfig)
 local SkinsConfig = require(ReplicatedStorage.Shared.config.SkinsConfig)
+local LoadoutWindow = require(script.Parent.LoadoutWindow)
 local PerkService = require(script.Parent.PerkService)
 local ProfileManager = require(script.Parent.ProfileManager)
 local SkinService = require(script.Parent.SkinService)
 local WeaponService = require(script.Parent.WeaponService)
 
 local ShopService = {}
+
+-- the cabin's loadout panel (docs/gameplay/heli-intermission.md); not a vendor room
+ShopService.CABIN_VENDOR = "Cabin"
 
 export type CatalogEntry = {
 	id: string,
@@ -183,6 +187,15 @@ local function buildCatalog(player: Player, vendorId: string): Catalog?
 		entries = skinEntries(data)
 	elseif vendorId == PerkService.VENDOR_ID then
 		entries = PerkService.entries(data)
+	elseif vendorId == ShopService.CABIN_VENDOR then
+		-- the helicopter cabin during the ready check: swaps only, nothing to buy
+		if not LoadoutWindow.inCabin(player) then
+			return nil
+		end
+		entries = loadoutEntries(data)
+		for _, entry in PerkService.equipEntries(data) do
+			table.insert(entries, entry)
+		end
 	else
 		return nil
 	end
@@ -303,9 +316,13 @@ local function onPurchase(player: Player, vendorId: any, entryId: any, kind: any
 
 	local ok: boolean, message: string
 	if matched.kind == "Loadout" then
-		ok, message = toggleLoadout(data, entryId)
-		if ok then
-			WeaponService.applyLoadout(player)
+		if not LoadoutWindow.isOpen(player) then
+			ok, message = false, "The loadout is set before the run"
+		else
+			ok, message = toggleLoadout(data, entryId)
+			if ok then
+				WeaponService.applyLoadout(player)
+			end
 		end
 	elseif matched.kind == "Weapon" or matched.kind == "WeaponUpgrade" then
 		ok, message = purchaseWeapon(player, data, entryId)

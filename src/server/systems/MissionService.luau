@@ -92,7 +92,9 @@ local function tearDownIfEmpty()
 	restoreEnvironment()
 end
 
-function MissionService.startSquad(players: { Player }, config: Squad.SquadConfig, seed: number)
+-- `spawnCFrame` is where the squad stands up (the wreck after the helicopter
+-- intermission); the run's start when omitted.
+function MissionService.startSquad(players: { Player }, config: Squad.SquadConfig, seed: number, spawnCFrame: CFrame?)
 	if MissionState.isActive() then
 		return
 	end
@@ -131,7 +133,7 @@ function MissionService.startSquad(players: { Player }, config: Squad.SquadConfi
 		RunEconomy.beginRun(player)
 		FlowService.setPhase(player, "Mission")
 		local lateralOffset = (index - (count + 1) / 2) * HangarConfig.SQUAD_SPAWN_SPACING
-		teleportCharacter(player, HangarConfig.RUN_START_CFRAME * CFrame.new(lateralOffset, 0, 0))
+		teleportCharacter(player, (spawnCFrame or HangarConfig.RUN_START_CFRAME) * CFrame.new(lateralOffset, 0, 0))
 		watchDeath(player)
 	end
 end
@@ -157,6 +159,7 @@ function MissionService.removeFromMission(player: Player)
 	WeaponService.clearRunLoadout(player)
 	-- the goals go with the run on a quit too (DeathService ends them on a death)
 	MissionGoals.endRun(player)
+	player:SetAttribute("GraceUntil", nil)
 	tearDownIfEmpty()
 end
 

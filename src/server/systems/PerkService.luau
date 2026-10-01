@@ -11,7 +11,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PerksConfig = require(ReplicatedStorage.Shared.config.PerksConfig)
-local MissionState = require(script.Parent.MissionState)
+local LoadoutWindow = require(script.Parent.LoadoutWindow)
 local ProfileManager = require(script.Parent.ProfileManager)
 
 local PerkService = {}
@@ -50,6 +50,25 @@ end
 local function publish(player: Player, data: ProfileManager.ProfileData)
 	player:SetAttribute(SLOTS_ATTRIBUTE, slotsOwned(data))
 	player:SetAttribute(EQUIPPED_ATTRIBUTE, table.concat(data.PerksEquipped, ","))
+end
+
+-- The equip toggle row of a perk with a level (kind PerkEquip, price 0).
+local function equipEntry(data: ProfileManager.ProfileData, id: string, displayName: string, level: number): Entry
+	local slot = table.find(data.PerksEquipped, id)
+	return {
+		id = id,
+		kind = "PerkEquip",
+		displayName = displayName,
+		description = if slot then string.format("Riding along in slot %d", slot) else "Take it on the next run",
+		price = 0,
+		level = level,
+		maxLevel = 0,
+		owned = true,
+		affordable = true,
+		equipped = slot ~= nil,
+		xp = 0,
+		xpNeeded = 0,
+	}
 end
 
 -- The Perk Lab catalog: the slots first, then every perk twice, its level purchase
@@ -98,21 +117,21 @@ function PerkService.entries(data: ProfileManager.ProfileData): { Entry }
 			xpNeeded = 0,
 		})
 		if level > 0 then
-			local slot = table.find(data.PerksEquipped, id)
-			table.insert(entries, {
-				id = id,
-				kind = "PerkEquip",
-				displayName = config.displayName,
-				description = if slot then string.format("Riding along in slot %d", slot) else "Take it on the next run",
-				price = 0,
-				level = level,
-				maxLevel = 0,
-				owned = true,
-				affordable = true,
-				equipped = slot ~= nil,
-				xp = 0,
-				xpNeeded = 0,
-			})
+			table.insert(entries, equipEntry(data, id, config.displayName, level))
+		end
+	end
+	return entries
+end
+
+-- Only the equip rows, for the cabin's loadout panel (no purchases there).
+function PerkService.equipEntries(data: ProfileManager.ProfileData): { Entry }
+	sanitize(data)
+	local entries: { Entry } = {}
+	for _, id in PerksConfig.order do
+		local config = PerksConfig.get(id)
+		local level = data.PerkLevels[id] or 0
+		if config and level > 0 then
+			table.insert(entries, equipEntry(data, id, config.displayName, level))
 		end
 	end
 	return entries
@@ -155,7 +174,8 @@ function PerkService.toggleEquip(player: Player, data: ProfileManager.ProfileDat
 	if not config then
 		return false, "Unknown perk"
 	end
-	if MissionState.isParticipant(player) then
+	-- only in the hub and in the cabin's ready check (LoadoutWindow)
+	if not LoadoutWindow.isOpen(player) then
 		return false, "Perks are set before the run"
 	end
 	sanitize(data)

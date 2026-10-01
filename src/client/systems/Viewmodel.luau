@@ -16,6 +16,7 @@ local AnimationSequencer = require(script.Parent.AnimationSequencer)
 local PackViewmodel = require(script.Parent.PackViewmodel)
 local ViewmodelPackConfig = require(ReplicatedStorage.Shared.config.ViewmodelPackConfig)
 local HipAim = require(script.Parent.HipAim)
+local WallPullback = require(script.Parent.WallPullback)
 
 local Viewmodel = {}
 
@@ -236,6 +237,7 @@ function Viewmodel.setActive(value: boolean)
 	active = value
 	if not active then
 		destroyRig()
+		WallPullback.reset()
 		return
 	end
 	local weaponId = pendingWeaponId or player:GetAttribute("WeaponId")
@@ -502,6 +504,8 @@ local function stepPack(pack: PackViewmodel.Rig, deltaTime: number, camera: Came
 		+ Vector3.new(0, 0, tiltRoll.value.Z)
 	local placement = cameraCFrame * CFrame.new(position) * CFrame.Angles(rotation.X, rotation.Y, rotation.Z)
 	local moving = ExertionState.getSpeed() > 1
+	-- near a wall the gun draws in (WallPullback casts along the aim, eases the pose)
+	PackViewmodel.setWallPose(pack, WallPullback.update(deltaTime, cameraCFrame, pack.class))
 	PackViewmodel.step(pack, deltaTime, placement, moving, emitPhase)
 end
 

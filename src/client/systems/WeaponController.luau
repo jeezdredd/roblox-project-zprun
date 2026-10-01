@@ -18,6 +18,7 @@ local HipAim = require(script.Parent.HipAim)
 local AimAssist = require(script.Parent.AimAssist)
 local UiSfx = require(script.Parent.UiSfx)
 local UiTheme = require(script.Parent.Parent.ui.UiTheme)
+local WallPullback = require(script.Parent.WallPullback)
 local WeaponPickupClient = require(script.Parent.WeaponPickupClient)
 
 local WeaponController = {}
@@ -259,6 +260,11 @@ end
 local function tryFire(pressed: boolean)
 	local config = currentConfig()
 	if not config or not canAct() then
+		return
+	end
+	-- fully pulled back against a wall: the muzzle is inside it, nothing leaves until
+	-- it clears (partly pulled back, the gun fires)
+	if WallPullback.blocksFire() then
 		return
 	end
 	local now = os.clock()

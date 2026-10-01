@@ -100,6 +100,7 @@ Related: [[Overview]], [[Roadmap]], [[Decisions]].
 | da0ea7e | Audio: 32 CC0 recordings from The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey): gunshots from the AK-47, Walther PPQ, Benelli Nova and Carl Gustav M45, plus handling foley, uploaded via manifest -> `upload_assets.py` -> `refresh_status.py` -> `sync_configs.py` |
 | da0ea7e | Test aids: temporary `WeaponsConfig.ALL_WEAPONS_UNLOCKED` flag (keys 1-4 pick from `WeaponsConfig.order`, Q returns to the previous weapon); `DistanceTracker` honours the `DevFreezeRun` workspace attribute in Studio; `_to_delete/` (git-ignored) holds files that could not be deleted at the time |
 | `cloud/hit-markers` | Hit and kill markers (MW2019 hip fire): four diagonal ticks around the crosshair on the server's confirmation of the local shooter's hit (the sixth value of the `WeaponHit` "Shot" reply: damage dealt, head, kill), amber for a headshot, red and larger for a kill; `HitMarkerMath` with `tests/hitmarkers`; the "Hit markers" setting; sound slots `needed`. See [[Hit Markers]] |
+| `cloud/wall-pullback` | Wall pull-back (MW2019): a thin spherecast from the camera along the aim as long as the weapon's reach; the pack viewmodel draws in toward the chest and tilts up and aside through the hold channel (`PackViewmodel.setWallPose`), eased with no pop; no shot while fully pulled back; `WallPullbackMath` with `tests/wallpullback`. See [[Wall Pullback]] |
 
 ## Quality pass (2026-09-29)
 

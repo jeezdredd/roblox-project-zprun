@@ -7,6 +7,7 @@ day and night presets per biome, and per-chunk budgets with a Studio counter. Br
 the screenshot plan are in `docs/world/environment.md`, the assets it still wants in
 `docs/world/assets-needed.md`. See [[Gameplay Systems]] for run generation, [[Performance]]
 for the budgets it extends and [[Assets Pipeline]] for the variants and props it uses.
+[[Megascans]] imports Fab surfaces that replace these sets on the owner's machine.
 
 ## Files
 

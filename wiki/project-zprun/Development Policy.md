@@ -48,6 +48,9 @@ sends the fixes; the agent fixes, merges into `main` itself and pushes. The owne
 
 - Commits are authored by the owner; no trailers; no mention of the tools used.
 - No em or en dashes in any file.
+- Fab content (Fab Standard License): never committed; repo is public. Processed maps
+  and generated lists live in the gitignored `assets/fab/` and `src/shared/fab/`; only
+  manifest rows (ids, licence, a note) are committed (`docs/environment/megascans.md`).
 - Asset ids only from the manifest pipeline (manifest, `upload_assets.py`,
   `refresh_status.py`, `sync_configs.py`); never invented. No synthesized audio.
 - Before every commit: `selene src/`, `python3 tools/validate_api.py`,

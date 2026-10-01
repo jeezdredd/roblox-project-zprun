@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Generate src/shared/config/AssetIds.luau, assets/LICENSES.md, the prop surface
-templates (assets/props/surfaces.model.json) and the in-game credits
-(src/shared/config/CreditsConfig.luau) from the manifest.
+templates (assets/props/surfaces.model.json), the in-game credits
+(src/shared/config/CreditsConfig.luau) and the Megascans material variants (the
+TFZ_MS_* entries under MaterialService in default.project.json, plus the gitignored
+src/shared/fab/MegascansMaterials.luau) from the manifest.
 
 Manifest keys are slash separated (audio/footsteps/metal_01) and become nested
 Luau tables (AssetIds.audio.footsteps.metal_01). Entries without an approved
@@ -10,7 +12,10 @@ assetId are emitted as 0 so consumers stay silent instead of erroring.
 Usage:
     python3 scripts/sync_configs.py [--check]
 
---check exits non-zero if the generated files are out of date, for CI use.
+--check exits non-zero if the generated files are out of date, for CI use. The
+gitignored MegascansMaterials.luau is compared only where it exists (the owner's
+machine). Fab rows are checked against scripts/fab_files.py: no Fab file outside
+assets/fab/, and a Fab row without an asset id must have its file.
 """
 
 import argparse
@@ -19,12 +24,16 @@ import os
 import re
 import sys
 
+import fab_files
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFEST = os.path.join(ROOT, "assets", "manifest.json")
 LUAU_OUT = os.path.join(ROOT, "src", "shared", "config", "AssetIds.luau")
 LICENSES_OUT = os.path.join(ROOT, "assets", "LICENSES.md")
 SURFACES_OUT = os.path.join(ROOT, "assets", "props", "surfaces.model.json")
 CREDITS_OUT = os.path.join(ROOT, "src", "shared", "config", "CreditsConfig.luau")
+PROJECT_OUT = os.path.join(ROOT, "default.project.json")
+MEGASCANS_OUT = os.path.join(ROOT, "src", "shared", "fab", "MegascansMaterials.luau")
 
 # texture/props/<prop>_<suffix> -> SurfaceAppearance property
 SURFACE_MAPS = (
@@ -104,6 +113,13 @@ def render_licenses(manifest):
             "Entries marked `Roblox generative AI output (project owner)` are Cube 3D meshes and albedo maps "
             "produced by Roblox's GenerationService inside this project's own place and uploaded under the "
             "project owner's account; Roblox grants the generating creator the rights to use that output."
+        )
+    if any(fab_files.is_fab_licence(entry) for entry in manifest.values()):
+        rows.append("")
+        rows.append(
+            "Entries marked `Fab Standard License (Quixel Megascans)` are surfaces from the project owner's "
+            "Fab library, used only inside the shipped game. This repository is public, so it holds their "
+            "Roblox asset ids and notes but never the files (they stay under the gitignored `assets/fab/`)."
         )
     rows.append("")
     return "\n".join(rows)
@@ -376,6 +392,120 @@ def render_credits(manifest):
     return "\n".join(out)
 
 
+# Megascans surfaces (docs/environment/megascans.md). tools/megascans/import_surface.py
+# adds one row per map under texture/surface/megascans/<slot>_<map>; the colour row
+# carries the MaterialVariant settings ("material"). A variant is declared only once
+# every map of its set has a usable id, so a pending or rejected upload never puts a
+# blank variant (or a blank base-material override) into the place.
+
+MEGASCANS_PREFIX = "texture/surface/megascans/"
+MEGASCANS_MAPS = (
+    ("color", "ColorMap"),
+    ("normal", "NormalMap"),
+    ("roughness", "RoughnessMap"),
+    ("metalness", "MetalnessMap"),
+)
+MEGASCANS_REQUIRED = ("color", "normal", "roughness")
+VARIANT_PREFIX = "TFZ_MS_"
+MATERIAL_FIELDS = ("variant", "baseMaterial", "studsPerTile")
+
+
+class MegascansError(Exception):
+    pass
+
+
+def megascans_sets(manifest):
+    sets = []
+    for key in sorted(manifest):
+        if not (key.startswith(MEGASCANS_PREFIX) and key.endswith("_color")):
+            continue
+        slot = key[len(MEGASCANS_PREFIX):-len("_color")]
+        material = manifest[key].get("material")
+        if not isinstance(material, dict) or any(field not in material for field in MATERIAL_FIELDS):
+            raise MegascansError(f"{key}: no \"material\" settings ({', '.join(MATERIAL_FIELDS)})")
+        if not str(material["variant"]).startswith(VARIANT_PREFIX):
+            raise MegascansError(f"{key}: variant {material['variant']} does not start with {VARIANT_PREFIX}")
+        ids = {}
+        for suffix, _ in MEGASCANS_MAPS:
+            entry = manifest.get(f"{MEGASCANS_PREFIX}{slot}_{suffix}")
+            if entry is not None:
+                ids[suffix] = usable_id(entry)
+            elif suffix in MEGASCANS_REQUIRED:
+                raise MegascansError(f"{key}: no {MEGASCANS_PREFIX}{slot}_{suffix} row")
+        sets.append({
+            "slot": slot,
+            "variant": material["variant"],
+            "asset": material.get("asset") or slot,
+            "baseMaterial": material["baseMaterial"],
+            "studsPerTile": material["studsPerTile"],
+            "pattern": material.get("pattern") or "Regular",
+            "override": bool(material.get("override")),
+            "replaces": material.get("replaces"),
+            "ids": ids,
+            "ready": all(ids.values()),
+        })
+    return sets
+
+
+def render_project(sets, text):
+    """default.project.json with the TFZ_MS_* MaterialVariants rewritten from the
+    ready sets; everything else is left exactly as it was (the file round-trips
+    through json.dumps with indent 2)."""
+    project = json.loads(text)
+    service = project["tree"]["MaterialService"]
+    for name in [name for name in service if name.startswith(VARIANT_PREFIX)]:
+        del service[name]
+    for entry in sets:
+        if not entry["ready"]:
+            continue
+        properties = {"BaseMaterial": entry["baseMaterial"]}
+        for suffix, prop in MEGASCANS_MAPS:
+            if suffix in entry["ids"]:
+                properties[prop] = f"rbxassetid://{entry['ids'][suffix]}"
+        properties["StudsPerTile"] = entry["studsPerTile"]
+        if entry["pattern"] != "Regular":
+            properties["MaterialPattern"] = entry["pattern"]
+        service[entry["variant"]] = {"$className": "MaterialVariant", "$properties": properties}
+    return json.dumps(project, indent=2, ensure_ascii=False) + "\n"
+
+
+def _lua_number(value):
+    return str(int(value)) if float(value).is_integer() else repr(float(value))
+
+
+def render_megascans(sets):
+    out = [
+        "--!strict",
+        "",
+        "-- Generated by scripts/sync_configs.py from assets/manifest.json. Do not edit by hand.",
+        "-- Local only: src/shared/fab/ is gitignored (Fab content is never committed, the",
+        "-- repository is public). MaterialUtil reads this list when it exists and keeps its",
+        "-- own sets when it does not. Only sets whose maps all have asset ids are listed;",
+        "-- their MaterialVariants are the TFZ_MS_* entries in default.project.json.",
+        "-- See docs/environment/megascans.md.",
+        "",
+    ]
+    body = []
+    for entry in sets:
+        if not entry["ready"]:
+            continue
+        body.append("\t{")
+        body.append(f"\t\tname = {_lua_string(entry['variant'])},")
+        body.append(f"\t\tasset = {_lua_string(entry['asset'])},")
+        body.append(f"\t\tbaseMaterial = {_lua_string(entry['baseMaterial'])},")
+        for suffix, _ in MEGASCANS_MAPS:
+            if suffix in entry["ids"]:
+                body.append(f"\t\t{suffix} = {entry['ids'][suffix]},")
+        body.append(f"\t\tstudsPerTile = {_lua_number(entry['studsPerTile'])},")
+        body.append(f"\t\toverride = {'true' if entry['override'] else 'false'},")
+        if entry["replaces"]:
+            body.append(f"\t\treplaces = {_lua_string(entry['replaces'])},")
+        body.append("\t},")
+    out.extend(["return {", *body, "}"] if body else ["return {}"])
+    out.append("")
+    return "\n".join(out)
+
+
 def write_if_changed(path, content, check_only):
     existing = None
     if os.path.exists(path):
@@ -407,8 +537,27 @@ def main():
         return 1
     credits_changed = write_if_changed(CREDITS_OUT, credits, arguments.check)
 
+    problems = fab_files.problems(manifest, ROOT)
+    if problems:
+        print("Fab rows:")
+        for line in problems:
+            print(f"  {line}")
+        return 1
+    try:
+        sets = megascans_sets(manifest)
+    except MegascansError as error:
+        print(f"megascans: {error}")
+        return 1
+    with open(PROJECT_OUT) as handle:
+        project_changed = write_if_changed(PROJECT_OUT, render_project(sets, handle.read()), arguments.check)
+    # the list is local only: written where there are Megascans rows (or an old list to
+    # update), compared by --check only where it exists
+    megascans_changed = False
+    if os.path.exists(MEGASCANS_OUT) or (sets and not arguments.check):
+        megascans_changed = write_if_changed(MEGASCANS_OUT, render_megascans(sets), arguments.check)
+
     if arguments.check:
-        if luau_changed or licenses_changed or surfaces_changed or credits_changed:
+        if luau_changed or licenses_changed or surfaces_changed or credits_changed or project_changed or megascans_changed:
             print("generated files are out of date, run scripts/sync_configs.py")
             return 1
         print("generated files up to date")

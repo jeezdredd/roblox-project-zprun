@@ -3,7 +3,9 @@
 
 Reads assets/manifest.json, uploads each pending entry whose file exists,
 polls the operation until moderation resolves, and writes the resulting
-assetId and status back into the manifest.
+assetId and status back into the manifest. Rows that already have an assetId
+are skipped without looking at their file, so the Fab rows (files under
+assets/fab/, gitignored, see scripts/fab_files.py) are fine in any clone.
 
 Usage:
     python3 scripts/upload_assets.py [--dry-run] [--only PREFIX]
@@ -18,6 +20,8 @@ import os
 import subprocess
 import sys
 import time
+
+import fab_files
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFEST = os.path.join(ROOT, "assets", "manifest.json")
@@ -134,11 +138,17 @@ def main():
     for key, entry in manifest.items():
         if arguments.only and not key.startswith(arguments.only):
             continue
-        if entry.get("assetId"):
+        # an uploaded row is never re-read, so its file may be absent; for Fab rows
+        # (assets/fab/, gitignored) that is the normal state outside the owner's machine
+        if fab_files.has_id(entry):
             continue
         path = os.path.join(ROOT, entry.get("file", ""))
         if not entry.get("file") or not os.path.exists(path):
-            print(f"skip  {key}: file missing ({entry.get('file')})")
+            if fab_files.is_fab_file(entry):
+                print(f"skip  {key}: Fab file missing ({entry.get('file')}), import it on the owner's machine "
+                      "with tools/megascans/import_surface.py")
+            else:
+                print(f"skip  {key}: file missing ({entry.get('file')})")
             continue
         asset_type = asset_type_for(key, path)
         if asset_type is None:

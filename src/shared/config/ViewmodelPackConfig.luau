@@ -165,7 +165,11 @@ ViewmodelPackConfig.classes = {
 		move = "Walk",
 		fire = "Fire",
 		reload = { "Reload" },
-		tactical = { clip = "Reload", to = 0.54, blendOut = 0.35 },
+		-- The clip only returns the rifle from the mag-in pose (vertical, by the face) while
+		-- the hand racks the bolt, 0.54..0.83. Cut at 0.54, a 0.35 s synthetic blend swung
+		-- the gun down through the frame and out of view for a frame (the owner's recording,
+		-- 2026-10-01); the tactical plays through the rack like the empty one.
+		tactical = { clip = "Reload", to = 0.83, blendOut = 0.2 },
 		empty = { clip = "Reload", to = 0.83, blendOut = 0.2 },
 		phases = {
 			Reload = {

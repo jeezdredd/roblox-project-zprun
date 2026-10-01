@@ -41,3 +41,8 @@ __pycache__/
 
 # selene std generated locally (selene generate-roblox-std)
 roblox.yml
+
+AGENTS.md
+CLAUDE.md
+.codex/
+.claude/

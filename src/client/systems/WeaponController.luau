@@ -61,6 +61,77 @@ local pendingShot = false
 local burstShots = 0
 local lastBurstAt = 0
 local tracerCounter = 0
+-- client-side spread for the shooter's own predicted tracers and impacts
+local shotRandom = Random.new()
+local predictParams = RaycastParams.new()
+predictParams.FilterType = Enum.RaycastFilterType.Exclude
+
+-- Tracers, impact puffs and impact sounds for one shot. The shooter draws these the
+-- frame the shot leaves (predictShot); everyone else draws them from the server's Shot.
+local function drawShot(hits: { WeaponSfx.Hit }, from: Vector3, config: WeaponsConfig.WeaponConfig?, direction: Vector3?)
+	tracerCounter += 1
+	local everyThird = config ~= nil and config.auto
+	local showTracer = not everyThird or tracerCounter % 3 == 0
+	for _, hit in hits do
+		WeaponVfx.impact(hit.position, hit.normal, hit.material)
+		if showTracer then
+			WeaponVfx.tracer(from, hit.position)
+		end
+	end
+	WeaponSfx.playImpacts(hits)
+	if #hits == 0 and showTracer and config and direction and direction.Magnitude > 0 then
+		WeaponVfx.tracer(from, from + direction.Unit * config.range)
+	end
+end
+
+local function findHumanoidModel(instance: Instance): Model?
+	local current: Instance? = instance
+	while current and current ~= Workspace do
+		if current:IsA("Model") and current:FindFirstChildOfClass("Humanoid") then
+			return current
+		end
+		current = current.Parent
+	end
+	return nil
+end
+
+-- The shooter's own shot, drawn at once from a client ray with the same spread rule
+-- as WeaponService. Damage stays the server's (it rays the same origin and direction
+-- and validates them); waiting for its Shot reply put every tracer and impact one round
+-- trip behind the muzzle flash, and the tracer then started from wherever the viewmodel
+-- had moved to.
+local function predictShot(config: WeaponsConfig.WeaponConfig, origin: Vector3, direction: Vector3)
+	local filter: { Instance } = { Workspace.CurrentCamera }
+	if player.Character then
+		table.insert(filter, player.Character)
+	end
+	local vfxFolder = Workspace:FindFirstChild("WeaponVfx")
+	if vfxFolder then
+		table.insert(filter, vfxFolder)
+	end
+	predictParams.FilterDescendantsInstances = filter
+	local hits: { WeaponSfx.Hit } = {}
+	local unit = direction.Unit
+	for _ = 1, config.pellets do
+		local shotDirection = unit
+		if config.pellets > 1 or config.spreadDeg > 0 then
+			local spread = math.rad(config.spreadDeg)
+			local up = if math.abs(unit.Y) > 0.999 then Vector3.xAxis else Vector3.yAxis
+			shotDirection = (CFrame.lookAt(Vector3.zero, unit, up) * CFrame.Angles(shotRandom:NextNumber(-spread, spread), shotRandom:NextNumber(-spread, spread), 0)).LookVector
+		end
+		local result = Workspace:Raycast(origin, shotDirection * config.range, predictParams)
+		if result then
+			local model = findHumanoidModel(result.Instance)
+			local isZombie = model ~= nil and Players:GetPlayerFromCharacter(model) == nil
+			table.insert(hits, {
+				position = result.Position,
+				normal = result.Normal,
+				material = if isZombie then "Flesh" else result.Instance.Material.Name,
+			})
+		end
+	end
+	drawShot(hits, Viewmodel.getMuzzlePosition(), config, direction)
+end
 local lastWeaponId: string? = nil
 local previousWeaponId: string? = nil
 -- the Studio "empty" debug command fakes an empty mag; keep reconcile off it for a bit
@@ -239,6 +310,7 @@ local function tryFire(pressed: boolean)
 	WeaponSfx.playShot(config.id, predictedMag, Viewmodel.getMuzzlePosition())
 	Viewmodel.onFired(config)
 	WeaponVfx.muzzleFlash(Viewmodel.getMuzzleAttachment(), config.id)
+	predictShot(config, origin, direction)
 	-- the pump ejects its hull on the pump stroke instead (see the phase listener)
 	if config.ejectOnFire then
 		ejectCasing(config)
@@ -510,26 +582,9 @@ local function onWeaponHit(kind: string, ...: any)
 		local origin, hits, shooter, weaponId = ...
 		local isLocal = shooter == player
 		local config = if typeof(weaponId) == "string" then WeaponsConfig.get(weaponId) else nil
-		tracerCounter += 1
-		local everyThird = config ~= nil and config.auto
-		local showTracer = not everyThird or tracerCounter % 3 == 0
-		if typeof(hits) == "table" then
-			local from = if isLocal then Viewmodel.getMuzzlePosition() else origin
-			for _, hit in hits :: { WeaponSfx.Hit } do
-				WeaponVfx.impact(hit.position, hit.normal, hit.material)
-				if showTracer then
-					WeaponVfx.tracer(from, hit.position)
-				end
-			end
-			WeaponSfx.playImpacts(hits :: { WeaponSfx.Hit })
-			if #hits == 0 and showTracer and config and typeof(origin) == "Vector3" then
-				local direction = if isLocal
-					then Workspace.CurrentCamera.CFrame.LookVector
-					else Vector3.new(0, 0, 0)
-				if direction.Magnitude > 0 then
-					WeaponVfx.tracer(from, from + direction * config.range)
-				end
-			end
+		-- the shooter already drew this shot when it left (predictShot)
+		if not isLocal and typeof(hits) == "table" and typeof(origin) == "Vector3" then
+			drawShot(hits :: { WeaponSfx.Hit }, origin, config, nil)
 		end
 		if not isLocal and typeof(origin) == "Vector3" and typeof(weaponId) == "string" then
 			WeaponSfx.playDistantShot(origin, weaponId)

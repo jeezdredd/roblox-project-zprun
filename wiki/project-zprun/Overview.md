@@ -41,3 +41,4 @@ The project is built with Rojo + Wally + Selene in Luau `--!strict`. Server code
 - [[Decisions]]: recorded technical decisions and the reasoning behind them.
 - [[Roadmap]]: what is done, in progress and planned.
 - [[Route Forks]]: branching route choice, branches, hazards, status board.
+- [[Development Policy]]: how work is done and checked, who owns which area.

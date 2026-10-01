@@ -651,6 +651,11 @@ local CASING_MAX_ACTIVE = 40 -- across calibers; the oldest is recycled past thi
 local CASING_LIFETIME = 3
 local CASING_FADE_TIME = 0.25
 local CASING_MAX_DISTANCE = 120
+-- A casing handed from the view to the world triples in size (view scale to world
+-- scale) on the spot, about 0.7 studs from the eye: a dark rod flicked across the
+-- screen on every shot (the owner's recording, 2026-10-01). World casings closer to
+-- the camera than this stay hidden; they show once they have fallen behind or landed.
+local CASING_NEAR_HIDE = 4
 local CASING_VIEW_TIME = NumberRange.new(0.25, 0.35)
 -- world-down, re-expressed in camera space each frame
 local CASING_VIEW_GRAVITY = 18
@@ -1055,6 +1060,11 @@ local function stepCasings(dt: number, camera: Camera)
 		local remaining = casing.lifetime - casing.age
 		if remaining < CASING_FADE_TIME then
 			setCasingTransparency(casing, 1 - remaining / CASING_FADE_TIME)
+		elseif casing.state == STATE_WORLD then
+			local hidden = if (casing.pos - cameraPosition).Magnitude < CASING_NEAR_HIDE then 1 else 0
+			if casing.body.Transparency ~= hidden then
+				setCasingTransparency(casing, hidden)
+			end
 		end
 	end
 

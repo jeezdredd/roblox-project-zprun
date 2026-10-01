@@ -492,3 +492,10 @@ from real uploads, and nothing extracted from other games. See `docs/asset-polic
 
 **Consequence.** The retarget runs anywhere with Python and numpy; the Blender path in the same folder stays for the old FBX clips.
 
+## 2026-10-01: Development policy revised
+
+**Decision.** The server stays authoritative for game state; the shooter's own visual and audio feedback (tracers, impacts, casings, flash) is drawn by the client at once. Animation, camera and VFX changes are checked as motion (slowed clips, sampled gait cycles, the owner's recordings at their own frame rate), not stills. Area ownership between the main session and the cloud agent is fixed. Full text: [[Development Policy]].
+
+**Reason.** The owner's recordings of 2026-09-30 and 2026-10-01 showed one-frame problems the still-screenshot checks missed (a casing tripling in size next to the eye, the rifle vanishing for a frame at the end of a reload, the pelvis rolled 60 degrees by the foot IK), and tracers drawn a round trip late from the server's reply.
+
+**Consequence.** `WeaponController.predictShot` draws the shooter's tracers and impacts; the server's `Shot` is drawn only for other players. Reports name what was checked and what was not.

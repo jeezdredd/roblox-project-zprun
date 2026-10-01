@@ -21,9 +21,9 @@ Anything marked **CC-BY** obliges us to credit the named author in the shipped g
 | `animation/player/rifle_strafe_right` | Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html | Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Strafe | 106993284172414 | approved |
 | `animation/player/rifle_walk` | Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html | Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Rifle Walk | 107509447603332 | approved |
 | `animation/player/run` | Original work (project owner) | pending | 130134481942797 | approved |
-| `animation/player/sit_idle` |  |  | — | needed |
-| `animation/player/strafe_left` | Original work (project owner) | pending | — | pending |
-| `animation/player/strafe_right` | Original work (project owner) | pending | — | pending |
+| `animation/player/sit_idle` |  |  | none | needed |
+| `animation/player/strafe_left` | Original work (project owner) | pending | none | pending |
+| `animation/player/strafe_right` | Original work (project owner) | pending | none | pending |
 | `animation/player/stumble` | CC0 1.0 Universal | Quaternius Universal Animation Library 2 (CC0), https://quaternius.com/packs/universalanimationlibrary2.html | 78964987584801 | approved |
 | `animation/weapon/equip` | Sole Proprietor Sevastyan (jeezdredd) | authored in Blender (pending) | 0 | pending |
 | `animation/weapon/fire` | Sole Proprietor Sevastyan (jeezdredd) | authored in Blender (pending) | 0 | pending |
@@ -63,7 +63,7 @@ Anything marked **CC-BY** obliges us to credit the named author in the shipped g
 | `animation/zombie_sf/walker/walk_a` | CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author | "Zombie" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py | 122053638510657 | approved |
 | `animation/zombie_sf/walker/walk_b` | CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author | "Zombie" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip 'Walk1' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py | 83743257675643 | approved |
 | `audio/city/helicopter` | Public domain | [link](https://commons.wikimedia.org/wiki/File:Helicopter_over_quiet_neighbourhood.ogg) | 140722208536221 | approved |
-| `audio/city/siren_ambulance` |  |  | — | needed |
+| `audio/city/siren_ambulance` |  |  | none | needed |
 | `audio/city/siren_civil` | Public domain | [link](https://commons.wikimedia.org/wiki/File:Civil-defense-siren-waver.ogg) | 125737593545616 | approved |
 | `audio/city/siren_facility` | CC0 | [link](https://opengameart.org/content/facility-alert-siren) | 75728715286944 | approved |
 | `audio/city/siren_police` | Public domain - lezer | [link](https://commons.wikimedia.org/wiki/File:American_police_siren_i.ogg) | 120683554803999 | rejected |
@@ -110,15 +110,17 @@ Anything marked **CC-BY** obliges us to credit the named author in the shipped g
 | `audio/ui/click` | CC0 | [link](https://kenney.nl/assets/interface-sounds) | 133624826489555 | approved |
 | `audio/ui/countdown_go` | CC0 | [link](https://kenney.nl/assets/interface-sounds) | 129265379079595 | approved |
 | `audio/ui/countdown_tick` | CC0 | [link](https://kenney.nl/assets/interface-sounds) | 82455130321663 | approved |
+| `audio/ui/hit_marker` |  |  | none | needed |
 | `audio/ui/hover` | CC0 | [link](https://kenney.nl/assets/interface-sounds) | 114789742656759 | approved |
+| `audio/ui/kill_marker` |  |  | none | needed |
 | `audio/ui/reward_tick` | CC0 | [link](https://kenney.nl/assets/interface-sounds) | 113785737468412 | approved |
 | `audio/unused/shot_auto` | CC0 | [link](https://opengameart.org/content/light-machine-gun) | 116318686810257 | approved |
 | `audio/unused/shot_core` | Public domain | [link](https://commons.wikimedia.org/wiki/File:Gunshots_8.ogg) | 75663090422099 | approved |
 | `audio/unused/siren_police_rejected` | Public domain | [link](https://commons.wikimedia.org/wiki/File:American_police_siren_i.ogg) | 128523035804310 | rejected |
 | `audio/unused/step_gravel_loop` | CC0 | [link](https://commons.wikimedia.org/wiki/File:Walking-on-gravel-38827.ogg) | 75914567135656 | approved |
-| `audio/upgrade/announcer_max` |  |  | — | needed |
-| `audio/upgrade/announcer_upgrade_01` |  |  | — | needed |
-| `audio/upgrade/announcer_upgrade_02` |  |  | — | needed |
+| `audio/upgrade/announcer_max` |  |  | none | needed |
+| `audio/upgrade/announcer_upgrade_01` |  |  | none | needed |
+| `audio/upgrade/announcer_upgrade_02` |  |  | none | needed |
 | `audio/weapons/bolt` | CC0 | [link](https://kenney.nl/assets/impact-sounds) | 118765487481144 | approved |
 | `audio/weapons/casing_brass_01` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/); BigSoundBank/LaSonotheque public-domain release, https://bigsoundbank.com/licenses.html | BigSoundBank (Joseph Sardin), "Cartridge case 9 mm on concrete #5" (sound 1359, 48 kHz/24-bit mono FLAC original), https://bigsoundbank.com/s1359.html (0.050-0.470 s window), trimmed/normalized by tools: mono original, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6 | 80918178478655 | approved |
 | `audio/weapons/casing_brass_02` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/); BigSoundBank/LaSonotheque public-domain release, https://bigsoundbank.com/licenses.html | BigSoundBank (Joseph Sardin), "Cartridge case 7.62mm on concrete #3" (sound 1369, 48 kHz/24-bit mono FLAC original), https://bigsoundbank.com/s1369.html (0.040-0.500 s window), trimmed/normalized by tools: mono original, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6 | 72000465242962 | approved |
@@ -138,36 +140,36 @@ Anything marked **CC-BY** obliges us to credit the named author in the shipped g
 | `audio/weapons/close_smg_02` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 3.506 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.16 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py) | 113548570793732 | approved |
 | `audio/weapons/close_smg_03` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Prepared SFX Library, Carl Gustav M45 G_31P.wav (the author's own mix of the range recordings), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, single shot at 6.730 s: blast and mechanism only, 0-0.13 s with a 20 ms crossfade before the range reflection; the two mics aligned (1.29 ms) and matched in RMS, 96 -> 48 kHz, 30 Hz high-pass, peak -1 dBFS, stereo OGG Vorbis q6 (tools/audio_build/build_shots_v6.py) | 133282540281128 | approved |
 | `audio/weapons/dryfire` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_7.wav (0.310-0.470 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6 | 116702103253689 | approved |
-| `audio/weapons/far_pistol` |  |  | — | needed |
-| `audio/weapons/far_rifle` |  |  | — | needed |
-| `audio/weapons/far_shotgun` |  |  | — | needed |
-| `audio/weapons/far_smg` |  |  | — | needed |
+| `audio/weapons/far_pistol` |  |  | none | needed |
+| `audio/weapons/far_rifle` |  |  | none | needed |
+| `audio/weapons/far_shotgun` |  |  | none | needed |
+| `audio/weapons/far_smg` |  |  | none | needed |
 | `audio/weapons/gunshot_sub_01` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_28.wav (near-distance single shots, 192 kHz/24-bit), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary (9.890-10.100 s window), trimmed/normalized by tools: stereo pair aligned and summed to mono, varispeed 16x slower (192 kHz master read at 12 kHz, 4 octaves down), 4th-order 110 Hz low-pass + 32 Hz high-pass, resampled to 44.1 kHz, 160 Hz low-pass, trimmed to <=1 ms before onset, 240 ms with 120 ms cosine fade-out, loudness-matched to -22 LUFS (100 ms K-weighted max, ~5 dB under close_rifle), OGG Vorbis q6 | 116392563598719 | approved |
 | `audio/weapons/gunshot_sub_02` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_28.wav (near-distance single shots, 192 kHz/24-bit), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary (1.070-1.280 s window), trimmed/normalized by tools: stereo pair aligned and summed to mono, varispeed 12x slower (192 kHz master read at 16 kHz, ~3.6 octaves down), 4th-order 110 Hz low-pass + 32 Hz high-pass, resampled to 44.1 kHz, 160 Hz low-pass, trimmed to <=1 ms before onset, 240 ms with 120 ms cosine fade-out, loudness-matched to -22 LUFS (100 ms K-weighted max, ~5 dB under close_rifle), OGG Vorbis q6 | 132554186829666 | approved |
-| `audio/weapons/impact_concrete_01` |  |  | — | needed |
-| `audio/weapons/impact_concrete_02` |  |  | — | needed |
-| `audio/weapons/impact_dirt_01` |  |  | — | needed |
-| `audio/weapons/impact_dirt_02` |  |  | — | needed |
-| `audio/weapons/impact_flesh_01` |  |  | — | needed |
-| `audio/weapons/impact_flesh_02` |  |  | — | needed |
-| `audio/weapons/impact_metal_01` |  |  | — | needed |
-| `audio/weapons/impact_metal_02` |  |  | — | needed |
-| `audio/weapons/impact_wood_01` |  |  | — | needed |
-| `audio/weapons/impact_wood_02` |  |  | — | needed |
+| `audio/weapons/impact_concrete_01` |  |  | none | needed |
+| `audio/weapons/impact_concrete_02` |  |  | none | needed |
+| `audio/weapons/impact_dirt_01` |  |  | none | needed |
+| `audio/weapons/impact_dirt_02` |  |  | none | needed |
+| `audio/weapons/impact_flesh_01` |  |  | none | needed |
+| `audio/weapons/impact_flesh_02` |  |  | none | needed |
+| `audio/weapons/impact_metal_01` |  |  | none | needed |
+| `audio/weapons/impact_metal_02` |  |  | none | needed |
+| `audio/weapons/impact_wood_01` |  |  | none | needed |
+| `audio/weapons/impact_wood_02` |  |  | none | needed |
 | `audio/weapons/last_round` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_13.wav (0.985-1.062 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6 | 88253867216250 | approved |
 | `audio/weapons/low_ammo_click` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_15.wav (0.540-0.640 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 1.2 kHz 4th-order high-pass (keeps only the metallic tink), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6 | 110328617846032 | approved |
 | `audio/weapons/mag_drop` | CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/) - attribution required: "Drop mag 05" by GreenFireSound, https://freesound.org/s/481071/, modified (trimmed, filtered, normalized) | freesound "Drop mag 05.wav" by GreenFireSound (sound 481071, pack "Interact", tags weapon/drop/magazine), https://freesound.org/people/GreenFireSound/sounds/481071/, HQ Vorbis preview (original download needs a login) (0.030-0.430 s window), trimmed/normalized by tools: dual-mono preview to mono, 150 Hz high-pass (rumble/handling removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6 | 131493675012408 | approved |
 | `audio/weapons/mag_in` | CC0 | [link](https://kenney.nl/assets/impact-sounds) | 128060588767848 | approved |
 | `audio/weapons/mag_out` | CC0 | [link](https://kenney.nl/assets/impact-sounds) | 105859367449536 | approved |
-| `audio/weapons/mid_pistol` |  |  | — | needed |
-| `audio/weapons/mid_rifle` |  |  | — | needed |
-| `audio/weapons/mid_shotgun` |  |  | — | needed |
-| `audio/weapons/mid_smg` |  |  | — | needed |
+| `audio/weapons/mid_pistol` |  |  | none | needed |
+| `audio/weapons/mid_rifle` |  |  | none | needed |
+| `audio/weapons/mid_shotgun` |  |  | none | needed |
+| `audio/weapons/mid_smg` |  |  | none | needed |
 | `audio/weapons/pistol_mag_in` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_2.wav (0.747-1.020 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6 | 100629909517887 | approved |
 | `audio/weapons/pistol_mag_out` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_3.wav (0.780-1.220 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6 | 130384486505953 | approved |
 | `audio/weapons/pistol_slide_back` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_6.wav (0.680-1.060 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6 | 118111142268478 | approved |
 | `audio/weapons/pistol_slide_release` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), Walther PPQ master track X_16.wav (0.880-1.160 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6 | 123219379775854 | approved |
-| `audio/weapons/ricochet_01` |  |  | — | needed |
+| `audio/weapons/ricochet_01` |  |  | none | needed |
 | `audio/weapons/rifle_bolt_back` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_12.wav (0.140-0.470 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6 | 101881794720220 | approved |
 | `audio/weapons/rifle_bolt_forward` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_13.wav (0.185-0.420 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6 | 72631878016479 | approved |
 | `audio/weapons/rifle_mag_in` | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | The Free Firearm Sound Library (Ben Jaszczak; GitHub mirror by buddingmonkey), AK-47 master track C_10.wav (0.288-0.520 s window), https://github.com/buddingmonkey/FreeFirearmsSFXLibrary, trimmed/normalized by tools: dual-mono take to mono, 90 Hz high-pass (rumble/hum removal), trimmed to <=3 ms before the first transient, cosine fade-out, resampled to 44.1 kHz, loudness-matched to -28 LUFS (100 ms K-weighted max) with a -6 dBFS peak ceiling, OGG Vorbis q6 | 103835801234005 | approved |

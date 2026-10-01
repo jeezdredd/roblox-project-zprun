@@ -449,6 +449,22 @@
     "assetId": "113785737468412",
     "status": "approved"
   },
+  "audio/ui/hit_marker": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Hit marker tick on the server's confirmation of damage by the local shooter (HitMarkers, HitMarkerConfig.SOUND_HIT), played 2D in the UI class only when the id is non-zero; silent until then. A dry, short (under 60 ms) high tick, MW2019 hip fire style. The approved UI sounds were considered and not reused: countdown_tick is the squad launch cue and reward_tick the pickup cue, a shared sound would blur them. Candidates: Kenney Interface Sounds (CC0, https://kenney.nl/assets/interface-sounds) 'tick' or 'click' variants not yet in the manifest; freesound CC0 'hitmarker' / 'tick'; a recording by the owner. No synthesized audio."
+  },
+  "audio/ui/kill_marker": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Kill marker on a confirmed kill by the local shooter (HitMarkers, HitMarkerConfig.SOUND_KILL), played 2D in the UI class only when the id is non-zero; silent until then. Heavier than the hit tick (a low thud under a tick). Candidates: Kenney Impact Sounds (CC0, https://kenney.nl/assets/impact-sounds) soft impact variants not yet in the manifest; freesound CC0 'kill confirm'; a recording by the owner. No synthesized audio."
+  },
   "audio/unused/step_gravel_loop": {
     "source": "https://commons.wikimedia.org/wiki/File:Walking-on-gravel-38827.ogg",
     "license": "CC0",

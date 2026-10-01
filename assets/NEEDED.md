@@ -12,44 +12,46 @@ only, no synthesis, no invented ids.
 | Slot | Used by | What to look for | Priority | Status |
 | --- | --- | --- | --- | --- |
 | `animation/player/sit_idle` | AnimationController: seated idle in the helicopter cabin (SIT_CLIP) | Mixamo: Sitting Idle (in place); Quaternius UAL (CC0) sit | polish | needed |
-| `animation/player/strafe_left` | AnimationController — lateral dodge | Mixamo: Left Strafe (in place) | blocker | pending |
-| `animation/player/strafe_right` | AnimationController — lateral dodge | Mixamo: Right Strafe (in place) | blocker | pending |
-| `animation/weapon/equip` | Viewmodel — replaces procedural raise | Universal Viewmodel Template: raise/equip | polish | pending |
-| `animation/weapon/fire` | Viewmodel — clip layer over spring recoil | Universal Viewmodel Template: fire | polish | pending |
-| `animation/weapon/inspect` | Viewmodel — F key inspect | Universal Viewmodel Template: inspect | polish | pending |
-| `animation/weapon/reload` | Viewmodel — replaces procedural reload | Universal Viewmodel Template: reload | polish | pending |
-| `animation/weapon/sprint` | Viewmodel — sprint carry pose | Universal Viewmodel Template: sprint/run | polish | pending |
+| `animation/player/strafe_left` | AnimationController: lateral dodge | Mixamo: Left Strafe (in place) | blocker | pending |
+| `animation/player/strafe_right` | AnimationController: lateral dodge | Mixamo: Right Strafe (in place) | blocker | pending |
+| `animation/weapon/equip` | Viewmodel: replaces procedural raise | Universal Viewmodel Template: raise/equip | polish | pending |
+| `animation/weapon/fire` | Viewmodel: clip layer over spring recoil | Universal Viewmodel Template: fire | polish | pending |
+| `animation/weapon/inspect` | Viewmodel: F key inspect | Universal Viewmodel Template: inspect | polish | pending |
+| `animation/weapon/reload` | Viewmodel: replaces procedural reload | Universal Viewmodel Template: reload | polish | pending |
+| `animation/weapon/sprint` | Viewmodel: sprint carry pose | Universal Viewmodel Template: sprint/run | polish | pending |
 
 ## Audio
 
 | Slot | Used by | What to look for | Priority | Status |
 | --- | --- | --- | --- | --- |
-| `audio/city/siren_ambulance` | — | — | polish | needed |
-| `audio/city/siren_police` | — | — | polish | rejected |
-| `audio/range/gong` | Shooting range — gong hit feedback | Freesound CC0: metal gong hit / steel target ping | blocker | rejected |
-| `audio/unused/siren_police_rejected` | — | — | polish | rejected |
+| `audio/city/siren_ambulance` | none | none | polish | needed |
+| `audio/city/siren_police` | none | none | polish | rejected |
+| `audio/range/gong` | Shooting range: gong hit feedback | Freesound CC0: metal gong hit / steel target ping | blocker | rejected |
+| `audio/ui/hit_marker` | HitMarkers: the hit tick on a confirmed hit | Kenney Interface Sounds (CC0) tick; freesound CC0 'hitmarker'; a recording. Never synthesized | polish | needed |
+| `audio/ui/kill_marker` | HitMarkers: the kill marker on a confirmed kill | Kenney Impact Sounds (CC0) soft impact; freesound CC0 'kill confirm'; a recording. Never synthesized | polish | needed |
+| `audio/unused/siren_police_rejected` | none | none | polish | rejected |
 | `audio/upgrade/announcer_max` | UpgradeStations / WeaponPickupClient: announcer when the weapon is at max level | Kenney Voiceover Pack (CC0) 'max' / 'that is the limit'; freesound CC0 'announcer maximum'; a recorded line. Never generated speech | polish | needed |
 | `audio/upgrade/announcer_upgrade_01` | UpgradeStations / WeaponPickupClient: announcer on a successful upgrade, take 1 | Kenney Voiceover Pack (CC0) 'power up' / 'excellent'; freesound CC0 'announcer upgrade'; a recorded line. Never generated speech | polish | needed |
 | `audio/upgrade/announcer_upgrade_02` | UpgradeStations / WeaponPickupClient: announcer on a successful upgrade, take 2 | Kenney Voiceover Pack (CC0) 'upgrade' / 'nice'; freesound CC0 'announcer upgrade'; a recorded line. Never generated speech | polish | needed |
-| `audio/weapons/far_pistol` | WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
-| `audio/weapons/far_rifle` | WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
-| `audio/weapons/far_shotgun` | WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
-| `audio/weapons/far_smg` | WeaponSfx.playDistantShot — GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
-| `audio/weapons/impact_concrete_01` | WeaponSfx.playImpacts — bullet on stone (Kenney land_hard stands in) | freesound CC0 'bullet impact concrete' | polish | needed |
-| `audio/weapons/impact_concrete_02` | WeaponSfx.playImpacts — bullet on stone, variation | freesound CC0 'bullet impact concrete' | polish | needed |
-| `audio/weapons/impact_dirt_01` | WeaponSfx.playImpacts — bullet on soil (Kenney land_soft stands in) | freesound CC0 'bullet impact dirt' | polish | needed |
-| `audio/weapons/impact_dirt_02` | WeaponSfx.playImpacts — bullet on soil, variation | freesound CC0 'bullet impact dirt' | polish | needed |
-| `audio/weapons/impact_flesh_01` | WeaponSfx.playImpacts — bullet on a body (Kenney bite stands in) | freesound CC0 'bullet impact flesh' | polish | needed |
-| `audio/weapons/impact_flesh_02` | WeaponSfx.playImpacts — bullet on a body, variation | freesound CC0 'bullet impact flesh' | polish | needed |
-| `audio/weapons/impact_metal_01` | WeaponSfx.playImpacts — bullet on metal (Kenney bolt stands in) | freesound CC0 'bullet impact metal' | polish | needed |
-| `audio/weapons/impact_metal_02` | WeaponSfx.playImpacts — bullet on metal, variation | freesound CC0 'bullet impact metal' | polish | needed |
-| `audio/weapons/impact_wood_01` | WeaponSfx.playImpacts — bullet on wood (Kenney land_soft stands in) | freesound CC0 'bullet impact wood' | polish | needed |
-| `audio/weapons/impact_wood_02` | WeaponSfx.playImpacts — bullet on wood, variation | freesound CC0 'bullet impact wood' | polish | needed |
-| `audio/weapons/mid_pistol` | WeaponSfx.playDistantShot — GunshotRemote mid layer, 40..350 studs | FFSL Prepared: Walther PPQ mid-distance row, cut with tools/audio_build/build_shots_v6.py | polish | needed |
-| `audio/weapons/mid_rifle` | WeaponSfx.playDistantShot — GunshotRemote mid layer, 40..350 studs | FFSL Prepared: AK-47 C_31P.wav, cut with tools/audio_build/build_shots_v6.py | polish | needed |
-| `audio/weapons/mid_shotgun` | WeaponSfx.playDistantShot — GunshotRemote mid layer, 40..350 studs | FFSL Prepared: Benelli Nova mid-distance row, cut with tools/audio_build/build_shots_v6.py | polish | needed |
-| `audio/weapons/mid_smg` | WeaponSfx.playDistantShot — GunshotRemote mid layer, 40..350 studs | FFSL Prepared: Carl Gustav M45 mid-distance row, cut with tools/audio_build/build_shots_v6.py | polish | needed |
-| `audio/weapons/ricochet_01` | WeaponSfx.playImpacts — one hard hit in six | freesound CC0 'ricochet' | polish | needed |
+| `audio/weapons/far_pistol` | WeaponSfx.playDistantShot: GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
+| `audio/weapons/far_rifle` | WeaponSfx.playDistantShot: GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
+| `audio/weapons/far_shotgun` | WeaponSfx.playDistantShot: GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
+| `audio/weapons/far_smg` | WeaponSfx.playDistantShot: GunshotRemote far layer, 250..1400 studs | freesound CC0 'distant gunshot'; BigSoundBank 'gunshot far' | polish | needed |
+| `audio/weapons/impact_concrete_01` | WeaponSfx.playImpacts: bullet on stone (Kenney land_hard stands in) | freesound CC0 'bullet impact concrete' | polish | needed |
+| `audio/weapons/impact_concrete_02` | WeaponSfx.playImpacts: bullet on stone, variation | freesound CC0 'bullet impact concrete' | polish | needed |
+| `audio/weapons/impact_dirt_01` | WeaponSfx.playImpacts: bullet on soil (Kenney land_soft stands in) | freesound CC0 'bullet impact dirt' | polish | needed |
+| `audio/weapons/impact_dirt_02` | WeaponSfx.playImpacts: bullet on soil, variation | freesound CC0 'bullet impact dirt' | polish | needed |
+| `audio/weapons/impact_flesh_01` | WeaponSfx.playImpacts: bullet on a body (Kenney bite stands in) | freesound CC0 'bullet impact flesh' | polish | needed |
+| `audio/weapons/impact_flesh_02` | WeaponSfx.playImpacts: bullet on a body, variation | freesound CC0 'bullet impact flesh' | polish | needed |
+| `audio/weapons/impact_metal_01` | WeaponSfx.playImpacts: bullet on metal (Kenney bolt stands in) | freesound CC0 'bullet impact metal' | polish | needed |
+| `audio/weapons/impact_metal_02` | WeaponSfx.playImpacts: bullet on metal, variation | freesound CC0 'bullet impact metal' | polish | needed |
+| `audio/weapons/impact_wood_01` | WeaponSfx.playImpacts: bullet on wood (Kenney land_soft stands in) | freesound CC0 'bullet impact wood' | polish | needed |
+| `audio/weapons/impact_wood_02` | WeaponSfx.playImpacts: bullet on wood, variation | freesound CC0 'bullet impact wood' | polish | needed |
+| `audio/weapons/mid_pistol` | WeaponSfx.playDistantShot: GunshotRemote mid layer, 40..350 studs | FFSL Prepared: Walther PPQ mid-distance row, cut with tools/audio_build/build_shots_v6.py | polish | needed |
+| `audio/weapons/mid_rifle` | WeaponSfx.playDistantShot: GunshotRemote mid layer, 40..350 studs | FFSL Prepared: AK-47 C_31P.wav, cut with tools/audio_build/build_shots_v6.py | polish | needed |
+| `audio/weapons/mid_shotgun` | WeaponSfx.playDistantShot: GunshotRemote mid layer, 40..350 studs | FFSL Prepared: Benelli Nova mid-distance row, cut with tools/audio_build/build_shots_v6.py | polish | needed |
+| `audio/weapons/mid_smg` | WeaponSfx.playDistantShot: GunshotRemote mid layer, 40..350 studs | FFSL Prepared: Carl Gustav M45 mid-distance row, cut with tools/audio_build/build_shots_v6.py | polish | needed |
+| `audio/weapons/ricochet_01` | WeaponSfx.playImpacts: one hard hit in six | freesound CC0 'ricochet' | polish | needed |
 | `audio/weapons/shell_03` | Weapon shell casing variation 3 | Kenney CC0 impact sounds: small metal drop | polish | rejected |
 
-**3 blockers, 32 polish items.**
+**3 blockers, 34 polish items.**

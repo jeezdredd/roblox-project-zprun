@@ -15,7 +15,7 @@ export type SettingSpec = {
 
 local SettingsConfig = {}
 
-SettingsConfig.categories = { "Audio", "Graphics", "Content" }
+SettingsConfig.categories = { "Audio", "Graphics", "Interface", "Content" }
 
 SettingsConfig.order = {
 	"masterVolume",
@@ -25,6 +25,7 @@ SettingsConfig.order = {
 	"shadows",
 	"effectsQuality",
 	"fpsCounter",
+	"hitMarkers",
 	"bloodEnabled",
 	"dismembermentEnabled",
 }
@@ -37,6 +38,7 @@ SettingsConfig.byKey = {
 	shadows = { key = "shadows", category = "Graphics", label = "Shadows", kind = "toggle", default = true },
 	effectsQuality = { key = "effectsQuality", category = "Graphics", label = "Effects Density", kind = "slider", default = 1, min = 0.4, max = 1, step = 0.2 },
 	fpsCounter = { key = "fpsCounter", category = "Graphics", label = "FPS Counter", kind = "toggle", default = false },
+	hitMarkers = { key = "hitMarkers", category = "Interface", label = "Hit markers", kind = "toggle", default = true },
 	bloodEnabled = { key = "bloodEnabled", category = "Content", label = "Blood Effects", kind = "toggle", default = true },
 	dismembermentEnabled = { key = "dismembermentEnabled", category = "Content", label = "Dismemberment", kind = "toggle", default = true },
 } :: { [string]: SettingSpec }

@@ -90,7 +90,7 @@ def render_licenses(manifest):
         source_cell = f"[link]({source})" if source.startswith("http") else source
         rows.append(
             f"| `{key}` | {entry.get('license', '')} | {source_cell} | "
-            f"{entry.get('assetId') or '—'} | {entry.get('status', '')} |"
+            f"{entry.get('assetId') or 'none'} | {entry.get('status', '')} |"
         )
     rows.append("")
     rows.append("Generated audio and textures marked `Original work (project owner)` were synthesised for this project.")

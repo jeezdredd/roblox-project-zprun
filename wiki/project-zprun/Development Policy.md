@@ -51,7 +51,8 @@ sends the fixes; the agent fixes, merges into `main` itself and pushes. The owne
 - Asset ids only from the manifest pipeline (manifest, `upload_assets.py`,
   `refresh_status.py`, `sync_configs.py`); never invented. No synthesized audio.
 - Before every commit: `selene src/`, `python3 tools/validate_api.py`,
-  `rojo build`, the `luau tests/*` suites, both sync scripts' `--check`.
+  `rojo build`, the `luau tests/*` suites, `python3 tests/credits/run.py` (every CC BY
+  asset credited in the game exactly once), both sync scripts' `--check`.
 - The owner's commit command is one chain joined with `&&` and ends with
   `git pull --no-rebase --no-edit && git push`, so a failed check stops the commit and
   a merge never opens an editor.

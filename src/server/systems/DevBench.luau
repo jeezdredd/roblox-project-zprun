@@ -10,6 +10,7 @@ local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local MapsConfig = require(ReplicatedStorage.Shared.config.MapsConfig)
 local MissionState = require(script.Parent.MissionState)
 local MissionService = require(script.Parent.MissionService)
+local IntermissionService = require(script.Parent.IntermissionService)
 local ProfileManager = require(script.Parent.ProfileManager)
 local WeaponService = require(script.Parent.WeaponService)
 
@@ -35,7 +36,7 @@ local function benchConfig()
 end
 
 local function launchSolo(player: Player)
-	if launching[player] or MissionState.isActive() then
+	if launching[player] or MissionState.isActive() or IntermissionService.isBusy() then
 		return
 	end
 	local character = player.Character
@@ -44,7 +45,13 @@ local function launchSolo(player: Player)
 		return
 	end
 	launching[player] = true
-	MissionService.startSquad({ player }, benchConfig(), DevConfig.QUICK_RUN.seed or Random.new():NextInteger(1, 2147483646))
+	local seed = DevConfig.QUICK_RUN.seed or Random.new():NextInteger(1, 2147483646)
+	-- through the cabin like a squad launch (DevConfig.QUICK_LAUNCH), or straight in
+	if DevConfig.QUICK_LAUNCH.intermission then
+		IntermissionService.begin({ player }, benchConfig(), seed)
+	else
+		MissionService.startSquad({ player }, benchConfig(), seed)
+	end
 	task.delay(2, function()
 		launching[player] = nil
 	end)
@@ -58,7 +65,8 @@ local function watchPlayer(player: Player)
 
 	local function onCharacter()
 		task.delay(quick.delay, function()
-			if player.Parent and player:GetAttribute(PHASE_ATTRIBUTE) ~= "Mission" then
+			-- only from the hub: a character reset in the cabin is not a new launch
+			if player.Parent and player:GetAttribute(PHASE_ATTRIBUTE) == "Hub" then
 				launchSolo(player)
 			end
 		end)
@@ -71,9 +79,9 @@ local function watchPlayer(player: Player)
 
 	if quick.relaunchAfterDeath then
 		player:GetAttributeChangedSignal(PHASE_ATTRIBUTE):Connect(function()
-			if player:GetAttribute(PHASE_ATTRIBUTE) ~= "Mission" then
+			if player:GetAttribute(PHASE_ATTRIBUTE) == "Hub" then
 				task.delay(quick.relaunchDelay, function()
-					if player.Parent and player:GetAttribute(PHASE_ATTRIBUTE) ~= "Mission" then
+					if player.Parent and player:GetAttribute(PHASE_ATTRIBUTE) == "Hub" then
 						launchSolo(player)
 					end
 				end)

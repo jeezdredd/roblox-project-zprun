@@ -144,6 +144,33 @@ function IntermissionMath.inGrace(graceUntil: any, now: number): boolean
 	return type(graceUntil) == "number" and now < graceUntil
 end
 
+export type LookConfig = {
+	LOOK_YAW: number,
+	LOOK_PITCH_MIN: number,
+	LOOK_PITCH_MAX: number,
+	LOOK_SENSITIVITY: number,
+	LOOK_EASE: number,
+}
+
+-- The look target after a mouse move of (dx, dy) pixels, in degrees from the seat's
+-- view, clamped: yaw within +-LOOK_YAW, pitch within LOOK_PITCH_MIN..LOOK_PITCH_MAX.
+-- Moving the mouse right turns right (negative yaw about +y), down looks down.
+function IntermissionMath.lookAfter(config: LookConfig, yaw: number, pitch: number, dx: number, dy: number): (number, number)
+	local nextYaw = math.clamp(yaw - dx * config.LOOK_SENSITIVITY, -config.LOOK_YAW, config.LOOK_YAW)
+	local nextPitch = math.clamp(pitch - dy * config.LOOK_SENSITIVITY, config.LOOK_PITCH_MIN, config.LOOK_PITCH_MAX)
+	return nextYaw, nextPitch
+end
+
+-- One frame of easing toward the target (exponential, frame-rate independent), so the
+-- view never snaps; within a hundredth of a degree it lands.
+function IntermissionMath.easeLook(config: LookConfig, current: number, target: number, deltaTime: number): number
+	local nextValue = current + (target - current) * (1 - math.exp(-config.LOOK_EASE * math.max(deltaTime, 0)))
+	if math.abs(target - nextValue) < 0.01 then
+		return target
+	end
+	return nextValue
+end
+
 -- Seconds left, whole and rounded up, for a countdown label (0 when past).
 function IntermissionMath.secondsLeft(endsAt: number, now: number): number
 	return math.max(math.ceil(endsAt - now), 0)

@@ -73,6 +73,16 @@ IntermissionConfig.SEAT_YAW = -90
 IntermissionConfig.EYE_OFFSET = { 0, 3.1, -0.2 }
 IntermissionConfig.VIEW_PITCH = -8
 
+-- Look around during the ready check while the right mouse button is held (the cursor
+-- stays free for the panel): degrees from the SeatView frame, yaw either side and
+-- pitch down/up, degrees per pixel of mouse travel, and how fast the view eases to
+-- where the mouse put it (per second, exponential). The crash beat keeps the fixed view.
+IntermissionConfig.LOOK_YAW = 100
+IntermissionConfig.LOOK_PITCH_MIN = -50
+IntermissionConfig.LOOK_PITCH_MAX = 40
+IntermissionConfig.LOOK_SENSITIVITY = 0.25
+IntermissionConfig.LOOK_EASE = 12
+
 local OLIVE = { 70, 78, 62 }
 local DARK = { 38, 40, 38 }
 local STEEL = { 82, 86, 88 }

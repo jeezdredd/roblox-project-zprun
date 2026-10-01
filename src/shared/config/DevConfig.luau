@@ -17,6 +17,13 @@ DevConfig.QUICK_RUN = {
 	seed = nil,
 }
 
+-- How the quick launch starts the run: through the helicopter intermission (cabin,
+-- ready check, crash beat, wake at the wreck) like a squad launch, or straight into
+-- the run as before when false.
+DevConfig.QUICK_LAUNCH = {
+	intermission = true,
+}
+
 -- The content warning is a one-time player-facing gate; re-reading it every Play is
 -- pure friction and it also blocks input until dismissed.
 DevConfig.SKIP_GORE_WARNING = true

@@ -200,15 +200,21 @@ local function doLaunch(squad: SquadRecord)
 	local members = table.clone(squad.members)
 	local config = squad.config
 	local seed = Random.new():NextInteger(1, 2147483646)
+	-- the helicopter cabin first; IntermissionService starts the run after the ready
+	-- check and the crash (docs/gameplay/heli-intermission.md). Only once it took the
+	-- squad is the hangar squad cleared; a refusal (no cabin, nobody alive to board)
+	-- leaves the squad as it was, like the busy case above
+	if not IntermissionService.begin(members, config, seed) then
+		abortLaunch(squad)
+		pushSnapshot(squad)
+		return
+	end
 	local snapshotEvent = Remotes.getEvent(Remotes.Event.SquadSnapshot)
 	for _, player in members do
 		playerSquad[player] = nil
 		snapshotEvent:FireClient(player, nil)
 	end
 	resetSquad(squad)
-	-- the helicopter cabin first; IntermissionService starts the run after the ready
-	-- check and the crash (docs/gameplay/heli-intermission.md)
-	IntermissionService.begin(members, config, seed)
 end
 
 local function requestLaunch(player: Player)

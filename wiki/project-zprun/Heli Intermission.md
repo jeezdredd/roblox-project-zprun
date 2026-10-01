@@ -16,12 +16,16 @@ camera, light and sound are the main session's ([[Development Policy]]).
 | `src/server/systems/IntermissionService.luau` | The cabin, the seats, the two beats, the remotes, the hand-over to `MissionService.startSquad`, `GraceUntil` |
 | `src/server/systems/LoadoutWindow.luau` | Swaps allowed in the hub and the cabin's ready check only |
 | `src/client/ui/CabinGui.luau` | READY, LOADOUT, LEAVE, SKIP, the timer, "RUN" |
-| `src/client/systems/IntermissionCamera.luau` | Placeholder seated view and black fade; `playCrash` is the cinematic's seam |
+| `src/client/systems/IntermissionCamera.luau` | Seated view with a right-mouse look (yaw +-100, pitch -50..40, eased) in the ready check; fixed view and black fade in the crash beat; `playCrash` is the cinematic's seam |
+| `AnimationController`, `AnimationsConfig.SIT_CLIP` | The seated pose while `SeatPart` is set, the gait layer paused; slot `animation/player/sit_idle` `needed` |
+| `CursorMode.setCameraOwner` | The cabin view keeps the camera while the panel frees the cursor |
+| `DevBench`, `DevConfig.QUICK_LAUNCH` | Play launches through the intermission (`intermission = true`) or straight in |
 | `SquadService`, `MissionService`, `FlowService`, `ZombieAI`, `ShopService`, `PerkService`, `SceneParts` | The hooks: the launch, the wreck spawn, the `Cabin` phase, the grace, the `Cabin` catalog, the window, transparency |
 
 ## Rules
 
-- One intermission at a time, as one run at a time; a launch is refused while one is busy.
+- One intermission at a time, as one run at a time; a launch is refused while one is
+  busy, and a launch the intermission refuses leaves the hangar squad as it was.
 - The run starts when everyone still in the cabin is ready, or at 90 s for whoever is there.
 - Swaps only in the hub and the cabin's ready check, read from server-set attributes.
 - A repeat run (every member has a run in the profile) gets the 5 s crash with a

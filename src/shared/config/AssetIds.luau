@@ -20,6 +20,7 @@ local AssetIds = {
 			rifle_strafe_right = 106993284172414,
 			rifle_walk = 107509447603332,
 			run = 130134481942797,
+			sit_idle = 0,
 			strafe_left = 0,
 			strafe_right = 0,
 			stumble = 78964987584801,

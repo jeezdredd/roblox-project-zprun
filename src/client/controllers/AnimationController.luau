@@ -28,6 +28,9 @@ type LoadedClip = {
 
 local tracks: { [string]: LoadedClip } = {}
 local available: { [string]: boolean } = {}
+-- the seated pose, kept apart from the gait tracks the update loop blends
+local sitTrack: AnimationTrack? = nil
+local seated = false
 local animator: Animator? = nil
 local started = false
 local sprinting = false
@@ -35,6 +38,24 @@ local currentGait: LocomotionMath.Gait = "idle"
 
 local function approach(current: number, target: number, speed: number, deltaTime: number): number
 	return current + (target - current) * (1 - math.exp(-speed * deltaTime))
+end
+
+local function loadTrack(foundAnimator: Animator, config: AnimationsConfig.ClipConfig): AnimationTrack?
+	if config.assetId <= 0 then
+		return nil
+	end
+	local animation = Instance.new("Animation")
+	animation.Name = config.id
+	animation.AnimationId = "rbxassetid://" .. tostring(config.assetId)
+	local ok, track = pcall(function()
+		return foundAnimator:LoadAnimation(animation)
+	end)
+	if not ok or not track then
+		return nil
+	end
+	track.Priority = config.priority
+	track.Looped = config.looped
+	return track
 end
 
 local function loadClip(foundAnimator: Animator, config: AnimationsConfig.ClipConfig)
@@ -82,6 +103,8 @@ local function loadClips(character: Model)
 	tracks = {}
 	available = {}
 	animator = nil
+	sitTrack = nil
+	seated = false
 
 	local humanoid = character:WaitForChild("Humanoid", 10)
 	if not humanoid or not humanoid:IsA("Humanoid") then
@@ -99,6 +122,8 @@ local function loadClips(character: Model)
 	for _, config in AnimationsConfig.locomotionClips do
 		loadClip(foundAnimator, config)
 	end
+	-- 0 until the clip is uploaded: then seating only pauses the gait layer
+	sitTrack = loadTrack(foundAnimator, AnimationsConfig.SIT_CLIP)
 	if AnimationsConfig.ENABLED and next(tracks) ~= nil then
 		removeDefaultAnimate(character, foundAnimator)
 		character.ChildAdded:Connect(function(child)
@@ -124,6 +149,33 @@ local function update(deltaTime: number)
 	local character = Players.LocalPlayer.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	local alive = humanoid ~= nil and humanoid.Health > 0
+
+	-- In a seat (the helicopter cabin): the sit pose plays and the gait layer is paused,
+	-- its tracks faded out; on unseat the pose stops and the gaits pick up again.
+	local nowSeated = alive and humanoid ~= nil and humanoid.SeatPart ~= nil
+	if nowSeated ~= seated then
+		seated = nowSeated
+		local sit = sitTrack
+		if sit then
+			if seated then
+				sit:Play(AnimationsConfig.SIT_FADE)
+				sit:AdjustWeight(AnimationsConfig.SIT_CLIP.weight, AnimationsConfig.SIT_FADE)
+			else
+				sit:Stop(AnimationsConfig.SIT_FADE)
+			end
+		end
+	end
+	if seated then
+		for _, loaded in tracks do
+			if loaded.config.looped and loaded.track.IsPlaying then
+				loaded.weight = 0
+				loaded.track:Stop(AnimationsConfig.SIT_FADE)
+			end
+		end
+		currentGait = "idle"
+		return
+	end
+
 	local running = alive and ExertionState.isRunning()
 	local speed = ExertionState.getSpeed()
 	-- sideways share of the ground velocity in the character's frame
@@ -186,6 +238,11 @@ function AnimationController.playAction(kind: string)
 	if clipId then
 		AnimationController.playOneShot(clipId)
 	end
+end
+
+-- Whether the local character is seated (the sit pose, the gait layer paused).
+function AnimationController.isSeated(): boolean
+	return seated
 end
 
 function AnimationController.hasClips(): boolean

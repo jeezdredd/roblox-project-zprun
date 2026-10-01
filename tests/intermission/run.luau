@@ -135,6 +135,31 @@ group("grace window", function()
 	check("negative seconds is no window", M.graceUntil(50, -3) == 50 and not M.inGrace(M.graceUntil(50, -3), 50))
 end)
 
+group("cabin look", function()
+	local yaw, pitch = M.lookAfter(C, 0, 0, 40, 0)
+	check("mouse right turns right", yaw == -40 * IntermissionConfig.LOOK_SENSITIVITY and pitch == 0)
+	yaw, pitch = M.lookAfter(C, 0, 0, 0, 40)
+	check("mouse down looks down", pitch == -40 * IntermissionConfig.LOOK_SENSITIVITY)
+	yaw = M.lookAfter(C, 0, 0, -100000, 0)
+	check("yaw clamps left", yaw == IntermissionConfig.LOOK_YAW and IntermissionConfig.LOOK_YAW == 100)
+	yaw = M.lookAfter(C, 0, 0, 100000, 0)
+	check("yaw clamps right", yaw == -100)
+	local _, low = M.lookAfter(C, 0, 0, 0, 100000)
+	local _, high = M.lookAfter(C, 0, 0, 0, -100000)
+	check("pitch clamps -50..40", low == -50 and high == 40)
+	local eased = M.easeLook(C, 0, 30, 1 / 60)
+	check("eases, no snap", eased > 0 and eased < 30, tostring(eased))
+	local value = 0
+	for _ = 1, 120 do
+		value = M.easeLook(C, value, 30, 1 / 60)
+	end
+	check("lands on the target", value == 30)
+	check("a zero step stays", M.easeLook(C, 12, 30, 0) == 12)
+	local slow = M.easeLook(C, 0, 30, 1 / 30)
+	local fastTwice = M.easeLook(C, M.easeLook(C, 0, 30, 1 / 60), 30, 1 / 60)
+	check("frame-rate independent", math.abs(slow - fastTwice) < 1e-6)
+end)
+
 group("cabin layout", function()
 	check("a seat per squad member", #IntermissionConfig.seats == 3)
 	for index, seat in IntermissionConfig.seats do

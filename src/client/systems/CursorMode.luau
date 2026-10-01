@@ -15,6 +15,13 @@ local openModals: { [string]: boolean } = {}
 local modalCount = 0
 local freeConnection: RBXScriptConnection? = nil
 local frozenCFrame: CFrame? = nil
+-- systems that drive the camera themselves while a menu is open (the helicopter
+-- cabin's view, IntermissionCamera): the held camera is theirs, only the cursor is ours
+local cameraOwners: { [string]: boolean } = {}
+
+local function cameraOwned(): boolean
+	return next(cameraOwners) ~= nil
+end
 
 local function lockFirstPerson()
 	local player = Players.LocalPlayer
@@ -27,7 +34,7 @@ local function holdCursorFree()
 	UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 	UserInputService.MouseIconEnabled = true
 	local camera = Workspace.CurrentCamera
-	if camera and frozenCFrame and camera.CameraType == Enum.CameraType.Scriptable then
+	if camera and frozenCFrame and not cameraOwned() and camera.CameraType == Enum.CameraType.Scriptable then
 		camera.CFrame = frozenCFrame
 	end
 end
@@ -55,7 +62,7 @@ local function exitFreeMode()
 	GuiService.SelectedObject = nil
 	UserInputService.MouseIconEnabled = false
 	local camera = Workspace.CurrentCamera
-	if camera and camera.CameraType == Enum.CameraType.Scriptable then
+	if camera and not cameraOwned() and camera.CameraType == Enum.CameraType.Scriptable then
 		camera.CameraType = Enum.CameraType.Custom
 	end
 	lockFirstPerson()
@@ -80,6 +87,12 @@ function CursorMode.setModalOpen(id: string, open: boolean)
 	else
 		exitFreeMode()
 	end
+end
+
+-- A system that drives the camera itself (`owned` true) while a menu frees the
+-- cursor: the menu no longer holds the camera still or hands it back to Custom.
+function CursorMode.setCameraOwner(id: string, owned: boolean)
+	cameraOwners[id] = if owned then true else nil
 end
 
 function CursorMode.isAnyOpen(): boolean

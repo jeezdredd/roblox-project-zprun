@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
+local WeaponLadderText = require(ReplicatedStorage.Shared.util.WeaponLadderText)
 local SkillsConfig = require(ReplicatedStorage.Shared.config.SkillsConfig)
 local SkinsConfig = require(ReplicatedStorage.Shared.config.SkinsConfig)
 local PerkService = require(script.Parent.PerkService)
@@ -59,18 +60,12 @@ local function weaponEntries(data: ProfileManager.ProfileData): { CatalogEntry }
 		local level = if progress then progress.level else 0
 		local price = if owned then WeaponsConfig.upgradePrice(level) else config.price
 		local maxed = owned and level >= WeaponsConfig.MAX_LEVEL
-		local damage = WeaponsConfig.damageAt(config, math.max(level, 1))
 		table.insert(entries, {
 			id = weaponId,
 			kind = if owned then "WeaponUpgrade" else "Weapon",
 			displayName = config.displayName,
-			description = string.format(
-				"%s · %d dmg · %d rpm · mag %d",
-				config.class,
-				math.floor(damage + 0.5),
-				math.floor(config.fireRate * 60),
-				config.magSize
-			),
+			-- the ladder made visible: the damage now, the next level's price and gain
+			description = WeaponLadderText.describe(WeaponsConfig, config, level),
 			price = if maxed then 0 else price,
 			level = level,
 			maxLevel = WeaponsConfig.MAX_LEVEL,

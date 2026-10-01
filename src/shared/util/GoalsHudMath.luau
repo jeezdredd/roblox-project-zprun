@@ -36,14 +36,24 @@ local GoalsHudMath = {}
 local PAIR = ";"
 local VALUE = "="
 
+-- The progress as the HUD shows it: floored to the metric's step (`steps`, e.g. 5 studs
+-- for the distances, so the string changes at most once per step), 1 by default, and
+-- capped at the goal's target (a step never lands a goal short of it, since the
+-- targets are whole steps).
+function GoalsHudMath.stepped(value: number, step: number?): number
+	local unit = math.max(math.floor(step or 1), 1)
+	return math.floor(math.max(value, 0) / unit) * unit
+end
+
 -- "Distance1500=320;Kills25=4": every goal in config order, its metric's progress
--- floored, so the string only changes when a whole unit changes.
-function GoalsHudMath.encode(config: Config, progress: { [string]: number }): string
+-- stepped, so the string only changes when a whole step changes.
+function GoalsHudMath.encode(config: Config, progress: { [string]: number }, steps: { [string]: number }?): string
 	local parts: { string } = {}
 	for _, id in config.order do
 		local goal = config.goals[id]
 		if goal then
-			table.insert(parts, id .. VALUE .. tostring(math.floor(math.max(progress[goal.metric] or 0, 0))))
+			local step = if steps then steps[goal.metric] else nil
+			table.insert(parts, id .. VALUE .. tostring(GoalsHudMath.stepped(progress[goal.metric] or 0, step)))
 		end
 	end
 	return table.concat(parts, PAIR)

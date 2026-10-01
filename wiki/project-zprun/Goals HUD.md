@@ -11,9 +11,9 @@ ladder they show is the Gunsmith's and the [[Upgrade Station]]'s.
 | File | Role |
 | --- | --- |
 | `src/shared/util/GoalsHudMath.luau` | Pure: the progress string (`encode`, `decode`) and the HUD rows. `luau tests/goals/run.luau` |
-| `src/shared/util/WeaponLadderText.luau` | Pure: the Gunsmith row text (damage now, next level's price and gain, top of the ladder) |
-| `src/server/systems/MissionGoals.luau` | The `GoalsProgress` attribute, published at most every 0.25 s while reports change it |
-| `src/server/systems/DistanceTracker.luau` | Reports `Distance` live and `CleanDistance` (studs since the last health drop) |
+| `src/shared/util/WeaponLadderText.luau` | Pure: the Gunsmith row text (damage now, the next level's gain, top of the ladder; no price, the button has it) |
+| `src/server/systems/MissionGoals.luau` | The `GoalsProgress` attribute (distances in steps of 5 studs), published at most every 0.25 s while reports change it, cleared on a death and on any exit from the run |
+| `src/server/systems/DistanceTracker.luau` | Reports `Distance` live and `CleanDistance` (the best clean stretch so far: studs since the last health drop, kept as a max) |
 | `src/server/systems/ShopService.luau` | `weaponEntries` descriptions from `WeaponLadderText` |
 | `src/client/ui/RunHud.luau` | The "GOALS" block, top left, hidden in the hub |
 

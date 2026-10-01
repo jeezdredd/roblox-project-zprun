@@ -21,12 +21,14 @@ local paid: { [Player]: { [string]: boolean } } = {}
 -- PUBLISH_INTERVAL and only when a whole unit changed.
 local PROGRESS_ATTRIBUTE = "GoalsProgress"
 local PUBLISH_INTERVAL = 0.25
+-- the distances are shown in steps of 5 studs, the counts whole
+local STEPS = { Distance = 5, CleanDistance = 5 }
 local dirty: { [Player]: boolean } = {}
 local lastPublishAt = 0
 
 local function publish(player: Player)
 	local run = progress[player]
-	local encoded = if run then GoalsHudMath.encode(MissionGoalsConfig, run) else nil
+	local encoded = if run then GoalsHudMath.encode(MissionGoalsConfig, run, STEPS) else nil
 	if player:GetAttribute(PROGRESS_ATTRIBUTE) ~= encoded then
 		player:SetAttribute(PROGRESS_ATTRIBUTE, encoded)
 	end

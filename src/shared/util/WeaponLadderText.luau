@@ -1,8 +1,10 @@
 --!strict
 
 -- The Gunsmith row's description (docs/gameplay/goals-hud-and-ladder.md): the level
--- ladder made visible, the damage now, the next level's price and damage gain, or the
--- top of the ladder. Pure Luau: no services, no engine types, no requires; the ladder
+-- ladder made visible, the damage now and the next level's damage gain, or the top of
+-- the ladder. No price: the row's button carries it, in the panel's one currency
+-- label. The row label holds about 42 RobotoMono characters before it truncates, and
+-- ShopGui appends " · XP n/need" to an owned row below max, so that text stays short. Pure Luau: no services, no engine types, no requires; the ladder
 -- (WeaponsConfig's MAX_LEVEL, UPGRADE_BASE_PRICE, UPGRADE_PRICE_STEP, DAMAGE_PER_LEVEL)
 -- and the weapon config come in as tables. tests/goals/run.luau.
 
@@ -40,33 +42,26 @@ function WeaponLadderText.priceFor(ladder: Ladder, level: number): number
 end
 
 -- `level` 0 for a weapon not owned (the dealer's row), else the profile's level. The
--- name label already carries "L2/5", so the text carries the numbers behind it.
+-- name label already carries the weapon's name and "L2/5", so an owned row carries
+-- only the numbers behind them: "32.4 dmg · L3: +2.4 dmg".
 function WeaponLadderText.describe(ladder: Ladder, weapon: Weapon, level: number): string
 	local n = WeaponLadderText.number
 	if level <= 0 then
 		return string.format(
-			"%s · %s dmg · %d rpm · mag %d · L1 of %d",
+			"%s · %s dmg · %d rpm · mag %d",
 			weapon.class,
 			n(WeaponLadderText.damageAt(ladder, weapon, 1)),
 			math.floor(weapon.fireRate * 60),
-			weapon.magSize,
-			ladder.MAX_LEVEL
+			weapon.magSize
 		)
 	end
 	local current = math.min(level, ladder.MAX_LEVEL)
 	local damage = WeaponLadderText.damageAt(ladder, weapon, current)
 	if current >= ladder.MAX_LEVEL then
-		return string.format("%s · %s dmg · top of the ladder", weapon.class, n(damage))
+		return string.format("%s dmg · top of the ladder", n(damage))
 	end
 	local next = WeaponLadderText.damageAt(ladder, weapon, current + 1)
-	return string.format(
-		"%s · %s dmg · next L%d: %d CR, +%s dmg",
-		weapon.class,
-		n(damage),
-		current + 1,
-		WeaponLadderText.priceFor(ladder, current),
-		n(next - damage)
-	)
+	return string.format("%s dmg · L%d: +%s dmg", n(damage), current + 1, n(next - damage))
 end
 
 return WeaponLadderText

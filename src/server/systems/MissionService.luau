@@ -155,6 +155,8 @@ function MissionService.removeFromMission(player: Player)
 	end
 	PerkService.onRunEnd(player)
 	WeaponService.clearRunLoadout(player)
+	-- the goals go with the run on a quit too (DeathService ends them on a death)
+	MissionGoals.endRun(player)
 	tearDownIfEmpty()
 end
 

@@ -25,7 +25,8 @@ type RunState = {
 	lastCheckBest: number,
 	strikes: number,
 	-- the health seen last frame and the distance at the last drop of it, for the
-	-- CleanDistance goal metric (studs since the last hit)
+	-- CleanDistance goal metric (the best clean stretch so far: the current stretch is
+	-- the studs since the last hit, MissionGoals keeps the longest)
 	lastHealth: number,
 	lastHitDistance: number,
 }
@@ -171,7 +172,8 @@ local function step(deltaTime: number)
 
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 
-		-- a drop in health is a hit: the clean distance starts again from here
+		-- a drop in health is a hit: the current clean stretch starts again from here;
+		-- the goal keeps the best stretch so far (MissionGoals takes the max)
 		if humanoid then
 			if humanoid.Health < run.lastHealth - 0.01 then
 				run.lastHitDistance = run.best

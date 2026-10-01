@@ -39,6 +39,18 @@ group("goal progress round trip", function()
 	local junk = GoalsHudMath.decode("Distance1500=12;garbage;Kills25=x;=3;NoDamage500=7")
 	check("malformed pairs are skipped", junk.Distance1500 == 12 and junk.Kills25 == nil and junk.NoDamage500 == 7)
 	check("same progress, same string", GoalsHudMath.encode(G, { Distance = 320.2, Kills = 4 }) == GoalsHudMath.encode(G, { Distance = 320.9, Kills = 4 }))
+	local steps = { Distance = 5, CleanDistance = 5 }
+	local stepped = GoalsHudMath.encode(G, { Distance = 324.9, Kills = 7, CleanDistance = 499.9 }, steps)
+	check("distances step by 5, counts stay whole", stepped == "Distance1500=320;Kills25=7;NoDamage500=495", stepped)
+	check("a step lands on the target", GoalsHudMath.encode(G, { Distance = 1500, CleanDistance = 503 }, steps) == "Distance1500=1500;Kills25=0;NoDamage500=500")
+	check("within one step, same string", GoalsHudMath.encode(G, { Distance = 321 }, steps) == GoalsHudMath.encode(G, { Distance = 324.99 }, steps))
+	check("stepped clamps negatives", GoalsHudMath.stepped(-3, 5) == 0)
+	check("a step below one is one", GoalsHudMath.stepped(7.6, 0) == 7)
+	for _, id in MissionGoalsConfig.order do
+		local goal = MissionGoalsConfig.get(id) :: MissionGoalsConfig.GoalConfig
+		local step = (steps :: any)[goal.metric] or 1
+		check(id .. " target is a whole step", goal.target % step == 0)
+	end
 end)
 
 group("goal rows", function()
@@ -65,23 +77,28 @@ group("ladder text", function()
 	end
 	local unowned = WeaponLadderText.describe(L, rifle, 0)
 	check("unowned keeps the class, rpm and mag", string.find(unowned, rifle.class, 1, true) ~= nil and string.find(unowned, "rpm", 1, true) ~= nil and string.find(unowned, "mag " .. rifle.magSize, 1, true) ~= nil, unowned)
-	check("unowned names the ladder", string.find(unowned, "L1 of 5", 1, true) ~= nil, unowned)
 	local l1 = WeaponLadderText.describe(L, rifle, 1)
 	local gain = WeaponsConfig.damageAt(rifle, 2) - WeaponsConfig.damageAt(rifle, 1)
-	check("L1 quotes the next level's price", string.find(l1, "next L2: 400 CR", 1, true) ~= nil, l1)
-	check("L1 quotes the damage gain", string.find(l1, "+" .. n(gain) .. " dmg", 1, true) ~= nil, l1)
-	check("L1 shows the damage now", string.find(l1, n(rifle.damage) .. " dmg", 1, true) ~= nil, l1)
+	check("L1 names the next level and its gain", string.find(l1, "L2: +" .. n(gain) .. " dmg", 1, true) ~= nil, l1)
+	check("L1 shows the damage now", string.sub(l1, 1, #(n(rifle.damage) .. " dmg")) == n(rifle.damage) .. " dmg", l1)
+	check("no price on the row", string.find(l1, "CR", 1, true) == nil and string.find(l1, "$", 1, true) == nil, l1)
 	local l4 = WeaponLadderText.describe(L, rifle, 4)
-	check("L4 quotes 1450", string.find(l4, "next L5: 1450 CR", 1, true) ~= nil, l4)
+	check("L4 names L5", string.find(l4, "L5: +", 1, true) ~= nil, l4)
 	local l5 = WeaponLadderText.describe(L, rifle, 5)
-	check("max reads top of the ladder", string.find(l5, "top of the ladder", 1, true) ~= nil and string.find(l5, "next", 1, true) == nil, l5)
+	check("max reads top of the ladder", string.find(l5, "top of the ladder", 1, true) ~= nil and string.find(l5, "L6", 1, true) == nil, l5)
 	check("max shows the max damage", string.find(l5, n(WeaponsConfig.damageAt(rifle, 5)) .. " dmg", 1, true) ~= nil, l5)
 	check("above max reads as max", WeaponLadderText.describe(L, rifle, 9) == l5)
+	-- the row label holds about 42 characters before it truncates; ShopGui appends the
+	-- XP gate to an owned row below max, so that row is checked with the longest one
+	local ROW_CHARS = 42
+	local XP_SUFFIX = " · XP 9999/9999"
 	for _, id in WeaponsConfig.order do
 		local weapon = WeaponsConfig.get(id) :: WeaponsConfig.WeaponConfig
 		for level = 0, WeaponsConfig.MAX_LEVEL do
 			local text = WeaponLadderText.describe(L, weapon, level)
-			check(id .. " L" .. level .. " text fits a row", #text <= 64, text)
+			local shown = if level >= 1 and level < WeaponsConfig.MAX_LEVEL then text .. XP_SUFFIX else text
+			local length = utf8.len(shown) or #shown
+			check(id .. " L" .. level .. " fits the row", length <= ROW_CHARS, string.format("%d chars: %s", length, shown))
 		end
 	end
 end)

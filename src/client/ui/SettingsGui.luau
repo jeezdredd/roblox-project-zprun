@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 
+local CreditsConfig = require(ReplicatedStorage.Shared.config.CreditsConfig)
 local SettingsConfig = require(ReplicatedStorage.Shared.config.SettingsConfig)
 local CursorMode = require(script.Parent.Parent.systems.CursorMode)
 local UiSfx = require(script.Parent.Parent.systems.UiSfx)
@@ -136,6 +137,76 @@ local function makeSlider(parent: Instance, spec: SettingsConfig.SettingSpec, or
 	SettingsService.observe(spec.key, render)
 end
 
+local CREDITS_HEIGHT = 220
+
+local function creditLabel(parent: Instance, text: string, order: number, size: number, color: Color3, font: Enum.Font)
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, -8, 0, 0)
+	label.AutomaticSize = Enum.AutomaticSize.Y
+	label.BackgroundTransparency = 1
+	label.Font = font
+	label.TextColor3 = color
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.TextWrapped = true
+	label.TextSize = size
+	label.Text = text
+	label.LayoutOrder = order
+	label.Parent = parent
+end
+
+-- The read-only credits list (CreditsConfig, generated from the manifest): each group
+-- of CC BY works, one line per work, then the acknowledgements; scrolls on its own.
+local function makeCredits(parent: Instance, order: number)
+	local list = Instance.new("ScrollingFrame")
+	list.Name = "Credits"
+	list.Size = UDim2.new(1, 0, 0, CREDITS_HEIGHT)
+	list.BackgroundColor3 = ROW_COLOR
+	list.BackgroundTransparency = 0.4
+	list.BorderSizePixel = 0
+	list.ScrollBarThickness = 5
+	list.CanvasSize = UDim2.new()
+	list.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	list.ScrollingDirection = Enum.ScrollingDirection.Y
+	list.LayoutOrder = order
+	list.Parent = parent
+	corner(list, 6)
+
+	local pad = Instance.new("UIPadding")
+	pad.PaddingLeft = UDim.new(0, 10)
+	pad.PaddingRight = UDim.new(0, 10)
+	pad.PaddingTop = UDim.new(0, 8)
+	pad.PaddingBottom = UDim.new(0, 8)
+	pad.Parent = list
+
+	local layout = Instance.new("UIListLayout")
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Padding = UDim.new(0, 5)
+	layout.Parent = list
+
+	local line = 0
+	local function add(text: string, size: number, color: Color3, font: Enum.Font)
+		line += 1
+		creditLabel(list, text, line, size, color, font)
+	end
+
+	add(CreditsConfig.NOTE, 12, MUTED, Enum.Font.Gotham)
+	for _, group in CreditsConfig.groups do
+		if #group.credits == 0 then
+			continue
+		end
+		add(string.upper(group.name), 12, MUTED, Enum.Font.GothamBold)
+		for _, credit in group.credits do
+			add(string.format("%s by %s. %s. %s", credit.title, credit.author, credit.licence, credit.url), 12, TEXT_COLOR, Enum.Font.Gotham)
+		end
+	end
+	if #CreditsConfig.acknowledgements > 0 then
+		add("WITH THANKS", 12, MUTED, Enum.Font.GothamBold)
+		for _, ack in CreditsConfig.acknowledgements do
+			add(string.format("%s by %s. %s. %s", ack.title, ack.author, ack.licence, ack.url), 12, TEXT_COLOR, Enum.Font.Gotham)
+		end
+	end
+end
+
 function SettingsGui.create(): GuiController
 	local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
@@ -167,6 +238,27 @@ function SettingsGui.create(): GuiController
 	layout.Padding = UDim.new(0, 6)
 	layout.Parent = panel
 
+	-- the setting rows scroll between the title and the close button, so a longer
+	-- schema (the credits list) never pushes the button off the panel
+	local body = Instance.new("ScrollingFrame")
+	body.Name = "Body"
+	body.Size = UDim2.new(1, 0, 1, -88)
+	body.BackgroundTransparency = 1
+	body.BorderSizePixel = 0
+	body.ScrollBarThickness = 5
+	body.CanvasSize = UDim2.new()
+	body.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	body.ScrollingDirection = Enum.ScrollingDirection.Y
+	body.LayoutOrder = 1
+	body.Parent = panel
+	local bodyLayout = Instance.new("UIListLayout")
+	bodyLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	bodyLayout.Padding = UDim.new(0, 6)
+	bodyLayout.Parent = body
+	local bodyPad = Instance.new("UIPadding")
+	bodyPad.PaddingRight = UDim.new(0, 10)
+	bodyPad.Parent = body
+
 	local title = Instance.new("TextLabel")
 	title.Size = UDim2.new(1, 0, 0, 30)
 	title.BackgroundTransparency = 1
@@ -189,16 +281,18 @@ function SettingsGui.create(): GuiController
 		header.TextSize = 13
 		header.Text = string.upper(category)
 		header.LayoutOrder = order
-		header.Parent = panel
+		header.Parent = body
 		order += 1
 
 		for _, key in SettingsConfig.order do
 			local spec = SettingsConfig.byKey[key]
 			if spec.category == category then
 				if spec.kind == "toggle" then
-					makeToggle(panel, spec, order)
+					makeToggle(body, spec, order)
+				elseif spec.kind == "credits" then
+					makeCredits(body, order)
 				else
-					makeSlider(panel, spec, order)
+					makeSlider(body, spec, order)
 				end
 				order += 1
 			end
@@ -213,7 +307,7 @@ function SettingsGui.create(): GuiController
 	closeButton.TextSize = 16
 	closeButton.TextColor3 = TEXT_COLOR
 	closeButton.Text = "Close"
-	closeButton.LayoutOrder = order
+	closeButton.LayoutOrder = 2
 	closeButton.Parent = panel
 	corner(closeButton, 6)
 

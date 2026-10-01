@@ -1,6 +1,7 @@
 --!strict
 
-export type SettingKind = "toggle" | "slider"
+-- "credits" is read-only: the panel shows CreditsConfig there, nothing is stored
+export type SettingKind = "toggle" | "slider" | "credits"
 
 export type SettingSpec = {
 	key: string,
@@ -15,7 +16,7 @@ export type SettingSpec = {
 
 local SettingsConfig = {}
 
-SettingsConfig.categories = { "Audio", "Graphics", "Interface", "Content" }
+SettingsConfig.categories = { "Audio", "Graphics", "Interface", "Content", "Credits" }
 
 SettingsConfig.order = {
 	"masterVolume",
@@ -28,6 +29,7 @@ SettingsConfig.order = {
 	"hitMarkers",
 	"bloodEnabled",
 	"dismembermentEnabled",
+	"credits",
 }
 
 SettingsConfig.byKey = {
@@ -40,6 +42,7 @@ SettingsConfig.byKey = {
 	fpsCounter = { key = "fpsCounter", category = "Graphics", label = "FPS Counter", kind = "toggle", default = false },
 	hitMarkers = { key = "hitMarkers", category = "Interface", label = "Hit markers", kind = "toggle", default = true },
 	bloodEnabled = { key = "bloodEnabled", category = "Content", label = "Blood Effects", kind = "toggle", default = true },
+	credits = { key = "credits", category = "Credits", label = "Credits", kind = "credits", default = nil },
 	dismembermentEnabled = { key = "dismembermentEnabled", category = "Content", label = "Dismemberment", kind = "toggle", default = true },
 } :: { [string]: SettingSpec }
 

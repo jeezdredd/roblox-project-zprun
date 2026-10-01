@@ -525,6 +525,14 @@
     "status": "approved",
     "note": "Hit_Knockback: Knockback hit reaction, one-shot, retargeted to R15"
   },
+  "animation/player/sit_idle": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Seated idle loop for the helicopter cabin's seats (AnimationsConfig.SIT_CLIP, played by AnimationController while Humanoid.SeatPart is set, priority Action, looped). Candidates: Mixamo 'Sitting Idle' or 'Sitting' (in place, R15 retarget); Quaternius Universal Animation Library (CC0) sit poses. Hands on the thighs or a rifle across the lap. Until it exists the seated character holds its rest pose with the gait layer paused."
+  },
   "animation/player/death": {
     "source": "Quaternius Universal Animation Library (CC0), https://quaternius.com/packs/universalanimationlibrary.html",
     "license": "CC0 1.0 Universal",

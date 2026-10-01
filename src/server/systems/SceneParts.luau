@@ -18,6 +18,7 @@ export type PartSpec = {
 	color: { number }?,
 	material: string?,
 	collide: boolean?,
+	transparency: number?,
 	group: string?,
 	length: number?,
 	height: number?,
@@ -68,6 +69,7 @@ function SceneParts.makePart(spec: PartSpec, base: CFrame, parent: Instance): Ba
 	part.CastShadow = true
 	part.Color = SceneParts.color(spec.color)
 	part.Material = material(spec.material)
+	part.Transparency = spec.transparency or 0
 	part.TopSurface = Enum.SurfaceType.Smooth
 	part.BottomSurface = Enum.SurfaceType.Smooth
 	part.Parent = parent

@@ -11,6 +11,7 @@ only, no synthesis, no invented ids.
 
 | Slot | Used by | What to look for | Priority | Status |
 | --- | --- | --- | --- | --- |
+| `animation/player/sit_idle` | AnimationController: seated idle in the helicopter cabin (SIT_CLIP) | Mixamo: Sitting Idle (in place); Quaternius UAL (CC0) sit | polish | needed |
 | `animation/player/strafe_left` | AnimationController — lateral dodge | Mixamo: Left Strafe (in place) | blocker | pending |
 | `animation/player/strafe_right` | AnimationController — lateral dodge | Mixamo: Right Strafe (in place) | blocker | pending |
 | `animation/weapon/equip` | Viewmodel — replaces procedural raise | Universal Viewmodel Template: raise/equip | polish | pending |
@@ -51,4 +52,4 @@ only, no synthesis, no invented ids.
 | `audio/weapons/ricochet_01` | WeaponSfx.playImpacts — one hard hit in six | freesound CC0 'ricochet' | polish | needed |
 | `audio/weapons/shell_03` | Weapon shell casing variation 3 | Kenney CC0 impact sounds: small metal drop | polish | rejected |
 
-**3 blockers, 31 polish items.**
+**3 blockers, 32 polish items.**

@@ -74,6 +74,20 @@ end
 
 local playerClips = AssetIds.animation.player
 
+-- Seated (the helicopter cabin's seats, any Seat): a looped pose played while
+-- Humanoid.SeatPart is set, the gait layer paused meanwhile. The default Animate
+-- script that used to sit the character is removed (AnimationController), so this is
+-- the only sit pose; id 0 until the owner uploads one (animation/player/sit_idle).
+AnimationsConfig.SIT_CLIP = {
+	id = "SitIdle",
+	assetId = AssetIds.animation.player.sit_idle,
+	priority = Enum.AnimationPriority.Action,
+	looped = true,
+	weight = 1,
+	speed = 1,
+} :: ClipConfig
+AnimationsConfig.SIT_FADE = 0.25
+
 AnimationsConfig.locomotionClips = {
 	RifleIdle = gait("RifleIdle", playerClips.rifle_idle),
 	RifleWalk = gait("RifleWalk", playerClips.rifle_walk),

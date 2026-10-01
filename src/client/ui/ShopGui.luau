@@ -306,7 +306,8 @@ function ShopGui.render(catalog: any)
 	end
 end
 
-function ShopGui.open(vendorId: string)
+-- `titleOverride` replaces the vendor's display name (the cabin's loadout panel has no room).
+function ShopGui.open(vendorId: string, titleOverride: string?)
 	local gui = screen
 	local frame = panel
 	if not gui or not frame then
@@ -317,7 +318,7 @@ function ShopGui.open(vendorId: string)
 
 	local title = titleLabel
 	if title then
-		title.Text = string.upper(if config then config.displayName else vendorId)
+		title.Text = string.upper(titleOverride or (if config then config.displayName else vendorId))
 	end
 	local status = statusLabel
 	if status then

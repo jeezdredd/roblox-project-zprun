@@ -32,6 +32,11 @@ local function applyHumanoidConfig(character: Model, phase: Flow.FlowPhase, play
 	if phase == "Mission" then
 		humanoid.UseJumpPower = false
 		humanoid.JumpHeight = 0
+	elseif phase == "Cabin" then
+		-- seated in the helicopter: no walking off, no jumping out of the seat
+		humanoid.WalkSpeed = 0
+		humanoid.UseJumpPower = false
+		humanoid.JumpHeight = 0
 	else
 		humanoid.WalkSpeed = GameConstants.HUB_WALK_SPEED
 		humanoid.UseJumpPower = false
@@ -40,8 +45,9 @@ local function applyHumanoidConfig(character: Model, phase: Flow.FlowPhase, play
 end
 
 function FlowService.getPhase(player: Player): Flow.FlowPhase
-	if player:GetAttribute(PHASE_ATTRIBUTE) == "Mission" then
-		return "Mission"
+	local phase = player:GetAttribute(PHASE_ATTRIBUTE)
+	if phase == "Mission" or phase == "Cabin" then
+		return phase
 	end
 	return "Hub"
 end
@@ -66,7 +72,12 @@ local function moveToHub(character: Model)
 end
 
 local function onCharacterAdded(player: Player, character: Model)
-	local phase: Flow.FlowPhase = if MissionState.isParticipant(player) then "Mission" else "Hub"
+	-- a character reset in the cabin stays in the cabin: IntermissionService seats it
+	-- again on its own CharacterAdded
+	local phase: Flow.FlowPhase = if MissionState.isParticipant(player)
+		then "Mission"
+		elseif player:GetAttribute(PHASE_ATTRIBUTE) == "Cabin" then "Cabin"
+		else "Hub"
 	player:SetAttribute(PHASE_ATTRIBUTE, phase)
 	applyHumanoidConfig(character, phase)
 	if phase == "Hub" then

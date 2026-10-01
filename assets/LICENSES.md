@@ -21,6 +21,7 @@ Anything marked **CC-BY** obliges us to credit the named author in the shipped g
 | `animation/player/rifle_strafe_right` | Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html | Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Strafe | 106993284172414 | approved |
 | `animation/player/rifle_walk` | Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html | Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Rifle Walk | 107509447603332 | approved |
 | `animation/player/run` | Original work (project owner) | pending | 130134481942797 | approved |
+| `animation/player/sit_idle` |  |  | — | needed |
 | `animation/player/strafe_left` | Original work (project owner) | pending | — | pending |
 | `animation/player/strafe_right` | Original work (project owner) | pending | — | pending |
 | `animation/player/stumble` | CC0 1.0 Universal | Quaternius Universal Animation Library 2 (CC0), https://quaternius.com/packs/universalanimationlibrary2.html | 78964987584801 | approved |

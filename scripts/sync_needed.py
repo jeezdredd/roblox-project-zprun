@@ -23,6 +23,7 @@ GUIDE = {
     "animation/player/run": ("AnimationController — run cycle", "Mixamo: Running (in place, rifle carry)", "blocker"),
     "animation/player/strafe_left": ("AnimationController — lateral dodge", "Mixamo: Left Strafe (in place)", "blocker"),
     "animation/player/strafe_right": ("AnimationController — lateral dodge", "Mixamo: Right Strafe (in place)", "blocker"),
+    "animation/player/sit_idle": ("AnimationController: seated idle in the helicopter cabin (SIT_CLIP)", "Mixamo: Sitting Idle (in place); Quaternius UAL (CC0) sit", "polish"),
     "animation/player/stumble": ("AnimationController — obstacle clip", "Mixamo: Stumble Backwards", "polish"),
     "animation/player/death": ("DeathService / DeathController — supine death pose", "Mixamo: Falling Back Death", "blocker"),
     "animation/zombie/idle_a": ("ZombieAnimator — idle variation", "Mixamo: Zombie Idle", "blocker"),

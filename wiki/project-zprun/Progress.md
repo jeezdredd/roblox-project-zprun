@@ -25,6 +25,7 @@ Related: [[Overview]], [[Roadmap]], [[Decisions]].
 | `69721c9` | Difficulty-aware jukeable aggro, hangar visuals, vendor placeholders |
 | `c95f1e9` | Large hangar with city-view windows, burning city diorama, patrol choppers, detailed vendor rooms |
 | `50c9934` | Sealed hangar perimeter, human-scale vendor rooms, client lighting director with per-biome grading |
+| `b33a789` | Helicopter intermission, server flow and cabin (with the review fixes): the squad seated in a cabin off the map, a ready check (all ready or 90 s), a timed crash beat (13 s, or 5 s and skippable on a repeat run), the wake at the wreck with a 6 s grace window; the seated pose hook (`sit_idle` needed), a right-mouse look in the cabin, Play launches through the cabin. See [[Heli Intermission]] |
 
 ## Death, gore and content settings
 

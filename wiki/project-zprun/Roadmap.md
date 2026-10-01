@@ -95,7 +95,7 @@ Branching route choice at biome boundaries: the squad votes with their feet betw
 - **Spectating**: on death in a squad, watch surviving teammates until the run ends instead of returning to the hub immediately. Nothing in `src/` implements this yet.
 - **More biomes and zombie types**: both are data-driven; a biome is an entry in `LocationsConfig` plus a `laneStyle`/prop set in `ChunkFactory`, a zombie is an entry in `ZombiesConfig`.
 - **TeleportService**: only if the hub and the run ever split into separate places. Today they share one DataModel, 4300 studs apart (`HangarConfig.HUB_CENTER` vs `GameConstants.RUN_ORIGIN`), which `StreamingEnabled` handles; transport is already abstracted behind `FlowService` phases, so the split would be contained.
-- **Loose ends worth closing**: the `NoDamage500` goal is unreachable because nothing reports the `CleanDistance` metric to `MissionGoals.report`; `src/server/systems/TrackBuilder.luau` pivots the start platform in absolute world space instead of relative to `RUN_ORIGIN`, leaving it 4000 studs from where squads actually spawn; two separate ScreenGuis named `DamageVignette` draw the same red overlay.
+- **Loose ends worth closing**: (closed 2026-10-01: the `NoDamage500` goal is reachable, `DistanceTracker` reports the best clean stretch as `CleanDistance`, see [[Goals HUD]]); `src/server/systems/TrackBuilder.luau` pivots the start platform in absolute world space instead of relative to `RUN_ORIGIN`, leaving it 4000 studs from where squads actually spawn; two separate ScreenGuis named `DamageVignette` draw the same red overlay.
 
 ## Blocked on the owner
 

@@ -826,7 +826,7 @@ Toughness preserves the current health *ratio* when max health changes, so buyin
 
 ---
 
-## Mission goals (stub)
+## Mission goals
 
 Files: `src/server/systems/MissionGoals.luau`, `src/shared/config/MissionGoalsConfig.luau`
 
@@ -840,9 +840,7 @@ Three per-run objectives, evaluated once at death.
 
 `beginRun` initialises `{ Distance = 0, Kills = 0, CleanDistance = 0 }`. `report(player, metric, value)` takes a **max** for `Distance` and `CleanDistance` and a **sum** for everything else. `completed` walks `MissionGoalsConfig.order` and returns the ids whose metric has reached target; `bonusCredits` sums their rewards, and `DeathService` adds that to the payout.
 
-**This is a stub in one specific way:** only two call sites ever report. `WeaponService.handleHit` reports `"Kills"`, and `DeathService.computeRewards` reports `"Distance"`. Nothing anywhere reports `"CleanDistance"`, so `NoDamage500` is unreachable. Making it work needs a damage-taken hook that snapshots the current distance and reports the delta since the last hit: `DistanceTracker` already has the per-player number.
-
-There is also no UI: goals are not shown during a run and only surface as an unlabelled credit bonus in the results panel.
+Reports come from three places: `WeaponService.handleHit` reports `"Kills"`, `DistanceTracker.step` reports `"Distance"` live and `"CleanDistance"` (a drop in the humanoid's health marks a hit; the metric is the best clean stretch so far, kept as a max), and `DeathService.computeRewards` reports `"Distance"` once more at death. All three goals are reachable. `MissionGoals` publishes the progress as the `GoalsProgress` attribute and `RunHud` shows it during a run (see [[Goals HUD]]).
 
 ---
 

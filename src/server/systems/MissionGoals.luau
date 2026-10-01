@@ -2,8 +2,10 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local MissionGoalsConfig = require(ReplicatedStorage.Shared.config.MissionGoalsConfig)
+local GoalsHudMath = require(ReplicatedStorage.Shared.util.GoalsHudMath)
 local RunEconomyMath = require(ReplicatedStorage.Shared.util.RunEconomyMath)
 
 local MissionGoals = {}
@@ -14,9 +16,40 @@ local progress: { [Player]: RunProgress } = {}
 -- the goals whose bonus a results screen has already paid this run
 local paid: { [Player]: { [string]: boolean } } = {}
 
+-- The run HUD reads the progress from one attribute (docs/gameplay/goals-hud-and-ladder.md);
+-- reports come every frame for the distance, so the string is written at most every
+-- PUBLISH_INTERVAL and only when a whole unit changed.
+local PROGRESS_ATTRIBUTE = "GoalsProgress"
+local PUBLISH_INTERVAL = 0.25
+-- the distances are shown in steps of 5 studs, the counts whole
+local STEPS = { Distance = 5, CleanDistance = 5 }
+local dirty: { [Player]: boolean } = {}
+local lastPublishAt = 0
+
+local function publish(player: Player)
+	local run = progress[player]
+	local encoded = if run then GoalsHudMath.encode(MissionGoalsConfig, run, STEPS) else nil
+	if player:GetAttribute(PROGRESS_ATTRIBUTE) ~= encoded then
+		player:SetAttribute(PROGRESS_ATTRIBUTE, encoded)
+	end
+end
+
+local function flush()
+	local now = os.clock()
+	if now - lastPublishAt < PUBLISH_INTERVAL then
+		return
+	end
+	lastPublishAt = now
+	for player in dirty do
+		dirty[player] = nil
+		publish(player)
+	end
+end
+
 function MissionGoals.beginRun(player: Player)
 	progress[player] = { Distance = 0, Kills = 0, CleanDistance = 0 }
 	paid[player] = {}
+	publish(player)
 end
 
 function MissionGoals.report(player: Player, metric: string, value: number)
@@ -29,6 +62,7 @@ function MissionGoals.report(player: Player, metric: string, value: number)
 	else
 		run[metric] = (run[metric] or 0) + value
 	end
+	dirty[player] = true
 end
 
 function MissionGoals.completed(player: Player): { string }
@@ -75,13 +109,17 @@ end
 function MissionGoals.endRun(player: Player)
 	progress[player] = nil
 	paid[player] = nil
+	dirty[player] = nil
+	publish(player)
 end
 
 function MissionGoals.init()
 	Players.PlayerRemoving:Connect(function(player)
 		progress[player] = nil
 		paid[player] = nil
+		dirty[player] = nil
 	end)
+	RunService.Heartbeat:Connect(flush)
 end
 
 return MissionGoals

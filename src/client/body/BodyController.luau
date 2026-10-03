@@ -21,6 +21,8 @@ local BodyMath = require(ReplicatedStorage.Shared.util.BodyMath)
 local WorldWeaponModel = require(ReplicatedStorage.Shared.util.WorldWeaponModel)
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local AimReplicator = require(script.Parent.AimReplicator)
+local StanceMath = require(ReplicatedStorage.Shared.util.StanceMath)
+local Stances = require(script.Parent.Parent.systems.Stances)
 local BodyRig = require(script.Parent.BodyRig)
 
 local BodyController = {}
@@ -182,13 +184,14 @@ local function onShot(kind: string, ...: any)
 	end
 end
 
-local function onAim(player: Player, pitch: number, yaw: number)
+local function onAim(player: Player, pitch: number, yaw: number, lean: any)
 	if player == Players.LocalPlayer or typeof(pitch) ~= "number" or typeof(yaw) ~= "number" then
 		return
 	end
 	local entry = entries[player]
 	if entry then
 		entry.rig:setAim(pitch, yaw)
+		entry.rig:setLean(StanceMath.validateLean(lean))
 		entry.lastPacketAt = os.clock()
 	end
 end
@@ -215,6 +218,7 @@ local function updateLocal()
 	if pitch and yaw then
 		entry.rig:setAim(pitch, yaw)
 	end
+	entry.rig:setLean(Stances.lean())
 end
 
 local function speedOf(character: Model): number

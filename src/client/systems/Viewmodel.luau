@@ -17,6 +17,7 @@ local PackViewmodel = require(script.Parent.PackViewmodel)
 local ViewmodelPackConfig = require(ReplicatedStorage.Shared.config.ViewmodelPackConfig)
 local HipAim = require(script.Parent.HipAim)
 local WallPullback = require(script.Parent.WallPullback)
+local Stances = require(script.Parent.Stances)
 
 local Viewmodel = {}
 
@@ -506,6 +507,11 @@ local function stepPack(pack: PackViewmodel.Rig, deltaTime: number, camera: Came
 	local moving = ExertionState.getSpeed() > 1
 	-- near a wall the gun draws in (WallPullback casts along the aim, eases the pose)
 	PackViewmodel.setWallPose(pack, WallPullback.update(deltaTime, cameraCFrame, pack.class))
+	-- the stance, the magazine check and the lean's counter-pose (Stances); a reload, the
+	-- draw or an inspect eases them out so the clip plays from the class's own hold
+	local entry = pack.entry
+	local suppressed = PackViewmodel.isReloading(pack) or (entry ~= nil and (entry.tag == "equip" or entry.tag == "inspect"))
+	PackViewmodel.setStancePose(pack, Stances.viewmodelPose(deltaTime, suppressed))
 	PackViewmodel.step(pack, deltaTime, placement, moving, emitPhase)
 end
 

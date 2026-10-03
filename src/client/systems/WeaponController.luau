@@ -19,6 +19,9 @@ local AimAssist = require(script.Parent.AimAssist)
 local UiSfx = require(script.Parent.UiSfx)
 local UiTheme = require(script.Parent.Parent.ui.UiTheme)
 local WallPullback = require(script.Parent.WallPullback)
+local Stances = require(script.Parent.Stances)
+local StanceConfig = require(ReplicatedStorage.Shared.config.StanceConfig)
+local StanceMath = require(ReplicatedStorage.Shared.util.StanceMath)
 local WeaponPickupClient = require(script.Parent.WeaponPickupClient)
 
 local WeaponController = {}
@@ -59,6 +62,16 @@ local reloadState: ReloadState? = nil
 local lastReloadEndedAt = 0
 -- a shot pressed during a shell reload fires once the fast exit is over
 local pendingShot = false
+-- a shot pressed in high or low ready fires once the gun is up (Stances)
+local raisePending = false
+-- R: pressed when, and whether the hold has turned into a magazine check
+local reloadPressedAt: number? = nil
+local checkStarted = false
+local magCheckLabel: TextLabel? = nil
+local lastWheelSwapAt = 0
+-- the mouse wheel's quick swap ignores ticks closer together than this
+local WHEEL_SWAP_GAP = 0.25
+local RELOAD_KEY: Enum.KeyCode = (Enum.KeyCode :: any)[StanceConfig.keys.reload] or Enum.KeyCode.R
 local burstShots = 0
 local lastBurstAt = 0
 local tracerCounter = 0
@@ -291,6 +304,15 @@ local function tryFire(pressed: boolean)
 		finishReload()
 	end
 
+	-- from high or low ready (or a magazine check) the gun comes up first; the press
+	-- fires once it is up
+	if not Stances.requestFire(config.class) then
+		if pressed then
+			raisePending = true
+		end
+		return
+	end
+
 	if now - lastShotAt < 1 / config.fireRate then
 		return
 	end
@@ -328,6 +350,7 @@ local function tryReload()
 	if not config or not canAct() or reloadState then
 		return
 	end
+	Stances.cancelCheck()
 	local now = os.clock()
 	if Viewmodel.drawElapsed() < config.drawTime then
 		return
@@ -409,8 +432,8 @@ local function selectNumber(index: number)
 	end
 end
 
--- Q: back to the previous weapon when testing with every weapon unlocked, otherwise
--- the loadout slot toggle.
+-- The mouse wheel (Q leans now, Stances): back to the previous weapon when testing with
+-- every weapon unlocked, otherwise the loadout slot toggle.
 local function quickSwap()
 	local previous = previousWeaponId
 	if WeaponsConfig.ALL_WEAPONS_UNLOCKED and previous then
@@ -470,6 +493,53 @@ local function buildHud()
 	corner.CornerRadius = UDim.new(1, 0)
 	corner.Parent = crosshair
 	HipAim.bindCrosshair(crosshair)
+
+	-- the magazine check's count (hold R), only while the weapon is tipped in
+	local check = Instance.new("TextLabel")
+	check.Name = "MagCheck"
+	check.AnchorPoint = Vector2.new(0.5, 0.5)
+	check.Position = UDim2.fromScale(0.5, 0.7)
+	check.Size = UDim2.fromOffset(220, 34)
+	check.BackgroundTransparency = 1
+	check.Font = UiTheme.FONT
+	check.TextSize = 24
+	check.TextColor3 = Color3.fromRGB(224, 224, 216)
+	check.TextStrokeTransparency = 0.5
+	check.Text = ""
+	check.Visible = false
+	check.Parent = gui
+	magCheckLabel = check
+end
+
+-- The check's count from the client's own count, shown only while the weapon is tipped
+-- toward the camera; optionally the corner counter is hidden outside a check.
+local function updateMagCheck()
+	local config = currentConfig()
+	local showing = config ~= nil and Stances.countVisible()
+	local label = magCheckLabel
+	if label then
+		label.Visible = showing
+		if showing and config then
+			label.Text = StanceMath.readout(StanceConfig.MAG_CHECK.readout, predictedMag, config.magSize)
+		end
+	end
+	local counter = ammoLabel
+	if counter then
+		counter.Visible = not StanceConfig.MAG_CHECK.hideAmmoCounter or showing
+	end
+end
+
+-- Hold R: once held past MAG_CHECK.holdTime with the pack viewmodel up and no reload
+-- running, the press is a magazine check instead of a reload.
+local function updateReloadHold(now: number)
+	local pressedAt = reloadPressedAt
+	if not pressedAt or checkStarted then
+		return
+	end
+	if StanceMath.isHold(StanceConfig :: any, now - pressedAt) and Stances.posesShown() and not reloadState and canAct() then
+		checkStarted = true
+		Stances.startCheck()
+	end
 end
 
 -- The server only lowers AmmoMag on a shot, so a lower value than predicted is news
@@ -565,6 +635,8 @@ local function onWeaponChanged()
 	-- buffered shot; reset before setWeapon, which can yield while the rig loads
 	reloadState = nil
 	pendingShot = false
+	raisePending = false
+	Stances.cancelCheck()
 	lastShotAt = 0
 	lastReloadEndedAt = 0
 	syncPredictedAmmo(true)
@@ -619,6 +691,15 @@ local function installDebugHook()
 			tryReload()
 		elseif command == "inspect" then
 			Viewmodel.toggleInspect()
+		elseif command == "stance" then
+			Stances.cycleStance()
+			print("[DebugWeapon] " .. Stances.describe())
+		elseif command == "magcheck" then
+			Stances.startCheck()
+		elseif command == "magcheck_end" then
+			Stances.releaseCheck()
+		elseif command == "lean_left" or command == "lean_right" or command == "lean_off" then
+			Stances.setDebugLean(if command == "lean_left" then -1 elseif command == "lean_right" then 1 else nil)
 		elseif command == "preview_tactical" or command == "preview_empty" then
 			-- the reload animation alone, with no reload behind it: slowed down with the
 			-- camera's ViewmodelTimeScale it is not cut short when the server's reload ends
@@ -669,6 +750,7 @@ end
 
 function WeaponController.init()
 	Viewmodel.init()
+	Stances.init()
 	Viewmodel.onPhase(onPhase)
 	WeaponVfx.onCasingLanded(WeaponSfx.playCasingLand)
 	-- the pickups' outlines and toasts start with the weapons
@@ -686,12 +768,12 @@ function WeaponController.init()
 			triggerHeld = true
 			dryClickedThisPress = false
 			tryFire(true)
-		elseif input.KeyCode == Enum.KeyCode.R then
-			tryReload()
+		elseif input.KeyCode == RELOAD_KEY then
+			-- a short press reloads on release; a hold is the magazine check
+			reloadPressedAt = os.clock()
+			checkStarted = false
 		elseif slot then
 			selectNumber(slot)
-		elseif input.KeyCode == Enum.KeyCode.Q then
-			quickSwap()
 		elseif input.KeyCode == Enum.KeyCode.F then
 			if not reloadState then
 				Viewmodel.toggleInspect()
@@ -701,6 +783,24 @@ function WeaponController.init()
 	UserInputService.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			triggerHeld = false
+		elseif input.KeyCode == RELOAD_KEY and reloadPressedAt then
+			reloadPressedAt = nil
+			if checkStarted then
+				checkStarted = false
+				Stances.releaseCheck()
+			else
+				tryReload()
+			end
+		end
+	end)
+	UserInputService.InputChanged:Connect(function(input, processed)
+		if processed or input.UserInputType ~= Enum.UserInputType.MouseWheel then
+			return
+		end
+		local now = os.clock()
+		if now - lastWheelSwapAt >= WHEEL_SWAP_GAP then
+			lastWheelSwapAt = now
+			quickSwap()
 		end
 	end)
 
@@ -708,8 +808,14 @@ function WeaponController.init()
 		local now = os.clock()
 		advanceReload(now)
 		reconcileAmmo(now)
+		updateReloadHold(now)
+		updateMagCheck()
 		if pendingShot and not reloadState then
 			pendingShot = false
+			tryFire(false)
+		end
+		if raisePending and not Stances.isRaising() then
+			raisePending = false
 			tryFire(false)
 		end
 		if triggerHeld then

@@ -6,6 +6,9 @@
         [--over-cap split|decimate] [--decimate R] [--merge-size 4]
         [--map <name> --license TEXT --source TEXT] [--replace]
 
+Refused: required glTF extensions the reader cannot honour (Draco or meshopt
+compression, GPU instancing, Basis textures), and map names that are Luau keywords.
+
 1. Flattens the node tree to world space and scales it to studs (--scale, default the
    project's metre: WorldMeshConfig.METRE = 1 / 0.28 studs per glTF unit).
 2. Puts every mesh into a square cell of --cell studs on the ground plane by the centre
@@ -24,9 +27,14 @@
    the mesh's own centre and turned 180 degrees about Y because the Roblox glTF importer
    turns meshes that way) and <out>/layout.json (per cell: position, size, materials,
    triangle and texture counts, and per mesh its offset, size, triangles and a
-   collision hint: none, box or hull).
+   collision hint: none, box, hull, default or precise, decided on the whole source
+   mesh and kept by every piece cut from it).
 7. With --map, adds one pending manifest row per cell (model/maps/<map>/<cell>) and
-   writes the Luau layout module (src/shared/prebuilt/<map>.luau) for PrebuiltMaps.
+   writes the server-side Luau layout module (src/server/prebuilt/<map>.luau).
+
+The output is never committable: with --map it is exactly assets/maps/<map>/, and any
+--out inside the repository must be gitignored (git check-ignore); the whole of
+assets/maps/ is.
 
 See docs/environment/prebuilt-maps.md.
 """
@@ -52,9 +60,18 @@ import gltf_io  # noqa: E402
 
 LAYOUT_VERSION = 1
 MAP_NAME = re.compile(r"^[a-z][a-z0-9_]*$")
-FLAT_HEIGHT = 1.0
-THIN_RATIO = 0.05
+# near-planar: thinner than this many studs, or this share of the mesh's largest side
+PLANAR_ABS = 0.5
+PLANAR_REL = 0.02
+# source triangles weighed per new triangle when moving UVs and normals over
+NORMAL_CANDIDATES = 8
 MIN_SIZE = 0.05
+# a map name becomes a Luau table key (AssetIds.model.maps.<map>): no keywords
+LUAU_KEYWORDS = {
+    "and", "break", "continue", "do", "else", "elseif", "end", "export", "false", "for",
+    "function", "if", "in", "local", "nil", "not", "or", "repeat", "return", "then",
+    "true", "type", "typeof", "until", "while",
+}
 
 
 class SceneError(Exception):
@@ -67,8 +84,12 @@ class SceneError(Exception):
 class Group:
     """Triangles of one material on their own vertex arrays."""
 
-    def __init__(self, material, positions, normals, uvs, triangles, members, merged=False, max_member=0.0):
+    def __init__(self, material, positions, normals, uvs, triangles, members, merged=False, max_member=0.0, hint=None, cut=False):
         self.material = material
+        # the collision hint, decided once on the whole source mesh and kept by every
+        # piece cut or split from it; `cut` marks a piece of a mesh wider than a cell
+        self.hint = hint
+        self.cut = cut
         self.positions = positions
         self.normals = normals
         self.uvs = uvs
@@ -90,9 +111,11 @@ def compact(positions, normals, uvs, triangles):
     return positions[used], normals[used], uvs[used], inverse.reshape(-1, 3).astype(np.int64)
 
 
-def subset(group, mask):
+def subset(group, mask, cut=None):
+    """The triangles picked by `mask` (booleans or indices) on their own vertices."""
     p, n, uv, t = compact(group.positions, group.normals, group.uvs, group.triangles[mask])
-    return Group(group.material, p, n, uv, t, group.members, group.merged, group.max_member)
+    return Group(group.material, p, n, uv, t, group.members, group.merged, group.max_member,
+                 group.hint, group.cut if cut is None else cut)
 
 
 def concat(material, parts, merged, max_member):
@@ -106,7 +129,7 @@ def concat(material, parts, merged, max_member):
         offset += len(part.positions)
         members.extend(part.members)
     return Group(material, np.concatenate(positions), np.concatenate(normals), np.concatenate(uvs),
-                 np.concatenate(triangles), members, merged, max_member)
+                 np.concatenate(triangles), members, merged, max_member, "none" if merged else None)
 
 
 def drop_degenerate(group):
@@ -182,9 +205,25 @@ def decimate(group, target):
         return group
 
     original = group.positions[group.triangles]
-    tree = cKDTree(original.mean(axis=1))
     corners = out_positions[out_faces]
-    _, nearest = tree.query(corners.mean(axis=1))
+    source_normals = gltf_io.face_normals(group.positions, group.triangles)
+    source_normals /= np.maximum(np.linalg.norm(source_normals, axis=1, keepdims=True), 1e-12)
+    out_normals = np.cross(corners[:, 1] - corners[:, 0], corners[:, 2] - corners[:, 0])
+    out_normals /= np.maximum(np.linalg.norm(out_normals, axis=1, keepdims=True), 1e-12)
+    # The source triangle for each new one: searched in position and facing together
+    # (the facing weighted by twice the new mesh's edge length), so on a thin wall or a
+    # folded sheet the other side's triangles are far away even when their centroids are
+    # nearer; of the k nearest, the one whose normal agrees best with the new winding.
+    edges = np.linalg.norm(corners - np.roll(corners, 1, axis=1), axis=2)
+    weight = 2.0 * float(edges.mean()) if edges.size else 1.0
+    tree = cKDTree(np.concatenate([original.mean(axis=1), source_normals * weight], axis=1))
+    k = min(NORMAL_CANDIDATES, len(original))
+    _, candidates = tree.query(np.concatenate([corners.mean(axis=1), out_normals * weight], axis=1), k=k)
+    candidates = np.asarray(candidates).reshape(len(corners), k)
+    agreement = np.einsum("ij,ikj->ik", out_normals, source_normals[candidates])
+    # nearer candidates win a near tie
+    agreement -= np.arange(k)[None, :] * 1e-3
+    nearest = candidates[np.arange(len(corners)), np.argmax(agreement, axis=1)]
     source = group.triangles[nearest]
     a, b, c = (group.positions[source[:, i]] for i in range(3))
     weights = _barycentric(corners, a[:, None, :], b[:, None, :], c[:, None, :])
@@ -201,15 +240,35 @@ def decimate(group, target):
     keys = np.concatenate([np.round(positions / 1e-5), np.round(uvs / 1e-5), np.round(normals / 1e-3)], axis=1).astype(np.int64)
     _, first, inverse = np.unique(keys, axis=0, return_index=True, return_inverse=True)
     return Group(group.material, positions[first], normals[first], uvs[first], inverse.reshape(-1)[triangles],
-                 group.members, group.merged, group.max_member)
+                 group.members, group.merged, group.max_member, group.hint, group.cut)
 
 
-def collision_hint(size, merged, small):
-    if merged or max(size) < small:
+def thickness(positions):
+    """Extent along the direction the points vary least (PCA): 0 for a flat sheet,
+    whatever its orientation."""
+    if len(positions) < 3:
+        return 0.0
+    centred = positions - positions.mean(axis=0)
+    _, _, axes = np.linalg.svd(centred, full_matrices=False)
+    along = centred @ axes[-1]
+    return float(along.max() - along.min())
+
+
+def collision_hint(positions, wide, small):
+    """The hint for a whole source mesh:
+    - none: smaller than `small` studs (clutter);
+    - default or precise: wider than a cell (ground, roads, terrain), Roblox's default
+      decomposition when near-planar, PreciseConvexDecomposition when it has relief;
+    - box: near-planar and within a cell (a wall, a slab, a sign board);
+    - hull: everything else (buildings, cars, rocks)."""
+    extent = positions.max(axis=0) - positions.min(axis=0)
+    largest = float(extent.max())
+    if largest < small:
         return "none"
-    if size[1] <= FLAT_HEIGHT or min(size) / max(max(size), 1e-9) < THIN_RATIO:
-        return "box"
-    return "hull"
+    planar = thickness(positions) <= max(PLANAR_ABS, PLANAR_REL * largest)
+    if wide:
+        return "default" if planar else "precise"
+    return "box" if planar else "hull"
 
 
 # Cells -------------------------------------------------------------------------------
@@ -227,21 +286,26 @@ def cell_name(ix, iz):
 
 
 def piece_group(piece, scale):
-    positions = piece.positions * scale
-    group = Group(piece.material, positions, piece.normals, piece.uvs, piece.triangles, [piece.name])
-    return drop_degenerate(group)
+    """One primitive in studs on only the vertices its triangles use: a primitive that
+    shares its accessor with others (one vertex buffer for a whole kit) must not take
+    their vertices' bounds."""
+    p, n, uv, t = compact(piece.positions * scale, piece.normals, piece.uvs, piece.triangles)
+    return drop_degenerate(Group(piece.material, p, n, uv, t, [piece.name]))
 
 
-def assign(groups, cell):
+def assign(groups, cell, small=4.0):
     """cell key -> list of groups. A group no wider than a cell goes whole to the cell of
-    its centre; a wider one is cut by triangle centroid."""
+    its centre; a wider one is cut by triangle centroid (sorted once by cell, then taken
+    run by run). Each source mesh gets its collision hint here, before any cut."""
     cells = {}
     for group in groups:
         if group.count == 0:
             continue
         low, high = group.bounds()
         extent = high - low
-        if max(extent[0], extent[2]) <= cell:
+        wide = max(extent[0], extent[2]) > cell
+        group.hint = collision_hint(group.positions, wide, small)
+        if not wide:
             centre = (low + high) / 2
             key = (cell_index(centre[0], cell), cell_index(centre[2], cell))
             cells.setdefault(key, []).append(group)
@@ -249,9 +313,14 @@ def assign(groups, cell):
         centres = centroids(group)
         ix = np.floor(centres[:, 0] / cell).astype(np.int64)
         iz = np.floor(centres[:, 2] / cell).astype(np.int64)
-        for key in sorted(set(zip(ix.tolist(), iz.tolist()))):
-            mask = (ix == key[0]) & (iz == key[1])
-            cells.setdefault(key, []).append(subset(group, mask))
+        keys = np.stack([ix, iz], axis=1)
+        order = np.lexsort((iz, ix))
+        ordered = keys[order]
+        starts = np.flatnonzero(np.r_[True, np.any(ordered[1:] != ordered[:-1], axis=1)])
+        ends = np.r_[starts[1:], len(order)]
+        for start, end in zip(starts, ends):
+            key = (int(ordered[start, 0]), int(ordered[start, 1]))
+            cells.setdefault(key, []).append(subset(group, np.sort(order[start:end]), cut=True))
     return cells
 
 
@@ -262,7 +331,8 @@ def cell_groups(groups, merge_size, cap, over_cap, ratio):
     for group in groups:
         low, high = group.bounds()
         size = float((high - low).max())
-        if size < merge_size:
+        # a cut piece of the ground is never clutter, however small its corner of a cell
+        if size < merge_size and not group.cut:
             small.setdefault(group.material, []).append((group, size))
         else:
             large.append(group)
@@ -406,7 +476,7 @@ def split(source, out_dir, max_tris=18000, texture=1024, cell=64.0, scale=None, 
     groups = [piece_group(piece, scale) for piece in gltf_io.pieces(document)]
     if not any(g.count for g in groups):
         raise SceneError(f"{source}: no triangles in the default scene")
-    cells = assign(groups, cell)
+    cells = assign(groups, cell, small)
     textures = TextureCache(document, texture)
     notes = list(document.notes)
 
@@ -447,7 +517,7 @@ def split(source, out_dir, max_tris=18000, texture=1024, cell=64.0, scale=None, 
                 "offset": _round(centre - position),
                 "size": _round(size),
                 "triangles": group.count,
-                "collision": collision_hint(size, group.merged, small),
+                "collision": "none" if group.merged else (group.hint or "hull"),
                 "sources": sorted(set(group.members))[:8],
             })
         file_name = f"{name}.glb"
@@ -490,6 +560,33 @@ def split(source, out_dir, max_tris=18000, texture=1024, cell=64.0, scale=None, 
 # Manifest rows --------------------------------------------------------------------------
 
 
+def is_ignored(path, root):
+    """Whether git ignores `path` (which need not exist yet) in the repository at root."""
+    try:
+        done = subprocess.run(["git", "check-ignore", "-q", path], cwd=root, capture_output=True)
+    except OSError:
+        return False
+    return done.returncode == 0
+
+
+def check_out(out_dir, root, map_name):
+    """The output must never be committable: with --map it is exactly
+    assets/maps/<map>/, and anywhere inside the repository git must ignore it (the cells
+    are large and often licensed). Outside the repository anything goes (previews)."""
+    out = os.path.realpath(out_dir)
+    repo = os.path.realpath(root)
+    inside = out == repo or out.startswith(repo + os.sep)
+    if map_name:
+        expected = os.path.join(repo, "assets", "maps", map_name)
+        if out != expected:
+            raise SceneError(f"--map {map_name} writes to assets/maps/{map_name}/ (got --out {out_dir})")
+    if inside:
+        probe = os.path.relpath(os.path.join(out, "cells", "probe.glb"), repo)
+        layout = os.path.relpath(os.path.join(out, "layout.json"), repo)
+        if not (is_ignored(probe, repo) and is_ignored(layout, repo)):
+            raise SceneError(f"{os.path.relpath(out, repo)} is not gitignored; the cells and layout.json must never be committed")
+
+
 def manifest_rows(map_name, layout, out_dir, root, licence, source):
     relative = os.path.relpath(os.path.abspath(out_dir), os.path.abspath(root)).replace(os.sep, "/")
     if relative.startswith(".."):
@@ -524,7 +621,7 @@ def apply_rows(manifest, map_name, rows, replace=False):
 def parse_args(argv):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("scene", help="the .glb or .gltf scene")
-    parser.add_argument("--out", required=True, help="output folder (assets/maps/<map> for the manifest)")
+    parser.add_argument("--out", required=True, help="output folder: assets/maps/<map> with --map (gitignored), anywhere outside the repository otherwise")
     parser.add_argument("--max-tris", type=int, default=18000, help="triangle cap per mesh")
     parser.add_argument("--texture", type=int, default=1024, help="longest texture side in px")
     parser.add_argument("--cell", type=float, default=64.0, help="cell size in studs")
@@ -545,8 +642,11 @@ def run(argv):
     if args.map:
         if not MAP_NAME.match(args.map):
             raise SceneError("--map: lower case letters, digits and underscores, starting with a letter")
+        if args.map in LUAU_KEYWORDS:
+            raise SceneError(f"--map {args.map} is a Luau keyword and cannot be a table key; pick another name")
         if not args.license or not args.source:
             raise SceneError("--map needs --license and --source: every asset has a licence and a source")
+    check_out(args.out, args.root, args.map)
     layout = split(args.scene, args.out, args.max_tris, args.texture, args.cell, args.scale, args.over_cap,
                    args.decimate, args.merge_size, args.merge_size, args.root, args.map)
     totals = layout["totals"]

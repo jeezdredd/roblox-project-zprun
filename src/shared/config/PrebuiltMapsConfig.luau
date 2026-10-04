@@ -6,7 +6,7 @@
 -- types, so PrebuiltMapMath and its tests can load it.
 
 export type MapEntry = {
-	-- the layout module src/shared/prebuilt/<map>.luau and the manifest's model/maps/<map>/
+	-- the layout module src/server/prebuilt/<map>.luau and the manifest's model/maps/<map>/
 	map: string,
 	enabled: boolean,
 	-- where the scene's origin goes, in studs, and a turn about Y in degrees
@@ -30,7 +30,8 @@ PrebuiltMapsConfig.FOLDER = "PrebuiltMaps"
 --   { map = "city", enabled = true, origin = { 0, 0, -4000 }, yaw = 0 },
 PrebuiltMapsConfig.maps = {} :: { MapEntry }
 
--- cells loading at once (InsertService:LoadAsset plus the collision refits)
+-- workers loading cells (InsertService:LoadAsset plus the collision refits), each taking
+-- the next cell when it is done
 PrebuiltMapsConfig.LOAD_CONCURRENCY = 4
 
 -- split_scene.py writes the geometry turned 180 degrees about Y because the Roblox glTF

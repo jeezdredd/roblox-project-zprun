@@ -11,9 +11,10 @@ wiki/project-zprun/.obsidian/workspace.json
 .opencloud.key
 assets/textures/*.jpg
 assets/textures/*.png
-# prebuilt map cells (tools/city_import/split_scene.py): large binaries uploaded through
-# the manifest; layout.json and the Luau layout modules are committed
-assets/maps/*/cells/
+# prebuilt maps (tools/city_import/split_scene.py): the cells are large and often
+# licensed, uploaded through the manifest; only the generated Luau layout module
+# (src/server/prebuilt/) is committed
+assets/maps/
 assets/audio/**/*.ogg
 assets/audio/**/*.mp3
 assets/audio/**/*.wav

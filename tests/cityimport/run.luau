@@ -106,6 +106,8 @@ group("collision", function()
 	check("box", M.collision("box").canCollide and M.collision("box").fidelity == "Box")
 	check("hull", M.collision("hull").canCollide and M.collision("hull").fidelity == "Hull")
 	check("unknown falls back to hull", M.collision("weird").fidelity == "Hull")
+	check("default for flat ground", M.collision("default").canCollide and M.collision("default").fidelity == "Default")
+	check("precise for relief", M.collision("precise").fidelity == "PreciseConvexDecomposition")
 	check("nothing touches", not M.collision("box").canTouch and not M.collision("hull").canTouch)
 end)
 

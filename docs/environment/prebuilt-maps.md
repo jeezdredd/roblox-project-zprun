@@ -80,17 +80,40 @@ Python 3 with numpy and Pillow; simplification also needs `pip install pyfqmr sc
    - Cell names come from the grid, `c_<x>_<z>` with `p`/`m` for the sign
      (`c_p002_m001`).
 
-Collision hints, by the mesh's size:
+Collision hints are decided once on each whole source mesh, before any cut, and every
+piece cut or split from it keeps its mesh's hint (a corner of the ground is ground,
+however small, and is never merged into clutter). "Near-planar" means the extent
+along the direction the vertices vary least (PCA) is under 0.5 studs or 2 percent of
+the largest side, whatever the orientation:
 
 | Hint | When | In the game |
 | --- | --- | --- |
-| `none` | a merged clutter mesh, or anything under `--merge-size` | no collision, no queries |
-| `box` | flat (1 stud tall or less) or thin (smallest side under 5 percent of the largest): ground, roads, walls | `CollisionFidelity.Box` |
+| `none` | a merged clutter mesh, or a mesh under `--merge-size` | no collision, no queries |
+| `default` | wider than a cell (ground, roads) and near-planar | `CollisionFidelity.Default` |
+| `precise` | wider than a cell with relief (terrain, ramps) | `CollisionFidelity.PreciseConvexDecomposition` |
+| `box` | within a cell and near-planar (walls, slabs, boards) | `CollisionFidelity.Box` |
 | `hull` | everything else (buildings, cars, rocks) | `CollisionFidelity.Hull` |
 
+Each primitive keeps only the vertices its triangles use, so a kit whose meshes share
+one vertex buffer does not give every mesh the buffer's bounds. Buffers are read
+through `memoryview` (a 59 MB GLB reads in a fraction of a second). URIs are decoded
+with `urllib.parse.unquote`.
+
+`KHR_texture_transform` on the base colour texture is baked into the UVs (offset,
+rotation, scale); a different transform on another texture of the material is noted.
+A required extension the reader cannot honour stops the run with what to do:
+`KHR_draco_mesh_compression`, `EXT_meshopt_compression`, `EXT_mesh_gpu_instancing`,
+`KHR_texture_basisu` (re-export uncompressed, instances realised, PNG or JPEG
+textures).
+
 Not read: skins (read in their bind pose), morph targets, animations, a second UV set,
-vertex colours, sparse accessors (stop the run), material extensions such as
-`KHR_texture_transform` (dropped, listed as notes). Only triangle primitives are kept.
+vertex colours, sparse accessors (stop the run), other material extensions (dropped,
+listed as notes). Only triangle primitives are kept.
+
+**Simplification normals.** Each new triangle takes its UVs and normals from a source
+triangle found in position and facing together, the one of the 8 nearest whose normal
+agrees best with the new winding: on a two-sided wall the other side's triangles are
+never used, even when their centroids are nearer.
 
 **FBX.** The FBX reader in `tools/arms_rig/fbx.py` (used by `tools/character_rig`)
 parses the binary node tree. It does not build static meshes with their node
@@ -105,7 +128,8 @@ With `--map`, the splitter:
 - adds one manifest row per cell, `model/maps/<map>/<cell>`, `pending`, id 0, with the
   licence, the source and a note (meshes, triangles, textures, source file);
 - removes rows of cells that no longer exist;
-- writes `src/shared/prebuilt/<map>.luau` from the layout (no ids in it);
+- writes `src/server/prebuilt/<map>.luau` from the layout (no ids in it; server only,
+  clients never download it);
 - runs both sync scripts.
 
 Then:
@@ -119,9 +143,11 @@ python3 scripts/sync_configs.py && python3 scripts/sync_needed.py
 Each cell `.glb` uploads as a Model asset, and its id reaches
 `AssetIds.model.maps.<map>.<cell>`. A CC BY scene needs a licence string the credits
 generator can read (`CC BY 4.0, "Title" by Author, URL`): `sync_configs.py` stops on
-one it cannot. The `.glb` files are gitignored (`assets/maps/*/cells/`); `layout.json`
-and the Luau module are committed. `python3 tools/city_import/emit_layout.py --all`
-rewrites every module from its layout, and `--check` reports stale ones.
+one it cannot. All of `assets/maps/` is gitignored (the cells are large and often
+licensed; `--out` must be `assets/maps/<map>/` with `--map`, and any `--out` inside the
+repository must be ignored, checked with `git check-ignore`); the Luau module is the
+committed record. `python3 tools/city_import/emit_layout.py --all` rewrites every
+module from the layouts present, and `--check` reports stale ones.
 
 Finally list the map in `PrebuiltMapsConfig.maps`:
 
@@ -132,11 +158,12 @@ Finally list the map in `PrebuiltMapsConfig.maps`:
 `PrebuiltMaps.init` (server stage "PrebuiltMaps") does the following for each enabled
 map:
 
-- requires `ReplicatedStorage.Shared.prebuilt.<map>` behind `FindFirstChild` and
-  `pcall`, and checks it with `PrebuiltMapMath.check`;
+- requires the server's `prebuilt.<map>` module behind `FindFirstChild` and `pcall`,
+  and checks it with `PrebuiltMapMath.check`;
 - creates `Workspace.PrebuiltMaps/<map>`;
-- loads every cell that has an id with `InsertService:LoadAsset`, at most
-  `LOAD_CONCURRENCY` at a time;
+- loads every cell that has an id with `InsertService:LoadAsset` through a fixed pool
+  of `LOAD_CONCURRENCY` workers (no thread per cell); each cell runs in `pcall`, so a
+  failure never holds a slot or stops the others;
 - for each mesh in the layout, finds the MeshPart of that name and places it:
   - it is anchored at the map's origin plus the cell's position plus the mesh's
     offset, turned by the map's `yaw`;
@@ -164,7 +191,7 @@ The budgets are in `PrebuiltMapsConfig.budgets` (per cell) and `mapBudgets` (per
 | --- | --- |
 | `tools/city_import/split_scene.py` | The command: flatten, cells, merge, cap, simplify, textures, cell GLBs, `layout.json`, manifest rows |
 | `tools/city_import/gltf_io.py` | glTF 2.0 reading (node tree, triangle primitives, materials, images) and GLB writing |
-| `tools/city_import/emit_layout.py` | `layout.json` to `src/shared/prebuilt/<map>.luau`; `--all`, `--check` |
+| `tools/city_import/emit_layout.py` | `layout.json` to `src/server/prebuilt/<map>.luau`; `--all`, `--check` |
 | `src/shared/config/PrebuiltMapsConfig.luau` | The maps (none yet), concurrency, the importer turn, shadow size, budgets |
 | `src/shared/world/PrebuiltMapMath.luau` | Pure: layout check, placement, collision hints, missing meshes, budget lines |
 | `src/server/systems/PrebuiltMaps.luau` | Loads and places the cells |

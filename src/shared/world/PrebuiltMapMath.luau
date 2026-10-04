@@ -52,6 +52,10 @@ PrebuiltMapMath.HINTS = {
 	none = { canCollide = false, canQuery = false, canTouch = false, fidelity = nil },
 	box = { canCollide = true, canQuery = true, canTouch = false, fidelity = "Box" },
 	hull = { canCollide = true, canQuery = true, canTouch = false, fidelity = "Hull" },
+	-- ground, roads and terrain (meshes wider than a cell): Roblox's own decomposition
+	-- when near-planar, the precise one where there is relief
+	default = { canCollide = true, canQuery = true, canTouch = false, fidelity = "Default" },
+	precise = { canCollide = true, canQuery = true, canTouch = false, fidelity = "PreciseConvexDecomposition" },
 } :: { [string]: Collision }
 
 local function isVector(value: any): boolean

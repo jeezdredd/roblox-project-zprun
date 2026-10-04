@@ -20,6 +20,7 @@ import math
 import os
 import shutil
 import struct
+import subprocess
 import sys
 import tempfile
 from contextlib import redirect_stdout
@@ -36,6 +37,14 @@ import split_scene  # noqa: E402
 
 failures = 0
 SCALE = 1 / 0.28
+
+try:
+    import pyfqmr  # noqa: F401
+    import scipy  # noqa: F401
+
+    HAVE_DECIMATION = True
+except ImportError:
+    HAVE_DECIMATION = False
 
 
 def check(name, condition, detail=""):
@@ -309,7 +318,7 @@ def test_split(base):
     ground = [m for m in meshes.values() if m[5]["material"] == "Asphalt"]
     cells_with_ground = {m[4]["name"] for m in ground}
     check("the ground is cut across cells", len(cells_with_ground) >= 25, str(len(cells_with_ground)))
-    check("ground collision is box", all(m[5]["collision"] == "box" for m in ground))
+    check("flat ground (wider than a cell) gets the default decomposition, every cut piece", all(m[5]["collision"] == "default" for m in ground), str({m[5]["collision"] for m in ground}))
     for mesh in ground:
         centres = mesh[0][mesh[3]].mean(axis=1)
         cell = mesh[4]
@@ -407,6 +416,8 @@ def test_decimate(base, path):
 
 def test_manifest_and_luau(base, path):
     root = os.path.join(base, "repo")
+    subprocess.run(["git", "init", "-q", root], check=True)
+    shutil.copy(os.path.join(ROOT, ".gitignore"), os.path.join(root, ".gitignore"))
     os.makedirs(os.path.join(root, "src", "shared", "config"))
     shutil.copy(os.path.join(ROOT, "src", "shared", "config", "WorldMeshConfig.luau"), os.path.join(root, "src", "shared", "config"))
     os.makedirs(os.path.join(root, "assets"))
@@ -460,15 +471,161 @@ def test_manifest_and_luau(base, path):
         check("--map outside the repository refused", False)
     except split_scene.SceneError:
         pass
+    check("the layout module is server-side", os.path.relpath(emit_layout.module_path("test_city", root), root).startswith(os.path.join("src", "server", "prebuilt")))
+
+    def refused(argv, why):
+        try:
+            with redirect_stdout(io.StringIO()):
+                split_scene.run(argv)
+            check(f"refused: {why}", False)
+        except split_scene.SceneError:
+            pass
+
+    licence = ["--license", "CC0", "--source", "s"]
+    refused([path, "--out", os.path.join(root, "assets", "maps", "end"), "--map", "end", "--root", root] + licence, "a Luau keyword as map name")
+    refused([path, "--out", os.path.join(root, "assets", "maps", "other"), "--map", "test_city", "--root", root] + licence, "--out not assets/maps/<map>")
+    refused([path, "--out", os.path.join(root, "src", "previews"), "--root", root], "--out inside the repository and not ignored")
+    with redirect_stdout(io.StringIO()):
+        code = split_scene.run([path, "--out", os.path.join(base, "preview_outside"), "--root", root])
+    check("--out outside the repository is fine without --map", code == 0)
 
 
 def test_hints():
-    check("tiny is none", split_scene.collision_hint(np.array([2.0, 2.0, 2.0]), False, 4) == "none")
-    check("merged is none", split_scene.collision_hint(np.array([40.0, 10.0, 40.0]), True, 4) == "none")
-    check("flat is box", split_scene.collision_hint(np.array([60.0, 0.5, 60.0]), False, 4) == "box")
-    check("thin wall is box", split_scene.collision_hint(np.array([60.0, 20.0, 1.0]), False, 4) == "box")
-    check("bulky is hull", split_scene.collision_hint(np.array([30.0, 30.0, 30.0]), False, 4) == "hull")
+    rng = np.random.default_rng(3)
+
+    def cloud(sizes, flat_axis=None, tilt=0.0):
+        points = rng.random((400, 3)) * np.array(sizes)
+        if flat_axis is not None:
+            points[:, flat_axis] = 0.0
+        if tilt:
+            c, s_ = np.cos(tilt), np.sin(tilt)
+            points = points @ np.array([[c, -s_, 0], [s_, c, 0], [0, 0, 1]]).T
+        return points
+
+    hint = split_scene.collision_hint
+    check("tiny is none", hint(cloud([2, 2, 2]), False, 4) == "none")
+    check("flat slab is box", hint(cloud([60, 1, 60], flat_axis=1), False, 4) == "box")
+    check("thin wall is box", hint(cloud([60, 20, 1], flat_axis=2), False, 4) == "box")
+    check("a tilted sheet is still planar", hint(cloud([40, 1, 40], flat_axis=1, tilt=0.6), False, 4) == "box")
+    check("a low but bumpy mesh is not a box", hint(cloud([40, 3, 40]), False, 4) == "hull")
+    check("bulky is hull", hint(cloud([30, 30, 30]), False, 4) == "hull")
+    check("wide flat ground is default", hint(cloud([300, 1, 300], flat_axis=1), True, 4) == "default")
+    check("wide ground with relief is precise", hint(cloud([300, 12, 300]), True, 4) == "precise")
     check("cell names", split_scene.cell_name(0, -3) == "c_p000_m003" and split_scene.cell_name(-12, 7) == "c_m012_p007")
+
+
+def test_reader(base):
+    os.makedirs(base)
+    # two meshes on one shared vertex buffer, far apart: each must keep its own bounds
+    s = SceneBuilder()
+    p_pos, p_nrm, p_uv, p_tri = box(1, 1.4)
+    # near enough that the shared buffer's whole extent still fits in one cell (the bug:
+    # each kiosk took the buffer's bounds); far enough to be twice the kiosk's size
+    far = p_pos + np.array([8.0, 0.0, 5.0])
+    positions = np.concatenate([p_pos, far])
+    normals = np.concatenate([p_nrm, p_nrm])
+    uvs = np.concatenate([p_uv, p_uv])
+    s.doc["materials"] = [{"name": "Kiosk", "pbrMetallicRoughness": {"baseColorFactor": [0.5, 0.5, 0.5, 1]}}]
+    pos_acc = s.accessor(positions.astype("<f4"), 5126, "VEC3")
+    nrm_acc = s.accessor(normals.astype("<f4"), 5126, "VEC3")
+    uv_acc = s.accessor(uvs.astype("<f4"), 5126, "VEC2")
+    for name, tris in (("KioskA", p_tri), ("KioskB", p_tri + len(p_pos))):
+        index = s.accessor(tris.reshape(-1).astype("<u4"), 5125, "SCALAR")
+        s.doc["meshes"].append({"name": name, "primitives": [{"attributes": {"POSITION": pos_acc, "NORMAL": nrm_acc, "TEXCOORD_0": uv_acc}, "indices": index, "material": 0}]})
+    root = s.node(name="Root", children=[])
+    s.doc["nodes"][root]["children"] = [s.node(name="KioskA", mesh=0), s.node(name="KioskB", mesh=1)]
+    shared = os.path.join(base, "shared.glb")
+    with open(shared, "wb") as handle:
+        handle.write(s.glb())
+    layout = split_scene.split(shared, os.path.join(base, "shared_out"), root=ROOT, merge_size=1.0)
+    sizes = [m["size"] for c in layout["cells"] for m in c["meshes"]]
+    expected = 1.4 * SCALE
+    check("each kiosk keeps its own 5 x 5 bounds", sizes and all(max(size) < expected + 0.01 for size in sizes), str(sizes))
+
+    # a required extension the reader cannot honour
+    draco = SceneBuilder()
+    draco.doc["extensionsRequired"] = ["KHR_draco_mesh_compression"]
+    draco.doc["extensionsUsed"] = ["KHR_draco_mesh_compression"]
+    draco.node(name="Empty")
+    draco_path = os.path.join(base, "draco.glb")
+    with open(draco_path, "wb") as handle:
+        handle.write(draco.glb())
+    try:
+        gltf_io.load(draco_path)
+        check("Draco refused", False)
+    except gltf_io.GltfError as error:
+        check("the refusal names the extension", "KHR_draco_mesh_compression" in str(error))
+
+    # KHR_texture_transform on the colour texture is baked into the UVs
+    t = SceneBuilder()
+    image = t.view(texture_png(64, 64))
+    t.doc["images"].append({"bufferView": image, "mimeType": "image/png"})
+    t.doc["textures"].append({"source": 0})
+    transform = {"offset": [0.25, 0.5], "rotation": 0.3, "scale": [2.0, 3.0]}
+    t.doc["materials"] = [{"name": "Tiled", "pbrMetallicRoughness": {"baseColorTexture": {"index": 0, "extensions": {"KHR_texture_transform": transform}}}}]
+    t.doc["extensionsUsed"] = ["KHR_texture_transform"]
+    t.doc["extensionsRequired"] = ["KHR_texture_transform"]
+    g_pos, g_uv, g_tri = grid(2, 4.0)
+    t.mesh("Tile", g_pos, np.tile([0.0, 1.0, 0.0], (len(g_pos), 1)), g_uv, g_tri, 0)
+    t.node(name="Tile", mesh=0)
+    t_path = os.path.join(base, "transform.glb")
+    with open(t_path, "wb") as handle:
+        handle.write(t.glb())
+    piece = gltf_io.pieces(gltf_io.load(t_path))[0]
+    c, s_ = math.cos(0.3), math.sin(0.3)
+    u, v = g_uv[:, 0] * 2.0, g_uv[:, 1] * 3.0
+    expected_uv = np.stack([c * u + s_ * v + 0.25, -s_ * u + c * v + 0.5], axis=1)
+    check("texture transform baked into the UVs", np.abs(piece.uvs - expected_uv).max() < 1e-5)
+
+    # an external buffer whose file name has a space and a non-ASCII letter
+    scene, _ = build_scene()
+    folder = os.path.join(base, "external")
+    os.makedirs(folder)
+    name = "city b\u00e4ll.bin"
+    with open(os.path.join(folder, name), "wb") as handle:
+        handle.write(bytes(scene.blob))
+    doc = dict(scene.doc)
+    from urllib.parse import quote
+
+    doc["buffers"] = [{"byteLength": len(scene.blob), "uri": quote(name)}]
+    with open(os.path.join(folder, "city.gltf"), "w") as handle:
+        json.dump(doc, handle)
+    check("percent-encoded URIs resolve", len(gltf_io.pieces(gltf_io.load(os.path.join(folder, "city.gltf")))) > 0)
+
+
+def test_two_sided(base):
+    """A wall of two sheets back to back 0.02 m apart, the back one far finer: after
+    simplification every triangle's normal must follow its own winding, not the other
+    sheet's (its centroids are nearer than the coarse front's own)."""
+    os.makedirs(base)
+    s = SceneBuilder()
+    s.doc["materials"] = [{"name": "Wall", "pbrMetallicRoughness": {"baseColorFactor": [0.6, 0.6, 0.6, 1]}}]
+    f_pos, f_uv, f_tri = grid(12, 8.0)
+    b_pos, b_uv, b_tri = grid(41, 8.0)
+    front = f_pos[:, [0, 2, 1]] + np.array([0, 0, 0.01])
+    back = b_pos[:, [0, 2, 1]] - np.array([0, 0, 0.01])
+    p = np.concatenate([front, back])
+    p_tri = np.concatenate([f_tri[:, [0, 2, 1]], b_tri + len(front)])
+    faces = gltf_io.face_normals(p, p_tri)
+    faces /= np.linalg.norm(faces, axis=1, keepdims=True)
+    normals = np.zeros_like(p)
+    normals[: len(front)] = faces[0]
+    normals[len(front):] = faces[-1]
+    s.mesh("Wall", p, normals, np.concatenate([f_uv, b_uv]), p_tri, 0)
+    s.node(name="Wall", mesh=0)
+    path = os.path.join(base, "wall.glb")
+    with open(path, "wb") as handle:
+        handle.write(s.glb())
+    layout = split_scene.split(path, os.path.join(base, "out"), ratio=0.3, root=ROOT)
+    meshes = read_cells(os.path.join(base, "out"), layout)
+    worst = 1.0
+    for mesh in meshes.values():
+        positions, mesh_normals, _, triangles = mesh[:4]
+        face = gltf_io.face_normals(positions, triangles)
+        face /= np.maximum(np.linalg.norm(face, axis=1, keepdims=True), 1e-12)
+        agree = ((face * mesh_normals[triangles].mean(axis=1)).sum(axis=1) > 0).mean()
+        worst = min(worst, agree)
+    check("every decimated triangle's normal follows its winding", worst > 0.999, f"{worst:.3f}")
 
 
 def test_repo_layouts():
@@ -489,8 +646,13 @@ def main():
         group("split (flatten, cells, cap, merge, textures, winding, .gltf)", lambda: holder.setdefault("split", test_split(base)))
         if "split" in holder:
             path, _ = holder["split"]
-            group("decimate (borders locked, UVs carried over)", lambda: test_decimate(base, path))
+            if HAVE_DECIMATION:
+                group("decimate (borders locked, UVs carried over)", lambda: test_decimate(base, path))
+                group("decimation normals follow the winding (two-sided wall)", lambda: test_two_sided(os.path.join(base, "twosided")))
+            else:
+                print("skip decimate groups (pip install pyfqmr scipy)")
             group("manifest rows and the Luau layout", lambda: test_manifest_and_luau(base, path))
+        group("reader: shared accessors, required extensions, texture transform, URIs", lambda: test_reader(os.path.join(base, "reader")))
         group("committed layouts match their Luau modules", test_repo_layouts)
     finally:
         shutil.rmtree(base, ignore_errors=True)

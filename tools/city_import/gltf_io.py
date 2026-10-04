@@ -4,14 +4,20 @@ Reads .glb and .gltf (external or data-URI buffers and images): the default scen
 node tree with world matrices, triangle primitives (POSITION, NORMAL, TEXCOORD_0,
 indices), materials (metallic-roughness, normal map, alpha mode, double sided) and
 their images. Skins, morph targets, animations, cameras, lights, extra UV sets and
-vertex colours are not read; sparse accessors stop the run. numpy and Pillow only.
+vertex colours are not read; sparse accessors stop the run, and so does a required
+extension the reader cannot honour (Draco or meshopt compression, GPU instancing, Basis
+textures). KHR_texture_transform on the base colour texture is baked into the UVs.
+numpy and Pillow only. Buffers are read through memoryview, so slicing a view of a large
+.glb copies nothing.
 """
 
 import base64
 import io
 import json
+import math
 import os
 import struct
+from urllib.parse import unquote
 
 import numpy as np
 
@@ -32,6 +38,35 @@ WIDTH = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT2": 4, "MAT3": 9, "MA
 
 class GltfError(Exception):
     pass
+
+
+# Required extensions the reader honours (quantized attributes are read through the
+# accessors' normalisation; texture transforms are baked; the material ones only change
+# shading and are dropped with a note)
+SUPPORTED_REQUIRED = {
+    "KHR_mesh_quantization",
+    "KHR_texture_transform",
+    "KHR_materials_unlit",
+    "KHR_materials_emissive_strength",
+}
+REFUSED_REQUIRED = {
+    "KHR_draco_mesh_compression": "Draco-compressed geometry",
+    "EXT_meshopt_compression": "meshopt-compressed buffers",
+    "EXT_mesh_gpu_instancing": "GPU-instanced meshes",
+    "KHR_texture_basisu": "Basis Universal (KTX2) textures",
+}
+
+
+def check_required(doc, path):
+    """Stops on a required extension the reader cannot honour, with what to do."""
+    unsupported = [name for name in doc.get("extensionsRequired", []) if name not in SUPPORTED_REQUIRED]
+    if not unsupported:
+        return
+    reasons = ", ".join(f"{name} ({REFUSED_REQUIRED.get(name, 'not supported')})" for name in unsupported)
+    raise GltfError(
+        f"{path} requires {reasons}. Re-export the scene without them (uncompressed geometry, "
+        "instances realised as plain meshes, PNG or JPEG textures)"
+    )
 
 
 # Reading --------------------------------------------------------------------------
@@ -88,7 +123,7 @@ class Document:
         if uri.startswith("data:"):
             mime = uri[5:].split(";", 1)[0]
             return _data_uri(uri), mime
-        path = os.path.join(self.base_dir, uri.replace("%20", " "))
+        path = os.path.join(self.base_dir, unquote(uri))
         with open(path, "rb") as handle:
             data = handle.read()
         return data, "image/jpeg" if path.lower().endswith((".jpg", ".jpeg")) else "image/png"
@@ -97,9 +132,9 @@ class Document:
 def load(path):
     base_dir = os.path.dirname(os.path.abspath(path))
     with open(path, "rb") as handle:
-        blob = handle.read()
+        blob = memoryview(handle.read())
     bin_chunk = None
-    if blob[:4] == b"glTF":
+    if bytes(blob[:4]) == b"glTF":
         magic, version, _ = struct.unpack_from("<III", blob, 0)
         if magic != GLB_MAGIC or version != 2:
             raise GltfError(f"{path}: not a glTF 2.0 binary")
@@ -109,14 +144,14 @@ def load(path):
             length, kind = struct.unpack_from("<II", blob, offset)
             chunk = blob[offset + 8:offset + 8 + length]
             if kind == CHUNK_JSON:
-                doc = json.loads(chunk.decode("utf-8"))
+                doc = json.loads(bytes(chunk).decode("utf-8"))
             elif kind == CHUNK_BIN:
                 bin_chunk = chunk
             offset += 8 + length
         if doc is None:
             raise GltfError(f"{path}: no JSON chunk")
     else:
-        doc = json.loads(blob.decode("utf-8"))
+        doc = json.loads(bytes(blob).decode("utf-8"))
     buffers = []
     for buffer in doc.get("buffers", []):
         uri = buffer.get("uri")
@@ -125,10 +160,11 @@ def load(path):
                 raise GltfError(f"{path}: buffer without data")
             buffers.append(bin_chunk)
         elif uri.startswith("data:"):
-            buffers.append(_data_uri(uri))
+            buffers.append(memoryview(_data_uri(uri)))
         else:
-            with open(os.path.join(base_dir, uri.replace("%20", " ")), "rb") as handle:
-                buffers.append(handle.read())
+            with open(os.path.join(base_dir, unquote(uri)), "rb") as handle:
+                buffers.append(memoryview(handle.read()))
+    check_required(doc, path)
     return Document(doc, buffers, base_dir)
 
 
@@ -204,6 +240,43 @@ def vertex_normals(positions, triangles):
     return normals / length
 
 
+def texture_transform(ref):
+    """The KHR_texture_transform of a texture reference, or None."""
+    return ((ref or {}).get("extensions") or {}).get("KHR_texture_transform")
+
+
+def apply_texture_transform(uvs, transform):
+    """uv' = translation * rotation * scale * uv, the extension's matrix."""
+    sx, sy = transform.get("scale", [1.0, 1.0])
+    ox, oy = transform.get("offset", [0.0, 0.0])
+    angle = transform.get("rotation", 0.0)
+    c, s = math.cos(angle), math.sin(angle)
+    u, v = uvs[:, 0] * sx, uvs[:, 1] * sy
+    return np.stack([c * u + s * v + ox, -s * u + c * v + oy], axis=1)
+
+
+def bake_texture_transform(document, material_index, uvs, name):
+    """The base colour texture's transform baked into the UVs (the written material
+    carries none). Another texture of the material with a different transform cannot
+    share those UVs: noted."""
+    if material_index is None:
+        return uvs
+    material = document.doc.get("materials", [])[material_index]
+    pbr = material.get("pbrMetallicRoughness", {})
+    base = texture_transform(pbr.get("baseColorTexture"))
+    others = [texture_transform(ref) for ref in (pbr.get("metallicRoughnessTexture"), material.get("normalTexture"), material.get("emissiveTexture")) if ref]
+    if base is None:
+        if any(others):
+            document.notes.append(f"{name}: a texture transform on a non-colour texture was dropped")
+        return uvs
+    if base.get("texCoord", 0) != 0:
+        document.notes.append(f"{name}: a texture transform on a second UV set was dropped")
+        return uvs
+    if any(other != base for other in others):
+        document.notes.append(f"{name}: textures with different transforms share the colour texture's (baked)")
+    return apply_texture_transform(uvs, base)
+
+
 def pieces(document):
     """Every triangle primitive of the default scene as a Piece, in world space."""
     doc = document.doc
@@ -245,6 +318,7 @@ def pieces(document):
                 normals = vertex_normals(positions, triangles)
             if "TEXCOORD_0" in attributes:
                 uvs = document.accessor(attributes["TEXCOORD_0"]).astype(np.float64)
+                uvs = bake_texture_transform(document, primitive.get("material"), uvs, name)
             else:
                 uvs = np.zeros((count, 2))
             if any(key.startswith("COLOR_") for key in attributes):

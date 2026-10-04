@@ -4,11 +4,12 @@
     python3 tools/city_import/emit_layout.py assets/maps/<map>/layout.json [--check]
     python3 tools/city_import/emit_layout.py --all [--check]
 
-The module is src/shared/prebuilt/<map>.luau: per cell its name, position, size,
+The module is src/server/prebuilt/<map>.luau (server only: clients never need it): per cell its name, position, size,
 triangle and texture counts and meshes (name, offset, size, triangles, collision).
 Asset ids are not in it; PrebuiltMaps reads them from AssetIds.model.maps.<map>.<cell>,
 so ids keep flowing through the manifest pipeline. --all covers every
-assets/maps/*/layout.json; --check exits non-zero when a module is out of date.
+assets/maps/*/layout.json found (they are gitignored, so only on the machine that split
+the scene); --check exits non-zero when a module is out of date.
 """
 
 import argparse
@@ -75,7 +76,7 @@ def render(map_name, layout):
 
 
 def module_path(map_name, root=REPO):
-    return os.path.join(root, "src", "shared", "prebuilt", f"{map_name}.luau")
+    return os.path.join(root, "src", "server", "prebuilt", f"{map_name}.luau")
 
 
 def write(map_name, layout, root=REPO, check=False):

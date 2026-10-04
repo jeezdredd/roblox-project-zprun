@@ -4042,5 +4042,37 @@
     "assetId": 0,
     "status": "needed",
     "note": "Upgrade station announcer line when the carried weapon is already at WeaponsConfig.MAX_LEVEL (UpgradeStationConfig.ANNOUNCER_MAX, played 2D when the id is non-zero; silent until then). A real licensed voice file only, never generated speech. Candidates: Kenney Voiceover Pack (CC0, https://kenney.nl/assets/voiceover-pack): 'max', 'that's the limit', 'no'; freesound CC0 search 'announcer max level' / 'maximum'; or a line recorded by the owner."
+  },
+  "audio/ambience/city_bed": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "City map ambience bed (MapAmbience, MapsConfig.maps.City.ambience): looped 2D bed crossfaded with the next map's over the map transition; silent until the id is set. Wanted: a burning city at a distance: far traffic of sirens, wind between buildings, fire crackle, no music, no voices; a seamless loop of 60 s or more. Candidates: Sonniss GameAudioGDC bundles (royalty free), freesound CC0 field recordings, a recording by the owner. No synthesized audio."
+  },
+  "audio/ambience/wasteland_bed": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Wasteland map ambience bed (MapAmbience, MapsConfig.maps.Wasteland.ambience): looped 2D bed crossfaded with the next map's over the map transition; silent until the id is set. Wanted: open dead highway: dry wind, flapping debris, distant metal creaks; a seamless loop of 60 s or more. Candidates: Sonniss GameAudioGDC bundles (royalty free), freesound CC0 field recordings, a recording by the owner. No synthesized audio."
+  },
+  "audio/ambience/forest_bed": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Forest map ambience bed (MapAmbience, MapsConfig.maps.Forest.ambience): looped 2D bed crossfaded with the next map's over the map transition; silent until the id is set. Wanted: dense forest at dusk: wind in leaves, sparse birds, distant creaks; no water; a seamless loop of 60 s or more. Candidates: Sonniss GameAudioGDC bundles (royalty free), freesound CC0 field recordings, a recording by the owner. No synthesized audio."
+  },
+  "audio/ambience/farmland_bed": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Farmland map ambience bed (MapAmbience, MapsConfig.maps.Farmland.ambience): looped 2D bed crossfaded with the next map's over the map transition; silent until the id is set. Wanted: open fields: wind through crops, a distant windmill or loose barn door, sparse crows; a seamless loop of 60 s or more. Candidates: Sonniss GameAudioGDC bundles (royalty free), freesound CC0 field recordings, a recording by the owner. No synthesized audio."
   }
 }

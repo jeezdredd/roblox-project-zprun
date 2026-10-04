@@ -1,9 +1,13 @@
 --!strict
 
--- Route forks: builds the centre divider and signs before a fork boundary, closes the
--- vote when the lead runner crosses the vote line, and hands the choice to RoutePlan.
--- The vote is physical: each living runner counts for the side of the divider they
--- are on. See wiki/project-zprun/Route Forks.md.
+-- Route forks: every map ends in a fork between two of its neighbours (wiki: Map
+-- Segments). Builds the centre divider and signs before the map boundary, closes the
+-- vote when the lead runner crosses the vote line (ForkConfig.VOTE_LEAD before the
+-- boundary), and hands the choice to RoutePlan and MapPreload. The vote is physical:
+-- each living runner counts for the side of the divider they are on. In Studio the
+-- lead at the vote and the time until the boundary chunk is placed are kept as
+-- Workspace attributes (ForkResolvedLead, ForkPlacedAfter) for measuring the lead.
+-- See wiki/project-zprun/Route Forks.md.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -11,8 +15,9 @@ local Workspace = game:GetService("Workspace")
 
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local ForkConfig = require(ReplicatedStorage.Shared.config.ForkConfig)
-local LocationsConfig = require(ReplicatedStorage.Shared.config.LocationsConfig)
+local MapsConfig = require(ReplicatedStorage.Shared.config.MapsConfig)
 local DistanceTracker = require(script.Parent.DistanceTracker)
+local MapPreload = require(script.Parent.MapPreload)
 local MissionState = require(script.Parent.MissionState)
 local RoutePlan = require(script.Parent.RoutePlan)
 
@@ -28,6 +33,8 @@ local ATTR_LEFT = "ForkLeft"
 local ATTR_RIGHT = "ForkRight"
 local ATTR_VOTE = "ForkVoteDistance"
 local ATTR_RESULT = "ForkResult"
+local ATTR_RESOLVED_AT = "ForkResolvedAt"
+local ATTR_RESOLVED_LEAD = "ForkResolvedLead"
 
 local runDirection = GameConstants.RUN_DIRECTION
 local origin = GameConstants.RUN_ORIGIN
@@ -44,8 +51,8 @@ local function worldAt(distance: number, lateral: number, height: number): Vecto
 end
 
 local function displayName(id: string): string
-	local location = LocationsConfig.get(id)
-	return string.upper(if location then location.displayName else id)
+	local map = MapsConfig.get(id)
+	return string.upper(if map then map.displayName else id)
 end
 
 local function part(name: string, size: Vector3, position: Vector3, parent: Instance): Part
@@ -140,7 +147,7 @@ local function livingRunnerSides(): (number, number)
 	return left, right
 end
 
-local function resolve(entry: RoutePlan.PlanEntry)
+local function resolve(entry: RoutePlan.PlanEntry, lead: number, boundary: number)
 	local options = (entry.fork :: RoutePlan.ForkInfo).options
 	local left, right = livingRunnerSides()
 	local choice
@@ -151,8 +158,11 @@ local function resolve(entry: RoutePlan.PlanEntry)
 	else
 		choice = options[random:NextInteger(1, 2)]
 	end
+	MapPreload.onForkResolved(entry, choice)
 	RoutePlan.resolveFork(entry, choice)
 	Workspace:SetAttribute(ATTR_RESULT, choice)
+	Workspace:SetAttribute(ATTR_RESOLVED_AT, os.clock())
+	Workspace:SetAttribute(ATTR_RESOLVED_LEAD, math.floor(boundary - lead + 0.5))
 	Workspace:SetAttribute(ATTR_LEFT, nil)
 	Workspace:SetAttribute(ATTR_RIGHT, nil)
 	Workspace:SetAttribute(ATTR_VOTE, nil)
@@ -194,7 +204,7 @@ local function step()
 	end
 
 	if entry and lead >= boundary - ForkConfig.VOTE_LEAD then
-		resolve(entry)
+		resolve(entry, lead, boundary)
 	end
 
 	local cull = DistanceTracker.getMinDistance() - GameConstants.DESPAWN_BEHIND_DISTANCE

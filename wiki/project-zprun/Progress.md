@@ -43,6 +43,7 @@ Related: [[Overview]], [[Roadmap]], [[Decisions]].
 | Commit | What landed |
 | --- | --- |
 | `1df5e80` | Themed biome locations with props, transitions, wider lane |
+| `cloud/map-segments` | Map segments: a run is a chain of long maps (City, Wasteland, Forest, Farmland enabled; Suburbs, Highway, Desert, Mountains, Swamp planned and disabled) with sub-locations inside each; the lobby picks the start map (Random replaces Mixed); a map's length comes from a 120-180 s duration at the expected speed, never under the spawn distance plus top speed x the next map's build time x 1.5; every map ends in a fork between two enabled neighbours, both warmed in ServerStorage under a per-frame budget (pools, the five transition chunks) and preloaded on the clients; the boundary blends over five chunks (ground patches, mixed edges, staggered flanks, dressing density), lighting interpolated over the zone, ambience crossfaded; vote lead 638 studs instead of 1024; `MapMath` in `tests/world`; yard strip of every transition. See [[Map Segments]] |
 | `07c116c` | First real CC0 textures via Open Cloud for roads, aprons, buildings, hangar |
 | `185f247` | Wide open run field, lane-based obstacles, glazed hangar gate, textured zombies |
 | `e1158f3` | Forced first person, sealed hangar, night blackout with flashlight, glowing zombie eyes |

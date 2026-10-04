@@ -165,9 +165,12 @@ function SquadConfigGui.create(handlers: Handlers): GuiController
 	membersLabel.LayoutOrder = 2
 
 	local mapOptions: { Option } = {}
+	-- the start map: Random, then the maps with content (disabled ones are not offered)
 	for _, id in MapsConfig.order do
-		local map = MapsConfig.get(id)
-		table.insert(mapOptions, { id = id, text = if map then map.displayName else id })
+		if MapsConfig.isSelectable(id) then
+			local map = MapsConfig.get(id)
+			table.insert(mapOptions, { id = id, text = if map then map.displayName else "Random" })
+		end
 	end
 	local mapRow = makeSelectorRow("Map", mapOptions, 3, panel, handlers.onSelectMap)
 

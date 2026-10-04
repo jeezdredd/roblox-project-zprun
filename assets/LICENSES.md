@@ -62,6 +62,10 @@ Anything marked **CC-BY** obliges us to credit the named author in the shipped g
 | `animation/zombie_sf/walker/run` | CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author | "Zombie" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip 'Run' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py | 112885913195614 | approved |
 | `animation/zombie_sf/walker/walk_a` | CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author | "Zombie" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py | 122053638510657 | approved |
 | `animation/zombie_sf/walker/walk_b` | CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author | "Zombie" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip 'Walk1' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py | 83743257675643 | approved |
+| `audio/ambience/city_bed` |  |  | none | needed |
+| `audio/ambience/farmland_bed` |  |  | none | needed |
+| `audio/ambience/forest_bed` |  |  | none | needed |
+| `audio/ambience/wasteland_bed` |  |  | none | needed |
 | `audio/city/helicopter` | Public domain | [link](https://commons.wikimedia.org/wiki/File:Helicopter_over_quiet_neighbourhood.ogg) | 140722208536221 | approved |
 | `audio/city/siren_ambulance` |  |  | none | needed |
 | `audio/city/siren_civil` | Public domain | [link](https://commons.wikimedia.org/wiki/File:Civil-defense-siren-waver.ogg) | 125737593545616 | approved |

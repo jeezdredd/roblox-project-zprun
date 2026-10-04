@@ -79,6 +79,10 @@ GUIDE = {
     "animation/zombie/biting_ground": ("ZombieAnimator: Feeding pose (feeding stands in)", "Mixamo: Zombie Biting Victim On The Ground", "polish"),
     "audio/upgrade/announcer_upgrade_01": ("UpgradeStations / WeaponPickupClient: announcer on a successful upgrade, take 1", "Kenney Voiceover Pack (CC0) 'power up' / 'excellent'; freesound CC0 'announcer upgrade'; a recorded line. Never generated speech", "polish"),
     "audio/upgrade/announcer_upgrade_02": ("UpgradeStations / WeaponPickupClient: announcer on a successful upgrade, take 2", "Kenney Voiceover Pack (CC0) 'upgrade' / 'nice'; freesound CC0 'announcer upgrade'; a recorded line. Never generated speech", "polish"),
+    "audio/ambience/city_bed": ("MapAmbience: the City map's ambience bed, crossfaded at map boundaries", "Sonniss GameAudioGDC (royalty free) or freesound CC0 field recording: a burning city at a distance: far traffic of sirens, wind between buildings, fire crackle, no music, no voices", "polish"),
+    "audio/ambience/wasteland_bed": ("MapAmbience: the Wasteland map's ambience bed, crossfaded at map boundaries", "Sonniss GameAudioGDC (royalty free) or freesound CC0 field recording: open dead highway: dry wind, flapping debris, distant metal creaks", "polish"),
+    "audio/ambience/forest_bed": ("MapAmbience: the Forest map's ambience bed, crossfaded at map boundaries", "Sonniss GameAudioGDC (royalty free) or freesound CC0 field recording: dense forest at dusk: wind in leaves, sparse birds, distant creaks", "polish"),
+    "audio/ambience/farmland_bed": ("MapAmbience: the Farmland map's ambience bed, crossfaded at map boundaries", "Sonniss GameAudioGDC (royalty free) or freesound CC0 field recording: open fields: wind through crops, a distant windmill or loose barn door, sparse crows", "polish"),
     "audio/upgrade/announcer_max": ("UpgradeStations / WeaponPickupClient: announcer when the weapon is at max level", "Kenney Voiceover Pack (CC0) 'max' / 'that is the limit'; freesound CC0 'announcer maximum'; a recorded line. Never generated speech", "polish"),
 }
 

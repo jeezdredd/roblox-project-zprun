@@ -11,6 +11,8 @@ local DressingPlanner = require("../../src/shared/world/DressingPlanner")
 local ChunkBudget = require("../../src/shared/world/ChunkBudget")
 local FogBudget = require("../../src/shared/world/FogBudget")
 local ChunkOccupancy = require("../../src/server/systems/ChunkOccupancy")
+local MapsConfig = require("../../src/shared/config/MapsConfig")
+local MapMath = require("../../src/shared/world/MapMath")
 
 local failures = 0
 
@@ -342,6 +344,172 @@ group("fog budget", function()
 		check(biome .. " night has visibility", VisibilityConfig.visibility[biome .. "Night"] ~= nil)
 		check(biome .. " night sees less", VisibilityConfig.visibility[biome .. "Night"] < VisibilityConfig.visibility[biome])
 	end
+end)
+
+-- Map segments (wiki: Map Segments) --------------------------------------------------
+
+-- GameConstants and LocationsConfig hold engine types, so their numbers are mirrored
+-- here; the "constants mirror" group keeps the mirror honest where it can
+local CONSTANTS: MapMath.Constants = {
+	chunkLength = 128,
+	spawnAhead = 768,
+	baseSpeed = 24,
+	maxSpeed = 60,
+	floorFactor = MapsConfig.FLOOR_FACTOR,
+	-- ForkConfig.FIRST_DIVIDER_AT + DIVIDER_LENGTH + VOTE_LEAD
+	forkSpan = 300 + 384 + 638,
+}
+local LOCATIONS = { City = true, Forest = true, Wasteland = true, Farmstead = true, Cornfield = true }
+local MAPS = MapsConfig.maps :: any
+
+local function near(a: number, b: number, tolerance: number?): boolean
+	return math.abs(a - b) <= (tolerance or 1e-6)
+end
+
+group("maps: the table", function()
+	local problems = MapMath.check(MAPS, LOCATIONS)
+	check("no problems", #problems == 0, table.concat(problems, "; "))
+	check("today's content enabled", MapsConfig.isValid("City") and MapsConfig.isValid("Wasteland") and MapsConfig.isValid("Forest") and MapsConfig.isValid("Farmland"))
+	for _, id in { "Suburbs", "Highway", "Desert", "Mountains", "Swamp" } do
+		check(id .. " is planned but disabled", MAPS[id] ~= nil and not MapsConfig.isValid(id))
+	end
+	check("Random is selectable, a disabled map is not", MapsConfig.isSelectable("Random") and not MapsConfig.isSelectable("Desert"))
+	check("Farmland mixes Farmstead and Cornfield", #MAPS.Farmland.locationIds == 2)
+	check("never city straight into desert", not table.find(MAPS.City.neighbours, "Desert") and not table.find(MAPS.Desert.neighbours, "City"))
+	check("default durations 120 to 180 s", MapsConfig.DEFAULT_DURATION.min == 120 and MapsConfig.DEFAULT_DURATION.max == 180)
+	check("map transition is 5 chunks", MapsConfig.MAP_TRANSITION_CHUNKS == 5)
+	local broken = {
+		A = { id = "A", enabled = true, locationIds = { "City" }, durationSeconds = { min = 10, max = 5 }, neighbours = { "B", "Nope" }, preloadSeconds = 1 },
+		B = { id = "B", enabled = true, locationIds = {}, durationSeconds = { min = 1, max = 2 }, neighbours = {}, preloadSeconds = 1 },
+	}
+	check("a broken table is reported", #MapMath.check(broken :: any, LOCATIONS) >= 5, tostring(#MapMath.check(broken :: any, LOCATIONS)))
+end)
+
+group("maps: speed and distance", function()
+	check("constant speed", MapMath.speedAt(nil, 24, 60, 100) == 24)
+	local ramp: MapMath.SpeedProfile = { initial = 24, max = 48, rampTime = 60 }
+	check("ramp start", MapMath.speedAt(ramp, 24, 60, 0) == 24)
+	check("ramp middle", near(MapMath.speedAt(ramp, 24, 60, 30), 36))
+	check("ramp end holds", MapMath.speedAt(ramp, 24, 60, 300) == 48)
+	check("capped at the top speed", MapMath.speedAt({ initial = 80 }, 24, 60, 0) == 60)
+	check("constant distance is exact", MapMath.distanceOver(nil, 24, 60, 0, 150) == 3600)
+	-- 0..60 s ramp 24 -> 48 is 2160 studs, then 30 s at 48 is 1440
+	check("ramp distance", near(MapMath.distanceOver(ramp, 24, 60, 0, 90), 3600, 2), tostring(MapMath.distanceOver(ramp, 24, 60, 0, 90)))
+	check("later in the run is faster", MapMath.distanceOver(ramp, 24, 60, 60, 60) > MapMath.distanceOver(ramp, 24, 60, 0, 60))
+end)
+
+group("maps: lengths and the floor", function()
+	-- the owner's floor: spawn distance + top speed x the next map's build time x 1.5
+	check("floor from the preload", near(MapMath.floorLength(CONSTANTS, 8), 768 + 60 * 8 * 1.5))
+	check("floor never under the fork's own span", MapMath.floorLength(CONSTANTS, 0) == CONSTANTS.forkSpan)
+	local city = MAPS.City
+	check("120 s at 24 studs/s is 23 chunks", MapMath.lengthChunks(CONSTANTS, city, 0, 120, 6) == 23)
+	check("180 s at 24 studs/s is 34 chunks", MapMath.lengthChunks(CONSTANTS, city, 0, 180, 6) == 34)
+	check("a short duration stops at the floor", MapMath.lengthChunks(CONSTANTS, city, 0, 5, 8) == math.ceil((768 + 720) / 128))
+	local fast = table.clone(city)
+	fast.speed = { initial = 60 }
+	check("at 60 studs/s the same minutes are longer", MapMath.lengthChunks(CONSTANTS, fast, 0, 120, 6) == math.ceil(7200 / 128))
+	check("duration from the roll", MapMath.duration(city, 0) == 120 and MapMath.duration(city, 1) == 180 and MapMath.duration(city, 0.5) == 150)
+end)
+
+group("maps: forks between neighbours", function()
+	for id, map in MAPS do
+		if not map.enabled then
+			continue
+		end
+		local enabled = MapMath.enabledNeighbours(MAPS, id)
+		check(id .. " has two enabled neighbours", #enabled >= 2, tostring(#enabled))
+		for _, roll in { 0, 0.2, 0.5, 0.8, 0.999 } do
+			for _, roll2 in { 0, 0.5, 0.999 } do
+				local options = MapMath.forkOptions(MAPS, id, roll, roll2)
+				if not options then
+					check(id .. " forks", false)
+				else
+					check(id .. " options differ", options[1] ~= options[2])
+					for _, option in options do
+						check(id .. " -> " .. option .. " is a neighbour", table.find(map.neighbours, option) ~= nil)
+						check(id .. " -> " .. option .. " is enabled", MAPS[option].enabled)
+						check(id .. " -> " .. option .. " is not itself", option ~= id)
+					end
+				end
+			end
+		end
+	end
+	local lonely = { A = { id = "A", enabled = true, locationIds = { "City" }, durationSeconds = { min = 1, max = 2 }, neighbours = { "B" }, preloadSeconds = 1 }, B = { id = "B", enabled = true, locationIds = { "City" }, durationSeconds = { min = 1, max = 2 }, neighbours = { "A" }, preloadSeconds = 1 } }
+	check("one neighbour cannot fork", MapMath.forkOptions(lonely :: any, "A", 0.3, 0.3) == nil)
+end)
+
+group("maps: sub-locations and the start", function()
+	local farmland = MAPS.Farmland
+	for _, roll in { 0, 0.4, 0.99 } do
+		check("no sub-location twice running", MapMath.nextLocation(farmland, "Farmstead", roll) == "Cornfield")
+	end
+	check("a one-location map repeats", MapMath.nextLocation(MAPS.City, "City", 0.5) == "City")
+	check("a chosen map starts", MapMath.startMap(MAPS, MapsConfig.order, "Forest", 0.9) == "Forest")
+	local enabled = MapsConfig.enabledIds()
+	for _, roll in { 0, 0.3, 0.6, 0.999 } do
+		local id = MapMath.startMap(MAPS, MapsConfig.order, "Random", roll)
+		check("Random starts on an enabled map", id ~= nil and table.find(enabled, id) ~= nil, tostring(id))
+	end
+	check("a disabled choice falls back to an enabled map", MapsConfig.isValid(MapMath.startMap(MAPS, MapsConfig.order, "Desert", 0.1) :: string))
+end)
+
+group("maps: transitions", function()
+	local n = MapsConfig.MAP_TRANSITION_CHUNKS
+	check("first chunk a sixth in", near(MapMath.transitionAlpha(0, n) :: number, 1 / 6))
+	check("last chunk five sixths in", near(MapMath.transitionAlpha(n - 1, n) :: number, 5 / 6))
+	check("outside the transition", MapMath.transitionAlpha(n, n) == nil and MapMath.transitionAlpha(-1, n) == nil)
+	local previous = 0
+	for k = 0, n - 1 do
+		local alpha = MapMath.transitionAlpha(k, n) :: number
+		check("alpha rises at chunk " .. k, alpha > previous)
+		previous = alpha
+	end
+	check("zone before", MapMath.zoneAlpha(90, 100, 740) == 0)
+	check("zone after", MapMath.zoneAlpha(800, 100, 740) == 1)
+	check("zone middle", near(MapMath.zoneAlpha(420, 100, 740), 0.5))
+	for _, a in { 0, 0.25, 0.5, 0.75, 1 } do
+		local old, new = MapMath.crossfade(a)
+		check("equal power at " .. a, near(old * old + new * new, 1))
+	end
+	local old, new = MapMath.crossfade(0)
+	check("crossfade ends", near(old, 1) and near(new, 0))
+end)
+
+group("maps: vote lead", function()
+	local widest = MapMath.maxVisibility(VisibilityConfig.visibility, VisibilityConfig.exempt)
+	check("widest run fog is Wasteland's 420", widest == 420, tostring(widest))
+	local lead = MapMath.voteLead(widest, 128, 60, 1.5)
+	check("lead 638 studs", lead == 638, tostring(lead))
+	check("closer than the old 1024", lead < 768 + 2 * 128)
+	check("the held boundary stays out of sight", lead > widest + 128)
+end)
+
+group("maps: pools freed two steps behind", function()
+	-- City, then Wasteland, now Forest with Farmland and City as options: nothing of
+	-- City goes (an option), Wasteland stays (one step behind)
+	check("an option keeps its pools", #MapMath.poolsToFree(MAPS, { "City", "Wasteland", "Forest" }, { "Farmland", "City" }) == 0)
+	local freed = MapMath.poolsToFree(MAPS, { "City", "Wasteland", "Forest" }, { "Farmland", "Wasteland" })
+	check("two steps behind frees", #freed == 1 and freed[1] == "City", table.concat(freed, ","))
+	local farm = MapMath.poolsToFree(MAPS, { "Farmland", "Forest", "Wasteland", "City" }, { "Wasteland", "Forest" })
+	check("both farm locations go", #farm == 2 and table.find(farm, "Farmstead") ~= nil and table.find(farm, "Cornfield") ~= nil, table.concat(farm, ","))
+	check("short history frees nothing", #MapMath.poolsToFree(MAPS, { "City", "Forest" }, {}) == 0)
+end)
+
+group("dressing density", function()
+	local function count(density: number?): number
+		ChunkOccupancy.reset()
+		return #DressingPlanner.plan(DressingConfig, "City", makeRng(77), ChunkOccupancy, {
+			halfLength = HALF,
+			groups = groupsFor(),
+			sizes = allSizes(),
+			density = density,
+		})
+	end
+	local full = count(nil)
+	check("density 1 is the full plan", count(1) == full)
+	check("density 0 places nothing", count(0) == 0)
+	check("half density places fewer", count(0.5) < full and count(0.5) > 0, `{count(0.5)} of {full}`)
 end)
 
 if failures > 0 then

@@ -76,6 +76,12 @@ local AssetIds = {
 		},
 	},
 	audio = {
+		ambience = {
+			city_bed = 0,
+			farmland_bed = 0,
+			forest_bed = 0,
+			wasteland_bed = 0,
+		},
 		city = {
 			helicopter = 140722208536221,
 			siren_ambulance = 0,

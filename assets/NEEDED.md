@@ -24,6 +24,10 @@ only, no synthesis, no invented ids.
 
 | Slot | Used by | What to look for | Priority | Status |
 | --- | --- | --- | --- | --- |
+| `audio/ambience/city_bed` | MapAmbience: the City map's ambience bed, crossfaded at map boundaries | Sonniss GameAudioGDC (royalty free) or freesound CC0 field recording: a burning city at a distance: far traffic of sirens, wind between buildings, fire crackle, no music, no voices | polish | needed |
+| `audio/ambience/farmland_bed` | MapAmbience: the Farmland map's ambience bed, crossfaded at map boundaries | Sonniss GameAudioGDC (royalty free) or freesound CC0 field recording: open fields: wind through crops, a distant windmill or loose barn door, sparse crows | polish | needed |
+| `audio/ambience/forest_bed` | MapAmbience: the Forest map's ambience bed, crossfaded at map boundaries | Sonniss GameAudioGDC (royalty free) or freesound CC0 field recording: dense forest at dusk: wind in leaves, sparse birds, distant creaks | polish | needed |
+| `audio/ambience/wasteland_bed` | MapAmbience: the Wasteland map's ambience bed, crossfaded at map boundaries | Sonniss GameAudioGDC (royalty free) or freesound CC0 field recording: open dead highway: dry wind, flapping debris, distant metal creaks | polish | needed |
 | `audio/city/siren_ambulance` | none | none | polish | needed |
 | `audio/city/siren_police` | none | none | polish | rejected |
 | `audio/range/gong` | Shooting range: gong hit feedback | Freesound CC0: metal gong hit / steel target ping | blocker | rejected |
@@ -54,4 +58,4 @@ only, no synthesis, no invented ids.
 | `audio/weapons/ricochet_01` | WeaponSfx.playImpacts: one hard hit in six | freesound CC0 'ricochet' | polish | needed |
 | `audio/weapons/shell_03` | Weapon shell casing variation 3 | Kenney CC0 impact sounds: small metal drop | polish | rejected |
 
-**3 blockers, 34 polish items.**
+**3 blockers, 38 polish items.**

@@ -10,11 +10,13 @@ the upload, the replacement table, the Studio checks) is in
 ## Licence rule
 
 Fab Standard License: use in the shipped game only. The repository is public, so no
-Fab-derived file is committed, processed maps included. The maps live in
-`assets/fab/textures/` and the generated list in `src/shared/fab/MegascansMaterials.luau`,
-both gitignored and present on the owner's machine only. Committed: the manifest rows
-(ids, licence, note, variant settings), the `TFZ_MS_*` entries in `default.project.json`
-(ids and studs per tile), the usual generated files.
+Fab-derived file is committed, processed maps included. The maps live in the
+gitignored `assets/fab/textures/`, present on the owner's machine only. Committed: the
+manifest rows (ids, licence, note, variant settings), the `TFZ_MS_*` entries in
+`default.project.json` (ids and studs per tile), the generated
+`src/shared/config/MegascansMaterials.luau` (ids and settings, `return {}` when empty)
+and the usual generated files. A Fab row without an asset id fails
+`sync_configs.py --check`: upload before committing.
 
 ## Files
 
@@ -22,7 +24,7 @@ both gitignored and present on the owner's machine only. Committed: the manifest
 | --- | --- |
 | `tools/megascans/import_surface.py` | The command: zip or folder, `--slot`, `--base-material`, `--studs-per-tile`, `--replaces`, `--override`, `--pattern`, `--ao-strength`, `--normal-convention`; writes the maps and the manifest rows, then runs both sync scripts |
 | `tools/megascans/surface.py` | Reading both layouts by map suffix, the AO multiply, the DirectX to OpenGL normal conversion and its detection from the displacement map, studs per tile, the rows |
-| `scripts/fab_files.py` | The Fab file rules: Fab licence only under `assets/fab/`; a missing file is fine once the row has an id |
+| `scripts/fab_files.py` | The Fab file rules: Fab licence only under `assets/fab/`; a missing file is fine once the row has an id; `--check` refuses any Fab row without one |
 | `scripts/sync_configs.py` | Declares a `TFZ_MS_*` variant and lists it in the local Luau file once every map has a usable id |
 | `scripts/upload_assets.py`, `scripts/sync_needed.py` | Skip uploaded Fab rows without their file; a NEEDED row pointing at the upload |
 | `src/shared/util/MaterialSets.luau` | Pure: entry checks, merge, replacements, overrides. `luau tests/megascans/run.luau` |

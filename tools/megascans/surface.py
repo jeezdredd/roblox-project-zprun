@@ -11,11 +11,16 @@ import json
 import os
 import re
 import shutil
+import sys
 import tempfile
 import zipfile
 
 import numpy as np
 from PIL import Image
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "scripts"))
+
+import roblox_enums  # noqa: E402
 
 SIZE = 1024
 LICENCE = "Fab Standard License (Quixel Megascans)"
@@ -25,21 +30,14 @@ VARIANT_PREFIX = "TFZ_MS_"
 
 IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".tif", ".tiff", ".tga", ".bmp")
 
-# Enum.Material items a MaterialVariant can sit on (Glass, Neon, ForceField, Air and
-# Water take no variants and are left out)
-BASE_MATERIALS = (
-    "Asphalt", "Basalt", "Brick", "Cardboard", "Carpet", "CeramicTiles", "ClayRoofTiles",
-    "Cobblestone", "Concrete", "CorrodedMetal", "CrackedLava", "DiamondPlate", "Fabric",
-    "Foil", "Glacier", "Granite", "Grass", "Ground", "Ice", "LeafyGrass", "Leather",
-    "Limestone", "Marble", "Metal", "Mud", "Pavement", "Pebble", "Plaster", "Plastic",
-    "Rock", "RoofShingles", "Rubber", "Salt", "Sand", "Sandstone", "Slate",
-    "SmoothPlastic", "Snow", "Wood", "WoodPlanks",
-)
+BASE_MATERIALS = roblox_enums.VARIANT_BASE_MATERIALS
 METAL_MATERIALS = ("Metal", "CorrodedMetal", "DiamondPlate", "Foil")
 PATTERNS = ("Regular", "Organic")
 
-# Words in the surface's name, categories or tags that suggest a base material, in
-# priority order (the first hit wins), for when --base-material is not given
+# Whole words in the surface's name, categories or tags that suggest a base material, in
+# priority order (the first hit wins), for when --base-material is not given; a plural
+# ("bricks", "planks", "tiles") counts, a word inside another ("sand" in "sandstone")
+# does not
 MATERIAL_HINTS = (
     ("rust", "CorrodedMetal"), ("corroded", "CorrodedMetal"), ("metal", "Metal"),
     ("asphalt", "Asphalt"), ("cobblestone", "Cobblestone"), ("brick", "Brick"),
@@ -249,6 +247,9 @@ SIZE_TEXT = re.compile(
     re.IGNORECASE,
 )
 SINGLE_TEXT = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*(mm|cm|meters?|metres?|m)?\s*$", re.IGNORECASE)
+# A scan smaller or larger than this is a misread size (a unitless "200" meant as cm):
+# the importer asks for --studs-per-tile instead of guessing
+SIZE_RANGE_M = (0.05, 50.0)
 SIZE_KEYS = ("physicalSize", "physical_size", "scanArea", "scan_area", "size", "tileSize", "realWorldSize")
 
 
@@ -321,6 +322,12 @@ def studs_per_tile(metadata, per_metre, override=None):
     size = physical_size(metadata)
     if not size:
         raise SurfaceError("no physical size in the surface JSON; pass --studs-per-tile")
+    low, high = SIZE_RANGE_M
+    if not low <= size[0] <= high:
+        raise SurfaceError(
+            f"the JSON's physical size reads as {size[0]:g} m wide, outside {low:g}..{high:g} m "
+            "(a size without a unit is taken as metres); pass --studs-per-tile"
+        )
     return round(size[0] * per_metre, 2)
 
 
@@ -447,11 +454,29 @@ def is_metal(base_material):
 
 
 def guess_base_material(surface):
-    words = surface.words()
+    tokens = set(re.findall(r"[a-z]+", surface.words()))
     for word, material in MATERIAL_HINTS:
-        if word in words:
+        if word in tokens or word + "s" in tokens or word + "es" in tokens:
             return material
     return None
+
+
+def check_square(surface, allow=False):
+    """Megascans surfaces are square; a map that is not would be stretched to 1024 x
+    1024. Stops the run unless allowed, then it is a warning. Returns the warnings."""
+    warnings = []
+    for kind, path in sorted(surface.maps.items()):
+        try:
+            with Image.open(path) as image:
+                width, height = image.size
+        except OSError:
+            continue
+        if abs(width - height) > 0.01 * max(width, height):
+            message = f"{os.path.basename(path)} is {width} x {height}, not square: it would be stretched"
+            if not allow:
+                raise SurfaceError(message + "; pass --allow-non-square to import it anyway")
+            warnings.append(message)
+    return warnings
 
 
 def require_maps(surface, metal):
@@ -478,6 +503,9 @@ def require_maps(surface, metal):
     return notes
 
 
+FALLBACK = "unlabelled, OpenGL by default"
+
+
 def pick_normal(surface, forced=None, height=None):
     """(path, convention, how) for the normal map. A name that says GL or DX wins;
     an unlabelled Normal is checked against the displacement map when there is one,
@@ -489,11 +517,13 @@ def pick_normal(surface, forced=None, height=None):
     elif "normal_dx" in maps:
         path, convention, how = maps["normal_dx"], "directx", "named DX"
     else:
-        path, convention, how = maps["normal"], "opengl", "unlabelled, OpenGL by default"
+        path, convention, how = maps["normal"], "opengl", FALLBACK
         if height is not None:
             detected = detect_convention(load_rgb(path, 256), _resize_gray(height, 256))
             if detected:
                 convention, how = detected, "unlabelled, read from the displacement map"
+            else:
+                how = FALLBACK + " (the displacement map was inconclusive)"
     if forced:
         convention, how = forced, "--normal-convention"
     return path, convention, how
@@ -506,11 +536,13 @@ def _resize_gray(gray, size):
     return np.asarray(image, dtype=np.float32)
 
 
-def process(surface, out_dir, slot, base_material, ao_strength=0.5, normal_convention=None):
+def process(surface, out_dir, slot, base_material, ao_strength=0.5, normal_convention=None, allow_non_square=False):
     """Write <slot>_color/normal/roughness[/metalness].png into out_dir. Returns
-    {"files": {suffix: path}, "normal": (convention, how), "notes": [...]}."""
+    {"files": {suffix: path}, "normal": (convention, how), "notes": [...],
+    "warnings": [...]}."""
     metal = is_metal(base_material)
     notes = require_maps(surface, metal)
+    warnings = check_square(surface, allow_non_square)
     maps = surface.maps
     orm = maps.get("orm")
 
@@ -549,7 +581,13 @@ def process(surface, out_dir, slot, base_material, ao_strength=0.5, normal_conve
         files["metalness"] = path
     elif not metal and "metalness" in maps:
         notes.append(f"Metalness map ignored: {base_material} is not a metal base material")
-    return {"files": files, "normal": (convention, how), "notes": notes}
+    if how.startswith(FALLBACK):
+        warnings.append(
+            "the normal map's name does not say GL or DX and nothing showed which it is: taken as "
+            "OpenGL; check the bumps in Studio and re-import with --normal-convention directx if "
+            "they look inverted"
+        )
+    return {"files": files, "normal": (convention, how), "notes": notes, "warnings": warnings}
 
 
 # Manifest rows --------------------------------------------------------------------
@@ -600,18 +638,41 @@ def manifest_rows(slot, surface, suffixes, material, ao_strength, normal, source
     return rows
 
 
-def apply_rows(manifest, slot, rows, replace=False):
-    """Put the rows in the manifest (in place). Existing rows for the slot are
-    replaced only with replace=True when any of them already has an asset id, so a
-    stray re-import cannot drop uploaded ids. Returns the keys removed."""
-    prefix = f"{MANIFEST_PREFIX}{slot}_"
-    existing = [key for key in manifest if key.startswith(prefix)]
-    uploaded = [key for key in existing if manifest[key].get("assetId")]
+MAP_SUFFIXES_OUT = ("color", "normal", "roughness", "metalness")
+
+
+def slot_keys(manifest, slot):
+    """The manifest keys of exactly this slot (not of a slot it is a prefix of:
+    "concrete" never touches "concrete_dirty")."""
+    wanted = {f"{MANIFEST_PREFIX}{slot}_{suffix}" for suffix in MAP_SUFFIXES_OUT}
+    return [key for key in manifest if key in wanted]
+
+
+def check_import(manifest, slot, replace=False):
+    """Before any map is processed: the slot must not be uploaded already (unless
+    replace) and its variant name must not collide with another slot's
+    (concrete_damaged_2 and concrete_damaged2 are both TFZ_MS_ConcreteDamaged2)."""
+    uploaded = [key for key in slot_keys(manifest, slot) if manifest[key].get("assetId")]
     if uploaded and not replace:
         raise SurfaceError(
             f"{slot} is already uploaded ({', '.join(uploaded)}); pass --replace to import it again "
             "(the rows go back to pending and need a new upload)"
         )
+    variant = variant_name(slot)
+    for key, entry in manifest.items():
+        if not (key.startswith(MANIFEST_PREFIX) and key.endswith("_color")):
+            continue
+        other = key[len(MANIFEST_PREFIX):-len("_color")]
+        material = entry.get("material") or {}
+        if other != slot and (material.get("variant") == variant or variant_name(other) == variant):
+            raise SurfaceError(f"slot {slot} would be {variant}, which slot {other} already is; pick another slot name")
+
+
+def apply_rows(manifest, slot, rows, replace=False):
+    """Put the rows in the manifest (in place), after check_import. Returns the keys
+    removed (a map the new import no longer has)."""
+    check_import(manifest, slot, replace)
+    existing = slot_keys(manifest, slot)
     removed = [key for key in existing if key not in rows]
     for key in removed:
         del manifest[key]

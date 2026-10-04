@@ -46,7 +46,7 @@ Related: [[Overview]], [[Roadmap]], [[Decisions]].
 | `07c116c` | First real CC0 textures via Open Cloud for roads, aprons, buildings, hangar |
 | `185f247` | Wide open run field, lane-based obstacles, glazed hangar gate, textured zombies |
 | `e1158f3` | Forced first person, sealed hangar, night blackout with flashlight, glowing zombie eyes |
-| `cloud/megascans-import` | Megascans importer: `tools/megascans/import_surface.py` turns a Fab or Bridge download (zip or folder, maps found by suffix) into 1024 px colour (albedo times AO), OpenGL normal and roughness maps, plus metalness on metal, in the gitignored `assets/fab/textures/`; pending manifest rows; `sync_configs.py` declares `TFZ_MS_<Slot>` variants once uploaded and writes the gitignored `src/shared/fab/MegascansMaterials.luau`, which `MaterialUtil` loads behind guards (`--replaces`, `--override`). Fab content is never committed. See [[Megascans]] |
+| `cloud/megascans-import` | Megascans importer: `tools/megascans/import_surface.py` turns a Fab or Bridge download (zip or folder, maps found by suffix) into 1024 px colour (albedo times AO), OpenGL normal and roughness maps, plus metalness on metal, in the gitignored `assets/fab/textures/`; pending manifest rows; `sync_configs.py` declares `TFZ_MS_<Slot>` variants once uploaded and writes `src/shared/config/MegascansMaterials.luau` (ids and settings only), which `MaterialUtil` checks entry by entry (`--replaces`, `--override`). Fab content is never committed. See [[Megascans]] |
 
 ## Asset pipeline and detail pass
 

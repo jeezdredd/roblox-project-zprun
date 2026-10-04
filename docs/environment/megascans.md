@@ -16,7 +16,7 @@ included** (Development Policy, section 4).
 | --- | --- | --- |
 | The downloaded zip or folder | anywhere outside the repository (or under `assets/fab/`) | never |
 | The processed 1024 px maps | `assets/fab/textures/<slot>_{color,normal,roughness,metalness}.png` | never (gitignored) |
-| The generated material list | `src/shared/fab/MegascansMaterials.luau` | never (gitignored) |
+| The generated material list (asset ids and settings) | `src/shared/config/MegascansMaterials.luau` | yes |
 | Manifest rows: asset ids, licence, a note, the variant settings | `assets/manifest.json` | yes |
 | The `TFZ_MS_*` MaterialVariants (asset ids and studs per tile only) | `default.project.json`, MaterialService | yes |
 | The ids in `AssetIds`, `LICENSES.md`, `NEEDED.md` | generated as usual | yes |
@@ -55,15 +55,16 @@ python3 tools/megascans/import_surface.py ~/Downloads/Megascans/Cracked_Asphalt_
 | Flag | Meaning |
 | --- | --- |
 | `--slot <name>` | Required. Lower snake case; the manifest keys are `texture/surface/megascans/<slot>_<map>`, the variant `TFZ_MS_<Slot>` (`asphalt_cracked` gives `TFZ_MS_AsphaltCracked`) |
-| `--base-material <Enum.Material>` | The variant's BaseMaterial. Guessed from the JSON's name, categories and tags when left out (asphalt, concrete, gravel to Pebble, rust to CorrodedMetal, ...); the run stops if nothing fits |
+| `--base-material <Enum.Material>` | The variant's BaseMaterial. Guessed from whole words of the JSON's name, categories and tags when left out (asphalt, concrete, gravel to Pebble, rust to CorrodedMetal, plurals count, "sand" inside "sandstone" does not); the run stops if nothing fits. Required with `--override` |
 | `--studs-per-tile N` | Overrides the size read from the JSON |
 | `--replaces TFZ_<Set>` | `MaterialUtil.apply(part, "TFZ_<Set>")` uses this variant instead, once it is registered; must name a set in `MaterialUtil.sets` |
-| `--override` | Makes the variant its base material's override (`MaterialService:SetBaseMaterialOverride`), so every part of that material without a variant uses it |
+| `--override` | Makes the variant its base material's override (`MaterialService:SetBaseMaterialOverride`), so every part of that material without a variant uses it. Needs `--base-material`: an override is never left to a guess |
 | `--pattern Regular\|Organic` | MaterialPattern. `Organic` breaks up visible tiling on ground, grass and sand |
 | `--ao-strength 0..1` | How much of the AO map darkens the colour map (default 0.5) |
 | `--normal-convention opengl\|directx` | Forces the normal map's convention when detection gets it wrong |
 | `--source-url URL` | The Fab listing for the manifest row (default: the Megascans page from the JSON's id) |
 | `--replace` | Import a slot again after it was uploaded; its rows go back to pending |
+| `--allow-non-square` | Import maps that are not square (they are stretched to 1024 x 1024); without it a non-square map stops the run |
 | `--no-sync` | Skip running `sync_configs.py` and `sync_needed.py` afterwards |
 
 The run prints the layout it read, the base material, the studs per tile, the normal
@@ -91,8 +92,9 @@ convention and how it was decided, and each file written.
   2. an unlabelled `Normal` is compared with the displacement map: in OpenGL the green
      channel rises where the height rises down the image, in DirectX where it falls,
      and the red channel (the same in both) must agree before the answer is used;
-  3. with no displacement map, OpenGL, the convention raw Megascans scans ship in
-     (Unreal-format downloads are DirectX and are labelled as such);
+  3. with no displacement map (or an inconclusive one), OpenGL, the convention raw
+     Megascans scans ship in (Unreal-format downloads are DirectX and are labelled as
+     such), with a printed WARNING to check the bumps in Studio;
   4. `--normal-convention` overrides all of it.
 - **Roughness:** the Roughness map, or `1 - Gloss`, or the green channel of an ORM map.
 - **Metalness:** only for a metal base material (Metal, CorrodedMetal, DiamondPlate,
@@ -105,7 +107,13 @@ convention and how it was decided, and each file written.
   rounded to 0.01. A 2 x 2 m scan is 7.14 studs per tile. The size comes from a
   top-level `physicalSize` (text such as `2x2 m` or `200 x 200 cm`, a list, or
   `{width, height, unit}`) or Bridge's `meta` list (`scanArea`); a non-square scan
-  uses its width.
+  uses its width. A width outside 0.05 to 50 m (a unitless `200` meant as cm reads as
+  200 m) stops the run and asks for `--studs-per-tile`.
+- **Refusals before any map is written:** an already uploaded slot without
+  `--replace`, and a slot whose variant name another slot already has
+  (`concrete_damaged_2` and `concrete_damaged2` are both `TFZ_MS_ConcreteDamaged2`).
+  The maps are processed in a temp dir and moved into `assets/fab/textures/` only
+  after the manifest is saved; a failed sync afterwards is reported as such.
 - **Manifest rows:** one per map, `status` `pending`, `assetId` 0, licence
   `Fab Standard License (Quixel Megascans)`, the source page, a note with the asset's
   name and id. The colour row also carries `material`: variant name, base material,
@@ -123,19 +131,21 @@ Once all maps of a set have usable ids (not 0, not rejected), `sync_configs.py`:
 
 - declares `TFZ_MS_<Slot>` under MaterialService in `default.project.json`
   (BaseMaterial, the maps, StudsPerTile, MaterialPattern);
-- lists the set in `src/shared/fab/MegascansMaterials.luau`.
+- lists the set in `src/shared/config/MegascansMaterials.luau` (committed; `return {}`
+  when no set is ready).
 
 A pending set is in neither, so a half-uploaded surface never blanks a material.
 
-`MaterialUtil` (server, the "Materials" stage) looks for `ReplicatedStorage.Shared.fab.MegascansMaterials`
-with `FindFirstChild` and requires it inside `pcall`. Each entry is checked field by
-field (`MaterialSets.validate`), and a bad entry or an unknown base material is skipped
-with a warning. The valid sets are appended after the built-in ones. Without the file
-(any clone but the owner's), the built-in sets are all there is and nothing changes.
+`MaterialUtil` (server, the "Materials" stage) requires
+`ReplicatedStorage.Shared.config.MegascansMaterials` inside `pcall`. Each entry is
+checked field by field (`MaterialSets.validate`), and a bad entry or an unknown base
+material is skipped with a warning. The valid sets are appended after the built-in
+ones; with an empty list nothing changes.
 `--replaces` and `--override` only take effect once the variant has registered, so a
 missing variant falls back to the set it was meant to replace. Commit the manifest and
-the generated files as usual; `git status` never shows `assets/fab/` or
-`src/shared/fab/`.
+the generated files as usual once every row has its id: `sync_configs.py --check`
+fails on a Fab row without one, file or not (no other clone could upload it).
+`git status` never shows `assets/fab/`.
 
 ## Which surface replaces what
 
@@ -174,5 +184,5 @@ In Studio, after importing and uploading one surface:
    (if they look inverted, re-import with `--normal-convention` set the other way).
 3. A run through the biome whose set was replaced: the floor uses the new variant, and
    the tiling size matches the props (a 2 m scan is about 7 studs).
-4. Delete `src/shared/fab/` and build again: the place loads with the built-in sets
-   and no error.
+4. In a fresh clone (no `assets/fab/`), `rojo build` and the checks pass and the place
+   loads with the Megascans variants from their ids.

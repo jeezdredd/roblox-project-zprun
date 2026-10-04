@@ -345,6 +345,93 @@ def test_normal_choice(base):
     with ms.opened_source(path) as folder:
         result = ms.process(ms.read_surface(folder), os.path.join(sub, "out"), "x", "Asphalt")
         check("unlabelled without height is OpenGL", result["normal"] == ("opengl", "unlabelled, OpenGL by default"), str(result["normal"]))
+        check("the fallback warns", any("--normal-convention" in w for w in result["warnings"]), str(result["warnings"]))
+    with ms.opened_source(make_fab_zip(os.path.join(base, "labelled"), normal_name="Normal_DX")) as folder:
+        labelled = ms.process(ms.read_surface(folder), os.path.join(base, "labelled_out"), "x", "Asphalt")
+        check("a labelled map does not warn", labelled["warnings"] == [], str(labelled["warnings"]))
+
+
+def test_guards(base):
+    # whole words only
+    class Words:
+        def __init__(self, text):
+            self.text = text
+
+        def words(self):
+            return self.text
+
+    check("sand inside sandstone is not Sand", ms.guess_base_material(Words("sandstone wall surface")) is None)
+    check("plural counts", ms.guess_base_material(Words("old red bricks")) == "Brick")
+    check("rust inside trust is not metal", ms.guess_base_material(Words("trusty floor concrete")) == "Concrete")
+    check("whole word hits", ms.guess_base_material(Words("forest ground leaves")) == "Ground")
+
+    # the size range
+    for meta in ({"physicalSize": "200"}, {"physicalSize": "0.01 m"}, {"physicalSize": "80x80 m"}):
+        try:
+            ms.studs_per_tile(meta, 1 / 0.28)
+            check(f"size {meta} refused", False)
+        except ms.SurfaceError as error:
+            check(f"size {meta} names the flag", "--studs-per-tile" in str(error))
+    check("an in-range size passes", ms.studs_per_tile({"physicalSize": "50 m"}, 1 / 0.28) == round(50 / 0.28, 2))
+
+    # non-square maps
+    folder = os.path.join(base, "wide")
+    os.makedirs(folder)
+    write_rgb(os.path.join(folder, "w_Albedo.png"), np.ones((32, 64, 3)) * 0.5)
+    write_rgb(os.path.join(folder, "w_NormalGL.png"), normals_from(height_field(), "opengl"))
+    write_gray(os.path.join(folder, "w_Roughness.png"), roughness_field())
+    try:
+        ms.process(ms.read_surface(folder), os.path.join(base, "wide_out"), "w", "Concrete")
+        check("a non-square map is refused", False)
+    except ms.SurfaceError as error:
+        check("the refusal names the map and the flag", "w_Albedo.png" in str(error) and "--allow-non-square" in str(error), str(error))
+    allowed = ms.process(ms.read_surface(folder), os.path.join(base, "wide_out"), "w", "Concrete", allow_non_square=True)
+    check("allowed with a warning", any("not square" in w for w in allowed["warnings"]))
+
+    # --override needs --base-material
+    root = temp_root(os.path.join(base, "override"))
+    source = make_bridge(os.path.join(base, "override_src"))
+    try:
+        run_import([source, "--slot", "asphalt", "--override", "--root", root, "--no-sync"])
+        check("--override without --base-material refused", False)
+    except ms.SurfaceError as error:
+        check("the refusal names --base-material", "--base-material" in str(error))
+    code, _ = run_import([source, "--slot", "asphalt", "--override", "--base-material", "Asphalt", "--root", root, "--no-sync"])
+    check("--override with --base-material runs", code == 0)
+
+    # a slot never touches a slot it is a prefix of, and variant names never collide
+    code, _ = run_import([source, "--slot", "asphalt_old", "--root", root, "--no-sync"])
+    with open(os.path.join(root, "assets", "manifest.json")) as handle:
+        manifest = json.load(handle)
+    code, _ = run_import([source, "--slot", "asphalt", "--base-material", "Asphalt", "--override", "--root", root, "--no-sync"])
+    with open(os.path.join(root, "assets", "manifest.json")) as handle:
+        after = json.load(handle)
+    old_keys = [k for k in manifest if "asphalt_old_" in k]
+    check("re-importing asphalt keeps asphalt_old", old_keys and all(k in after for k in old_keys))
+    try:
+        run_import([source, "--slot", "asphalt_old2", "--root", root, "--no-sync"])
+        run_import([source, "--slot", "asphalt_old_2", "--root", root, "--no-sync"])
+        check("clashing variant names refused", False)
+    except ms.SurfaceError as error:
+        check("the clash names the variant", "TFZ_MS_AsphaltOld2" in str(error), str(error))
+
+    # a refused re-import leaves assets/fab/textures alone
+    with open(os.path.join(root, "assets", "manifest.json")) as handle:
+        manifest = json.load(handle)
+    for key in [k for k in manifest if "/asphalt_" in k and k.rsplit("/", 1)[1].startswith("asphalt_") and k.rsplit("_", 1)[0].endswith("/asphalt")]:
+        manifest[key]["assetId"] = 77
+    with open(os.path.join(root, "assets", "manifest.json"), "w") as handle:
+        json.dump(manifest, handle)
+    textures = os.path.join(root, "assets", "fab", "textures")
+    before = {name: os.path.getmtime(os.path.join(textures, name)) for name in os.listdir(textures)}
+    other = make_bridge(os.path.join(base, "other_src"), asset_id="zzzz0000")
+    try:
+        run_import([other, "--slot", "asphalt", "--base-material", "Asphalt", "--root", root, "--no-sync"])
+        check("re-import of an uploaded slot refused", False)
+    except ms.SurfaceError:
+        pass
+    after_files = {name: os.path.getmtime(os.path.join(textures, name)) for name in os.listdir(textures)}
+    check("the refused import wrote no map", after_files == before)
 
 
 def test_metal(base):
@@ -499,6 +586,22 @@ def test_generated(manifest):
     rejected = json.loads(json.dumps(uploaded))
     rejected["texture/surface/megascans/asphalt_cracked_normal"]["status"] = "rejected"
     check("a rejected map keeps the variant out", not sync_configs.megascans_sets(rejected)[0]["ready"])
+    bad_base = json.loads(json.dumps(uploaded))
+    bad_base["texture/surface/megascans/asphalt_cracked_color"]["material"]["baseMaterial"] = "Glass"
+    try:
+        sync_configs.megascans_sets(bad_base)
+        check("a base material a variant cannot use fails", False)
+    except sync_configs.MegascansError:
+        pass
+    twin = json.loads(json.dumps(uploaded))
+    for suffix in ("color", "normal", "roughness"):
+        twin[f"texture/surface/megascans/asphalt_cracked2_{suffix}"] = json.loads(json.dumps(uploaded[f"texture/surface/megascans/asphalt_cracked_{suffix}"]))
+    try:
+        sync_configs.megascans_sets(twin)
+        check("two slots with one variant name fail", False)
+    except sync_configs.MegascansError:
+        pass
+    check("an empty list is return {}", sync_configs.render_megascans([]).rstrip().endswith("return {}"))
     broken = json.loads(json.dumps(uploaded))
     del broken["texture/surface/megascans/asphalt_cracked_roughness"]
     try:
@@ -515,20 +618,24 @@ def test_fab_rules(base):
     os.makedirs(os.path.join(base, "assets", "fab", "textures"), exist_ok=True)
     open(os.path.join(base, "assets", "fab", "textures", "x_color.png"), "w").close()
     check("pending Fab row with its file is fine", fab_files.problems({"a": fab_row}, base) == [])
+    check("pending Fab row with its file fails the pre-commit check", len(fab_files.problems({"a": fab_row}, base, require_ids=True)) == 1)
+    check("uploaded Fab row passes the pre-commit check", fab_files.problems({"a": dict(fab_row, assetId=5)}, base, require_ids=True) == [])
     outside = dict(fab_row, file="assets/textures/x_color.png", assetId=5)
     check("Fab licence outside assets/fab is a problem", len(fab_files.problems({"a": outside}, base)) == 1)
 
     with open(os.path.join(ROOT, "assets", "manifest.json")) as handle:
         manifest = json.load(handle)
-    check("the real manifest keeps the Fab rules", fab_files.problems(manifest, ROOT) == [], str(fab_files.problems(manifest, ROOT)))
+    check("the real manifest keeps the Fab rules", fab_files.problems(manifest, ROOT, require_ids=True) == [], str(fab_files.problems(manifest, ROOT, require_ids=True)))
 
 
 def test_gitignore():
-    for path in ("assets/fab/textures/asphalt_cracked_color.png", "assets/fab/source.zip", "src/shared/fab/MegascansMaterials.luau"):
+    for path in ("assets/fab/textures/asphalt_cracked_color.png", "assets/fab/source.zip"):
         ignored = subprocess.run(["git", "check-ignore", "-q", path], cwd=ROOT).returncode == 0
         check(f"{path} is gitignored", ignored)
-    tracked = subprocess.run(["git", "ls-files", "assets/fab", "src/shared/fab"], cwd=ROOT, capture_output=True, text=True).stdout
-    check("nothing tracked under the Fab folders", tracked.strip() == "", tracked)
+    tracked = subprocess.run(["git", "ls-files", "assets/fab"], cwd=ROOT, capture_output=True, text=True).stdout
+    check("nothing tracked under assets/fab", tracked.strip() == "", tracked)
+    listing = "src/shared/config/MegascansMaterials.luau"
+    check("the generated list is not ignored", subprocess.run(["git", "check-ignore", "-q", listing], cwd=ROOT).returncode != 0)
 
 
 def main():
@@ -545,6 +652,7 @@ def main():
         group("normal convention choice", lambda: test_normal_choice(os.path.join(base, "choice")))
         group("metal, ORM and gloss", lambda: test_metal(os.path.join(base, "metal")))
         group("missing map", lambda: test_missing_map(os.path.join(base, "missing")))
+        group("guards (words, size, square, override, slots, refused import)", lambda: test_guards(os.path.join(base, "guards")))
         group("import and manifest rows", lambda: holder.setdefault("manifest", test_import_and_rows(os.path.join(base, "import"))))
         if "manifest" in holder:
             group("generated variants", lambda: test_generated(holder["manifest"]))

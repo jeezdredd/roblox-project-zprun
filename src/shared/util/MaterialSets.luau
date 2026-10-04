@@ -1,8 +1,8 @@
 --!strict
 
 -- Pure helpers for MaterialUtil's set list (no services, no engine types), tested by
--- `luau tests/megascans/run.luau`. The Megascans sets come from the generated, local
--- only src/shared/fab/MegascansMaterials.luau (docs/environment/megascans.md); every
+-- `luau tests/megascans/run.luau`. The Megascans sets come from the generated
+-- config/MegascansMaterials.luau (docs/environment/megascans.md); every
 -- entry is checked here before MaterialUtil turns it into a PbrSet, so a damaged or
 -- hand-edited file drops that entry instead of breaking the Materials stage.
 

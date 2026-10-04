@@ -6,29 +6,33 @@ MaterialVariant (docs/environment/megascans.md).
         [--studs-per-tile N] [--base-material Asphalt|Concrete|Ground|...]
         [--override] [--replaces TFZ_<Set>] [--pattern Regular|Organic]
         [--ao-strength 0.5] [--normal-convention opengl|directx]
-        [--source-url URL] [--replace] [--no-sync]
+        [--source-url URL] [--replace] [--allow-non-square] [--no-sync]
 
 Reads the surface's JSON (name, id, physical size, categories) and its maps by file
 name suffix, in the Bridge export layout or the Fab download layout, writes
 <slot>_color/normal/roughness[/metalness].png at 1024 px into assets/fab/textures/,
 adds pending manifest rows for them, then runs scripts/sync_configs.py and
-scripts/sync_needed.py (which also write the local src/shared/fab/MegascansMaterials.luau).
+scripts/sync_needed.py (which also write src/shared/config/MegascansMaterials.luau).
 Upload with `python3 scripts/upload_assets.py --only texture/surface/megascans/`, then
 sync again: the TFZ_MS_<Slot> variant appears in default.project.json once every map
 has an id.
 
 Fab content (Fab Standard License) is never committed, the repository is public:
-assets/fab/ and src/shared/fab/ are gitignored, the source zip is read in place (a zip
-is extracted to the system temp dir and removed) and must not sit inside the
-repository outside assets/fab/.
+assets/fab/ is gitignored, the source zip is read in place (a zip is extracted to the
+system temp dir and removed) and must not sit inside the repository outside
+assets/fab/. A refused import (an uploaded slot without --replace, a clashing variant
+name) stops before any map is written; maps are processed in a temp dir and moved into
+assets/fab/textures/ only after the manifest is saved.
 """
 
 import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
@@ -50,6 +54,7 @@ def parse_args(argv):
     parser.add_argument("--normal-convention", choices=("opengl", "directx"), help="force the normal map's convention")
     parser.add_argument("--source-url", dest="source_url", help="the Fab listing URL for the manifest row")
     parser.add_argument("--replace", action="store_true", help="re-import a slot that already has asset ids")
+    parser.add_argument("--allow-non-square", action="store_true", help="import maps that are not square (stretched to 1024 x 1024)")
     parser.add_argument("--no-sync", action="store_true", help="do not run the two sync scripts afterwards")
     parser.add_argument("--root", default=REPO, help=argparse.SUPPRESS)
     return parser.parse_args(argv)
@@ -95,48 +100,73 @@ def run(argv):
     root = args.root
     slot = ms.check_slot(args.slot)
     check_source_location(args.source, root)
+    if args.override and not args.base_material:
+        raise ms.SurfaceError("--override changes every part of the base material: name it with --base-material")
     if args.replaces:
         names = known_sets(root)
         if names is not None and args.replaces not in names:
             raise ms.SurfaceError(f"--replaces {args.replaces}: no such set in MaterialUtil.sets")
+    # an uploaded slot or a clashing variant name stops here, before any map is touched
+    ms.check_import(load_manifest(root), slot, args.replace)
 
-    with ms.opened_source(args.source) as folder:
-        surface = ms.read_surface(folder)
-        base = args.base_material or ms.guess_base_material(surface)
-        if not base:
-            raise ms.SurfaceError(f"{surface.name}: cannot guess the base material from the JSON; pass --base-material")
-        studs = ms.studs_per_tile(surface.metadata, ms.studs_per_metre(root), args.studs_per_tile)
+    staging = tempfile.mkdtemp(prefix="megascans-out-")
+    try:
+        with ms.opened_source(args.source) as folder:
+            surface = ms.read_surface(folder)
+            base = args.base_material or ms.guess_base_material(surface)
+            if not base:
+                raise ms.SurfaceError(f"{surface.name}: cannot guess the base material from the JSON; pass --base-material")
+            studs = ms.studs_per_tile(surface.metadata, ms.studs_per_metre(root), args.studs_per_tile)
+            result = ms.process(surface, staging, slot, base, args.ao_strength, args.normal_convention, args.allow_non_square)
+
+        material = {
+            "variant": ms.variant_name(slot),
+            "asset": surface.name,
+            "baseMaterial": base,
+            "studsPerTile": studs,
+            "pattern": args.pattern,
+            "override": bool(args.override),
+        }
+        if args.replaces:
+            material["replaces"] = args.replaces
+        rows = ms.manifest_rows(slot, surface, list(result["files"]), material, args.ao_strength, result["normal"], args.source_url)
+        manifest = load_manifest(root)
+        removed = ms.apply_rows(manifest, slot, rows, args.replace)
+        save_manifest(root, manifest)
+
+        # only now do the maps reach assets/fab/textures (a stale map of the slot goes)
         out_dir = os.path.join(root, ms.FAB_TEXTURES)
-        result = ms.process(surface, out_dir, slot, base, args.ao_strength, args.normal_convention)
-
-    material = {
-        "variant": ms.variant_name(slot),
-        "asset": surface.name,
-        "baseMaterial": base,
-        "studsPerTile": studs,
-        "pattern": args.pattern,
-        "override": bool(args.override),
-    }
-    if args.replaces:
-        material["replaces"] = args.replaces
-    rows = ms.manifest_rows(slot, surface, list(result["files"]), material, args.ao_strength, result["normal"], args.source_url)
-    manifest = load_manifest(root)
-    removed = ms.apply_rows(manifest, slot, rows, args.replace)
-    save_manifest(root, manifest)
+        os.makedirs(out_dir, exist_ok=True)
+        for suffix in ms.MAP_SUFFIXES_OUT:
+            target = os.path.join(out_dir, f"{slot}_{suffix}.png")
+            if suffix in result["files"]:
+                shutil.move(result["files"][suffix], target)
+                result["files"][suffix] = target
+            elif os.path.exists(target):
+                os.remove(target)
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
 
     convention, how = result["normal"]
     print(f"{surface.name} ({surface.layout} layout) -> {material['variant']} on {base}, {studs} studs per tile")
     print(f"normal: {convention} ({how}){', green flipped' if convention == 'directx' else ''}")
-    for suffix, path in result["files"].items():
+    for path in result["files"].values():
         print(f"wrote {os.path.relpath(path, root)}")
     for key in removed:
         print(f"removed {key}")
     for note in result["notes"]:
         print(f"note: {note}")
+    for warning in result["warnings"]:
+        print(f"WARNING: {warning}")
 
     if not args.no_sync:
         for script in ("sync_configs.py", "sync_needed.py"):
-            subprocess.run([sys.executable, os.path.join(root, "scripts", script)], cwd=root, check=True)
+            done = subprocess.run([sys.executable, os.path.join(root, "scripts", script)], cwd=root)
+            if done.returncode != 0:
+                raise ms.SurfaceError(
+                    f"the maps and manifest rows are in place, but scripts/{script} failed (its output is above); "
+                    f"fix that and run it again before uploading"
+                )
     print(f"next: python3 scripts/upload_assets.py --only {ms.MANIFEST_PREFIX}{slot}_ && python3 scripts/sync_configs.py")
     return 0
 

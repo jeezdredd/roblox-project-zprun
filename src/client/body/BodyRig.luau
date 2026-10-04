@@ -14,6 +14,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ThirdPersonConfig = require(ReplicatedStorage.Shared.config.ThirdPersonConfig)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local BodyMath = require(ReplicatedStorage.Shared.util.BodyMath)
+local StanceConfig = require(ReplicatedStorage.Shared.config.StanceConfig)
+local StanceMath = require(ReplicatedStorage.Shared.util.StanceMath)
 
 local BodyRig = {}
 BodyRig.__index = BodyRig
@@ -69,6 +71,9 @@ type Fields = {
 	aimYaw: number,
 	targetPitch: number,
 	targetYaw: number,
+	-- the manual lean (Stances), -1 left to 1 right: shown and wanted
+	lean: number,
+	targetLean: number,
 	smoothing: number,
 	speed: number,
 	sprinting: boolean,
@@ -222,6 +227,8 @@ function BodyRig.new(character: Model): BodyRig?
 		aimYaw = 0,
 		targetPitch = 0,
 		targetYaw = 0,
+		lean = 0,
+		targetLean = 0,
 		smoothing = AIM.smoothing,
 		speed = 0,
 		sprinting = false,
@@ -291,6 +298,11 @@ end
 function BodyRig.setAim(self: BodyRig, pitch: number, yaw: number)
 	self.targetPitch = pitch
 	self.targetYaw = yaw
+end
+
+-- The manual lean, -1 (left) to 1 (right): the upper torso rolls toward it at the waist.
+function BodyRig.setLean(self: BodyRig, lean: number)
+	self.targetLean = math.clamp(lean, -1, 1)
 end
 
 function BodyRig.setSmoothing(self: BodyRig, timeConstant: number)
@@ -465,6 +477,7 @@ function BodyRig.update(self: BodyRig, deltaTime: number)
 
 	self.aimPitch = BodyMath.approachAngle(self.aimPitch, self.targetPitch, deltaTime, self.smoothing)
 	self.aimYaw = BodyMath.approachAngle(self.aimYaw, self.targetYaw, deltaTime, self.smoothing)
+	self.lean = BodyMath.approach(self.lean, if self.alive then self.targetLean else 0, deltaTime, self.smoothing)
 	self.sprinting = BodyMath.sprintTarget(self.speed, SPRINT.speed, SPRINT.hysteresis, self.sprinting)
 	self.sprintBlend = BodyMath.approach(self.sprintBlend, if self.sprinting then 1 else 0, deltaTime, SPRINT.blendTime)
 	BodyMath.springStep(self.kick, self.stiffness, self.damping, deltaTime)
@@ -509,7 +522,8 @@ function BodyRig.update(self: BodyRig, deltaTime: number)
 			local waistPitch = spread.waistPitch + self.snap.value * RECOIL.waistShare
 			local lean = chestRest:Inverse() * upper.Rotation
 			local keep = 1 - AIM.chestStabilize * self.weight
-			local wanted = chestRest * CFrame.fromEulerAnglesYXZ(math.rad(waistPitch), math.rad(spread.waistYaw), 0) * IDENTITY:Lerp(lean, keep)
+			local roll = StanceMath.bodyRoll(StanceConfig :: any, self.lean)
+			local wanted = chestRest * CFrame.fromEulerAnglesYXZ(math.rad(waistPitch), math.rad(spread.waistYaw), math.rad(roll)) * IDENTITY:Lerp(lean, keep)
 			local twist = twistFor(joint, motor, wanted)
 			setJoint(waist, base, twist)
 			upper = joint * twist * motor.C1:Inverse()

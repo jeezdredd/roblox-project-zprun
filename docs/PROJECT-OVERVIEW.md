@@ -38,7 +38,7 @@ Validation before any commit: `selene src/`, `python3 tools/validate_api.py`,
 ## Weapon/viewmodel system — current state
 
 Four classes in `WeaponsConfig`: Pistol, SMG, Shotgun, Rifle. Player spawns with
-Rifle (slot 1) + Pistol (slot 2); Q swaps.
+Rifle (slot 1) + Pistol (slot 2); the mouse wheel swaps (Q and E lean, X cycles the stance, held R checks the magazine: wiki Stances).
 
 The first-person rig is built at runtime by `src/client/systems/ViewmodelBuilder.luau`
 and posed every RenderStepped by `Viewmodel.luau` (springs for recoil/slide/pump/mag +

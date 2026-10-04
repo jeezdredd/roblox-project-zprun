@@ -78,6 +78,9 @@ export type Rig = {
 	holdBlend: number,
 	-- the wall pull-back on top of the hold (WallPullback): identity in the open
 	wallPose: CFrame,
+	-- the stance, magazine check and lean counter-pose on top of that (Stances):
+	-- identity at mid with no lean
+	stancePose: CFrame,
 	-- looping clip underneath (idle or walk), nil while a one-shot plays
 	base: string?,
 	queue: { Entry },
@@ -298,6 +301,7 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 		-- the rig starts on the draw
 		holdBlend = 1,
 		wallPose = CFrame.identity,
+		stancePose = CFrame.identity,
 		base = nil,
 		queue = {},
 		entry = nil,
@@ -314,6 +318,12 @@ end
 -- it; identity puts the gun back in the ready pose).
 function PackViewmodel.setWallPose(rig: Rig, pose: CFrame)
 	rig.wallPose = pose
+end
+
+-- The stance pose for the next steps, in the hold space after the wall pose (Stances
+-- eases it; identity is the class's own hold).
+function PackViewmodel.setStancePose(rig: Rig, pose: CFrame)
+	rig.stancePose = pose
 end
 
 function PackViewmodel.destroy(rig: Rig)
@@ -635,7 +645,7 @@ function PackViewmodel.step(rig: Rig, deltaTime: number, placement: CFrame, movi
 		local offset = if typeof(tune) == "Vector3" then tune else hold.Position
 		hold = CFrame.new(offset) * anglesOf(if typeof(tuneAngles) == "Vector3" then tuneAngles else nil)
 	end
-	local rootCFrame = placement * hold * rig.wallPose * rig.eyeInverse
+	local rootCFrame = placement * hold * rig.wallPose * rig.stancePose * rig.eyeInverse
 	rig.root.CFrame = rootCFrame
 	for index, offset in rig.offsets do
 		rig.placed[index] = rootCFrame * offset

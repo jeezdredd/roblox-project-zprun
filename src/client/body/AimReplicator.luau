@@ -1,8 +1,9 @@
 --!strict
 
 -- Puts the local player's aim on the wire for the other clients' third-person bodies:
--- the camera's pitch and its yaw relative to the character's facing, whole degrees, at
--- most twenty times a second and only when they moved, with a keepalive every second.
+-- the camera's pitch and its yaw relative to the character's facing, whole degrees, and
+-- the manual lean (Stances) in tenths, at most twenty times a second and only when
+-- something moved, with a keepalive every second.
 -- Lossy by design: a dropped packet is replaced by the next one 50 ms later.
 
 local Players = game:GetService("Players")
@@ -13,6 +14,8 @@ local Workspace = game:GetService("Workspace")
 local ThirdPersonConfig = require(ReplicatedStorage.Shared.config.ThirdPersonConfig)
 local BodyMath = require(ReplicatedStorage.Shared.util.BodyMath)
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
+local StanceMath = require(ReplicatedStorage.Shared.util.StanceMath)
+local Stances = require(script.Parent.Parent.systems.Stances)
 
 local AimReplicator = {}
 
@@ -20,6 +23,7 @@ local REPLICATION = ThirdPersonConfig.REPLICATION
 
 local lastPitch = 0
 local lastYaw = 0
+local lastLean = 0
 local lastSentAt = 0
 local started = false
 
@@ -47,14 +51,19 @@ local function step()
 	end
 	local quantizedPitch = BodyMath.quantize(pitch)
 	local quantizedYaw = BodyMath.quantize(yaw)
+	local quantizedLean = StanceMath.quantizeLean(Stances.lean())
 	local now = os.clock()
-	if not BodyMath.shouldSend(lastPitch, lastYaw, quantizedPitch, quantizedYaw, now - lastSentAt, REPLICATION.sendInterval, REPLICATION.keepalive, REPLICATION.minChange) then
+	local since = now - lastSentAt
+	local aimMoved = BodyMath.shouldSend(lastPitch, lastYaw, quantizedPitch, quantizedYaw, since, REPLICATION.sendInterval, REPLICATION.keepalive, REPLICATION.minChange)
+	local leanMoved = quantizedLean ~= lastLean and since >= REPLICATION.sendInterval
+	if not aimMoved and not leanMoved then
 		return
 	end
 	lastPitch = quantizedPitch
 	lastYaw = quantizedYaw
+	lastLean = quantizedLean
 	lastSentAt = now
-	Remotes.getUnreliableEvent(Remotes.Unreliable.BodyAim):FireServer(quantizedPitch, quantizedYaw)
+	Remotes.getUnreliableEvent(Remotes.Unreliable.BodyAim):FireServer(quantizedPitch, quantizedYaw, quantizedLean)
 end
 
 function AimReplicator.init()

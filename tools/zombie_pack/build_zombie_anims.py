@@ -146,7 +146,9 @@ def pose_xml(name, m, weight, children, depth):
     return head + "\n" + "\n".join(children) + f"\n{ind}</Item>"
 
 
-def build_rig(rig_name, cfg, src_dir, bones_json):
+def setup_rig(cfg, src_dir, bones_json):
+    """Loads a rig's glb and fits its bind pose onto the Roblox bones. The returned
+    context bakes clips from any source of node world matrices (bake_clip)."""
     g = Gltf(os.path.join(src_dir, cfg["file"]))
     doc = g.doc
     n_nodes = len(doc["nodes"])
@@ -178,120 +180,143 @@ def build_rig(rig_name, cfg, src_dir, bones_json):
     N = FLIP.copy()
     N[:3, :3] *= unit
     N[:3, 3] = M[:3, 3]
-    print(f"{rig_name}: {len(common)} bones fitted, bind scale {s_bind:.4f}, residual {resid:.5f}")
     Minv = np.linalg.inv(M)
     # per bone: target(t) = N * G(t) * bind^-1 * M^-1 * restWorld = N * G(t) * P
     P = {}
     for i, j in enumerate(joint):
         if j is not None and j in bind:
             P[i] = np.linalg.inv(bind[j]) @ Minv @ world[i]
-
     feet = [i for i, b in enumerate(bones) if any(f in b[0] for f in cfg["feet"])]
+    return {
+        "g": g, "doc": doc, "rest": rest, "rest_local": rest_local, "rest_world": rest_world,
+        "names": names, "bind": bind, "bones": bones, "local": local, "parent": parent,
+        "world": world, "joint": joint, "N": N, "P": P, "feet": feet, "unit": unit,
+        "fit": (len(common), s_bind, resid),
+    }
+
+
+def bake_clip(ctx, rig_name, slot, loop, priority, duration, world_at, out_dir, source):
+    """Bakes one clip. `world_at(t)` gives the rig file's node world matrices at time t
+    (its own animation, or another skeleton's motion retargeted onto it)."""
+    bones, local, parent, world, joint = ctx["bones"], ctx["local"], ctx["parent"], ctx["world"], ctx["joint"]
+    N, P, feet, unit = ctx["N"], ctx["P"], ctx["feet"], ctx["unit"]
+    count = max(1, int(round(duration * FPS)))
+    frames = []
+    for k in range(count + 1):
+        t = min(k / FPS, duration)
+        gw = world_at(t)
+        targets = {}
+        for i, j in enumerate(joint):
+            if i in P:
+                targets[i] = rigid(N @ gw[j] @ P[i])
+            else:
+                targets[i] = world[i] if parent[i] < 0 else None
+        frames.append((t, targets))
+    # bones without a file joint follow their parent rigidly
+    for _, targets in frames:
+        for i in range(len(bones)):
+            if targets[i] is None:
+                targets[i] = targets[parent[i]] @ local[i]
+
+    # root travel: the lowest-depth bone that moves is the hips
+    depth = []
+    for i in range(len(bones)):
+        depth.append(0 if parent[i] < 0 else depth[parent[i]] + 1)
+    hips = min((i for i in P if "rootJoint" not in bones[i][0]), key=lambda i: (depth[i], i))
+    hips_path = np.array([f[1][hips][:3, 3] for f in frames])
+    travel = hips_path[-1] - hips_path[0]
+    travel[1] = 0
+    speed = 0.0
+    if loop and duration > 0:
+        horizontal = np.linalg.norm(travel)
+        if horizontal > 0.3:
+            speed = horizontal / duration
+            for k, (t, targets) in enumerate(frames):
+                shift = np.eye(4)
+                shift[:3, 3] = -travel * (t / duration)
+                for i in targets:
+                    targets[i] = shift @ targets[i]
+        elif feet:
+            speeds = []
+            for fi in feet:
+                path = np.array([f[1][fi][:3, 3] for f in frames])
+                low = path[:, 1].min()
+                for k in range(1, len(path)):
+                    if path[k, 1] < low + 0.15 * unit and path[k - 1, 1] < low + 0.15 * unit:
+                        d = path[k] - path[k - 1]
+                        speeds.append(np.hypot(d[0], d[2]) * FPS)
+            if speeds:
+                speed = float(np.median(speeds))
+
+    # Transform per bone; drop bones that never move with no moving descendant
+    transforms = []
+    for t, targets in frames:
+        row = []
+        for i in range(len(bones)):
+            parent_world = np.eye(4) if parent[i] < 0 else targets[parent[i]]
+            row.append(np.linalg.inv(local[i]) @ np.linalg.inv(parent_world) @ targets[i])
+        transforms.append(row)
+    moving = [False] * len(bones)
+    for i in range(len(bones)):
+        arr = np.array([row[i] for row in transforms])
+        if np.abs(arr - np.eye(4)).max() > 1e-4:
+            moving[i] = True
+    for i in reversed(range(len(bones))):
+        if moving[i] and parent[i] >= 0:
+            moving[parent[i]] = True
+    children = {i: [c for c in range(len(bones)) if parent[c] == i] for i in range(-1, len(bones))}
+
+    def pose_tree(i, row, depth):
+        kids = [pose_tree(c, row, depth + 1) for c in children[i] if moving[c]]
+        return pose_xml(bones[i][0], row[i], 1, kids, depth)
+
+    lines = ['<roblox version="4">',
+             f'<Item class="KeyframeSequence" referent="{ref()}"><Properties><string name="Name">{rig_name.lower()}_{slot}</string>'
+             f'<bool name="Loop">{"true" if loop else "false"}</bool><token name="Priority">{PRIORITY[priority]}</token></Properties>']
+    for (t, _), row in zip(frames, transforms):
+        rig_children = [pose_tree(c, row, 3) for c in children[-1] if moving[c]]
+        rig_pose = pose_xml("Rig", np.eye(4), 1, rig_children, 2)
+        root_pose = pose_xml("HumanoidRootPart", np.eye(4), 0, [rig_pose], 1)
+        lines.append(f'<Item class="Keyframe" referent="{ref()}"><Properties><string name="Name">Keyframe</string>'
+                     f'<float name="Time">{fmt(t)}</float></Properties>')
+        lines.append(root_pose)
+        lines.append("</Item>")
+    lines += ["</Item>", "</roblox>"]
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, f"{slot}.rbxmx")
+    with open(path, "w") as handle:
+        handle.write("\n".join(lines) + "\n")
+    size = os.path.getsize(path)
+    print(f"  {slot:14s} <- {source:20s} {duration:5.2f}s loop={loop!s:5s} speed={speed:5.2f} "
+          f"bones={sum(moving)} {size / 1024:.0f} KB")
+    return {"source": source, "duration": round(duration, 4), "loop": loop,
+            "groundSpeed": round(speed, 3), "bones": sum(moving)}
+
+
+def build_rig(rig_name, cfg, src_dir, bones_json):
+    ctx = setup_rig(cfg, src_dir, bones_json)
+    fitted, s_bind, resid = ctx["fit"]
+    print(f"{rig_name}: {fitted} bones fitted, bind scale {s_bind:.4f}, residual {resid:.5f}")
+    g, doc, rest, rest_local = ctx["g"], ctx["doc"], ctx["rest"], ctx["rest_local"]
+    out_dir = os.path.join(OUT, rig_name.lower())
     results = {}
-    os.makedirs(os.path.join(OUT, rig_name.lower()), exist_ok=True)
     by_name = {c["name"]: c for c in clips(g)}
     for source, (slot, loop, priority) in cfg["clips"].items():
         clip = by_name.get(source)
         if clip is None:
             print(f"  missing clip {source!r}")
             continue
-        duration = clip["duration"]
-        count = max(1, int(round(duration * FPS)))
         by_node = {}
         for ch in clip["channels"]:
             by_node.setdefault(ch[0], []).append(ch)
-        frames = []
-        for k in range(count + 1):
-            t = min(k / FPS, duration)
+
+        def world_at(t, by_node=by_node):
             loc = dict(rest_local)
             for node, chans in by_node.items():
                 loc[node] = trs_matrix(*local_at(rest, chans, node, t))
-            gw = world_matrices(doc, loc)
-            targets = {}
-            for i, j in enumerate(joint):
-                if i in P:
-                    targets[i] = rigid(N @ gw[j] @ P[i])
-                else:
-                    targets[i] = world[i] if parent[i] < 0 else None
-            frames.append((t, targets))
-        # bones without a file joint follow their parent rigidly
-        for _, targets in frames:
-            for i in range(len(bones)):
-                if targets[i] is None:
-                    targets[i] = targets[parent[i]] @ local[i]
+            return world_matrices(doc, loc)
 
-        # root travel: the lowest-depth bone that moves is the hips
-        depth = []
-        for i in range(len(bones)):
-            depth.append(0 if parent[i] < 0 else depth[parent[i]] + 1)
-        hips = min((i for i in P if "rootJoint" not in bones[i][0]), key=lambda i: (depth[i], i))
-        hips_path = np.array([f[1][hips][:3, 3] for f in frames])
-        travel = hips_path[-1] - hips_path[0]
-        travel[1] = 0
-        speed = 0.0
-        if loop and duration > 0:
-            horizontal = np.linalg.norm(travel)
-            if horizontal > 0.3:
-                speed = horizontal / duration
-                for k, (t, targets) in enumerate(frames):
-                    shift = np.eye(4)
-                    shift[:3, 3] = -travel * (t / duration)
-                    for i in targets:
-                        targets[i] = shift @ targets[i]
-            elif feet:
-                speeds = []
-                for fi in feet:
-                    path = np.array([f[1][fi][:3, 3] for f in frames])
-                    low = path[:, 1].min()
-                    for k in range(1, len(path)):
-                        if path[k, 1] < low + 0.15 * unit and path[k - 1, 1] < low + 0.15 * unit:
-                            d = path[k] - path[k - 1]
-                            speeds.append(np.hypot(d[0], d[2]) * FPS)
-                if speeds:
-                    speed = float(np.median(speeds))
-
-        # Transform per bone; drop bones that never move with no moving descendant
-        transforms = []
-        for t, targets in frames:
-            row = []
-            for i in range(len(bones)):
-                parent_world = np.eye(4) if parent[i] < 0 else targets[parent[i]]
-                row.append(np.linalg.inv(local[i]) @ np.linalg.inv(parent_world) @ targets[i])
-            transforms.append(row)
-        moving = [False] * len(bones)
-        for i in range(len(bones)):
-            arr = np.array([row[i] for row in transforms])
-            if np.abs(arr - np.eye(4)).max() > 1e-4:
-                moving[i] = True
-        for i in reversed(range(len(bones))):
-            if moving[i] and parent[i] >= 0:
-                moving[parent[i]] = True
-        children = {i: [c for c in range(len(bones)) if parent[c] == i] for i in range(-1, len(bones))}
-
-        def pose_tree(i, row, depth):
-            kids = [pose_tree(c, row, depth + 1) for c in children[i] if moving[c]]
-            return pose_xml(bones[i][0], row[i], 1, kids, depth)
-
-        lines = ['<roblox version="4">',
-                 f'<Item class="KeyframeSequence" referent="{ref()}"><Properties><string name="Name">{rig_name.lower()}_{slot}</string>'
-                 f'<bool name="Loop">{"true" if loop else "false"}</bool><token name="Priority">{PRIORITY[priority]}</token></Properties>']
-        for (t, _), row in zip(frames, transforms):
-            rig_children = [pose_tree(c, row, 3) for c in children[-1] if moving[c]]
-            rig_pose = pose_xml("Rig", np.eye(4), 1, rig_children, 2)
-            root_pose = pose_xml("HumanoidRootPart", np.eye(4), 0, [rig_pose], 1)
-            lines.append(f'<Item class="Keyframe" referent="{ref()}"><Properties><string name="Name">Keyframe</string>'
-                         f'<float name="Time">{fmt(t)}</float></Properties>')
-            lines.append(root_pose)
-            lines.append("</Item>")
-        lines += ["</Item>", "</roblox>"]
-        path = os.path.join(OUT, rig_name.lower(), f"{slot}.rbxmx")
-        with open(path, "w") as handle:
-            handle.write("\n".join(lines) + "\n")
-        size = os.path.getsize(path)
-        results[slot] = {"source": source, "duration": round(duration, 4), "loop": loop,
-                         "groundSpeed": round(speed, 3), "bones": sum(moving)}
-        print(f"  {slot:14s} <- {source:20s} {duration:5.2f}s loop={loop!s:5s} speed={speed:5.2f} "
-              f"bones={sum(moving)} {size / 1024:.0f} KB")
+        results[slot] = bake_clip(ctx, rig_name, slot, loop, priority, clip["duration"], world_at, out_dir, source)
     return results
 
 

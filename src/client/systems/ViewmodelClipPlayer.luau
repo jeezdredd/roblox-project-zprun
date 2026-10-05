@@ -299,6 +299,34 @@ local function sample(track: Track, frame: number): CFrame
 	return values[lo]:Lerp(values[hi], u)
 end
 
+-- A bone's own Transform (relative to its parent bone) at one clip time: the bolt or
+-- slide locked back on an empty magazine is held at this, so it stays on the gun while
+-- the gun moves through whatever else plays.
+function ViewmodelClipPlayer.localPose(self: Player, bone: string, clipName: string, time: number?): CFrame?
+	local clip = load(self, clipName)
+	if not clip then
+		return nil
+	end
+	local track = clip.tracks[bone]
+	if not track then
+		return nil
+	end
+	local frame = (time or 0) * self.fps
+	for _, entry in self.order do
+		if entry.name == bone then
+			local parentWorld = CFrame.identity
+			if entry.parent > 0 then
+				local parent = self.order[entry.parent]
+				local parentTrack = clip.tracks[parent.name]
+				local parentDelta = if parentTrack then sample(parentTrack, frame) else CFrame.identity
+				parentWorld = parentDelta * parent.restWorld
+			end
+			return entry.rest:Inverse() * parentWorld:Inverse() * (sample(track, frame) * entry.restWorld)
+		end
+	end
+	return nil
+end
+
 -- The current model-space change of a track (blended through the crossfade, and held at
 -- the clip's weight from the pose it started in).
 local function delta(self: Player, clip: Clip, name: string, frame: number): CFrame

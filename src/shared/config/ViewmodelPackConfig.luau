@@ -46,6 +46,25 @@ export type ShellClips = {
 	chamber: ClipCut,
 }
 
+-- A speed reload from empty drops the spent magazine instead of pouching it the way the
+-- tactical reload does. When `clip` plays as the empty reload and passes `at` (clip
+-- fraction), the meshes in `pieces` (name pattern and the bone that carries them; of
+-- several meshes with a matching name, the one nearest that bone at rest) leave
+-- the rig as a world-size copy that falls and lies on the ground (DroppedMagazines);
+-- `hidden` keeps magazine meshes out of sight over clip fractions where the hand would
+-- otherwise carry the dropped one. `worldScale` turns the rig size into world size.
+export type MagDrop = {
+	clip: string,
+	at: number,
+	pieces: { { part: string, bone: string } },
+	hidden: { { part: string, bone: string?, from: number, to: number } },
+	worldScale: number,
+}
+
+-- After the last round the bolt or slide stays locked back until an empty reload
+-- releases it: the joint, and the clip whose first frame holds it back.
+export type LockBack = { bone: string, clip: string }
+
 export type ClassPack = {
 	asset: string,
 	clips: string,
@@ -68,6 +87,9 @@ export type ClassPack = {
 	-- Roblox built the bones turned (the Uzi's bind A-pose comes in turned -90 degrees
 	-- about X). Only the weapon anchors read it; the clips always pose the rig upright.
 	restTilt: CFrame?,
+	-- Roblox import units per pack unit when the rig did not come in at the clips' scale
+	-- (the Fab M4 imports in centimetres: 0.03); 1 when omitted
+	importScale: number?,
 	weaponBone: string,
 	weaponMesh: string,
 	equip: string,
@@ -91,6 +113,11 @@ export type ClassPack = {
 	shell: ShellClips?,
 	inspect: string?,
 	phases: { [string]: { Phase } },
+	magDrop: MagDrop?,
+	lockBack: LockBack?,
+	-- material name in a mesh's name -> SurfaceAppearance template in
+	-- ReplicatedStorage.ViewmodelSurfaces, for meshes the importer left without one
+	surfaces: { [string]: string }?,
 }
 
 local ViewmodelPackConfig = {}
@@ -109,76 +136,128 @@ ViewmodelPackConfig.PROCEDURAL_POSITION_SCALE = 1.1
 ViewmodelPackConfig.BOB_SCALE = 0.25
 
 ViewmodelPackConfig.classes = {
-	-- Reload clip 2.708 s. The slide and hammer never move in it (only the Fire clips
-	-- move the slide). MagOut 0.17, MagIn 0.67 (seated after a two-stage push); the
-	-- right thumb presses 0.61-0.70 (peak 0.70: the empty cut's SlideRelease); the gun
-	-- stays rolled about 83 degrees until 0.70 and snaps back up by 0.84 (3 degrees off
-	-- idle, support hand on the grip). Both cuts end there; the rest of the clip is
-	-- idle settle. The old tactical end 0.76 was mid-snap, 72 degrees off idle.
+	-- Fab "G17 - FPS Weapon Animations Pack" (BarcodeGames, Fab Standard License; rig and
+	-- clips are Fab content in assets/fab/ and src/shared/fab/G17Clips.luau, never
+	-- committed). Replaced the pistol pack (2026-10-01). Imported in centimetres like the
+	-- M4. The pack's Idle is one pose; Idle and Walk loop it. Both pack reloads fetch the
+	-- spare first, strip the old magazine into the same hand and pouch it (a tactical
+	-- reload with retention); from frame 54 the two magazine bones trade tracks
+	-- (identical meshes, invisible), so the seated one is Mag1 again when the clip ends.
+	-- The empty reload is turned into a speed reload (2026-10-01, the owner: tactical
+	-- and empty must differ in handling, not only in length): the spent magazine falls
+	-- free as it leaves the well (0.65 s) and the old-magazine track is hidden, and the
+	-- slide stays locked back after the last round until the slide release.
+	-- Reload 2.80 s: MagOut 0.60, MagIn 0.76, ready by 0.92. ReloadEmpty 3.03 s: MagOut
+	-- 0.45, MagIn 0.58, slide release 0.63, ready by 0.78 (first estimates from the bone
+	-- motion, to be tuned by ear).
 	Pistol = {
-		asset = "pistol",
-		clips = "PistolClips",
-		eye = CFrame.new(0, 4.72, -0.066),
-		-- the pack holds the pistol at arm's length in the middle of the view (hands 32 cm
-		-- out, the gun 55-65 cm): 12 cm closer and a little right and up, near MW's hip
-		hold = Vector3.new(0.03, 0.05, 0.14),
-		-- the reload rolls the gun up to the face on its own: the pack's framing there
-		actionHold = Vector3.zero,
-		weaponBone = "DEF_Cuerpo_02",
-		weaponMesh = "^Pistol_",
-		equip = "Equip",
+		asset = "g17",
+		clips = "G17Clips",
+		importScale = 0.03,
+		eye = CFrame.new(-0.039, 4.59, 0.33),
+		-- the pack's camera holds the pistol in the middle of the view; moved right, down
+		-- and forward into a ready hold, and about half as far while a reload or the draw
+		-- plays, so the magazine work stays in frame
+		hold = Vector3.new(0.07, -0.06, -0.15),
+		actionHold = Vector3.new(0.04, -0.03, -0.08),
+		weaponBone = "Main_j_050",
+		weaponMesh = "^Main_Glock",
+		equip = "Draw",
 		idle = "Idle",
 		move = "Walk",
 		fire = "Fire",
 		reload = { "Reload" },
-		tactical = { clip = "Reload", to = 0.84, blendOut = 0.2 },
-		empty = {
-			clip = "Reload",
-			to = 0.84,
-			blendOut = 0.2,
-			phases = { { at = 0.7, name = "SlideRelease" } },
-		},
+		reloadEmpty = { "ReloadEmpty" },
+		tactical = { clip = "Reload", to = 0.92, blendOut = 0.2 },
+		empty = { clip = "ReloadEmpty", to = 0.78, blendOut = 0.2 },
 		phases = {
-			Reload = { { at = 0.17, name = "MagOut" }, { at = 0.67, name = "MagIn" } },
-		},
-	},
-	-- Reload clip 4.583 s: MagOut 0.20, MagIn 0.46, charging handle pulled 0.62, at the
-	-- rear 0.64, home 0.68, gun back at idle by 0.83. The support hand never returns to
-	-- the handguard before the rack, so the tactical cut ends at 0.54: the bottom of the
-	-- hand's dip under the handguard, with the gun already rolling back (62 degrees off
-	-- idle, 74 at MagIn), just before the hand sweeps right to the handle. The empty cut
-	-- keeps the rack and ends at 0.83, 1 degree off idle, dropping the settle.
-	Rifle = {
-		asset = "rifle",
-		clips = "RifleClips",
-		eye = CFrame.new(0, 4.72, -0.066),
-		-- the pack's idle carries the AK slanted across the body with the left forearm
-		-- reaching in from the bottom-left corner (the owner's recording, 2026-09-30):
-		-- 10 cm farther, a little down and right, turned 10 degrees left and pitched 4 up,
-		-- it reads as a hip carry with the muzzle near the crosshair
-		hold = Vector3.new(0.04, -0.04, -0.1),
-		holdAngles = Vector3.new(4, 10, 0),
-		weaponBone = "Grip_01",
-		weaponMesh = "^SK_AK%-47_Material%.007",
-		equip = "Equip",
-		idle = "Idle",
-		move = "Walk",
-		fire = "Fire",
-		reload = { "Reload" },
-		-- The clip only returns the rifle from the mag-in pose (vertical, by the face) while
-		-- the hand racks the bolt, 0.54..0.83. Cut at 0.54, a 0.35 s synthetic blend swung
-		-- the gun down through the frame and out of view for a frame (the owner's recording,
-		-- 2026-10-01); the tactical plays through the rack like the empty one.
-		tactical = { clip = "Reload", to = 0.83, blendOut = 0.2 },
-		empty = { clip = "Reload", to = 0.83, blendOut = 0.2 },
-		phases = {
-			Reload = {
-				{ at = 0.2, name = "MagOut" },
-				{ at = 0.46, name = "MagIn" },
-				{ at = 0.64, name = "BoltBack" },
-				{ at = 0.68, name = "BoltForward" },
+			Reload = { { at = 0.6, name = "MagOut" }, { at = 0.76, name = "MagIn" } },
+			ReloadEmpty = {
+				{ at = 0.45, name = "MagOut" },
+				{ at = 0.58, name = "MagIn" },
+				{ at = 0.63, name = "SlideRelease" },
 			},
 		},
+		magDrop = {
+			clip = "ReloadEmpty",
+			at = 0.214,
+			pieces = {
+				{ part = "^Mag1_Glock", bone = "Mag1_j_052" },
+				{ part = "^Mag1_Bullet", bone = "Mag1_j_052" },
+			},
+			-- Mag1 is the dropped one until the trade at frame 54 (0.594), then Mag2 carries
+			-- the old magazine's pouching track
+			hidden = {
+				{ part = "^Mag1_", from = 0.214, to = 0.594 },
+				{ part = "^Mag2_", from = 0.594, to = 1.01 },
+			},
+			worldScale = 2.5,
+		},
+		lockBack = { bone = "Slide_j_00", clip = "ReloadEmpty" },
+		-- the importer gave this rig no SurfaceAppearance at all (its materials carry only
+		-- a base colour); the arms share the M4 pack's textures
+		surfaces = {
+			Glock_D = "g17_glock",
+			Bullet_9mm_D = "g17_round",
+			Hand_D = "fab_arms_hand",
+			Glove_D = "fab_arms_glove",
+		},
+	},
+	-- Fab "M4 - FPS Weapon Animations Pack FREE" (BarcodeGames, Fab Standard License; the
+	-- rig and the clips are Fab content: assets/fab/ and src/shared/fab/M4Clips.luau, never
+	-- committed). Replaced the AK pack (2026-10-01). Roblox imports the rig in centimetres,
+	-- the clips are baked at 3 studs per metre, so the rig is scaled by 0.03 first. The pack
+	-- has no idle or walk: both are the Draw clip's last pose (build in tools/fps_pack), the
+	-- procedural layer carries breathing and bob. Reload 3.63 s: MagOut 0.29, MagIn 0.64,
+	-- back at ready by 0.78. ReloadEmpty 3.80 s: MagOut 0.31, MagIn 0.57, bolt catch
+	-- released 0.70, ready by 0.84. In both pack reloads the hand carries the old
+	-- magazine to the pouch and comes back with "it" (Mag2 never moves): right for the
+	-- tactical reload with retention. The empty one becomes a speed reload: the magazine
+	-- falls free when it leaves the well (0.85 s, fraction 0.225) and Mag1 stays hidden
+	-- until the hand turns back from the pouch with the fresh one (1.35 s); the bolt
+	-- stays locked back after the last round until the bolt catch (2026-10-01).
+	Rifle = {
+		asset = "m4",
+		clips = "M4Clips",
+		importScale = 0.03,
+		eye = CFrame.new(-0.033, 4.618, 0.302),
+		-- the pack frames the rifle big in the middle of the view; moved right, down and
+		-- forward into a hip carry, about half as far while a reload or the draw plays
+		hold = Vector3.new(0.06, -0.07, -0.12),
+		actionHold = Vector3.new(0.03, -0.035, -0.06),
+		weaponBone = "Main_j_049",
+		weaponMesh = "^Main_M4",
+		equip = "Draw",
+		idle = "Idle",
+		move = "Walk",
+		fire = "Fire",
+		reload = { "Reload" },
+		reloadEmpty = { "ReloadEmpty" },
+		tactical = { clip = "Reload", to = 0.8, blendOut = 0.2 },
+		empty = { clip = "ReloadEmpty", to = 0.85, blendOut = 0.2 },
+		phases = {
+			Reload = { { at = 0.29, name = "MagOut" }, { at = 0.64, name = "MagIn" } },
+			ReloadEmpty = {
+				{ at = 0.31, name = "MagOut" },
+				{ at = 0.57, name = "MagIn" },
+				{ at = 0.7, name = "BoltForward" },
+			},
+		},
+		magDrop = {
+			clip = "ReloadEmpty",
+			at = 0.225,
+			-- both magazines carry a round mesh of the same name: the one nearest the bone
+			pieces = {
+				{ part = "^Mag1_M4", bone = "Mag1_j_050" },
+				{ part = "^Bullet5", bone = "Mag1_j_050" },
+			},
+			hidden = {
+				{ part = "^Mag1_M4", from = 0.225, to = 0.355 },
+				{ part = "^Bullet5", bone = "Mag1_j_050", from = 0.225, to = 0.355 },
+			},
+			worldScale = 2.5,
+		},
+		lockBack = { bone = "Bolt_j_052", clip = "ReloadEmpty" },
 	},
 	-- Fire (1.625 s) is recoil plus a slow settle: peak 0.12-0.14 (36 degrees) and the
 	-- clip's own bolt flick is home by 0.16, so only the first 20% is kept (31 degrees

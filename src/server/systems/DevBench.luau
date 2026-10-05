@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local DevConfig = require(ReplicatedStorage.Shared.config.DevConfig)
+local DevMode = require(ReplicatedStorage.Shared.util.DevMode)
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local MapsConfig = require(ReplicatedStorage.Shared.config.MapsConfig)
 local MissionState = require(script.Parent.MissionState)
@@ -28,7 +29,7 @@ local targetFolder: Folder? = nil
 
 local function benchConfig()
 	return {
-		mapId = MapsConfig.DEFAULT_ID,
+		mapId = DevConfig.QUICK_RUN.mapId or MapsConfig.DEFAULT_ID,
 		difficultyId = GameConstants.DEFAULT_DIFFICULTY,
 		privacy = "Solo" :: "Solo",
 		modifierIds = {},
@@ -46,8 +47,9 @@ local function launchSolo(player: Player)
 	end
 	launching[player] = true
 	local seed = DevConfig.QUICK_RUN.seed or Random.new():NextInteger(1, 2147483646)
-	-- through the cabin like a squad launch (DevConfig.QUICK_LAUNCH), or straight in
-	if DevConfig.QUICK_LAUNCH.intermission then
+	-- through the cabin like a squad launch (DevConfig.QUICK_LAUNCH), or straight in;
+	-- always straight in for the test yard, the cabin has nothing to test there
+	if DevConfig.QUICK_LAUNCH.intermission and not DevMode.yard() then
 		IntermissionService.begin({ player }, benchConfig(), seed)
 	else
 		MissionService.startSquad({ player }, benchConfig(), seed)

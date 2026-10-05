@@ -9,6 +9,7 @@
 -- LightingDirector honours. An empty string gives both back.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local DevConfig = require(ReplicatedStorage.Shared.config.DevConfig)
@@ -136,10 +137,16 @@ local function applyShot()
 end
 
 function SandboxBiomeStrip.init()
-	if not DevConfig.SANDBOX.enabled then
+	if not RunService:IsStudio() then
 		return
 	end
-	task.spawn(build)
+	-- built the first time the yard opens (Play may start in the run, DevMode)
+	task.spawn(function()
+		while Workspace:GetAttribute("SandboxActive") ~= true do
+			Workspace:GetAttributeChangedSignal("SandboxActive"):Wait()
+		end
+		build()
+	end)
 	Workspace:GetAttributeChangedSignal(SHOT_ATTRIBUTE):Connect(applyShot)
 end
 

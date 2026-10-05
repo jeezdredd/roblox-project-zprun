@@ -20,7 +20,7 @@ local AssetIds = {
 			rifle_strafe_right = 106993284172414,
 			rifle_walk = 107509447603332,
 			run = 130134481942797,
-			sit_idle = 0,
+			sit_idle = 120228784123731,
 			strafe_left = 0,
 			strafe_right = 0,
 			stumble = 78964987584801,
@@ -43,6 +43,24 @@ local AssetIds = {
 			stand_up_back = 83617145377153,
 			stand_up_stomach = 120471858950909,
 			walk_shuffle = 103621128406622,
+		},
+		zombie_fab = {
+			hazmat = {
+				attack_ue = 93005838692284,
+				crawl_ue = 75128600613162,
+				death_ue = 95358428176749,
+				idle_ue = 105869108317879,
+				run_ue = 121359728097074,
+				walk_ue = 106431332307076,
+			},
+			walker = {
+				attack_ue = 96493638941295,
+				crawl_ue = 82729282836604,
+				death_ue = 76798693616780,
+				idle_ue = 75809260684053,
+				run_ue = 78772324869695,
+				walk_ue = 88135207339410,
+			},
 		},
 		zombie_sf = {
 			ghoul = {
@@ -76,6 +94,20 @@ local AssetIds = {
 		},
 	},
 	audio = {
+		ambience = {
+			city_bed = 0,
+			farmland_bed = 0,
+			forest_bed = 0,
+			wasteland_bed = 0,
+		},
+		cinematic = {
+			crash_alarm = 126570391547312,
+			crash_creak = 79276815416268,
+			crash_debris = 88302433840363,
+			crash_impact = 86226350505098,
+			crash_ringing = 123153020782057,
+			crash_rotor_loop = 140413601009471,
+		},
 		city = {
 			helicopter = 140722208536221,
 			siren_ambulance = 0,
@@ -137,7 +169,9 @@ local AssetIds = {
 			click = 133624826489555,
 			countdown_go = 129265379079595,
 			countdown_tick = 82455130321663,
+			hit_marker = 0,
 			hover = 114789742656759,
+			kill_marker = 0,
 			reward_tick = 113785737468412,
 		},
 		unused = {
@@ -496,6 +530,22 @@ local AssetIds = {
 			tiles = 99758356540000,
 			wood = 136206214410343,
 		},
+		viewmodel = {
+			fab_arms_glove_color = 137222277383604,
+			fab_arms_glove_metalness = 133620623064996,
+			fab_arms_glove_normal = 130098750358330,
+			fab_arms_glove_roughness = 109949743955801,
+			fab_arms_hand_color = 109444492907814,
+			fab_arms_hand_metalness = 92526722294554,
+			fab_arms_hand_normal = 132780053316750,
+			fab_arms_hand_roughness = 78108733802389,
+			g17_glock_color = 93775636204280,
+			g17_glock_metalness = 106353887640962,
+			g17_glock_roughness = 121336440695852,
+			g17_round_color = 137879752068302,
+			g17_round_metalness = 89314741858417,
+			g17_round_roughness = 122836886971045,
+		},
 		world = {
 			building_brick = 89422155107112,
 			building_concrete = 89430733760290,
@@ -539,6 +589,12 @@ local AssetIds = {
 			},
 		},
 		fps = {
+			g17 = {
+				rig = 121633029876399,
+			},
+			m4 = {
+				rig = 104429592630828,
+			},
 			pistol = {
 				rig = 91726509041674,
 			},

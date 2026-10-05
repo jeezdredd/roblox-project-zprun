@@ -4,7 +4,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local DevConfig = require(ReplicatedStorage.Shared.config.DevConfig)
+local DevMode = require(ReplicatedStorage.Shared.util.DevMode)
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local InputController = require(script.Parent.InputController)
 
@@ -57,7 +57,7 @@ function RunController.start(force: boolean?)
 	-- Frozen: leave the default controls enabled instead of taking them over, so you can
 	-- actually walk around and look at things rather than being rooted in place. `force`
 	-- is how the unfreeze debug command overrides the switch without editing config.
-	if not force and RunService:IsStudio() and DevConfig.FREEZE_RUN then
+	if not force and DevMode.frozen() then
 		return
 	end
 	getControls():Disable()

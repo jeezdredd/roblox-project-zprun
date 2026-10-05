@@ -14,7 +14,6 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local AssetIds = require(ReplicatedStorage.Shared.config.AssetIds)
-local DevConfig = require(ReplicatedStorage.Shared.config.DevConfig)
 local ThirdPersonConfig = require(ReplicatedStorage.Shared.config.ThirdPersonConfig)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local BodyMath = require(ReplicatedStorage.Shared.util.BodyMath)
@@ -339,7 +338,7 @@ local function build(origin: Vector3, template: Model)
 end
 
 function SandboxBodyGallery.init()
-	if not RunService:IsStudio() or not DevConfig.SANDBOX.enabled or not ThirdPersonConfig.ENABLED then
+	if not RunService:IsStudio() or not ThirdPersonConfig.ENABLED then
 		return
 	end
 	task.spawn(function()

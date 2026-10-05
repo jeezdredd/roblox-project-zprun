@@ -94,6 +94,9 @@ export type Options = {
 	groups: { [string]: { string } },
 	-- real size per loaded mesh name (WorldMeshes.naturalSize)
 	sizes: { [string]: Size },
+	-- 0..1, scales the clusters and the prop cap (a map transition dresses with both
+	-- locations at their shares); nil is 1
+	density: number?,
 }
 
 local DressingPlanner = {}
@@ -316,6 +319,12 @@ function DressingPlanner.plan(config: Config, biome: string, rng: Rng, occupancy
 	local out: { Placement } = {}
 	local clusters = rng:NextInteger(rules.clusters[1], rules.clusters[2])
 	local cap = rng:NextInteger(rules.props[1], rules.props[2])
+	local density = options.density
+	if density then
+		local share = math.clamp(density, 0, 1)
+		clusters = math.floor(clusters * share + 0.5)
+		cap = math.floor(cap * share + 0.5)
+	end
 	local sign = if rng:NextNumber(0, 1) < 0.5 then -1 else 1
 	local lastZ: { [number]: number } = {}
 	local lastGap: { [number]: number } = {}

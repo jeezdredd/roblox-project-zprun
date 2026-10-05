@@ -10,12 +10,14 @@
 -- phase tag). When the queue runs dry the idle/walk loop is blended back in over the
 -- last entry's `blendOut`, which is how a cut reload returns to the ready pose.
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local ViewmodelPackConfig = require(ReplicatedStorage.Shared.config.ViewmodelPackConfig)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local ViewmodelClipPlayer = require(script.Parent.ViewmodelClipPlayer)
+local DroppedMagazines = require(script.Parent.DroppedMagazines)
 
 local PackViewmodel = {}
 
@@ -76,6 +78,11 @@ export type Rig = {
 	hold: CFrame,
 	actionHold: CFrame,
 	holdBlend: number,
+	-- the wall pull-back on top of the hold (WallPullback): identity in the open
+	wallPose: CFrame,
+	-- the stance, magazine check and lean counter-pose on top of that (Stances):
+	-- identity at mid with no lean
+	stancePose: CFrame,
 	-- looping clip underneath (idle or walk), nil while a one-shot plays
 	base: string?,
 	queue: { Entry },
@@ -85,6 +92,18 @@ export type Rig = {
 	phaseTime: number,
 	-- fade for the next return to the base loop
 	returnFade: number,
+	-- the magazine is empty (WeaponController's prediction): the bolt or slide holds back
+	empty: boolean,
+	locked: boolean,
+	-- the held bone and its Transform while locked back (ViewmodelPackConfig.lockBack)
+	lockBone: Bone?,
+	lockPose: CFrame?,
+	-- the speed reload has dropped its magazine (reset when the empty reload ends)
+	dropped: boolean,
+	-- magazine meshes hidden by the speed reload, with the transparency they had
+	hiddenParts: { [BasePart]: number },
+	-- part -> index into parts/offsets
+	partIndex: { [BasePart]: number },
 }
 
 local DEFAULT_RETURN_FADE = 0.25
@@ -126,8 +145,16 @@ local function clipData(pack: ViewmodelPackConfig.ClassPack): ViewmodelClipPlaye
 	if cached then
 		return cached
 	end
-	local folder = ReplicatedStorage.Shared:FindFirstChild("viewmodel_clips")
-	local module = folder and folder:FindFirstChild(pack.clips)
+	-- the committed packs live in Shared.viewmodel_clips; Fab packs in Shared.fab, which
+	-- exists only on the owner's machine (the Fab licence keeps them out of the repo)
+	local module: Instance? = nil
+	for _, name in { "viewmodel_clips", "fab" } do
+		local folder = ReplicatedStorage.Shared:FindFirstChild(name)
+		module = folder and folder:FindFirstChild(pack.clips)
+		if module then
+			break
+		end
+	end
 	if not module or not module:IsA("ModuleScript") then
 		return nil
 	end
@@ -245,7 +272,7 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 		return nil
 	end
 	local scale = ViewmodelPackConfig.RIG_SCALE
-	model:ScaleTo(scale)
+	model:ScaleTo(scale * (pack.importScale or 1))
 	-- The parts are anchored, so moving the root leaves them where the template had them.
 	-- The skinned meshes still draw on the bones, but the engine picks each mesh's level
 	-- of detail (and its bounds) from the part: left near the world origin, thousands of
@@ -295,16 +322,158 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 		actionHold = CFrame.new(pack.actionHold or pack.hold or Vector3.zero),
 		-- the rig starts on the draw
 		holdBlend = 1,
+		wallPose = CFrame.identity,
+		stancePose = CFrame.identity,
 		base = nil,
 		queue = {},
 		entry = nil,
 		phaseTime = 0,
 		returnFade = DEFAULT_RETURN_FADE,
+		empty = false,
+		locked = false,
+		lockBone = nil,
+		lockPose = nil,
+		dropped = false,
+		hiddenParts = {},
+		partIndex = {},
 	}
+	for index, part in parts do
+		rig.partIndex[part] = index
+	end
+	local lock = pack.lockBack
+	if lock then
+		for _, item in model:GetDescendants() do
+			if item:IsA("Bone") and item.Name == lock.bone then
+				rig.lockBone = item
+				break
+			end
+		end
+		rig.lockPose = player:localPose(lock.bone, lock.clip, 0)
+	end
 	-- the draw always plays at natural speed; WeaponsConfig.drawTime decides when a shot
 	-- may cut its tail
 	playEntry(rig, { name = pack.equip, tag = "equip" })
 	return rig
+end
+
+-- The magazine ran dry (or was filled): with a `lockBack` the bolt or slide holds back
+-- from the last shot until the empty reload's release.
+function PackViewmodel.setEmpty(rig: Rig, empty: boolean)
+	rig.empty = empty
+end
+
+-- Rig parts whose name matches `pattern`; with a `bone`, only the one nearest it at rest
+-- (two magazines can carry rounds of the same name).
+local function partsMatching(rig: Rig, pattern: string, bone: string?): { BasePart }
+	local found: { BasePart } = {}
+	for _, part in rig.parts do
+		if string.find(part.Name, pattern) then
+			table.insert(found, part)
+		end
+	end
+	local rest = if bone and #found > 1 then rig.player:restWorld(bone) else nil
+	if not rest then
+		return found
+	end
+	local best: BasePart? = nil
+	local bestDistance = math.huge
+	for _, part in found do
+		local distance = (rig.offsets[rig.partIndex[part]].Position - rest.Position).Magnitude
+		if distance < bestDistance then
+			best, bestDistance = part, distance
+		end
+	end
+	return if best then { best } else {}
+end
+
+local function setHidden(rig: Rig, part: BasePart, hidden: boolean)
+	local saved = rig.hiddenParts[part]
+	if hidden and saved == nil then
+		rig.hiddenParts[part] = part.Transparency
+		part.Transparency = 1
+	elseif not hidden and saved ~= nil then
+		part.Transparency = saved
+		rig.hiddenParts[part] = nil
+	end
+end
+
+-- The bolt or slide held back on an empty magazine, except while the empty reload runs
+-- (its own clip starts locked back and releases it). Written after the clips each frame,
+-- relative to the gun, so it rides along with every clip and the procedural layer.
+local function updateLockBack(rig: Rig)
+	local bone, pose = rig.lockBone, rig.lockPose
+	if not bone or not pose then
+		return
+	end
+	local entry = rig.entry
+	local want = rig.empty and not (entry ~= nil and entry.tag == "empty")
+	if want ~= rig.locked then
+		rig.locked = want
+		-- Studio knob for checking it from the command bar
+		rig.model:SetAttribute("LockedBack", want)
+	end
+	if want then
+		bone.Transform = pose
+	end
+end
+
+-- The speed reload: hides the magazine meshes over their windows and, when the clip
+-- passes the drop point, throws a world-size copy of the magazine out of the well.
+local function updateMagDrop(rig: Rig, rootCFrame: CFrame)
+	local drop = rig.pack.magDrop
+	if not drop then
+		return
+	end
+	local entry = rig.entry
+	local current = rig.player.current
+	local active = entry ~= nil and entry.tag == "empty" and current ~= nil and current.name == drop.clip
+	local fraction = if active and current and current.duration > 0 then rig.player.time / current.duration else -1
+	for _, window in drop.hidden do
+		local hide = active and fraction >= window.from and fraction < window.to
+		for _, part in partsMatching(rig, window.part, window.bone) do
+			setHidden(rig, part, hide)
+		end
+	end
+	if not active then
+		rig.dropped = false
+		return
+	end
+	if rig.dropped or fraction < drop.at then
+		return
+	end
+	rig.dropped = true
+	local pieces: { DroppedMagazines.Piece } = {}
+	for _, piece in drop.pieces do
+		local bone = rig.player:boneWorld(piece.bone)
+		local rest = rig.player:restWorld(piece.bone)
+		if not bone or not rest then
+			continue
+		end
+		for _, part in partsMatching(rig, piece.part, piece.bone) do
+			local offset = rig.offsets[rig.partIndex[part]]
+			table.insert(pieces, { part = part, cframe = rootCFrame * bone * rest:Inverse() * offset })
+		end
+	end
+	local camera = rig.model.Parent
+	if not camera or not camera:IsA("Camera") then
+		return
+	end
+	local character = Players.LocalPlayer.Character
+	local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
+	local velocity = if root and root:IsA("BasePart") then root.AssemblyLinearVelocity else Vector3.zero
+	DroppedMagazines.drop(pieces, camera.CFrame.Position, drop.worldScale, velocity)
+end
+
+-- The wall pull-back's pose for the next steps, in the hold space (WallPullback eases
+-- it; identity puts the gun back in the ready pose).
+function PackViewmodel.setWallPose(rig: Rig, pose: CFrame)
+	rig.wallPose = pose
+end
+
+-- The stance pose for the next steps, in the hold space after the wall pose (Stances
+-- eases it; identity is the class's own hold).
+function PackViewmodel.setStancePose(rig: Rig, pose: CFrame)
+	rig.stancePose = pose
 end
 
 function PackViewmodel.destroy(rig: Rig)
@@ -612,6 +781,7 @@ function PackViewmodel.step(rig: Rig, deltaTime: number, placement: CFrame, movi
 		end
 	end
 
+	updateLockBack(rig)
 	local entry = rig.entry
 	local tag = if entry then entry.tag else nil
 	local blendTarget = if tag and SOFT_TAGS[tag] then 1 else 0
@@ -626,12 +796,13 @@ function PackViewmodel.step(rig: Rig, deltaTime: number, placement: CFrame, movi
 		local offset = if typeof(tune) == "Vector3" then tune else hold.Position
 		hold = CFrame.new(offset) * anglesOf(if typeof(tuneAngles) == "Vector3" then tuneAngles else nil)
 	end
-	local rootCFrame = placement * hold * rig.eyeInverse
+	local rootCFrame = placement * hold * rig.wallPose * rig.stancePose * rig.eyeInverse
 	rig.root.CFrame = rootCFrame
 	for index, offset in rig.offsets do
 		rig.placed[index] = rootCFrame * offset
 	end
 	Workspace:BulkMoveTo(rig.parts, rig.placed, Enum.BulkMoveMode.FireCFrameChanged)
+	updateMagDrop(rig, rootCFrame)
 	local weapon = player:boneWorld(rig.pack.weaponBone)
 	if weapon then
 		rig.muzzle.CFrame = weapon * rig.muzzleLocal

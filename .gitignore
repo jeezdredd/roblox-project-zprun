@@ -11,6 +11,10 @@ wiki/project-zprun/.obsidian/workspace.json
 .opencloud.key
 assets/textures/*.jpg
 assets/textures/*.png
+# prebuilt maps (tools/city_import/split_scene.py): the cells are large and often
+# licensed, uploaded through the manifest; only the generated Luau layout module
+# (src/server/prebuilt/) is committed
+assets/maps/
 assets/audio/**/*.ogg
 assets/audio/**/*.mp3
 assets/audio/**/*.wav
@@ -46,3 +50,10 @@ AGENTS.md
 CLAUDE.md
 .codex/
 .claude/
+
+# Fab content (Fab Standard License): never committed, the repository is public.
+# tools/megascans/import_surface.py writes the processed maps under assets/fab/, the
+# fps and zombie pack tools their rigs, textures and clips; src/shared/fab/ holds the
+# baked first-person clip modules (M4Clips, G17Clips), on the owner's machine only
+assets/fab/
+src/shared/fab/

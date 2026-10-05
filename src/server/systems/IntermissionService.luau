@@ -123,9 +123,27 @@ local function buildCabin()
 		light.Name = "CabinLight"
 		local c = IntermissionConfig.CABIN_LIGHT
 		light.Color = Color3.fromRGB(c[1], c[2], c[3])
-		light.Range = 18
-		light.Brightness = 1.4
+		light.Range = 22
+		light.Brightness = 2.5
 		light.Parent = strip
+	end
+	-- the hub's dusk lighting leaves the olive cabin near black: a dim warm dome light
+	-- over the troop seats and the green of the instruments in the cockpit
+	local floor = model:FindFirstChild("Floor")
+	if floor and floor:IsA("BasePart") then
+		for _, spec in IntermissionConfig.CABIN_FILL_LIGHTS do
+			local attachment = Instance.new("Attachment")
+			attachment.Name = spec.name
+			attachment.Position = vec(spec.at) + Vector3.new(0, floor.Size.Y / 2, 0)
+			attachment.Parent = floor
+			local fill = Instance.new("PointLight")
+			fill.Color = Color3.fromRGB(spec.color[1], spec.color[2], spec.color[3])
+			fill.Brightness = spec.brightness
+			fill.Range = spec.range
+			-- no shadows: the seats and crates would black out the floor under them
+			fill.Shadows = false
+			fill.Parent = attachment
+		end
 	end
 
 	model.Parent = Workspace

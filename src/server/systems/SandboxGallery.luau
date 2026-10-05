@@ -28,28 +28,39 @@ type Station = {
 	holdUntil: number?,
 }
 
--- clip slots in display order (AssetIds.animation.zombie_sf.<rig>.<slot>)
+-- clip slots in display order (AssetIds.animation.zombie_sf.<rig>.<slot>, and the "_ue"
+-- slots from AssetIds.animation.zombie_fab.<rig>, the retargeted Fab UEFN pack)
 local SLOT_ORDER = {
 	"idle",
 	"idle_b",
+	"idle_ue",
 	"walk_a",
 	"walk_b",
+	"walk_ue",
 	"run",
 	"run_b",
+	"run_ue",
+	"crawl_ue",
 	"attack",
 	"attack_b",
+	"attack_ue",
 	"hit",
 	"spotted",
 	"death_back",
 	"death_forward",
+	"death_ue",
 }
 local LOOPED: { [string]: boolean } = {
 	idle = true,
 	idle_b = true,
+	idle_ue = true,
 	walk_a = true,
 	walk_b = true,
+	walk_ue = true,
 	run = true,
 	run_b = true,
+	run_ue = true,
+	crawl_ue = true,
 }
 -- which ZombiesConfig entry builds each skin (the config only sets health and speeds)
 local SKIN_CONFIG: { [string]: string } = { Walker = "Walker", Hazmat = "Walker", Ghoul = "Runner" }
@@ -198,12 +209,17 @@ end
 
 function SandboxGallery.build(parent: Instance, origin: Vector3, label: LabelFn)
 	local rigs = (AssetIds.animation :: any).zombie_sf or {}
+	local fabRigs = (AssetIds.animation :: any).zombie_fab or {}
 	for row, skinName in SKINS do
 		local skin = ZombieSkins.get(skinName)
 		local config = configFor(SKIN_CONFIG[skinName])
-		local clips = rigs[string.lower(skinName)]
-		if not skin or not config or not clips then
+		local own = rigs[string.lower(skinName)]
+		if not skin or not config or not own then
 			continue
+		end
+		local clips = table.clone(own)
+		for slot, id in fabRigs[string.lower(skinName)] or {} do
+			clips[slot] = id
 		end
 		local z = origin.Z - (row - 1) * ROW_SPACING
 		label(string.upper(skinName), Vector3.new(origin.X - 9, origin.Y + 6, z), parent)

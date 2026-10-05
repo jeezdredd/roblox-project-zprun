@@ -55,6 +55,12 @@ IntermissionConfig.WRECK_OFFSET = { 0, 0, -4 }
 IntermissionConfig.CABIN_ORIGIN = { 4000, 600, 4000 }
 -- red cabin light
 IntermissionConfig.CABIN_LIGHT = { 255, 70, 50 }
+-- fill lights in the cabin's frame (from the floor's top): warm over the seats, green
+-- from the instrument console
+IntermissionConfig.CABIN_FILL_LIGHTS = {
+	{ name = "DomeLight", at = { -1.5, 6.2, 0 }, color = { 255, 222, 190 }, brightness = 2.2, range = 18 },
+	{ name = "ConsoleLight", at = { 0, 3.6, -12.6 }, color = { 90, 220, 140 }, brightness = 2, range = 12 },
+} :: { { name: string, at: Vec, color: Vec, brightness: number, range: number } }
 
 -- Remote rate limit per player for the ready and skip toggles.
 IntermissionConfig.TOGGLE_COOLDOWN = 0.25

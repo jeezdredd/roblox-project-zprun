@@ -37,10 +37,30 @@ local function fullDetail(part: MeshPart)
 	fresh:Destroy()
 end
 
-local function prepare(model: Model)
+-- A mesh the importer left without a SurfaceAppearance gets the template named for the
+-- material in its name (`surfaces`, the longest match: "Hand_Mesh_Glove_D_0" is Glove_D).
+local function dress(part: MeshPart, surfaces: { [string]: string }?)
+	if not surfaces or part:FindFirstChildOfClass("SurfaceAppearance") then
+		return
+	end
+	local best: string? = nil
+	for material in surfaces do
+		if string.find(part.Name, material, 1, true) and (not best or #material > #best) then
+			best = material
+		end
+	end
+	local folder = ReplicatedStorage:FindFirstChild("ViewmodelSurfaces")
+	local template = if best and folder then folder:FindFirstChild(surfaces[best]) else nil
+	if template and template:IsA("SurfaceAppearance") then
+		template:Clone().Parent = part
+	end
+end
+
+local function prepare(model: Model, surfaces: { [string]: string }?)
 	for _, item in model:GetDescendants() do
 		if item:IsA("MeshPart") then
 			fullDetail(item)
+			dress(item, surfaces)
 		end
 		if item:IsA("BasePart") then
 			item.Anchored = true
@@ -60,7 +80,7 @@ local function prepare(model: Model)
 	end
 end
 
-local function loadOne(folder: Folder, class: string, assetId: number)
+local function loadOne(folder: Folder, class: string, assetId: number, surfaces: { [string]: string }?)
 	local ok, result = pcall(function()
 		return InsertService:LoadAsset(assetId)
 	end)
@@ -71,7 +91,7 @@ local function loadOne(folder: Folder, class: string, assetId: number)
 	local container = result :: Model
 	local model = container:FindFirstChildWhichIsA("Model") or container
 	model.Name = class
-	prepare(model)
+	prepare(model, surfaces)
 	model.Parent = folder
 	if model ~= container then
 		container:Destroy()
@@ -87,7 +107,7 @@ function ViewmodelPacks.init()
 		local entry = ids[pack.asset]
 		local assetId = if entry then entry.rig else nil
 		if typeof(assetId) == "number" and assetId > 0 then
-			task.spawn(loadOne, folder, class, assetId)
+			task.spawn(loadOne, folder, class, assetId, pack.surfaces)
 		end
 	end
 end

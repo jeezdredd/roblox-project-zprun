@@ -46,6 +46,9 @@
       },
       "PropSurfaces": {
         "$path": "assets/props/surfaces.model.json"
+      },
+      "ViewmodelSurfaces": {
+        "$path": "assets/viewmodels/surfaces.model.json"
       }
     },
     "ReplicatedFirst": {

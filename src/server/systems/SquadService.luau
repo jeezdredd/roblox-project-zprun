@@ -249,7 +249,7 @@ local function updateConfig(player: Player, field: string, value: any)
 	end
 
 	if field == "mapId" then
-		if typeof(value) == "string" and MapsConfig.isValid(value) then
+		if typeof(value) == "string" and MapsConfig.isSelectable(value) then
 			squad.config.mapId = value
 		end
 	elseif field == "difficultyId" then

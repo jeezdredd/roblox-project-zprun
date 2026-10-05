@@ -556,15 +556,20 @@ local BUILDERS: { [string]: (number, Random, Instance) -> () } = {
 	corn = cornFlank,
 }
 
-function WorldFlanks.build(kind: string, rng: Random, parent: Instance)
-	local builder = BUILDERS[kind]
-	if not builder then
-		return
-	end
+-- Both flanks of a chunk. In a transition (`otherKind`, `alpha`) each side switches to
+-- the other style on its own: the left at alpha 0.4, the right at 0.6, so the change is
+-- staggered across the boundary instead of both walls swapping in one chunk.
+local SWITCH_AT = { [-1] = 0.4, [1] = 0.6 }
+
+function WorldFlanks.build(kind: string, rng: Random, parent: Instance, otherKind: string?, alpha: number?)
 	local folder = Instance.new("Model")
 	folder.Name = "Flanks"
 	for _, sign in { -1, 1 } do
-		builder(sign, rng, folder)
+		local sideKind = if otherKind and (alpha or 0) >= SWITCH_AT[sign] then otherKind else kind
+		local builder = BUILDERS[sideKind]
+		if builder then
+			builder(sign, rng, folder)
+		end
 	end
 	folder.Parent = parent
 end

@@ -15,6 +15,9 @@ DevConfig.QUICK_RUN = {
 	relaunchAfterDeath = true,
 	relaunchDelay = 1.5,
 	seed = nil,
+	-- the start map, as the lobby's map row would pick it: a MapsConfig id or "Random";
+	-- nil takes MapsConfig.DEFAULT_ID
+	mapId = nil,
 }
 
 -- How the quick launch starts the run: through the helicopter intermission (cabin,
@@ -62,16 +65,13 @@ DevConfig.TARGET_RANGE = {
 -- T teleports back to the start, V third person, Z slow motion, B plays the sound lane.
 -- The yard also has both clip galleries (every zombie and weapon clip, seen from the
 -- side), material walls, a texture wall and a sound lane (see Sandbox.luau).
--- Set enabled = false to play the normal run.
+-- `enabled` is the mode Play starts in; while playing, the dev button at the top centre
+-- (or key M) swaps between the yard and the normal run (Sandbox.luau, DevMode).
 DevConfig.SANDBOX = {
 	enabled = true,
 	origin = Vector3.new(3000, 0, 0),
 	respawnDelay = 3,
 	waveSize = 6,
 }
--- the yard is walked, so it rides on FREEZE_RUN's controls and camera
-if DevConfig.SANDBOX.enabled then
-	DevConfig.FREEZE_RUN = true
-end
 
 return DevConfig

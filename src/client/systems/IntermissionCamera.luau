@@ -7,8 +7,9 @@
 --          builds per seat in Workspace.IntermissionCabin), looking at the open door;
 --          holding the right mouse button looks around (yaw +-100, pitch -50..40 from
 --          the seat's view, eased), the cursor staying free for the panel.
---   Crash  a black fade over the same view for the beat's length. The crash cinematic
---          itself (camera keyframes, light, sound) replaces playCrash and is not here.
+--   Crash  the crash cinematic (CrashCinematic) over the same seat for the beat's
+--          length, ending in black; a plain black fade when the cabin is missing.
+--          The rotor drone of the ready check runs on into it.
 --   After  the black holds a moment over the teleport to the wreck, then fades out and
 --          the camera goes back to the run's controller.
 --
@@ -24,6 +25,8 @@ local Workspace = game:GetService("Workspace")
 
 local IntermissionConfig = require(ReplicatedStorage.Shared.config.IntermissionConfig)
 local IntermissionMath = require(ReplicatedStorage.Shared.util.IntermissionMath)
+local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
+local CrashCinematic = require(script.Parent.CrashCinematic)
 local CursorMode = require(script.Parent.CursorMode)
 
 local IntermissionCamera = {}
@@ -40,6 +43,10 @@ local bound = false
 local fade: Frame? = nil
 local view: BasePart? = nil
 local crashActive = false
+-- the crash beat's end (server time) from the cabin snapshot; the stage attribute and
+-- the snapshot travel separately, so the beat waits a moment for it
+local crashEndsAt: number? = nil
+local CRASH_WAIT = 0.5
 -- the look around the cabin, degrees from the seat's view: where the mouse put it and
 -- where the camera is on its way there
 local looking = false
@@ -140,10 +147,38 @@ local function unbind()
 	end
 end
 
--- The crash beat's placeholder: a black fade over the seated view. The cinematic
--- replaces this function; it gets the beat's end in server time.
-function IntermissionCamera.playCrash(_endsAt: number)
-	fadeTo(0, FADE_IN)
+-- The crash beat: the cinematic over this player's seat, ending on the black this
+-- module holds over the teleport; a plain black fade when it cannot play.
+function IntermissionCamera.playCrash(endsAt: number)
+	local seat = player:GetAttribute("CabinSeat")
+	local started = typeof(seat) == "number"
+		and CrashCinematic.play({
+			endsAt = endsAt,
+			seat = seat,
+			blackout = function(seconds: number)
+				fadeTo(0, seconds)
+			end,
+		})
+	if not started then
+		fadeTo(0, FADE_IN)
+	end
+end
+
+local function startCrash()
+	local waited = 0
+	local function go()
+		if not crashActive or player:GetAttribute("IntermissionStage") ~= "Crash" then
+			return
+		end
+		local endsAt = crashEndsAt
+		if endsAt == nil and waited < CRASH_WAIT then
+			waited += 0.05
+			task.delay(0.05, go)
+			return
+		end
+		IntermissionCamera.playCrash(endsAt or (Workspace:GetServerTimeNow() + IntermissionConfig.CRASH_LENGTH))
+	end
+	go()
 end
 
 local function apply()
@@ -155,18 +190,24 @@ local function apply()
 			-- the view goes back to the door the moment the beat changes
 			resetLook()
 			crashActive = true
-			IntermissionCamera.playCrash(Workspace:GetServerTimeNow())
+			startCrash()
 		elseif stage == "Cabin" then
 			crashActive = false
+			CrashCinematic.setCabinAmbience(true)
 			fadeTo(1, FADE_OUT)
 		end
 		return
 	end
 	local wasCrash = crashActive
 	crashActive = false
+	crashEndsAt = nil
+	CrashCinematic.stop()
+	CrashCinematic.setCabinAmbience(false)
 	unbind()
 	if wasCrash then
-		-- hold the black over the teleport to the wreck, then open on the run
+		-- hold the black over the teleport to the wreck (black at once when a skip vote
+		-- cut the beat short), then open on the run
+		fadeTo(0, 0.05)
 		task.delay(HOLD_AFTER, function()
 			fadeTo(1, FADE_OUT)
 		end)
@@ -184,6 +225,13 @@ function IntermissionCamera.init()
 		player:GetAttributeChangedSignal(attribute):Connect(apply)
 	end
 	player:GetAttributeChangedSignal("IntermissionStage"):Connect(resetLook)
+	Remotes.getEvent(Remotes.Event.IntermissionState).OnClientEvent:Connect(function(snapshot)
+		if typeof(snapshot) == "table" and snapshot.stage == "Crash" and typeof(snapshot.endsAt) == "number" then
+			crashEndsAt = snapshot.endsAt
+		elseif snapshot == nil then
+			crashEndsAt = nil
+		end
+	end)
 
 	-- right mouse held: the mouse looks around; released, the view stays where it is
 	UserInputService.InputBegan:Connect(function(input, processed)

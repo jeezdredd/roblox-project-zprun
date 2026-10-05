@@ -202,8 +202,11 @@ local function render()
 		return
 	end
 	screen.Enabled = true
-	setModal(true)
 	local inCabin = snapshot.stage == "Cabin"
+	-- the crash beat is the cinematic's screen: the panel only stays for a skip vote
+	local showPanel = inCabin or snapshot.skippable
+	panel.Visible = showPanel
+	setModal(showPanel)
 	titleLabel.Text = if inCabin then "READY CHECK" else "BRACE FOR IMPACT"
 	local skipCount, mine, myVote = 0, false, false
 	for index = 1, MAX_ROWS do

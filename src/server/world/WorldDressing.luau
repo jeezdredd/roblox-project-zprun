@@ -217,11 +217,14 @@ local function placeOne(biome: string, placement: DressingPlanner.Placement, rng
 end
 
 -- Dresses the chunk for `biome`; returns the number of props placed.
-function WorldDressing.dress(biome: string, rng: Random, halfLength: number, parent: Instance): number
+-- `density` (0..1, default 1) scales the clusters and the prop cap: a map transition
+-- dresses a chunk with both locations at their shares of the blend.
+function WorldDressing.dress(biome: string, rng: Random, halfLength: number, parent: Instance, density: number?): number
 	local placements = DressingPlanner.plan(DressingConfig, biome, rng, ChunkOccupancy, {
 		halfLength = halfLength,
 		groups = WorldMeshConfig.groups,
 		sizes = loadedSizes(),
+		density = density,
 	})
 	for _, placement in placements do
 		placeOne(biome, placement, rng, parent)

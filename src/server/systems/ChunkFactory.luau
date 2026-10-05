@@ -862,19 +862,25 @@ end
 local EDGE_GAP_MIN = 6
 local EDGE_GAP_MAX = 18
 
-local function buildCorridorEdge(kind: string, sign: number, rng: Random, parent: Instance)
-	if kind == "corn" then
+-- `otherKind` and `alpha` mix two styles along the edge in a transition: each element
+-- is the other style with probability alpha.
+local function buildCorridorEdge(baseKind: string, sign: number, rng: Random, parent: Instance, otherKind: string?, alpha: number?)
+	if baseKind == "corn" and (otherKind == nil or otherKind == "corn") then
 		-- the flank crop rows start right at the corridor edge
 		return
 	end
 	local edgeX = corridorEdgeX(sign)
 	local z = -chunkLength / 2 + rng:NextNumber(0, 4)
 	while z < chunkLength / 2 - 4 do
+		local kind = if otherKind and rng:NextNumber() < (alpha or 0) then otherKind else baseKind
 		local roll = rng:NextNumber()
 		local remaining = chunkLength / 2 - z
 		-- the z the element takes, its full extent plus its own gap
 		local used: number
-		if kind == "buildings" then
+		if kind == "corn" then
+			-- the crop rows of a cornfield flank reach the edge on their own
+			used = rng:NextNumber(8, 14)
+		elseif kind == "buildings" then
 			-- the street wall lives in WorldFlanks; this row is the kerb-side clutter in
 			-- front of it
 			if roll < 0.12 then
@@ -935,6 +941,64 @@ local function buildCorridorEdge(kind: string, sign: number, rng: Random, parent
 	end
 end
 
+-- In a transition, irregular patches of the other location's ground on a floor or an
+-- apron: as many as its share of the blend asks for (none at either end, most at the
+-- middle), so the ground reads as a mix instead of a seam. One patch is a cluster of
+-- overlapping turned slabs and discs, so its outline reads as worn ground rather than
+-- a laid tile. Along the chunk they thicken toward `towardZ` (the end where the other
+-- ground's share grows: ahead before the base ground switches, behind after it) and
+-- may hang over that end a little, so the switch itself is broken up too.
+local PATCH_MAX = 6
+local PATCH_PIECES = { 2, 4 }
+local PATCH_OVERHANG = 0.3
+local function addGroundPatches(surface: BasePart, other: LocationsConfig.LocationConfig, isFloor: boolean, share: number, towardZ: number, rng: Random, model: Model)
+	local count = math.floor(PATCH_MAX * math.clamp(share, 0, 0.5) * 2 + 0.5)
+	if count <= 0 then
+		return
+	end
+	local half = surface.Size * 0.5
+	local otherMaterials = DressingConfig.materials[other.id]
+	local variant = if otherMaterials then (if isFloor then otherMaterials.floor else otherMaterials.apron) else nil
+	local color = if isFloor then other.floorColor else other.apronColor
+	local material = if isFloor then other.floorMaterial else other.apronMaterial
+	local textureId = if isFloor then other.floorTextureId else other.apronTextureId
+	for _ = 1, count do
+		local spanX = rng:NextNumber(10, math.min(28, surface.Size.X))
+		local spanZ = rng:NextNumber(8, 22)
+		local centreX = rng:NextNumber(-half.X + spanX / 2, half.X - spanX / 2)
+		-- density rising linearly toward `towardZ`, like the blend share itself
+		local limit = half.Z - spanZ * (0.5 - PATCH_OVERHANG)
+		local centreZ = towardZ * (-limit + 2 * limit * math.sqrt(rng:NextNumber()))
+		local pieces = rng:NextInteger(PATCH_PIECES[1], PATCH_PIECES[2])
+		for index = 1, pieces do
+			local width = spanX * rng:NextNumber(0.4, 0.65)
+			local depth = spanZ * rng:NextNumber(0.4, 0.65)
+			local x = centreX + rng:NextNumber(-0.5, 0.5) * (spanX - width)
+			local z = centreZ + rng:NextNumber(-0.5, 0.5) * (spanZ - depth)
+			-- stacked a hair apart so overlapping pieces do not fight over the same plane
+			local place = surface.CFrame
+				* CFrame.new(x, half.Y + 0.025 + index * 0.004, z)
+				* CFrame.Angles(0, rng:NextNumber(0, math.pi), 0)
+			local disc = index > 1 and rng:NextNumber() < 0.6
+			local patch: Part
+			if disc then
+				local diameter = math.min(width, depth) * rng:NextNumber(1, 1.3)
+				-- a cylinder's axis is its X: turned up, its +X end is the top face
+				patch = createPart("Patch", Vector3.new(0.05, diameter, diameter), place * CFrame.Angles(0, 0, math.pi / 2), color, material, model)
+				patch.Shape = Enum.PartType.Cylinder
+			else
+				patch = createPart("Patch", Vector3.new(width, 0.05, depth), place, color, material, model)
+			end
+			patch.CanCollide = false
+			patch.CanQuery = false
+			patch.CastShadow = false
+			if not (variant and MaterialUtil.apply(patch, variant)) then
+				applyTexture(patch, if disc then Enum.NormalId.Right else Enum.NormalId.Top, textureId, 8)
+			end
+		end
+	end
+end
+
 function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Blend?, rng: Random, obstacleCount: number): Model
 	local nextLocation = if blend then blend.next else nil
 	local alpha = if blend then blend.alpha else 0
@@ -958,6 +1022,14 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	local materials = DressingConfig.materials[effective.id]
 	if not (materials and MaterialUtil.apply(floor, materials.floor)) then
 		applyTexture(floor, Enum.NormalId.Top, floorTextureId, 8)
+	end
+	-- the location the base ground is not, and its share of the blend
+	local mixWith = if nextLocation then (if far then location else nextLocation) else nil
+	local mixShare = if far then 1 - alpha else alpha
+	-- the run goes toward -Z: ahead is where the next location's share grows
+	local mixToward = if far then 1 else -1
+	if mixWith then
+		addGroundPatches(floor, mixWith, true, mixShare, mixToward, rng, model)
 	end
 
 	for _ = 1, rng:NextInteger(2, 5) do
@@ -1008,6 +1080,9 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 		if not (materials and MaterialUtil.apply(apron, materials.apron)) then
 			applyTexture(apron, Enum.NormalId.Top, apronTextureId, 7)
 		end
+		if mixWith then
+			addGroundPatches(apron, mixWith, false, mixShare, mixToward, rng, model)
+		end
 	end
 
 	if effective.roadMarkings and not isField then
@@ -1032,7 +1107,12 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	ChunkOccupancy.reset()
 
 	for _, sign in { -1, 1 } do
-		buildCorridorEdge(effective.edgeProps, sign, rng, model)
+		-- in a transition the edge mixes both styles, element by element, by the blend
+		if nextLocation then
+			buildCorridorEdge(location.edgeProps, sign, rng, model, nextLocation.edgeProps, alpha)
+		else
+			buildCorridorEdge(effective.edgeProps, sign, rng, model)
+		end
 
 		if effective.edgeProps == "buildings" then
 			local debrisZ = -chunkLength / 2 + rng:NextNumber(8, 22)
@@ -1057,7 +1137,11 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 		end
 	end
 
-	WorldFlanks.build(effective.edgeProps, rng, model)
+	if nextLocation then
+		WorldFlanks.build(location.edgeProps, rng, model, nextLocation.edgeProps, alpha)
+	else
+		WorldFlanks.build(effective.edgeProps, rng, model)
+	end
 
 	if effective.edgeProps == "buildings" then
 		local bandHalf = GameConstants.PLAYABLE_HALF_WIDTH
@@ -1165,7 +1249,13 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	end
 
 	-- the props and marks go last, into whatever ground the obstacles and flanks left
-	WorldDressing.dress(effective.id, rng, chunkLength / 2, model)
+	-- in a transition both locations dress the chunk, each at its share of the density
+	if nextLocation then
+		WorldDressing.dress(location.id, rng, chunkLength / 2, model, 1 - alpha)
+		WorldDressing.dress(nextLocation.id, rng, chunkLength / 2, model, alpha)
+	else
+		WorldDressing.dress(effective.id, rng, chunkLength / 2, model)
+	end
 	WorldDecals.dress(effective.id, rng, floor, GameConstants.PLAYABLE_HALF_WIDTH, chunkLength / 2, model)
 
 	-- the footprints stay with the model (pooled chunks keep their props), for what is

@@ -16,6 +16,8 @@ local AnimationSequencer = require(script.Parent.AnimationSequencer)
 local PackViewmodel = require(script.Parent.PackViewmodel)
 local ViewmodelPackConfig = require(ReplicatedStorage.Shared.config.ViewmodelPackConfig)
 local HipAim = require(script.Parent.HipAim)
+local WallPullback = require(script.Parent.WallPullback)
+local Stances = require(script.Parent.Stances)
 
 local Viewmodel = {}
 
@@ -236,6 +238,7 @@ function Viewmodel.setActive(value: boolean)
 	active = value
 	if not active then
 		destroyRig()
+		WallPullback.reset()
 		return
 	end
 	local weaponId = pendingWeaponId or player:GetAttribute("WeaponId")
@@ -282,6 +285,15 @@ end
 -- The authored sequence drives the pose and the audio phases; the springs only add
 -- the mechanical travel on top, so nothing here runs on a wall-clock timer any more.
 -- The plan's times come from WeaponsConfig, the same timeline the server counts ammo on.
+-- WeaponController's predicted magazine ran dry or was filled (the bolt or slide of a
+-- pack rig holds back while it is empty)
+function Viewmodel.setMagEmpty(empty: boolean)
+	local pack = packRig
+	if pack then
+		PackViewmodel.setEmpty(pack, empty)
+	end
+end
+
 function Viewmodel.playReload(plan: PackViewmodel.ReloadPlan)
 	local pack = packRig
 	if pack then
@@ -502,6 +514,13 @@ local function stepPack(pack: PackViewmodel.Rig, deltaTime: number, camera: Came
 		+ Vector3.new(0, 0, tiltRoll.value.Z)
 	local placement = cameraCFrame * CFrame.new(position) * CFrame.Angles(rotation.X, rotation.Y, rotation.Z)
 	local moving = ExertionState.getSpeed() > 1
+	-- near a wall the gun draws in (WallPullback casts along the aim, eases the pose)
+	PackViewmodel.setWallPose(pack, WallPullback.update(deltaTime, cameraCFrame, pack.class))
+	-- the stance, the magazine check and the lean's counter-pose (Stances); a reload, the
+	-- draw or an inspect eases them out so the clip plays from the class's own hold
+	local entry = pack.entry
+	local suppressed = PackViewmodel.isReloading(pack) or (entry ~= nil and (entry.tag == "equip" or entry.tag == "inspect"))
+	PackViewmodel.setStancePose(pack, Stances.viewmodelPose(deltaTime, suppressed))
 	PackViewmodel.step(pack, deltaTime, placement, moving, emitPhase)
 end
 

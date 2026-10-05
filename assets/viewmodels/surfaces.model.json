@@ -1,0 +1,43 @@
+{
+  "className": "Folder",
+  "children": [
+    {
+      "className": "SurfaceAppearance",
+      "name": "fab_arms_glove",
+      "properties": {
+        "ColorMap": "rbxassetid://137222277383604",
+        "NormalMap": "rbxassetid://130098750358330",
+        "RoughnessMap": "rbxassetid://109949743955801",
+        "MetalnessMap": "rbxassetid://133620623064996"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "fab_arms_hand",
+      "properties": {
+        "ColorMap": "rbxassetid://109444492907814",
+        "NormalMap": "rbxassetid://132780053316750",
+        "RoughnessMap": "rbxassetid://78108733802389",
+        "MetalnessMap": "rbxassetid://92526722294554"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "g17_glock",
+      "properties": {
+        "ColorMap": "rbxassetid://93775636204280",
+        "RoughnessMap": "rbxassetid://121336440695852",
+        "MetalnessMap": "rbxassetid://106353887640962"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "g17_round",
+      "properties": {
+        "ColorMap": "rbxassetid://137879752068302",
+        "RoughnessMap": "rbxassetid://122836886971045",
+        "MetalnessMap": "rbxassetid://89314741858417"
+      }
+    }
+  ]
+}

@@ -187,10 +187,20 @@ local function setupSkinned(animator: Animator, skin: ZombieSkins.Skin, rng: Ran
 	tracks.skinned = true
 	tracks.base = loadTrack(animator, pickClip(skin.idle, rng), true, Enum.AnimationPriority.Core)
 	tracks.idle = loadTrack(animator, pickClip(skin.idle, rng), true, Enum.AnimationPriority.Idle)
+	-- Each zombie keeps one of its skin's walks and one of its runs, picked at random, so a
+	-- crowd of one skin does not move in step: with every clip loaded the speed fit always
+	-- chose the same one (walk_a and walk_b share a ground speed, walk_b never played).
 	for _, group in { skin.walk, skin.run } do
+		local usable: { ZombieSkins.Clip } = {}
 		for _, clip in group do
+			if clip.speed > 0 then
+				table.insert(usable, clip)
+			end
+		end
+		if #usable > 0 then
+			local clip = usable[rng:NextInteger(1, #usable)]
 			local track = loadTrack(animator, clip.id, true, Enum.AnimationPriority.Movement)
-			if track and clip.speed > 0 then
+			if track then
 				table.insert(tracks.moves, { track = track, speed = clip.speed })
 			end
 		end

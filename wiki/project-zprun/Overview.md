@@ -42,3 +42,4 @@ The project is built with Rojo + Wally + Selene in Luau `--!strict`. Server code
 - [[Roadmap]]: what is done, in progress and planned.
 - [[Route Forks]]: branching route choice, branches, hazards, status board.
 - [[Development Policy]]: how work is done and checked, who owns which area.
+- [[Research AAA on Roblox]]: how TTK, Frontlines and others reach their look and animation, and what we take from it.

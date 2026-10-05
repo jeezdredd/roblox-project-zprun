@@ -38,14 +38,18 @@ that we do not have the right to ship.
    - CC0, public domain, CC-BY with the attribution recorded in `LICENSES.md`.
    - Paid or free packs whose licence permits use in a shipped game on any engine,
      including packs bought on Fab or the Unity Asset Store **when the individual
-     asset's licence is not engine-bound** — read the licence text, not the storefront.
+     asset's licence is not engine-bound**: read the licence text, not the storefront.
+     Fab content (Fab Standard License, Quixel Megascans included) is used in the game
+     but never committed, processed files included: the repository is public. Its files
+     stay in the gitignored `assets/fab/`, only the manifest rows are committed
+     (`docs/environment/megascans.md`).
    - Roblox Creator Store items, including AI-generated ones (Cube 3D and similar)
      made under the owner's account.
    - AI-generated audio, motion, models and textures from services whose terms grant
      commercial rights to the output (record the service and the terms version).
    - Mixamo, Sonniss GameAudioGDC, Freesound, OpenGameArt, Kenney, as before.
 
-   Not allowed, ever: assets extracted from other games (see `docs/research/` — those
+   Not allowed, ever: assets extracted from other games (see `docs/research/`; those
    files are reference only and never leave `Downloads`), storefront packs whose
    licence names a specific engine, anything whose licence we cannot locate.
 

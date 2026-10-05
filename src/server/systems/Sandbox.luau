@@ -20,7 +20,12 @@
 -- It rides on the normal mission: DevBench's QUICK_RUN starts a solo run, this module
 -- moves the character into the yard, and two workspace attributes switch the run's
 -- systems over: SandboxActive (ZombieAI stops its own spawning; the stuck check is off
--- through FREEZE_RUN) and SandboxAggro (ZombieAI's chase switch in the yard).
+-- through DevFreezeRun) and SandboxAggro (ZombieAI's chase switch in the yard).
+--
+-- The yard and the normal run swap while playing (Studio only): the workspace attribute
+-- DevMode holds "Yard" or "Run" (DevConfig.SANDBOX.enabled picks the first one) and
+-- DevFreezeRun follows it. The client's dev button (SandboxInput) sends "mode"; a run in
+-- progress is stopped, and DevBench's quick run launches the next one in the new mode.
 
 local CollectionService = game:GetService("CollectionService")
 local MaterialService = game:GetService("MaterialService")
@@ -36,6 +41,8 @@ local ZombieSkins = require(ReplicatedStorage.Shared.config.ZombieSkins)
 local ZombieAI = require(script.Parent.ZombieAI)
 local WorldMeshes = require(script.Parent.WorldMeshes)
 local DevBench = require(script.Parent.DevBench)
+local MissionService = require(script.Parent.MissionService)
+local DevMode = require(ReplicatedStorage.Shared.util.DevMode)
 local SandboxGallery = require(script.Parent.SandboxGallery)
 
 local Sandbox = {}
@@ -470,19 +477,41 @@ end
 
 local function watch(player: Player)
 	player:GetAttributeChangedSignal(PHASE_ATTRIBUTE):Connect(function()
-		if player:GetAttribute(PHASE_ATTRIBUTE) == "Mission" then
+		if player:GetAttribute(PHASE_ATTRIBUTE) == "Mission" and DevMode.yard() then
 			enter(player)
 		end
 	end)
-	if player:GetAttribute(PHASE_ATTRIBUTE) == "Mission" then
+	if player:GetAttribute(PHASE_ATTRIBUTE) == "Mission" and DevMode.yard() then
 		enter(player)
 	end
 end
 
-function Sandbox.init()
-	if not RunService:IsStudio() or not settings.enabled then
+local function setMode(player: Player, mode: any)
+	if (mode ~= "Yard" and mode ~= "Run") or DevMode.current() == mode then
 		return
 	end
+	Workspace:SetAttribute("DevMode", mode)
+	Workspace:SetAttribute("DevFreezeRun", mode == "Yard")
+	if mode == "Run" then
+		reset()
+		Workspace:SetAttribute("SandboxActive", false)
+	end
+	-- a run in progress restarts in the new mode: stop sends the player to the hub and
+	-- DevBench's quick run launches again from there (straight in for the yard, through
+	-- the cabin for the run when DevConfig.QUICK_LAUNCH asks for it). In the cabin the
+	-- launch already under way simply lands in the new mode.
+	if player:GetAttribute(PHASE_ATTRIBUTE) == "Mission" then
+		MissionService.stop(player)
+	end
+end
+
+function Sandbox.init()
+	if not RunService:IsStudio() then
+		return
+	end
+	local startMode: DevMode.Mode = if settings.enabled then "Yard" else "Run"
+	Workspace:SetAttribute("DevMode", startMode)
+	Workspace:SetAttribute("DevFreezeRun", startMode == "Yard")
 	-- the client builds its galleries around this point
 	Workspace:SetAttribute("SandboxOrigin", origin)
 	local remote = Instance.new("RemoteEvent")
@@ -500,6 +529,8 @@ function Sandbox.init()
 			teleport(player)
 		elseif command == "timescale" and typeof(value) == "number" then
 			SandboxGallery.setTimeScale(value)
+		elseif command == "mode" then
+			setMode(player, value)
 		end
 	end)
 	Players.PlayerAdded:Connect(watch)

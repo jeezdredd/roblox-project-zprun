@@ -7,8 +7,9 @@ KeyframeSequences. No Blender: numpy + the standard library.
         --output assets/animation [--posture UpperTorso=0.8] [--speed 1.0]
 
 Each --clip is DAE=slot[:flags]; flags as in glb_to_keyframes.py: loop (seamless loop,
-horizontal root travel stripped), once (root translation kept), priority=NAME|N,
-trim=START-END (seconds).
+horizontal root travel stripped), once (root translation kept), seated (no root
+translation at all: the seat weld holds the root), priority=NAME|N, trim=START-END
+(seconds).
 
 Same transfer as glb_to_keyframes.py: every R15 part takes its source bone's world-space
 rotation change from the rest pose, expressed relative to its parent part's change, in
@@ -81,6 +82,7 @@ class ClipSpec:
             raise SystemExit(f"bad --clip '{text}', expected DAE=slot[:flags]")
         self.source, self.slot = source, slot
         self.loop = "loop" in flags
+        self.seated = "seated" in flags
         self.priority = PRIORITY_TOKENS["movement" if self.loop else "action"]
         self.trim = None
         for flag in flags:
@@ -294,7 +296,9 @@ def sample_pose(dae, t, rest_rot, rest_hips, spec, scale, posture, offsets):
         if part == "LowerTorso":
             travel = world[PART_BONE[part]][:3, 3] - rest_hips
             translation = FLIP @ travel * dae.metres * scale
-            if spec.loop:
+            if spec.seated:
+                translation = np.zeros(3)
+            elif spec.loop:
                 translation = np.array([0.0, translation[1], 0.0])
         poses[part] = (rotation, translation)
     return poses

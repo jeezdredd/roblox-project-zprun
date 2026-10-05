@@ -449,6 +449,22 @@
     "assetId": "113785737468412",
     "status": "approved"
   },
+  "audio/ui/hit_marker": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Hit marker tick on the server's confirmation of damage by the local shooter (HitMarkers, HitMarkerConfig.SOUND_HIT), played 2D in the UI class only when the id is non-zero; silent until then. A dry, short (under 60 ms) high tick, MW2019 hip fire style. The approved UI sounds were considered and not reused: countdown_tick is the squad launch cue and reward_tick the pickup cue, a shared sound would blur them. Candidates: Kenney Interface Sounds (CC0, https://kenney.nl/assets/interface-sounds) 'tick' or 'click' variants not yet in the manifest; freesound CC0 'hitmarker' / 'tick'; a recording by the owner. No synthesized audio."
+  },
+  "audio/ui/kill_marker": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Kill marker on a confirmed kill by the local shooter (HitMarkers, HitMarkerConfig.SOUND_KILL), played 2D in the UI class only when the id is non-zero; silent until then. Heavier than the hit tick (a low thud under a tick). Candidates: Kenney Impact Sounds (CC0, https://kenney.nl/assets/impact-sounds) soft impact variants not yet in the manifest; freesound CC0 'kill confirm'; a recording by the owner. No synthesized audio."
+  },
   "audio/unused/step_gravel_loop": {
     "source": "https://commons.wikimedia.org/wiki/File:Walking-on-gravel-38827.ogg",
     "license": "CC0",
@@ -526,12 +542,12 @@
     "note": "Hit_Knockback: Knockback hit reaction, one-shot, retargeted to R15"
   },
   "animation/player/sit_idle": {
-    "source": "",
-    "license": "",
-    "file": "",
-    "assetId": 0,
-    "status": "needed",
-    "note": "Seated idle loop for the helicopter cabin's seats (AnimationsConfig.SIT_CLIP, played by AnimationController while Humanoid.SeatPart is set, priority Action, looped). Candidates: Mixamo 'Sitting Idle' or 'Sitting' (in place, R15 retarget); Quaternius Universal Animation Library (CC0) sit poses. Hands on the thighs or a rifle across the lap. Until it exists the seated character holds its rest pose with the gait layer paused."
+    "source": "Mixamo (Adobe), royalty-free for commercial games per https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html, clip Sitting Idle (Sitting In Chair Hands Resting On Thighs)",
+    "license": "Mixamo (Adobe) free licence, https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+    "file": "assets/animation/player/sit_idle.rbxmx",
+    "assetId": "120228784123731",
+    "status": "approved",
+    "note": "loop, seated (no root translation, the seat weld holds the root); the helicopter cabin seat, AnimationController; retargeted from the Mixamo Collada export (X Bot, With Skin, 30 fps) by tools/animation_pipeline/dae_to_keyframes.py on 2026-10-01"
   },
   "animation/player/death": {
     "source": "Quaternius Universal Animation Library (CC0), https://quaternius.com/packs/universalanimationlibrary.html",
@@ -4026,5 +4042,309 @@
     "assetId": 0,
     "status": "needed",
     "note": "Upgrade station announcer line when the carried weapon is already at WeaponsConfig.MAX_LEVEL (UpgradeStationConfig.ANNOUNCER_MAX, played 2D when the id is non-zero; silent until then). A real licensed voice file only, never generated speech. Candidates: Kenney Voiceover Pack (CC0, https://kenney.nl/assets/voiceover-pack): 'max', 'that's the limit', 'no'; freesound CC0 search 'announcer max level' / 'maximum'; or a line recorded by the owner."
+  },
+  "audio/cinematic/crash_rotor_loop": {
+    "source": "https://freesound.org/people/craigsmith/sounds/438593/",
+    "license": "CC0",
+    "file": "assets/audio/cinematic/crash_rotor_loop.ogg",
+    "assetId": "140413601009471",
+    "status": "approved",
+    "note": "\"G36-10-Helicopter Constant Interior\" by craigsmith (CC0, freesound HQ preview; the original needs a login). helicopter cabin drone, interior perspective; 4..36 s of the preview cut into a seamless 30 s loop (2 s crossfade), peak -1 dBFS; the intermission cabin and the crash beat"
+  },
+  "audio/cinematic/crash_alarm": {
+    "source": "https://freesound.org/people/MichellePamelaLyons/sounds/135509/",
+    "license": "CC0",
+    "file": "assets/audio/cinematic/crash_alarm.ogg",
+    "assetId": "126570391547312",
+    "status": "approved",
+    "note": "\"agitated alarm\" by MichellePamelaLyons (CC0, freesound HQ preview; the original needs a login). cockpit-like warning beeps (made from slowed whistling recordings), 17.6 s; from the shot to the impact in the crash beat"
+  },
+  "audio/cinematic/crash_impact": {
+    "source": "https://freesound.org/people/Osvoldon/sounds/653294/",
+    "license": "CC0",
+    "file": "assets/audio/cinematic/crash_impact.ogg",
+    "assetId": "86226350505098",
+    "status": "approved",
+    "note": "\"Big Structure Collision Heard from Inside\" by Osvoldon (CC0, freesound HQ preview; the original needs a login). a real rough landing of a large plane recorded from inside, metal boxes crashing; 6.5 s, 0.3 s fade at the end; the crash beat impact"
+  },
+  "audio/cinematic/crash_debris": {
+    "source": "https://freesound.org/people/xkeril/sounds/703247/",
+    "license": "CC0",
+    "file": "assets/audio/cinematic/crash_debris.ogg",
+    "assetId": "88302433840363",
+    "status": "approved",
+    "note": "\"Big falling debris (crash)\" by xkeril (CC0, freesound HQ preview; the original needs a login). tiles, stone and metal falling, Zoom H5n; 4.7 s; layered under the impact"
+  },
+  "audio/cinematic/crash_ringing": {
+    "source": "https://freesound.org/people/GammaGool/sounds/758149/",
+    "license": "CC0",
+    "file": "assets/audio/cinematic/crash_ringing.ogg",
+    "assetId": "123153020782057",
+    "status": "approved",
+    "note": "\"Ear Ringing | Pain\" by GammaGool (CC0, freesound HQ preview; the original needs a login). ear ringing made from layered glass and crystal recordings; 2.5 s; over the black after the impact"
+  },
+  "audio/cinematic/crash_creak": {
+    "source": "https://freesound.org/people/hinchinbrook/sounds/496836/",
+    "license": "CC0",
+    "file": "assets/audio/cinematic/crash_creak.ogg",
+    "assetId": "79276815416268",
+    "status": "approved",
+    "note": "\"Metallic Groan\" by hinchinbrook (CC0, freesound HQ preview; the original needs a login). a heavy bunker door, low steel groan; 9.4 s; the airframe straining while the helicopter spins"
+  },
+  "viewmodel/fps/m4/rig": {
+    "source": "\"M4 - FPS Weapon Animations Pack FREE (v.1)\" by BarcodeGames, https://www.fab.com/listings/38da8f1e-cb54-4cda-beb1-6e55642a55a9, GLB from Fab (Personal tier) downloaded 2026-10-01; rigid weapon parts skinned to their joints by tools/fps_pack/rigidify.py, animations stripped and scaled x3 by tools/fps_pack/strip_glb.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/m4_rig.glb",
+    "assetId": "104429592630828",
+    "status": "approved",
+    "note": "first-person arms + M4 for the Rifle class (replaces the AK pack); clips baked to src/shared/fab/M4Clips.luau (gitignored)"
+  },
+  "viewmodel/fps/g17/rig": {
+    "source": "\"G17 - FPS Weapon Animations Pack (v.1)\" by BarcodeGames, https://www.fab.com/listings/5b920af4-7a41-484e-afd2-323605fdaf77, GLB from Fab (Personal tier) downloaded 2026-10-01; rigid weapon parts skinned to their joints by tools/fps_pack/rigidify.py, animations stripped by tools/fps_pack/strip_glb.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/g17_rig.glb",
+    "assetId": "121633029876399",
+    "status": "approved",
+    "note": "first-person arms + Glock 17 for the Pistol class (replaces the pistol pack); clips baked to src/shared/fab/G17Clips.luau (gitignored)"
+  },
+  "animation/zombie_fab/hazmat/attack_ue": {
+    "source": "\"UEFN Manny Zombie Animation Sample Pack\" by Teddy Goldstien, https://www.fab.com/listings/a6216774-5e04-4556-9d0a-f413cc3127c8, FBX from Fab (Personal tier) downloaded 2026-10-01; clip 'FN_Manny_Zombie_Attack' converted with FBX2glTF and retargeted from the UE5 Manny skeleton onto the Hazmat rig by tools/zombie_pack/retarget_ue.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/animation/zombie/hazmat/attack_ue.rbxmx",
+    "assetId": "93005838692284",
+    "status": "approved",
+    "note": "2.6667s, loop=False, ground speed 0.0 studs/s; the Hazmat skin's attack variant (ZombieSkins)"
+  },
+  "animation/zombie_fab/hazmat/crawl_ue": {
+    "source": "\"UEFN Manny Zombie Animation Sample Pack\" by Teddy Goldstien, https://www.fab.com/listings/a6216774-5e04-4556-9d0a-f413cc3127c8, FBX from Fab (Personal tier) downloaded 2026-10-01; clip 'FN_Manny_Zombie_Crawl' converted with FBX2glTF and retargeted from the UE5 Manny skeleton onto the Hazmat rig by tools/zombie_pack/retarget_ue.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/animation/zombie/hazmat/crawl_ue.rbxmx",
+    "assetId": "75128600613162",
+    "status": "approved",
+    "note": "5.1333s, loop=True, ground speed 0.792 studs/s; the Hazmat skin's crawl variant (ZombieSkins)"
+  },
+  "animation/zombie_fab/hazmat/death_ue": {
+    "source": "\"UEFN Manny Zombie Animation Sample Pack\" by Teddy Goldstien, https://www.fab.com/listings/a6216774-5e04-4556-9d0a-f413cc3127c8, FBX from Fab (Personal tier) downloaded 2026-10-01; clip 'FN_Manny_Zombie_Death' converted with FBX2glTF and retargeted from the UE5 Manny skeleton onto the Hazmat rig by tools/zombie_pack/retarget_ue.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/animation/zombie/hazmat/death_ue.rbxmx",
+    "assetId": "95358428176749",
+    "status": "approved",
+    "note": "3.0s, loop=False, ground speed 0.0 studs/s; the Hazmat skin's death variant (ZombieSkins)"
+  },
+  "animation/zombie_fab/hazmat/idle_ue": {
+    "source": "\"UEFN Manny Zombie Animation Sample Pack\" by Teddy Goldstien, https://www.fab.com/listings/a6216774-5e04-4556-9d0a-f413cc3127c8, FBX from Fab (Personal tier) downloaded 2026-10-01; clip 'FN_Manny_Zombie_Idle' converted with FBX2glTF and retargeted from the UE5 Manny skeleton onto the Hazmat rig by tools/zombie_pack/retarget_ue.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/animation/zombie/hazmat/idle_ue.rbxmx",
+    "assetId": "105869108317879",
+    "status": "approved",
+    "note": "4.3667s, loop=True, ground speed 0.017 studs/s; the Hazmat skin's idle variant (ZombieSkins)"
+  },
+  "animation/zombie_fab/hazmat/run_ue": {
+    "source": "\"UEFN Manny Zombie Animation Sample Pack\" by Teddy Goldstien, https://www.fab.com/listings/a6216774-5e04-4556-9d0a-f413cc3127c8, FBX from Fab (Personal tier) downloaded 2026-10-01; clip 'FN_Manny_Zombie_Run' converted with FBX2glTF and retargeted from the UE5 Manny skeleton onto the Hazmat rig by tools/zombie_pack/retarget_ue.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/animation/zombie/hazmat/run_ue.rbxmx",
+    "assetId": "121359728097074",
+    "status": "approved",
+    "note": "0.8333s, loop=True, ground speed 7.525 studs/s; the Hazmat skin's run variant (ZombieSkins)"
+  },
+  "animation/zombie_fab/hazmat/walk_ue": {
+    "source": "\"UEFN Manny Zombie Animation Sample Pack\" by Teddy Goldstien, https://www.fab.com/listings/a6216774-5e04-4556-9d0a-f413cc3127c8, FBX from Fab (Personal tier) downloaded 2026-10-01; clip 'FN_Manny_Zombie_Walk' converted with FBX2glTF and retargeted from the UE5 Manny skeleton onto the Hazmat rig by tools/zombie_pack/retarget_ue.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/animation/zombie/hazmat/walk_ue.rbxmx",
+    "assetId": "106431332307076",
+    "status": "approved",
+    "note": "4.0667s, loop=True, ground speed 1.125 studs/s; the Hazmat skin's walk variant (ZombieSkins)"
+  },
+  "animation/zombie_fab/walker/attack_ue": {
+    "source": "\"UEFN Manny Zombie Animation Sample Pack\" by Teddy Goldstien, https://www.fab.com/listings/a6216774-5e04-4556-9d0a-f413cc3127c8, FBX from Fab (Personal tier) downloaded 2026-10-01; clip 'FN_Manny_Zombie_Attack' converted with FBX2glTF and retargeted from the UE5 Manny skeleton onto the Walker rig by tools/zombie_pack/retarget_ue.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/animation/zombie/walker/attack_ue.rbxmx",
+    "assetId": "96493638941295",
+    "status": "approved",
+    "note": "2.6667s, loop=False, ground speed 0.0 studs/s; the Walker skin's attack variant (ZombieSkins)"
+  },
+  "animation/zombie_fab/walker/crawl_ue": {
+    "source": "\"UEFN Manny Zombie Animation Sample Pack\" by Teddy Goldstien, https://www.fab.com/listings/a6216774-5e04-4556-9d0a-f413cc3127c8, FBX from Fab (Personal tier) downloaded 2026-10-01; clip 'FN_Manny_Zombie_Crawl' converted with FBX2glTF and retargeted from the UE5 Manny skeleton onto the Walker rig by tools/zombie_pack/retarget_ue.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/animation/zombie/walker/crawl_ue.rbxmx",
+    "assetId": "82729282836604",
+    "status": "approved",
+    "note": "5.1333s, loop=True, ground speed 0.775 studs/s; the Walker skin's crawl variant (ZombieSkins)"
+  },
+  "animation/zombie_fab/walker/death_ue": {
+    "source": "\"UEFN Manny Zombie Animation Sample Pack\" by Teddy Goldstien, https://www.fab.com/listings/a6216774-5e04-4556-9d0a-f413cc3127c8, FBX from Fab (Personal tier) downloaded 2026-10-01; clip 'FN_Manny_Zombie_Death' converted with FBX2glTF and retargeted from the UE5 Manny skeleton onto the Walker rig by tools/zombie_pack/retarget_ue.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/animation/zombie/walker/death_ue.rbxmx",
+    "assetId": "76798693616780",
+    "status": "approved",
+    "note": "3.0s, loop=False, ground speed 0.0 studs/s; the Walker skin's death variant (ZombieSkins)"
+  },
+  "animation/zombie_fab/walker/idle_ue": {
+    "source": "\"UEFN Manny Zombie Animation Sample Pack\" by Teddy Goldstien, https://www.fab.com/listings/a6216774-5e04-4556-9d0a-f413cc3127c8, FBX from Fab (Personal tier) downloaded 2026-10-01; clip 'FN_Manny_Zombie_Idle' converted with FBX2glTF and retargeted from the UE5 Manny skeleton onto the Walker rig by tools/zombie_pack/retarget_ue.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/animation/zombie/walker/idle_ue.rbxmx",
+    "assetId": "75809260684053",
+    "status": "approved",
+    "note": "4.3667s, loop=True, ground speed 0.014 studs/s; the Walker skin's idle variant (ZombieSkins)"
+  },
+  "animation/zombie_fab/walker/run_ue": {
+    "source": "\"UEFN Manny Zombie Animation Sample Pack\" by Teddy Goldstien, https://www.fab.com/listings/a6216774-5e04-4556-9d0a-f413cc3127c8, FBX from Fab (Personal tier) downloaded 2026-10-01; clip 'FN_Manny_Zombie_Run' converted with FBX2glTF and retargeted from the UE5 Manny skeleton onto the Walker rig by tools/zombie_pack/retarget_ue.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/animation/zombie/walker/run_ue.rbxmx",
+    "assetId": "78772324869695",
+    "status": "approved",
+    "note": "0.8333s, loop=True, ground speed 7.741 studs/s; the Walker skin's run variant (ZombieSkins)"
+  },
+  "animation/zombie_fab/walker/walk_ue": {
+    "source": "\"UEFN Manny Zombie Animation Sample Pack\" by Teddy Goldstien, https://www.fab.com/listings/a6216774-5e04-4556-9d0a-f413cc3127c8, FBX from Fab (Personal tier) downloaded 2026-10-01; clip 'FN_Manny_Zombie_Walk' converted with FBX2glTF and retargeted from the UE5 Manny skeleton onto the Walker rig by tools/zombie_pack/retarget_ue.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/animation/zombie/walker/walk_ue.rbxmx",
+    "assetId": "88135207339410",
+    "status": "approved",
+    "note": "4.0667s, loop=True, ground speed 1.056 studs/s; the Walker skin's walk variant (ZombieSkins)"
+  },
+  "texture/viewmodel/fab_arms_glove_color": {
+    "source": "\"M4 - FPS Weapon Animations Pack FREE (v.1)\" by BarcodeGames, https://www.fab.com/listings/38da8f1e-cb54-4cda-beb1-6e55642a55a9; color map of the arms shared by the BarcodeGames M4 and G17 packs (identical base colour in both), written from the rig GLB by tools/fps_pack/extract_surfaces.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/fab_arms_glove_color.png",
+    "assetId": "137222277383604",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "texture/viewmodel/fab_arms_glove_metalness": {
+    "source": "\"M4 - FPS Weapon Animations Pack FREE (v.1)\" by BarcodeGames, https://www.fab.com/listings/38da8f1e-cb54-4cda-beb1-6e55642a55a9; metalness map of the arms shared by the BarcodeGames M4 and G17 packs (identical base colour in both), written from the rig GLB by tools/fps_pack/extract_surfaces.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/fab_arms_glove_metalness.png",
+    "assetId": "133620623064996",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "texture/viewmodel/fab_arms_glove_normal": {
+    "source": "\"M4 - FPS Weapon Animations Pack FREE (v.1)\" by BarcodeGames, https://www.fab.com/listings/38da8f1e-cb54-4cda-beb1-6e55642a55a9; normal map of the arms shared by the BarcodeGames M4 and G17 packs (identical base colour in both), written from the rig GLB by tools/fps_pack/extract_surfaces.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/fab_arms_glove_normal.png",
+    "assetId": "130098750358330",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "texture/viewmodel/fab_arms_glove_roughness": {
+    "source": "\"M4 - FPS Weapon Animations Pack FREE (v.1)\" by BarcodeGames, https://www.fab.com/listings/38da8f1e-cb54-4cda-beb1-6e55642a55a9; roughness map of the arms shared by the BarcodeGames M4 and G17 packs (identical base colour in both), written from the rig GLB by tools/fps_pack/extract_surfaces.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/fab_arms_glove_roughness.png",
+    "assetId": "109949743955801",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "texture/viewmodel/fab_arms_hand_color": {
+    "source": "\"M4 - FPS Weapon Animations Pack FREE (v.1)\" by BarcodeGames, https://www.fab.com/listings/38da8f1e-cb54-4cda-beb1-6e55642a55a9; color map of the arms shared by the BarcodeGames M4 and G17 packs (identical base colour in both), written from the rig GLB by tools/fps_pack/extract_surfaces.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/fab_arms_hand_color.png",
+    "assetId": "109444492907814",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "texture/viewmodel/fab_arms_hand_metalness": {
+    "source": "\"M4 - FPS Weapon Animations Pack FREE (v.1)\" by BarcodeGames, https://www.fab.com/listings/38da8f1e-cb54-4cda-beb1-6e55642a55a9; metalness map of the arms shared by the BarcodeGames M4 and G17 packs (identical base colour in both), written from the rig GLB by tools/fps_pack/extract_surfaces.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/fab_arms_hand_metalness.png",
+    "assetId": "92526722294554",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "texture/viewmodel/fab_arms_hand_normal": {
+    "source": "\"M4 - FPS Weapon Animations Pack FREE (v.1)\" by BarcodeGames, https://www.fab.com/listings/38da8f1e-cb54-4cda-beb1-6e55642a55a9; normal map of the arms shared by the BarcodeGames M4 and G17 packs (identical base colour in both), written from the rig GLB by tools/fps_pack/extract_surfaces.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/fab_arms_hand_normal.png",
+    "assetId": "132780053316750",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "texture/viewmodel/fab_arms_hand_roughness": {
+    "source": "\"M4 - FPS Weapon Animations Pack FREE (v.1)\" by BarcodeGames, https://www.fab.com/listings/38da8f1e-cb54-4cda-beb1-6e55642a55a9; roughness map of the arms shared by the BarcodeGames M4 and G17 packs (identical base colour in both), written from the rig GLB by tools/fps_pack/extract_surfaces.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/fab_arms_hand_roughness.png",
+    "assetId": "78108733802389",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "texture/viewmodel/g17_glock_color": {
+    "source": "\"G17 - FPS Weapon Animations Pack (v.1)\" by BarcodeGames, https://www.fab.com/listings/5b920af4-7a41-484e-afd2-323605fdaf77; color map of the G17 rig, which the importer brought in without any SurfaceAppearance, written from the rig GLB by tools/fps_pack/extract_surfaces.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/g17_glock_color.png",
+    "assetId": "93775636204280",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "texture/viewmodel/g17_glock_metalness": {
+    "source": "\"G17 - FPS Weapon Animations Pack (v.1)\" by BarcodeGames, https://www.fab.com/listings/5b920af4-7a41-484e-afd2-323605fdaf77; metalness map of the G17 rig, which the importer brought in without any SurfaceAppearance, written from the rig GLB by tools/fps_pack/extract_surfaces.py (a flat 8x8 value: the pack has no metallicRoughness texture for it)",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/g17_glock_metalness.png",
+    "assetId": "106353887640962",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "texture/viewmodel/g17_glock_roughness": {
+    "source": "\"G17 - FPS Weapon Animations Pack (v.1)\" by BarcodeGames, https://www.fab.com/listings/5b920af4-7a41-484e-afd2-323605fdaf77; roughness map of the G17 rig, which the importer brought in without any SurfaceAppearance, written from the rig GLB by tools/fps_pack/extract_surfaces.py (a flat 8x8 value: the pack has no metallicRoughness texture for it)",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/g17_glock_roughness.png",
+    "assetId": "121336440695852",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "texture/viewmodel/g17_round_color": {
+    "source": "\"G17 - FPS Weapon Animations Pack (v.1)\" by BarcodeGames, https://www.fab.com/listings/5b920af4-7a41-484e-afd2-323605fdaf77; color map of the G17 rig, which the importer brought in without any SurfaceAppearance, written from the rig GLB by tools/fps_pack/extract_surfaces.py",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/g17_round_color.png",
+    "assetId": "137879752068302",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "texture/viewmodel/g17_round_metalness": {
+    "source": "\"G17 - FPS Weapon Animations Pack (v.1)\" by BarcodeGames, https://www.fab.com/listings/5b920af4-7a41-484e-afd2-323605fdaf77; metalness map of the G17 rig, which the importer brought in without any SurfaceAppearance, written from the rig GLB by tools/fps_pack/extract_surfaces.py (a flat 8x8 value: the pack has no metallicRoughness texture for it)",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/g17_round_metalness.png",
+    "assetId": "89314741858417",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "texture/viewmodel/g17_round_roughness": {
+    "source": "\"G17 - FPS Weapon Animations Pack (v.1)\" by BarcodeGames, https://www.fab.com/listings/5b920af4-7a41-484e-afd2-323605fdaf77; roughness map of the G17 rig, which the importer brought in without any SurfaceAppearance, written from the rig GLB by tools/fps_pack/extract_surfaces.py (a flat 8x8 value: the pack has no metallicRoughness texture for it)",
+    "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
+    "file": "assets/fab/viewmodels/textures/g17_round_roughness.png",
+    "assetId": "122836886971045",
+    "status": "approved",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+  },
+  "audio/ambience/city_bed": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "City map ambience bed (MapAmbience, MapsConfig.maps.City.ambience): looped 2D bed crossfaded with the next map's over the map transition; silent until the id is set. Wanted: a burning city at a distance: far traffic of sirens, wind between buildings, fire crackle, no music, no voices; a seamless loop of 60 s or more. Candidates: Sonniss GameAudioGDC bundles (royalty free), freesound CC0 field recordings, a recording by the owner. No synthesized audio."
+  },
+  "audio/ambience/wasteland_bed": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Wasteland map ambience bed (MapAmbience, MapsConfig.maps.Wasteland.ambience): looped 2D bed crossfaded with the next map's over the map transition; silent until the id is set. Wanted: open dead highway: dry wind, flapping debris, distant metal creaks; a seamless loop of 60 s or more. Candidates: Sonniss GameAudioGDC bundles (royalty free), freesound CC0 field recordings, a recording by the owner. No synthesized audio."
+  },
+  "audio/ambience/forest_bed": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Forest map ambience bed (MapAmbience, MapsConfig.maps.Forest.ambience): looped 2D bed crossfaded with the next map's over the map transition; silent until the id is set. Wanted: dense forest at dusk: wind in leaves, sparse birds, distant creaks; no water; a seamless loop of 60 s or more. Candidates: Sonniss GameAudioGDC bundles (royalty free), freesound CC0 field recordings, a recording by the owner. No synthesized audio."
+  },
+  "audio/ambience/farmland_bed": {
+    "source": "",
+    "license": "",
+    "file": "",
+    "assetId": 0,
+    "status": "needed",
+    "note": "Farmland map ambience bed (MapAmbience, MapsConfig.maps.Farmland.ambience): looped 2D bed crossfaded with the next map's over the map transition; silent until the id is set. Wanted: open fields: wind through crops, a distant windmill or loose barn door, sparse crows; a seamless loop of 60 s or more. Candidates: Sonniss GameAudioGDC bundles (royalty free), freesound CC0 field recordings, a recording by the owner. No synthesized audio."
   }
 }

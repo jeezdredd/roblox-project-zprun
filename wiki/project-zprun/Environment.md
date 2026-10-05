@@ -7,6 +7,7 @@ day and night presets per biome, and per-chunk budgets with a Studio counter. Br
 the screenshot plan are in `docs/world/environment.md`, the assets it still wants in
 `docs/world/assets-needed.md`. See [[Gameplay Systems]] for run generation, [[Performance]]
 for the budgets it extends and [[Assets Pipeline]] for the variants and props it uses.
+[[Megascans]] imports Fab surfaces that replace these sets on the owner's machine.
 
 ## Files
 
@@ -144,3 +145,5 @@ per biome at `SandboxOrigin + (0, 0, -560)`, chunk centres at x = -520, -260, 0,
 - Light ranges stay at the wiki's 60 although the engine now allows 120.
 - Preset visibility lives in `VisibilityConfig`, not in the preset table, so the pure fog
   check can load it without `Color3`.
+
+Large static scenes split into streamed cells are a separate path: [[Prebuilt Maps]].

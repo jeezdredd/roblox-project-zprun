@@ -499,3 +499,27 @@ from real uploads, and nothing extracted from other games. See `docs/asset-polic
 **Reason.** The owner's recordings of 2026-09-30 and 2026-10-01 showed one-frame problems the still-screenshot checks missed (a casing tripling in size next to the eye, the rifle vanishing for a frame at the end of a reload, the pelvis rolled 60 degrees by the foot IK), and tracers drawn a round trip late from the server's reply.
 
 **Consequence.** `WeaponController.predictShot` draws the shooter's tracers and impacts; the server's `Shot` is drawn only for other players. Reports name what was checked and what was not.
+
+## 2026-10-01: Reloads, zombie clips, the test yard switch
+
+### Tactical and empty reloads differ in handling, not only in length
+
+**Decision.** The tactical reload (rounds left) is a reload with retention: the old magazine goes back to the pouch, no bolt or slide work. The empty reload is a speed reload: the spent magazine falls free as it leaves the well (a world-size copy drops and lies on the ground, `DroppedMagazines`), the fresh one comes from the pouch, then the bolt catch or slide release. After the last round the bolt (M4) or slide (G17) stays locked back until that release (`ViewmodelPackConfig.lockBack`, `ViewmodelClipPlayer.hold`).
+
+**Reason.** The owner: tactical and empty must follow different principles across the game. Measured on the Fab packs: both M4 clips carry the magazine down to the pouch and back, and both G17 clips fetch the spare first and pouch the old one; the only difference was the bolt or slide release, so they read as the same reload at two lengths. TTK (see [[Research AAA on Roblox]]) drops the magazine on the empty pistol reload and shows the slide locked back.
+
+**Consequence.** `ViewmodelPackConfig.magDrop` names the magazine meshes, the drop point and the windows where the dropped magazine stays hidden; tuned from the bone motion (M4 drop at 0.225 of ReloadEmpty, G17 at 0.214), not yet seen in Play. More situational clips (magazine check, interactions, stances, inspect) need more source animation.
+
+### Zombie clips from the Fab UEFN Manny pack
+
+**Decision.** The six clips of "UEFN Manny Zombie Animation Sample Pack" (Fab, Teddy Goldstien) are retargeted from the UE5 Manny skeleton onto the Hazmat and Walker rigs by `tools/zombie_pack/retarget_ue.py` (world-space rotation changes, per-bone direction alignment, hips scaled by leg length) and baked by the same code as the Sketchfab clips. Each zombie keeps one walk and one run of its skin, picked at random.
+
+**Reason.** The Hazmat had no run and no death (capped at 2 studs/s, no corpse pose); the Walker had one gait per speed, and with every clip loaded the speed fit always picked the same one, so a crowd moved in step.
+
+**Consequence.** The clips are Fab content: baked files in `assets/fab/animation/zombie/` (git-ignored), ids in `AssetIds.animation.zombie_fab`. The crawl clip is uploaded but not used yet. The Ghoul is left out: its clips hold the skeleton root 3 studs below the bind and the skin compensates with an offset the retarget would have to reproduce.
+
+### The test yard is a switch, not a config edit
+
+**Decision.** In Studio the yard and the normal run swap while playing: the dev button at the top centre or key M (`SandboxInput`), Left Alt frees the cursor to click it. The server keeps the mode in the workspace attribute `DevMode` and `DevFreezeRun` with it; a run in progress restarts in the new mode. `DevConfig.SANDBOX.enabled` only picks the mode Play starts in; the yard always skips the cabin.
+
+**Reason.** The owner asked for one button between the game and the test yard instead of editing `DevConfig` and restarting Play.

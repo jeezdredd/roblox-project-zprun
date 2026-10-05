@@ -60,6 +60,12 @@ end
 local walker = anim.walker
 local hazmat = anim.hazmat
 local ghoul = anim.ghoul
+-- the Fab "UEFN Manny Zombie Animation Sample Pack" retargeted onto the rigs
+-- (tools/zombie_pack/retarget_ue.py; Fab content, the clips stay out of the repo, the
+-- ids are ordinary uploads)
+local fab = (AssetIds.animation :: any).zombie_fab or {}
+local walkerUe = fab.walker
+local hazmatUe = fab.hazmat
 
 ZombieSkins.skins = {
 	-- "Zombie" by pxltiger (3ds Max Biped skeleton)
@@ -79,11 +85,11 @@ ZombieSkins.skins = {
 			RightUpperArm = { from = "Base HumanRArmUpperarm_016", to = "Base HumanRArmForearm_017", width = 0.55 },
 			RightLowerArm = { from = "Base HumanRArmForearm_017", to = "Base HumanRArmPalm_018", width = 0.5 },
 		},
-		idle = list(clip(walker, "idle", 0)),
-		walk = list(clip(walker, "walk_a", 0.876), clip(walker, "walk_b", 0.876)),
-		run = list(clip(walker, "run", 12.015)),
-		attack = list(clip(walker, "attack", 0)),
-		death = list(clip(walker, "death_back", 0), clip(walker, "death_forward", 0)),
+		idle = list(clip(walker, "idle", 0), clip(walkerUe, "idle_ue", 0)),
+		walk = list(clip(walker, "walk_a", 0.876), clip(walker, "walk_b", 0.876), clip(walkerUe, "walk_ue", 1.056)),
+		run = list(clip(walker, "run", 12.015), clip(walkerUe, "run_ue", 7.741)),
+		attack = list(clip(walker, "attack", 0), clip(walkerUe, "attack_ue", 0)),
+		death = list(clip(walker, "death_back", 0), clip(walker, "death_forward", 0), clip(walkerUe, "death_ue", 0)),
 	},
 	-- "Zombie Hazmat" by LxNazarov (Mixamo skeleton)
 	Hazmat = {
@@ -102,14 +108,16 @@ ZombieSkins.skins = {
 			RightUpperArm = { from = "mixamorig:RightArm_026", to = "mixamorig:RightForeArm_027", width = 0.6 },
 			RightLowerArm = { from = "mixamorig:RightForeArm_027", to = "mixamorig:RightHand_028", width = 0.55 },
 		},
-		idle = list(clip(hazmat, "idle", 0)),
-		walk = list(clip(hazmat, "walk_a", 0.774)),
-		run = {},
-		attack = list(clip(hazmat, "attack", 0)),
-		death = {},
+		idle = list(clip(hazmat, "idle", 0), clip(hazmatUe, "idle_ue", 0)),
+		walk = list(clip(hazmat, "walk_a", 0.774), clip(hazmatUe, "walk_ue", 1.125)),
+		-- the pack's own set had no run and no death (a 2-stud/s cap and no corpse pose);
+		-- the retargeted UE clips fill both
+		run = list(clip(hazmatUe, "run_ue", 7.525)),
+		attack = list(clip(hazmat, "attack", 0), clip(hazmatUe, "attack_ue", 0)),
+		death = list(clip(hazmatUe, "death_ue", 0)),
 		spotted = clip(hazmat, "spotted", 0),
-		-- only a shuffle: past about 2.6x the cycle reads as frantic
-		maxSpeed = 2,
+		-- only a shuffle when there is no run: past about 2.6x the cycle reads as frantic
+		maxSpeed = if hazmatUe and (hazmatUe.run_ue or 0) > 0 then nil else 2,
 	},
 	-- "ZOMBIE. Animation test for the game" by stasbelyk13 (Blender skeleton), the runner
 	Ghoul = {

@@ -1,0 +1,91 @@
+schema_version: 1
+
+framework:
+  version: "1.1.3"
+  last_upgraded: "2026-10-12"
+
+project:
+  name: "Task Force Z"
+  genre: "Co-op endless runner, zombie apocalypse"
+  version: "0.1.0"
+  stage: Production
+  kind: game
+
+modes:
+  rigor: minimal
+  automation: autonomous
+  automation_always_ask:
+    - scope_changes
+    - file_deletions
+    - schema_changes
+
+workflow_overrides:
+  edge_cases: false
+  tuning_knobs: false
+  art_bible_strict: false
+  system_overrides: {}
+
+testing:
+  framework: none
+  strict:
+    logic: false
+    integration: false
+    visual: false
+    ui: false
+    config: false
+
+strict_gate_checks: false
+
+platform:
+  multiplayer: true
+  online: true
+  targets: [PC, Console, Mobile]
+  primary_input: "Keyboard/Mouse"
+  gamepad_support: "Full"
+  touch_support: "Full"
+  cert_tier: none
+
+engine:
+  name: "Roblox"
+  version: "current"
+  language: "Luau"
+  rendering: "Roblox Future"
+  physics: "Roblox"
+
+specialists:
+  code: "gameplay-programmer"
+  shader: "technical-artist"
+  ui: "ui-programmer"
+  additional: []
+
+naming:
+  classes: PascalCase
+  variables: camelCase
+  constants: SCREAMING_SNAKE
+  signals: past_tense
+  files: PascalCase
+  scenes: PascalCase
+
+accessibility:
+  target: none
+
+cadence:
+  sprint_length: none
+  milestone_length: "4w"
+
+performance:
+  target_framerate: 60
+  frame_budget_ms: 16.67
+  draw_call_limit: null
+  memory_ceiling_mb: null
+  enforce: warn
+
+commands:
+  build: "rojo build -o build.rbxl"
+  test: "python3 tools/validate_api.py"
+  lint: "selene src/"
+  run: "rojo serve"
+  smoke: "selene src/ && python3 tools/validate_api.py && rojo build -o build.rbxl"
+
+features:
+  session_state: on

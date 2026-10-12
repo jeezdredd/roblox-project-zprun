@@ -48,6 +48,9 @@ on it. What it took, in the order the yard showed it:
 - The station stood among the props at real size; it moved to `SandboxOrigin + (80, 0,
   -300)`, clear ground.
 
+With `ENABLED` false, `BodyController`, `BodyAimRelay` and the yard's body station all
+stay idle, so the flag switches off the whole feature, server relay included.
+
 ## Files
 
 | File | Role |
@@ -62,6 +65,17 @@ on it. What it took, in the order the yard showed it:
 | `src/client/body/AimReplicator.luau` | The local aim onto the wire at most 20 times a second |
 | `src/client/systems/SandboxBodyGallery.luau` | The yard station: 4 classes x 11 mannequins driven by scripted inputs |
 | `src/shared/net/Remotes.luau` | `Remotes.Unreliable`, `getUnreliableEvent` |
+
+`WorldWeaponModel`'s sockets are in grip space: x right, y up, -z along the barrel.
+`GripSocket` is where the right hand sits; `SupportSocket`, `MagazineSocket`,
+`ChargeSocket`, `PortSocket` and `PumpSocket` are support-hand targets; `Muzzle` is the
+barrel end. The builder is a shared util because the server's `WorldWeapon`, the yard's
+gallery mannequins and the client-side `CabinCrew` copilot all build the gun from it.
+
+`BodyController` binds a character only once its arms and torso exist; one that never
+gets them (an R6 avatar) is left to the animator. The local character joins only while
+the third-person view is on, and its aim then comes straight from the camera instead
+of `BodyAim` packets.
 
 ## The layer stack
 
@@ -80,12 +94,14 @@ frames where `Animator.EvaluationThrottled` says the pose was reused:
    whole aim with 10 % of the clip's motion left (`headStabilize` 0.9). Both are
    multiplied onto the animator's pose, and a joint the animator did not rewrite starts
    from the same base instead of stacking.
-3. Weapon frame: the class's `hold` (the grip part in `UpperTorso` space when upright),
-   lowered for the draw and the sprint, placed from the point between the shoulders
-   along the whole aim over the upright frame (half the pitch in a sprint), kicked by
+3. Weapon frame: the class's `hold` (the grip part relative to the root's upright frame;
+   `UpperTorso` space only when the chest is upright and the aim level), lowered for
+   the draw and the sprint, placed from the point between the shoulders (`AIM.pivot`,
+   (0, 0.5, 0) in the `UpperTorso`, which the arms pitch about) along the whole aim over the upright frame (half the pitch in a sprint), kicked by
    the recoil springs, then taken into `UpperTorso` space for the hand targets.
 4. Gestures: the reload, pump, draw and cancel timelines move the support hand between
-   the gun's sockets and the belt.
+   the gun's sockets and the belt. The belt pose is already in `UpperTorso` space, so
+   `BodyRig`'s `poseFrame` returns it with the torso-space flag set.
 5. Hands: `IKControl` (`Transform`) on `RightUpperArm -> RightHand` to `hold *
    GripSocket` and on `LeftUpperArm -> LeftHand` to the gesture pose, both targets
    attachments on the `UpperTorso`. The welded `WorldWeapon` follows the right hand.
@@ -99,11 +115,16 @@ frames where `Animator.EvaluationThrottled` says the pose was reused:
 
 | Signal | Wire | Read by |
 | --- | --- | --- |
-| Aim pitch and yaw offset | `UnreliableRemoteEvent` `BodyAim`, whole degrees, sent on a one-degree change with a 50 ms floor and a 1 s keepalive; the server clamps (89 / 179), drops under 45 ms, relays with the sender | `BodyController.onAim`, smoothed with a 0.08 s time constant |
+| Aim pitch and yaw offset | `UnreliableRemoteEvent` `BodyAim`, whole degrees, sent on a one-degree change with a 50 ms floor and a 1 s keepalive; the server clamps (89 / 179), drops under 45 ms, relays with the sender | `BodyController.onAim`, smoothed with a 0.08 s time constant over the 20 Hz packets (0.03 s for the local character in the yard, which follows its own camera) |
 | Shot | the existing `WeaponHit` `"Shot"` (shooter, weapon) | `BodyRig.fire`: kick and snap impulses, the pump on the shotgun |
 | Reload | the existing `Reloading`, `AmmoMag`, `AmmoReserve`, `ReloadScale` attributes | `BodyRig.startReload(empty, shells, scale)` / `endReload` |
 | Equip | the existing `WeaponId` attribute and the rebuilt `WorldWeapon` | `BodyRig.setWeapon` + `equip` |
 | Sprint | root velocity (physics replication) | `BodyRig.setSpeed`, on at 36 studs/s with 4 of hysteresis |
+
+The relayed aim is never authoritative for anything: shots carry their own direction
+through `WeaponService`. The relay's only state is the last accepted packet time per
+player. The packet's lean runs from -1 (left) to 1 (right), is clamped to that range and
+reads as 0 when missing.
 
 ## Per class
 
@@ -116,7 +137,25 @@ frames where `Animator.EvaluationThrottled` says the pose was reused:
 
 The gun model (`WorldWeaponModel`): grip part in the fist, 0.3 past the right hand;
 receiver 1.6 long on the rifle and the shotgun, 1.2 on the SMG, 0.9 on the pistol;
-barrel 1.1, 1.3, 0.5 and 0.4; stock 0.6, 0.65 and 0.5 (none on the pistol).
+barrel 1.1, 1.3, 0.5 and 0.4; stock 0.6, 0.65 and 0.5 (none on the pistol). The grip is
+0.7 tall at the origin, the receiver sits 0.56 above it along z, the magazine under the
+receiver's middle, the handguard just past the receiver, and the stock starts 0.24
+behind the grip.
+
+`ThirdPersonConfig` frames are in grip space unless named otherwise: x right, y up, -z
+forward along the barrel, 1 stud = 0.28 m; `chargePull` and `pumpTravel` travel back
+along +z. The holds were tuned in the yard gallery against the default R15 body: arms
+about 1.8 studs from the shoulder joint, a chest 2 studs wide.
+
+- `kickFactor` scales `WeaponsConfig.recoilKick` (studs); `snapFactor` scales
+  `recoilSnap`, which is unitless: `RECOIL.snapDegrees` turns it into 12 degrees per
+  unit, and 30 % of the snap (`waistShare`) pitches the waist.
+- `chargeStyle = "bolt"` racks with the support hand at the charge socket; `"slide"`
+  pulls the weapon itself back with no support hand, since a pistol slide release is
+  thumb work.
+- The pump stroke starts 0.12 s after a shot, so the kick reads first. A cancelled
+  reload returns the support hand to the grip in 0.2 s. The IK weight is held at 0.3
+  while the draw starts, because the gun is still coming up.
 
 Reload keyframes come from `WeaponsConfig` (`magazineReload`, `shellReload`) so the
 gesture seats the magazine at the same instant the server counts the rounds.
@@ -150,7 +189,15 @@ allocated per frame. Aim traffic with a full squad is under 1.5 KB/s per client.
   and the gun from the upright frame (2026-09-30).
 - **Recoil reuses `WeaponsConfig`'s kick, snap, stiffness and damping** with one factor
   per class, so the third-person kick and the viewmodel's cannot drift apart. The spring
-  is stepped in closed form, so any frame time lands on the exact curve.
+  is stepped in closed form, so any frame time lands on the exact curve. Impulses are
+  sized with `impulseForPeak`: near critical damping the spring follows
+  x(t) = v t e^(-w t), which peaks at v / (w e) at t = 1 / w, so the velocity impulse
+  for a wanted peak is peak * w * e.
+- **`BodyMath` is pure** (no Roblox services or datatypes), so `luau tests/body/run.luau`
+  runs outside Studio and the server relay shares its packet validation. Angles are
+  degrees, times seconds, distances studs; yaw is positive to the left of the reference
+  (a positive Y rotation), pitch positive looking up, and aim smoothing wraps to take
+  the short way round.
 - **Procedural gestures, not clips.** A timing change in `WeaponsConfig` moves the
   gesture with it; a clip would need re-timing. Clips remain an option (Quaternius, CC0)
   for later polish.
@@ -163,3 +210,24 @@ allocated per frame. Aim traffic with a full squad is under 1.5 KB/s per client.
 - A `Pole` per elbow is not set; add one if an elbow bends the wrong way in the yard.
 - Strafe clips are still id 0, so the gallery's strafe station shows the run clip with
   a yaw twist.
+
+## Implementation notes
+
+### Yard gallery
+
+- `SandboxBodyGallery` starts each frame's update round at a different station: with
+  every station at full cadence, the per-frame cap otherwise starved the same last rows
+  every frame.
+- Labels refresh every fourth update per station, not on a frame multiple; with the
+  round robin a station and a frame multiple rarely met and the labels froze for
+  seconds.
+
+### Foot planting
+
+- `FootPlanting`'s IK chain root is the `UpperLeg` (`LowerTorso` only as a fallback), so
+  hip, knee and ankle bend while the pelvis stays with the clip.
+- Planting fades out above a ground speed of 1.5 studs/s (`STAND_SPEED`): running clips
+  place the feet themselves, and chasing them with IK rolled the soldier's pelvis 60
+  degrees (2026-09-30).
+- The IK target is the ground hit plus half the foot part's height, since the part's
+  centre sits that far above the sole (0.55 on the block body, 0.28 on the soldier).

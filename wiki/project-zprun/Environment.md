@@ -32,6 +32,10 @@ for the budgets it extends and [[Assets Pipeline]] for the variants and props it
 | `src/server/systems/SandboxBiomeStrip.luau` | The yard station: five chunks side by side and the 25 fixed screenshot cameras |
 | `default.project.json` | `MaterialPattern = Organic` on the four ground variants, `Lighting.LightingStyle = Realistic` |
 
+The three config modules hold no engine types, so `DressingPlanner`, `ChunkBudget`,
+`FogBudget` and their tests load them under the standalone Luau CLI. New fields must stay
+plain numbers, strings and tables.
+
 ## How a chunk is dressed
 
 `ChunkFactory.build` runs as before up to the lane obstacles, then `WorldDressing.dress`
@@ -58,7 +62,17 @@ line members (barriers, hedgehogs) follow each other along the road. Cluster cen
 a side differ by at least 4. Per chunk: City 4 clusters (10..18 props, sides alternate),
 Wasteland 3 (8..14), Farmstead 2 (4..9), Cornfield 1 (2..4, one side), Forest 1 (2..4, one
 side). The corridor edge row now records each element's footprint and leaves 6..18 studs
-after it, which is where the clusters stand.
+after it, which is where the clusters stand. On a pure cornfield edge the row does nothing,
+because the `WorldFlanks` crop rows already reach the corridor edge; in City the street wall
+belongs to `WorldFlanks` and the row only places kerb-side clutter in front of it.
+
+Props in `ChunkFactory`: mesh trees carry an invisible trunk collider, so the trunk blocks
+the runner and the canopy does not. Corn stands block sight, not movement; only the
+part-built fallback corn wall gets stalk lines on its runner-facing side, mesh corn rows get
+none. Car meshes face either way along z, so half are flipped 180 degrees and car rows do
+not visibly repeat. The hedgehog and sandbag wall is one of the lane obstacle variants of
+City and Wasteland: without the hedgehog mesh it falls back to the jersey divider, and if
+only the sandbags are missing a third hedgehog takes the middle slot.
 
 Tags: `TFZ_Prop` on every placed prop, `TFZ_Detail` on shoulder and sidewalk clutter,
 the third and later members of a cluster and decal cards beyond the second, and
@@ -78,6 +92,14 @@ ground at the feet. `TFZ_RoadWorn` at 60 studs per tile is far below it and is u
 on the Wasteland floor, where one tile spans the road and its faded lines replace the
 marking parts. The number to change if it blurs is `DressingConfig.materials.Wasteland.floor`.
 
+- A City brick facade that gets `TFZ_PlasterPeeling` has its part colour set to a neutral
+  204,194,180: the variant's colour map already carries the colour and a tint would double it.
+- A burn patch is destroyed rather than placed when `MaterialUtil.apply` fails for
+  `TFZ_GroundBurned`. The burn map is the point of the patch; a flat tint would read as a stain.
+- A floor that falls back to a flat `Texture` tile gets the part colour lerped 35 % toward
+  white as its `Color3`. Without it the texture's own grey wins and every biome floor reads
+  the same.
+
 ## Decals
 
 Marks are `Decal`s on thin invisible cards (a decal spans a whole face, so the floor
@@ -89,22 +111,39 @@ shopfronts). Keys listed but not yet uploaded (`road_crack_a`, `oil_stain_a`, `s
 `manhole_a`) place nothing until `AssetIds.texture.decal` has them. The tinted `Stain`
 parts and the `Marking` parts stay meanwhile.
 
+`DecalsConfig` zones: `lane` is the playable band within `LANE_HALF` (24 studs) of the road
+centre, minus half the card width, and `END_CLEARANCE` (8 studs) off the chunk ends; it does
+not avoid the centre line. `shoulder` is the strip just inside the corridor edge, `edge` the
+corridor edge row, `wall` a card standing `WALL_GAP` in front of a named road-facing wall
+part (each thin along its local x), and `floor` the tiled `Texture` on the floor's top face
+rather than a card. Overlapping marks render by layer: cracks and patches 1, stains and
+graffiti 2, blood 3.
+
+`WorldDecals` collects the wall parts that may take a card in `GetDescendants` order with no
+explicit sort. The seeded rng draws stay in step only because a chunk is always built in the
+same order, which is what gives the same chunk the same marks.
+
 ## Lighting
 
 Every preset carries `bloomIntensity`, `bloomThreshold`, `sunRays` and `shadowSoftness`;
 `PostFx` reads bloom from `LightingDirector.getCurrent()`, so the old Forest special case
-(0.62 / 1.0, above the wiki's bloom rule) is gone. A night mission uses
+(0.62 / 1.0, above the wiki's bloom rule) is gone. The bloom rule: every preset keeps
+`bloomIntensity` at most 0.4 and `bloomThreshold` at least 1.2. A night mission uses
 `LightingConfig.nightFor(biome)`: `CityNight` (sodium lamps on blue-black), `ForestNight`
 (mist), `WastelandNight` (moonlit, the furthest sight), `FarmsteadNight`, `CornfieldNight`
 (the shortest sight); `Night` remains the fallback. In Studio the `Workspace` attribute
-`DevLightingPreset` forces a preset.
+`DevLightingPreset` forces a preset. A preset forced in Studio, from the command bar or the
+biome strip, wins over the map-boundary zone blend; setting it back to nil releases it.
 
-Fog against streaming: `VisibilityConfig` states each preset's visibility (City 340,
+Fog against streaming: `VisibilityConfig` states each preset's visibility, meant as the
+distance at which its fog swallows a 10-stud object (City 340,
 Forest 300, Wasteland 420, Farmstead 360, Cornfield 220, nights 180..380), and
 `FogBudget` requires `visibility + CHUNK_LENGTH <= SPAWN_AHEAD_DISTANCE` (768) and
 `SPAWN_AHEAD_DISTANCE + CHUNK_LENGTH + 64 <= StreamingTargetRadius` (1024). The tests run
 it over every preset; `ChunkBudgetCounter.checkFog` warns in Studio. The visibility
 numbers are design targets until the strip's shot C confirms them.
+`VisibilityConfig.STREAMING_TARGET_RADIUS` mirrors `Workspace.StreamingTargetRadius` in
+`default.project.json` because Luau cannot read that property, so change the two together.
 
 ## Budgets
 
@@ -123,6 +162,13 @@ lights 6 shadows 44 | over mobile: parts`, and stores it on the model. The serve
 one world to the desktop budget; the mobile budget is met on a touch-only client by
 `EnvironmentQuality` removing the detail tier. The Forest lever taken: mesh trees stop at
 x = 70 in the near band and the primitive tree carries on behind them.
+
+Triangle counts come from the `triangles` field of `assets/manifest.json`, copied into
+`DressingConfig.triangles`. Props uploaded as Models carry no count there and take
+`TRIANGLES_DEFAULT` (1500) until one is read in Studio; primitives count at the engine's own
+mesh triangle counts (`DressingConfig.primitiveTriangles`). When a prop mesh is not loaded,
+the planner sizes the primitive stand-in from `DressingConfig.fallbackSizes` (x, z, height in
+studs, default 2, 2, 2); real sizes come from `WorldMeshes.naturalSize`.
 
 ## Test yard
 

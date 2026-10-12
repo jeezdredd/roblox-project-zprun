@@ -23,5 +23,9 @@ Studio checks in `docs/gameplay/hit-markers.md`. Stage 4 of the quality pass in
 - Server confirmation only, never the prediction; the damage rules are unchanged.
 - One marker at a time; a kill marker is not cut short by a hit.
 - Hit 0.12 s scaled 0.9..1.25 by damage, headshot amber, kill red 1.35 for 0.25 s.
+- Damage scale is 1 at `DAMAGE_REFERENCE` 30 (a rifle body shot) and moves by 0.25 of the relative difference; the clamp keeps a shotgun's full pellet sum or a pistol graze readable.
+- Each marker pops in at 1.15x, settles by 30 percent of its time and fades from 55 percent. In `HitMarkerConfig` colours are {r, g, b} and sizes are pixels at scale 1.
+- The ticks sit on the crosshair the weapon HUD draws, so they follow hip aim; without that crosshair they fall back to the screen centre.
 - Silent until real sound files fill the two slots.
 - Damage numbers follow the same confirmation: the number is the shot's sum, placed at the first flesh hit; checked in Play by eye only, because Studio's screen capture does not draw `AlwaysOnTop` billboards.
+- When all damage-number billboards are showing, the oldest is reused. The anchors are invisible and non-queryable, so no gameplay cast hits them. Headshot numbers take the theme accent colour, kill numbers the largest text size.

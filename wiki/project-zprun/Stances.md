@@ -15,7 +15,8 @@ server's rules, hit detection and ammo are unchanged. Related: [[Wall Pullback]]
 | R, held | Magazine check: the weapon tips toward the camera, the count shows while it is in; shown for at least 0.9 s |
 | Mouse wheel | Loadout quick swap (was Q) |
 
-Keys are item names in `StanceConfig.keys`.
+Keys are item names in `StanceConfig.keys`. In hold mode with Q and E both down, the
+last one pressed wins. In toggle mode, pressing the side already leaned to comes back.
 
 ## Files
 
@@ -29,19 +30,28 @@ Keys are item names in `StanceConfig.keys`.
 | `WeaponController` | `Stances.requestFire` before a shot; hold R as the check; the count label; quick swap on the wheel |
 | `BodyRig.setLean`, `BodyController`, `AimReplicator`, `BodyAimRelay` | The third-person waist roll; the lean (tenths) as a third value on the BodyAim packet, clamped by the relay |
 
+`StanceConfig` is data only, with no engine types: keys are Enum.KeyCode item names in
+strings, because the pure `StanceMath` and its tests read it under the standalone Luau
+CLI. A Vector3, CFrame or Enum value there breaks `luau tests/stances/run.luau`.
+
 ## Rules
 
 - **Stances** are poses in the pack viewmodel's hold space, eased exponentially (in at
-  9/s, out at 12/s), the same channel style as the wall pull-back. Mid is the class's
-  own hold.
+  9/s, out at 12/s), the same channel as [[Wall Pullback]]. Mid is the class's own
+  hold. Axes: x right, y up, +z toward the chest, in the pack rigs' small units
+  (`ViewmodelPackConfig.RIG_SCALE`). Angles in degrees with `CFrame.Angles` signs:
+  pitch > 0 lifts the muzzle, yaw > 0 turns it left, roll > 0 cants the top to the left.
 - **Firing from high or low ready** starts a raise. The time per class comes from
   `raiseTime` (Pistol 0.10/0.12 s up to Shotgun 0.19/0.24 s for high/low), scaled by
-  how far in the stance is. The shot leaves when the gun is up: a press during the
+  how far in the stance is. The shot leaves when the gun is up (stance weight at or
+  under `UP_THRESHOLD`, 0.04): a press during the
   raise fires at its end. The gun then stays up for `RETURN_AFTER` (1.4 s) after the
   last shot, and eases back to the chosen stance.
 - **A reload, the draw or an inspect** eases the stance out. The stance stays chosen
   and comes back after.
-- **Lean.** The camera rolls 13 degrees and moves 1.05 studs sideways and 0.12 down.
+- **Lean.** Signed, from -1 (full left) to 1 (full right). The camera rolls 13 degrees
+  and moves 1.05 studs sideways and 0.12 down. Roll uses the `CFrame.Angles` sign: a
+  lean right rolls the top of the view right, a negative Z angle.
   A sphere cast at the side shortens the offset so the camera stays 0.25 studs off a
   wall. The lean goes on the camera after the camera's own steps (render priority
   Camera + 2), and comes off before them (Camera - 1) only if nothing else moved the
@@ -51,8 +61,12 @@ Keys are item names in `StanceConfig.keys`.
   third-person review view.
 - **The viewmodel** rolls with the camera and takes 55 percent of the roll back
   (`viewmodelCounterRoll`), nudged toward the lean.
-- **Third person:** the upper torso rolls up to 16 degrees at the waist (`bodyRoll`).
-  Other clients get the lean on the BodyAim packet.
+- **Third person:** the upper torso rolls up to 16 degrees at the waist (`bodyRoll`),
+  same roll sign as the camera. `BodyRig` gets the eased lean directly. Other clients
+  get it on the BodyAim packet, quantized to tenths so a slow lean sends only a handful
+  of packets. The relay accepts only a finite number, clamped to -1..1, and treats
+  anything else (an old client sending none) as 0. The value is visual only and never
+  feeds a game rule.
 - **Magazine check.** The pose replaces the stance while it is held. The count (from
   the client's predicted magazine) shows once the pose is 80 percent in.
   `readout = "estimate"` shows Full, Almost full, About half, Almost empty or Empty
@@ -61,14 +75,18 @@ Keys are item names in `StanceConfig.keys`.
   weapon change ends it at once.
 - **Pack viewmodel only.** Without a pack rig (the legacy rig, the hub, death) there
   are no stance poses and every shot is allowed at once; a held R still reloads on
-  release.
+  release. Stances counts the pack viewmodel as gone once it has not asked for a pose
+  for 0.25 s (`STALE_AFTER`). The next pose request resets the stance weights and any
+  pending raise, so after death, the hub or a weapon change the pose starts from mid.
 
 ## Studio checks (owner)
 
 Checked as motion, per [[Development Policy]] section 2: `ViewmodelTimeScale` 0.2,
 frames sampled every few frames. Under a locked cursor the Studio hook drives it from
 the command bar: `game.ReplicatedStorage.DebugWeapon:Fire("stance")` (also `"magcheck"`,
-`"magcheck_end"`, `"lean_left"`, `"lean_right"`, `"lean_off"`, `"fire"`).
+`"magcheck_end"`, `"lean_left"`, `"lean_right"`, `"lean_off"`, `"fire"`). The debug
+lean (`Stances.setDebugLean`) takes the same -1..1 range; nil hands control back to
+the keys.
 
 1. X through the three stances on each class: the poses read as high ready and low
    ready. Each transition has no pop, and the walk and idle clips still play

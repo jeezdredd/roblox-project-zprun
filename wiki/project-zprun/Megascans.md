@@ -40,6 +40,13 @@ and the usual generated files. A Fab row without an asset id fails
 - Studs per tile = the scan's width in metres times 1 / 0.28 (`WorldMeshConfig.METRE`).
 - A set reaches the place only when all its maps have ids; until then, and in any
   clone without the local list, the built-in sets are used.
+- `MaterialSets` checks every entry of the generated list field by field: a damaged or
+  hand-edited entry is dropped with a reason and the Materials stage still runs. On a
+  name clash the project's own sets win over extra sets.
+- `--replaces`: the first claim on a set name wins, and the stand-in is used only once
+  it is registered, so a missing Megascans variant falls back to the original set.
+- Base material overrides: the last registered set wins, so a Megascans set takes the
+  override only once its variant has arrived.
 
 ## Tests
 

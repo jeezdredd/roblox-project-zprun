@@ -21,3 +21,5 @@ the pipeline is [[Assets Pipeline]]'s.
 - One line per work; every entry of the work listed under it.
 - Mixamo and the Free Firearm Sound Library are thanked, not credited: their licences
   ask for nothing.
+- The `NOTE` above the list is there because CC BY asks that changes to the work be
+  indicated.

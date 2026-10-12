@@ -39,6 +39,13 @@ The two anchors are 4300 studs apart. Every hub builder places geometry relative
 
 - `RunController` clamps the player's X against `RUN_ORIGIN.X` plus or minus `PLAYABLE_HALF_WIDTH` (45), so lane clamping is origin-relative and narrower than the 240-stud geometry.
 - `DistanceTracker` measures progress as `root.Position:Dot(RUN_DIRECTION)`, which is absolute world space. That works only because `RUN_ORIGIN.Z` is 0. Moving the run world along Z would silently offset every distance reading and every distance-based goal.
+- "Ahead" is -Z: in a transition chunk the next location's share grows toward -Z. A positive lateral offset is the runner's right, +X. A sign part whose look vector is `RUN_DIRECTION` needs its SurfaceGui on the Back face for runners to see it (`ChunkFactory`, `ForkService`).
+
+Inside a chunk, builders and planners (`WorldFlanks`, `DressingPlanner`, `WorldDressing`, `ChunkOccupancy`, `PickupPlanner`, `UpgradeStationMath`) work in chunk-local coordinates with the pivot at the chunk centre:
+
+- x runs across the road and its sign picks the side; the playable band is -halfWidth..halfWidth. z runs along the road over -halfLength..halfLength. Yaw is in radians.
+- Anything facing the road (a City facade, a wall card) faces x = 0, the -sign direction. `CFrame.Angles(0, yaw, 0)` looks along (-sin yaw, 0, -cos yaw), so for a pickup or station scene whose -z faces the road, the right shoulder (x > 0) looks toward -x and the left toward +x.
+- A placement keeps its whole footprint inside its own chunk, because the neighbouring chunk dresses its own ground.
 
 `TrackBuilder` is the one exception and is currently inconsistent: it pivots the start platform to `CFrame.new(RUN_DIRECTION * (length / 2))`, which is absolute `(0, 0, -32)` and therefore 4000 studs away from where the squad actually spawns.
 
@@ -66,6 +73,10 @@ All under `src/server/systems/`.
 | `TrackBuilder.luau` | The fixed start platform |
 | `AmmoCrates.luau` | Per-chunk ammo crates and the proximity poll that grants reserve rounds |
 
+`ChunkOccupancy` keeps one module-level claim list, which is safe only because chunk building is synchronous. Radii are a prop's ground footprint, not its canopy, so a tree crown may overlap a car but its trunk may not. Things placed by construction (a lamp row, a building slot) are recorded with `reserve`/`reserveBox` without a check, so later random props avoid them.
+
+`WorldMeshes` clones templates because `MeshId` is not writable from scripts, so templates are the only way to spawn meshes at run time. `loadAll` fires every request in parallel and yields until all finish, so `init` runs it in a spawned thread (an Edit preview may call it directly). Code that builds chunks soon after server start calls `waitReady(timeout)` so the opening chunks are not built from primitive fallbacks: `MissionService` waits 6 s, the `Sandbox` yard and strips wait 10 s.
+
 ### Run loop and flow
 
 | Module | Owns |
@@ -75,6 +86,7 @@ All under `src/server/systems/`.
 | `FriendCache.luau` | Memoised pairwise `IsFriendsWithAsync` used by the FriendsOnly privacy mode |
 | `ForkService.luau` | Route forks: builds the centre divider and signs before a fork boundary, closes the physical vote when the lead runner crosses the vote line and hands the choice to `RoutePlan`; see [[Route Forks]] |
 | `MissionService.luau` | Starting and stopping a squad run, including world teardown when the last participant leaves |
+| `LoadoutWindow.luau` | When loadout and perk changes are allowed: only in the hub and during the cabin's ready check, never in the crash beat and never for a run participant. It reads only server-set attributes (`FlowPhase` from `FlowService`, `IntermissionStage` from `IntermissionService`), so a client cannot open the window |
 | `MissionState.luau` | In-memory run state: active flag, participant set, modifier ids |
 | `MissionConfig.luau` | The active difficulty, mirrored to the `Workspace.Difficulty` attribute |
 | `MissionGoals.luau` | Per-run objective tracking and bonus credits |
@@ -112,6 +124,8 @@ All under `src/server/systems/`.
 | `ProfileManager.luau` | ProfileStore-backed player data, the `ProfileData` template, version migration, the Credits and XP attributes, and the `onLoaded` fan-out every other system subscribes to |
 | `SettingsPersistence.luau` | Pushing saved settings to the client on load and sanitising every incoming key against `SettingsConfig` |
 
+`ProfileManager.onReleasing` callbacks run synchronously, in registration order, before `EndSession()`, both on PlayerRemoving and for every profile on BindToClose, so anything banked there still lands in the profile. An erroring callback is warned and never keeps the session from ending. `MissionService` settles a run there (banks what is unbanked, clears the run's perks, ends the goals) because the data is gone once the session ends; on a death `DeathService` has already banked its share.
+
 ## Client systems
 
 `src/client/controllers/` holds anything that runs per frame or owns character state; `src/client/systems/` holds feature layers; `src/client/ui/` holds ScreenGui builders.
@@ -120,13 +134,14 @@ All under `src/server/systems/`.
 
 - `FlowController.luau` mirrors the `FlowPhase` attribute into client mode, starting and stopping the run controllers.
 - `RunController.luau` drives auto-run with `Humanoid:Move`, clamps the lane, and applies the decaying lateral shove and input lock from `applyGlance`; `InputController.luau` is the only run input, a ContextAction-bound lateral axis. `GlanceController.luau` listens for `PlayerGlanced` and fans it out to `RunController`, camera, body and animation reactions.
-- `CameraController.luau` is the mission camera; `CameraEffectsController.luau` layers FOV, shake, bob, sway, tilt and breathing on top of it. `systems/CameraNearFade.luau` runs after every camera and hides (LocalTransparencyModifier) any part the camera is inside: the local character, zombies within 10 studs, props.
+- `CameraController.luau` is the mission camera; `CameraEffectsController.luau` layers FOV, shake, bob, sway, tilt and breathing on top of it.
+- `systems/CameraNearFade.luau` runs at `RenderPriority.Camera + 3`, after the camera and its effects (Camera, Camera + 1) and the death camera (Camera + 1). It sets `LocalTransparencyModifier` to 1 on parts whose box is within 0.6 studs of the camera (the near plane is 0.1): the local character, zombies, props. It restores the saved value only if the modifier still reads 1, so another writer such as the first-person hide keeps its own value. The viewmodel lives under the camera and is never touched. Skinned zombie visual parts are `CanQuery = false`, so `GetPartBoundsInRadius` misses them and zombies whose pivot is within 10 studs are added by hand; their boxes are the bind pose while the clips move the mesh outside it, so they get a 1.1-stud margin. Added after the 2026-09-30 recording showed a sleeve, a zombie's arm and the helmet shell filling the screen in the death camera, the third-person orbit and on revive.
 - `ExertionState.luau` is the shared movement clock. Speed, grounded state, a 0-1 exertion accumulator and a stride phase that fires step listeners twice per cycle. Footsteps, breathing, dust and camera bob all read from it rather than recomputing speed.
 - `BodyMotionController.luau`, `FootPlanting.luau` and `AnimationController.luau` pose the character (`AnimationController` loads the generic clips and the weapon locomotion sets, picks the set by weapon class and the gait by speed, lateral input and the sprint threshold, falls back inside the set and then to `Run`, and exposes `clipSetFor(class)` for the yard; the gait feeds the `Animator` and `BodyRig` writes the aim, the weapon frame and the hand IK after it in `PreSimulation`, see [[Third-Person Locomotion]]); `FirstPersonController.luau` is a bootstrap that starts `CursorMode` and disables the reset button.
 
 ### Weapons
 
-- `WeaponController.luau` owns input and prediction: fire, reload on the same `WeaponsConfig` timeline as the server (with the shell-reload fire cancel), slot swaps, the predicted magazine, and replication of `WeaponHit` into visible effects.
+- `WeaponController.luau` owns input and prediction: fire, reload on the same `WeaponsConfig` timeline as the server (with the shell-reload fire cancel), slot swaps, the predicted magazine, and replication of `WeaponHit` into visible effects. Its `init` also starts `WeaponPickupClient` (pickup and station outlines and toasts), which has no boot stage of its own (see [[Weapon Pickups]]).
 - `Viewmodel.luau` owns the first-person rig every RenderStepped: the procedural layer (recoil springs, sway, bob, drift, hip aim, equip) for both rig kinds, and the choice between a pack rig (`PackViewmodel`) and the procedural or mesh fallback (`ViewmodelBuilder`, `AnimationSequencer`, `PoseLibrary`).
 - `PackViewmodel.luau` builds a rig from `ReplicatedStorage.ViewModelPacks` and runs its clips: the idle/walk base loop, a one-shot queue, reload plans, the fire cancel, the shotgun's pump follow and the phase markers. `ViewmodelClipPlayer.luau` decodes the baked tracks in `src/shared/viewmodel_clips/` and writes `Bone.Transform` each frame.
 - `WeaponVfx.luau` (reused muzzle flash rigs, pooled casings, tracers, impacts, smoke) and `WeaponSfx.luau` (shot takes and tails on `OwnGunshot`, teammates' shots on `GunshotRemote`, marker-driven foley, low-ammo layer, casing landings on `Casing`, bullet impacts on `Impact`, the reflection fan; legacy pools behind the switch) are the effect layers.
@@ -140,7 +155,15 @@ All under `src/server/systems/`.
 `src/client/audio/` is the spatial audio engine (2026-09-29; design, research and Studio test plan in `docs/audio/spatial-audio.md`), built on the Roblox audio API (`AudioPlayer`, `AudioEmitter`, `AudioListener`, `Wire`, the `Audio*` effects) behind `SfxConfig.SPATIAL_AUDIO`:
 
 - `AudioMath.luau` is the pure propagation math (attenuation curves, air-absorption cutoff, speed-of-sound delay, layer crossfades, occlusion smoothing, reflection timing), with no Roblox services so `luau tests/audio/run.luau` runs it outside Studio.
-- `AudioBus.luau` builds the bus graph once under `SoundService.TFZ_Audio`: one `AudioListener` per 3D bus (weapons, sfx, voices, ambience; interaction groups `TFZ_<bus>`) on the camera, faders, environment reverb and street slapback on the weapons, sfx and voices buses, a shared duck group for ambience and music under a sidechain `AudioCompressor`, the ui bus after it, a master fader and `AudioLimiter` into one `AudioDeviceOutput`.
+- `AudioBus.luau` builds the bus graph once under `SoundService.TFZ_Audio`: one `AudioListener` per 3D bus (weapons, sfx, voices, ambience; interaction groups `TFZ_<bus>`) on the camera, then per bus:
+  - weapons: listener, fader, reverb, echo
+  - sfx: listener, fader, reverb, echo, equalizer
+  - voices: listener, fader, reverb (no slapback echo)
+  - ambience: listener, fader, duck group, compressor
+  - music: fader, duck group, compressor
+  - ui: fader only
+
+  All sum into a master fader, then the `AudioLimiter` and one `AudioDeviceOutput`. Only weapons and sfx carry the street slapback. The sfx equalizer is the concussion filter, driven by `PlayerSfx` through `AudioBus.setConcussion(highGain, midGain)`. The ui bus joins after the sidechain duck compressor so a menu click never dips under gunfire. The chase duck goes `UiSfx` -> `MusicController.setDuck` -> `AudioBus.setDuck(reduction)` (0 no reduction, 1 full), and the music fader is floored at a tenth of its level, like the legacy path.
 - `AudioEnvironment.luau` resolves a position into `Hangar`, `Interior`, `Street`, `Forest` or `Open` from the `AcousticSpace` zones, the biome and the flow phase, holds the material table, and runs the occlusion raycasts inside a per-frame budget.
 - `AudioEngine.luau` owns the voice pool (48 desktop, 24 mobile; each voice is `AudioPlayer -> AudioFilter -> AudioEmitter` for 3D, the emitter on the voice's own `Attachment` in `Terrain`, or the bus fader for 2D), the one play API (`AudioEngine.play(spec): Handle`), priorities and class limits, distance layers, loops that hand their voice back out of range and take one again when the source returns, and the per-frame propagation update (curve, absorption, occlusion, doorway loss, delay via `AudioPlayer:Play(mixerTime + delay)`).
 - `AudioReflections.luau` casts a ray fan from gunshots and explosions and plays delayed, filtered reflections from the hit points; `AudioDebug.luau` is the overlay (K in the test yard) and the test shot (L).
@@ -156,7 +179,7 @@ Classes, environments, materials and platform budgets are data in `src/shared/co
 
 ### UI
 
-`UiTheme.luau` holds the shared constants and helpers. `HudGui.luau` is the persistent hub HUD, `RunHud.luau` the mission HUD, `ForkHud.luau` the route-fork prompt, `SquadConfigGui.luau` the lobby panel, `ShopGui.luau` the vendor window, `SettingsGui.luau` the settings panel built from `SettingsConfig`, `GoreWarningGui.luau` the one-shot content warning, `DeathController.luau` the death cinematic and results screen. `CursorMode.luau` arbitrates between them: a reference-counted modal stack that frees the mouse and freezes the camera while any panel is open, and re-locks first person when the last one closes.
+`UiTheme.luau` holds the shared constants and helpers. `HudGui.luau` is the persistent hub HUD, `RunHud.luau` the mission HUD, `ForkHud.luau` the route-fork prompt, `SquadConfigGui.luau` the lobby panel, `ShopGui.luau` the vendor window, `SettingsGui.luau` the settings panel built from `SettingsConfig`, `GoreWarningGui.luau` the one-shot content warning, `DeathController.luau` the death cinematic and results screen. `CursorMode.luau` arbitrates between them: a reference-counted modal stack that frees the mouse and freezes the camera while any panel is open, and re-locks first person when the last one closes. Gotcha: `GuiObject.Visible` reports only the object's own flag, so children of a hidden parent still read Visible with a real `AbsoluteSize`. A check for whether a GUI is really on screen has to walk the ancestors up to the ScreenGui, otherwise a closed menu whose panels were never hidden one by one reads as open.
 
 ## Shared modules
 
@@ -172,7 +195,7 @@ The remaining shared trees are small: `net/Remotes.luau`, `types/Flow.luau` and 
 
 `src/shared/net/Remotes.luau` is the only place remote instances are named. It exports two frozen name tables and creates instances lazily inside a `ReplicatedStorage.Remotes` folder: on the server by `FindFirstChild` then `Instance.new`, on the client by `WaitForChild`. Nothing else in the codebase calls `Instance.new("RemoteEvent")`.
 
-Eighteen events:
+Twenty-two events:
 
 | Event | Direction | Owner |
 | --- | --- | --- |
@@ -193,7 +216,13 @@ Eighteen events:
 | `ShopSync` | Server to client | `ShopService` |
 | `PromptPurchase` | Client to server | `MonetizationService` |
 | `AmmoPickup` | Server to client | `AmmoCrates` |
+| `WeaponPickup` | Server to client | `WeaponPickups`, `UpgradeStations` |
 | `PlayerGlanced` | Server to client | `ZombieAI` |
+| `IntermissionReady` | Client to server | `IntermissionService` |
+| `IntermissionSkip` | Client to server | `IntermissionService` |
+| `IntermissionState` | Server to client | `IntermissionService` |
+
+`WeaponPickup` reports a pickup's or upgrade station's outcome as a kind followed by arguments: `"Weapon"` weaponId position, `"Drop"` weaponId position, `"Upgrade"` weaponId position level, or `"Refused"` message position with an optional level. `IntermissionReady` carries a boolean during the ready check, `IntermissionSkip` (no arguments) is a skip vote during a skippable crash, and `IntermissionState` carries the cabin snapshot, or nil when the intermission is over (see [[Heli Intermission]]).
 
 Two RemoteFunctions, both owned by `ShopService` and both invoked only from `src/client/ui/ShopGui.luau`: `ShopCatalog` (vendor id in, catalog out) and `ShopPurchase` (vendor id, entry id, kind in; a result table with `ok` and `message` out).
 
@@ -247,7 +276,7 @@ shot:         WeaponFire -> WeaponService validation -> WeaponHit to all clients
 
 `src/server/init.server.luau` requires every service at the top, then runs each initialiser through a `runStage(name, fn)` helper that wraps the call in `pcall` and `warn`s on failure. A system that throws during init degrades the game instead of killing the boot.
 
-Order is: `MaterialUtil.register`, `ViewmodelPacks` (starts the pack rig loads as early as possible), then `ProfileManager`, `SettingsPersistence`, `MissionConfig`, `FlowService`, `DistanceTracker`, `ZombieAI`, `WorldMeshes`, `ChunkSpawner`, `ForkService`, `MissionService`, `DeathService`, `SkinService`, `SoldierCharacter`, `WeaponService`, `ShopService`, `MonetizationService`, `AmmoCrates`, `MissionGoals`, `WorldWeapon`, `BodyAimRelay`. World builders run last, in their own stages: the `Hangar` stage calls `HangarBuilder.build()` and passes the returned helicopters straight into `SquadService.init(helicopters)`, then `VendorRooms.build`, `CityDiorama.build`, `DesertBase.build`, the Studio test bench `DevBench`, the Studio test yard `Sandbox`, which does nothing unless `DevConfig.SANDBOX.enabled` (then it builds the yard at x 3000 and moves each player into it while the run stays frozen; its client half is `SandboxInput`, started after `WeaponController`), and last the yard's `SandboxBiomeStrip`, under the same switch. `ZombieRigs` has no stage: it starts loading the skinned rigs as soon as `ZombieFactory` requires it, when the entry script requires `ZombieAI`.
+Order is: `MaterialUtil.register`, `ViewmodelPacks` (starts the pack rig loads as early as possible), then `ProfileManager`, `SettingsPersistence`, `MissionConfig`, `FlowService`, `DistanceTracker`, `ZombieAI`, `WorldMeshes`, `ChunkSpawner`, `ForkService`, `MissionService`, `DeathService`, `SkinService`, `SoldierCharacter`, `WeaponService`, `ShopService`, `MonetizationService`, `AmmoCrates`, `MissionGoals`, `WorldWeapon`, `BodyAimRelay`. World builders run last, in their own stages: the `Hangar` stage calls `HangarBuilder.build()` and passes the returned helicopters straight into `SquadService.init(helicopters)`, then `VendorRooms.build`, `CityDiorama.build`, `DesertBase.build`, the Studio test bench `DevBench`, the Studio test yard `Sandbox`, which does nothing unless `DevConfig.SANDBOX.enabled` (then it builds the yard at x 3000 and moves each player into it while the run stays frozen; its client half is `SandboxInput`, started after `WeaponController`), and last the yard's `SandboxBiomeStrip`, under the same switch. The yard rides on a normal solo mission: `DevBench`'s quick run starts it, and `Sandbox` moves the character into the yard only after `MissionService` has placed it at the run start. Two Workspace attributes switch run systems over: `SandboxActive` makes `ZombieAI` stop its own spawning (the stuck check is off through `DevFreezeRun`), and `SandboxAggro` is `ZombieAI`'s chase switch in the yard (set by the G wave, cleared by reset and calm). `ZombieRigs` has no stage: it starts loading the skinned rigs as soon as `ZombieFactory` requires it, when the entry script requires `ZombieAI`.
 
 Two ordering facts matter. `ProfileManager` is first among the services because most others hang their behaviour off `ProfileManager.onLoaded`. And `SquadService.init` is the only caller of `Remotes.init()`, so every remote instance in the game is created as a side effect of the `Hangar` stage succeeding.
 

@@ -30,6 +30,8 @@ Related: [[Architecture]], [[Performance]], [[Progress]], [[Roadmap]].
 
 **Consequence.** The physical side barriers built by `ChunkFactory` are now a backstop rather than the mechanism. The threshold constant is still called `GameConstants.WALL_WRAP_MARGIN`, a leftover name from the wrap era that no longer describes what it does.
 
+**Update (2026-10-12).** `clampToField` only pulls back a root that is at most `OFF_FIELD_MARGIN` (100 studs) past the band edge. Anything farther is not on the run yet: it is still in the cabin or the hub while the server's teleport to the wreck is on its way. Clamping it threw it to the band edge at the cabin's height, and because the client owns its character that overwrote the server teleport and dropped it out of the map on relaunches.
+
 ### Server-owned zombies chasing a lagged player position
 
 **Decision.** Every zombie root is pinned with `SetNetworkOwner(nil)` in `src/server/systems/ZombieAI.luau`, and each one paths toward a sample of the player's position taken `config.reactionDelay` seconds ago rather than the current position.
@@ -72,7 +74,7 @@ Related: [[Architecture]], [[Performance]], [[Progress]], [[Roadmap]].
 
 **Reason.** A design call: third person flattens the threat of something chasing you from behind, which is the whole premise.
 
-**Consequence.** Everything about weapon presentation had to be built for first person, which is where the viewmodel work comes from. The `firstPersonBody` setting lets a player keep their visible body, but the head and accessories are always hidden regardless, because they clip the camera.
+**Consequence.** Everything about weapon presentation had to be built for first person, which is where the viewmodel work comes from. The `firstPersonBody` setting (Show Own Body) lets a player keep their visible body, but only the legs: the head, accessories and everything above the waist (torso, upper and lower arms, hands) are always hidden regardless. Those parts sit inside the camera and fill the frame with giant untextured slabs, and the arms would duplicate the viewmodel's; only the legs read correctly when looking down. The welded third-person `WorldWeapon` is hidden too, since it would double the viewmodel.
 
 ### Managed death instead of engine ragdoll
 
@@ -153,6 +155,16 @@ Related: [[Architecture]], [[Performance]], [[Progress]], [[Roadmap]].
 **Reason.** The first pose set shipped without this and every authored translation was 39 % oversized, because `SCALE` is 0.72 and the poses were being composed raw against an already-scaled rig. Nothing errored: the gun simply moved too far, which reads as "the animation is bad" rather than as a bug with a cause. Rotations are deliberately left unscaled; only translations carry units.
 
 **Consequence.** Poses stay readable as physical distances and survive a change to `SCALE` without a rewrite. It also fixes the class of error to one place: if the viewmodel is ever rebuilt at a different size, `scaled()` is the only thing that has to be correct.
+
+The adopted mesh weapon goes through `SCALE` like the procedural path and the arms: its part sizes and rest offsets are scaled on adoption. Adopting it at its authored size left a full-size weapon in shrunken hands and made the authored pose translations, which `pose()` also scales, land short.
+
+### The sprint pose keeps the barrel on target
+
+**Decision.** The viewmodel's sprint pose in `src/shared/config/ViewmodelConfig.luau` may show weight and movement but keeps the barrel on target, with the yaw term near zero. A conventional lowered and yawed sprint carry was rejected.
+
+**Reason.** The player sprints for the whole run and must shoot while sprinting. The conventional pose measured 47 degrees off the crosshair, which made hitting a zombie impossible.
+
+**Consequence.** Sprint shows only as weight and movement in the pose; the aim stays on the crosshair.
 
 ### Sequence blend-in is per sequence, and recoil has none
 
@@ -539,3 +551,13 @@ from real uploads, and nothing extracted from other games. See `docs/asset-polic
 **Reason.** The free plan exports only models from its H2.5 version, and the H2.5 crate came out at 501,714 triangles, 25 times the 20,000-triangle limit of one MeshPart, so every model would need a reduction pass. The pricing page lists free models as "Public Models · Non-Commercial Use", while the game sells Robux products. API credits are bought separately from the web plan (the API balance was 0), and the Roblox Bridge app needs a paid plan.
 
 **Consequence.** Props keep coming from licensed packs through `assets/manifest.json`. The local key file `.tripo.key` stays git-ignored.
+
+## Implementation notes
+
+### Cursor
+
+`src/client/systems/CursorMode.luau` does not rely on every panel calling `setModalOpen`: a menu built outside this codebase never will, and the player would be stuck facing a menu they cannot click. It also scans for an enabled ScreenGui with a shown frame under 0.9 BackgroundTransparency covering more than 30 % of the viewport on both axes, plus a button or TextBox, and registers it under the separate id `ExternalMenu`.
+
+### Viewmodel
+
+`src/shared/config/ViewmodelRigConfig.luau` transcribes the free HowToRoblox Gun Viewmodel Kit and its Glock as data (arms, joints, gun parts with a `movable` flag, reference clip ids) rather than as a binary model, so it stays in git as diffable text. No current code builds a rig from it. The movable-to-Motor6D rule and the fixed joint names describe the kit's intended use, not anything the game enforces today.

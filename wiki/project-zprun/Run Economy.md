@@ -28,7 +28,8 @@ vendors and skills it sits beside.
   leaving a run alive banks the rest through `addCredits` without counting a run, from
   the profile's releasing hook so it lands before the session ends. Dying never burns
   what was earned.
-- The equipped set cannot change during a run.
+- The equipped set cannot change during a run: the equip toggle is refused outside
+  `LoadoutWindow` (the hub and the cabin's ready check).
 - Perks are the per-run layer over the persistent skills: levels and slots are bought once
   with Credits and kept; the equipped set is chosen before a run and cleared when it
   ends. Slot 1 is free. Never Robux.
@@ -45,3 +46,16 @@ vendors and skills it sits beside.
   print credits.
 - The Perk Lab sits on the west wall at z 128 rather than mirroring the Bubblegum Stand
   at z -132, which would block the gate on the south wall.
+
+## Implementation notes
+
+### Perk catalogs (`PerkService`, `ShopService`)
+
+- Perk Lab rows come in order: one PerkSlot row first, then per perk a Perk row (the
+  level purchase) and, once it has a level, a PerkEquip toggle row at price 0.
+- The Cabin catalog (the helicopter's loadout panel, served only while the player is in
+  the cabin) lists the weapon Loadout toggle rows, then the PerkEquip rows, all at price
+  0: nothing to buy there.
+- Every catalog read and every equip toggle first sanitizes the profile: if the equipped
+  set fails `validateEquipped` (a duplicate, an unknown perk, a perk at level 0, or more
+  perks than slots), the whole set is cleared. This covers corrupted and older profiles.

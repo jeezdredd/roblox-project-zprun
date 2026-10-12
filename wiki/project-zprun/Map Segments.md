@@ -30,9 +30,12 @@ To enable a map:
 - add its ambience slot to the manifest;
 - set `enabled = true`.
 
-`MapMath.check` (tests/world) then requires two enabled neighbours and two-way links.
-The lobby offers Random and the enabled maps; Random draws an enabled map from the run's
-seed.
+`MapMath.check` (tests/world) then requires two enabled neighbours and two-way links. It
+also fails on unknown neighbour or location ids, enabled maps without locations, and a
+duration range out of order.
+The lobby offers Random and the enabled maps, and may only send one of those. Random,
+and any choice that is not runnable (disabled or unknown), draws an enabled map from the
+run's roll.
 
 | Item | Status |
 | --- | --- |
@@ -53,7 +56,7 @@ seed.
 | `src/shared/world/MapMath.luau` | Pure: speed and distance over the ramp, the floor, map length in chunks, fork options, next sub-location, start map, transition and zone alpha, crossfade, vote lead, pools to free, the table check. `luau tests/world/run.luau` |
 | `src/server/systems/RoutePlan.luau` | Plans a whole map when it begins (length, sub-locations, the end fork with each option's first sub-location); holds at the boundary while the vote is open |
 | `src/server/systems/ChunkSpawner.luau` | The map transition (the new map's first chunks blend from the old map's last sub-location, pre-built ones taken first), sub-location transitions inside a map; Workspace attributes `Map`, `MapBlendFrom`, `MapBlendTo`, `MapBlendStart`, `MapBlendEnd`, `MapBlendAlpha` |
-| `src/server/systems/ChunkPools.luau` | Built chunks in ServerStorage: pools per location, pre-built transition chunks |
+| `src/server/systems/ChunkPools.luau` | Built chunks in ServerStorage, two stores: plain per-location pools reused as the run passes them, and pre-built transition chunks keyed `"<from>\|<to>\|<k>"` (k is the 0-based transition chunk). `ChunkSpawner` takes from both, `MapPreload` fills and frees them |
 | `src/server/systems/MapPreload.luau` | When a map becomes current, warms both options under a per-frame budget, frees maps two steps behind and the option not taken; `MapPreload` attribute for the clients; `MapWarmSeconds` |
 | `src/server/systems/ForkService.luau` | Divider, signs, vote at `VOTE_LEAD`; option names from `MapsConfig`; `ForkResolvedLead`, `ForkResolvedAt` |
 | `src/server/systems/ChunkFactory.luau`, `WorldFlanks.luau`, `world/WorldDressing.luau`, `shared/world/DressingPlanner.luau` | The blend by alpha (below) |
@@ -78,12 +81,34 @@ larger of:
 At today's constant 24 studs/s a map runs 23 to 34 chunks (2880 to 4320 studs). A map
 with a ramp to 60 gets proportionally longer for the same minutes.
 
+The integral uses 64 trapezoids: exact on each linear piece of the ramp, off by at most
+one step where the ramp ends or hits `maxSpeed`. A constant speed is exact.
+
+A map's optional `speed` profile is in studs/s: `initial` at the map's start, an optional
+`max` peak and `rampTime` seconds between them, capped at `MAX_RUN_SPEED`. A nil peak
+means constant speed, a nil profile means `GameConstants.BASE_RUN_SPEED` throughout. It
+only sizes the map: the live run speed (`DistanceTracker`'s `locationTargetSpeed`) comes
+from `LocationsConfig`'s `runSpeedInitial`, `runSpeedMax` and `runSpeedRampTime`.
+
+When `RoutePlan` fills a map, the first sub-location after a map boundary is stretched to
+at least `MAP_TRANSITION_CHUNKS + 1` chunks (still capped at the map's end), so the whole
+transition stays inside it. A remainder of 1 or 2 chunks at the map's end (a fixed
+threshold of 3, not each location's own minimum) is absorbed by the last sub-location.
+
 ### Forks
 
 Every map end is a fork between two different enabled neighbours (`MapMath.forkOptions`),
 drawn when the map begins so both can be prepared. Each option's first sub-location is
 drawn at the same time. A map never forks into a map that is not its neighbour. City and
 Desert are not neighbours.
+
+Inside a map, sub-locations are drawn in turn, never the same one twice running when the
+map has more than one.
+
+A map with fewer than two enabled neighbours is a config error (`MapMath.check` reports
+it). `beginMap` then plans no fork and `extendPlan` runs the same map again instead of
+stopping. There is no map transition: the sub-location blend inside the map covers the
+seam.
 
 ### Preload
 
@@ -94,9 +119,22 @@ frame within `WARM_BUDGET_MS` (4 ms):
 - warms each option's sub-location pools to 3 chunks;
 - names the options in `MapPreload` for the clients' `PreloadAsync`.
 
-When the vote closes, the option not taken loses its queued work, its transition chunks
-and its pools. Pools of maps two steps behind are freed, and everything goes when the
-run ends.
+When the vote closes, the option not taken loses:
+- its queued transition jobs, always;
+- its queued pool jobs, unless the chosen or current map needs that location;
+- its pre-built transition chunks, unless both options start in the same sub-location;
+- its warmed pools, at once, unless the chosen or current map uses them.
+
+A location's pool is freed only when it belongs to a map two or more steps behind and
+neither the previous map, the current map nor a fork option still uses it. Everything
+goes when the run ends.
+
+On the clients, the boot screen preloads the mesh and texture ids in `AssetIds` and the
+viewmodel and zombie mesh folders once. `MapPreloader` requests the fork options' meshes,
+textures, prop SurfaceAppearances and material variants (from the map's `preloadGroups`,
+WorldMeshConfig groups) when the server names them in `MapPreload`, so the chosen option
+draws at full resolution when it streams in. Each asset is requested at most once per
+session, so nothing is re-warmed later.
 
 ### Transition
 
@@ -107,7 +145,9 @@ The new map's first five chunks blend from the old map's last sub-location, at a
   ground (most at mid-blend). A patch is a cluster of two to four overlapping turned
   slabs and discs; along the chunk they thicken toward the end where the other
   ground's share grows and may hang over it, so the switch line itself is broken up
-  (`ChunkFactory.addGroundPatches`, at most 6 clusters per surface);
+  (`ChunkFactory.addGroundPatches`, at most 6 clusters per surface). Pieces are stacked
+  0.004 studs apart so overlapping slabs and discs do not z-fight. Discs are Cylinder
+  parts (axis X), turned 90 degrees about Z so the +X end is the top face;
 - each corridor-edge element is the new style with probability alpha;
 - each flank switches on its own (left at 0.4, right at 0.6);
 - both locations dress the chunk at their shares of the density.
@@ -121,6 +161,11 @@ The server publishes the zone (`MapBlendFrom`, `MapBlendTo`, `MapBlendStart`,
 distance through the zone (smoothstep), so the light changes across the five chunks
 rather than at the boundary. Night uses each preset's night variant. Ambience beds
 crossfade at equal power over the same zone.
+
+`MapAmbience` plays each bed through the audio engine's `AmbienceBed` class when the
+spatial engine is on, otherwise as a plain looped Sound in the Sfx group. A bed's level
+at full gain is 0.45, its gain follows the target at 2.5 per second, and it fades out
+over 1.5 s.
 
 ### Vote lead
 
@@ -154,7 +199,11 @@ speed while the chosen chunks are placed and stream, giving **638 studs** (was 1
    - The light shifts across the five chunks with no jump at the boundary.
    - With beds uploaded, the ambience crossfades.
 5. Yard strip: set `MapStripPair` to `all` (or `City>Forest`), and `MapStripShot` to a
-   pair for its camera. Check each row: plain, five blends, plain.
+   pair for its camera. Check each row: plain, five blends, plain. The strip is large,
+   so it is built only on demand. `MapStripShot` sets `DevCameraCFrame` to the row's
+   start and `DevLightingPreset` to the old map's lighting; an empty string releases
+   both. It is wired whether or not Play starts in the yard, since the yard is a run-time
+   DevMode switch.
 6. Over two maps, ServerStorage `ChunkPool` grows by about `3 x sub-locations` per
    option, then shrinks when the option not taken is dropped and when maps fall two steps
    behind.

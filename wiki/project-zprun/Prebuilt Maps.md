@@ -37,6 +37,18 @@ the command, the flags, the upload and the Studio checks are in
   pool, each in `pcall`. No map is listed in the config yet.
 - FBX is not read yet: the FBX reader parses the node tree but builds no static
   meshes; export to glTF.
+- `PrebuiltMapsConfig` is data only, with no engine types, so the pure Luau CLI tests
+  can load it; `PrebuiltMapMath` does not require it. A map's origin is in studs and its
+  yaw is in degrees about Y, applied the same way as `CFrame.Angles(0, yaw, 0)`: the
+  scene point is turned first, then moved to the origin.
+- `CollisionFidelity` is not writable at run time. A hint that names a fidelity (Box,
+  Hull, Default, PreciseConvexDecomposition) other than the part's current one builds a
+  fresh MeshPart with `AssetService:CreateMeshPartAsync` at that fidelity and applies its
+  geometry with `ApplyMesh`; the part keeps its size and SurfaceAppearance. If the build
+  fails, the part keeps its collision and a warning is printed.
+- A missing layout module, asset id or mesh is a warning, never an error, so the rest of
+  the map still builds. In Studio each cell prints a budget line in the chunk reports'
+  style and keeps it as its `BudgetLine` attribute.
 
 ## Tests
 

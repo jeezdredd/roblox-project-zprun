@@ -39,6 +39,8 @@ No MicroProfiler capture has been taken yet: the profiler is Studio-only. The nu
 - **Transition chunks are never pooled.** When `blend ~= nil` the chunk carries a unique per-alpha colour/material/prop mix, so `pooled = false` and the model is destroyed on despawn. With `TRANSITION_CHUNKS = 2` that is at most two throwaway builds per biome change.
 - `ChunkSpawner.configure(seed, locationIds)` destroys every pooled model at the start of a run, so a route change cannot leak stale biome geometry.
 
+Map warm-up in `src/server/systems/MapPreload.luau` builds against `WARM_BUDGET_MS` (4 ms) per frame but always builds at least one chunk, even past the budget. The real worst frame of a warm-up is therefore its slowest single chunk build, which is tracked per warm-up in milliseconds.
+
 Per-chunk geometry cost is bounded inside `src/server/systems/ChunkFactory.luau`:
 
 | Limit | Value | Constant |
@@ -135,6 +137,14 @@ Extra guards worth knowing:
 - `WorldSfx` attaches fire crackle to the first `FIRE_MAX_SOURCES = 10` anchors only; the remaining anchors are still registered as distant-boom hosts, which cost nothing until a boom fires (one every 30 to 60 s).
 - `SoundService.AmbientReverb` is switched by phase rather than per-sound; the interior/exterior weapon tail uses `AcousticSpace`-tagged zone parts read by `WeaponSfx`.
 
+Spatial voice stealing (`src/client/audio/AudioEngine.luau`, `src/client/audio/AudioMath.luau`, `src/shared/config/SpatialAudioConfig.luau`):
+
+- Class limits are enforced first, so a horde of moans steals from its own class before it can take a footstep's voice.
+- Steal score is `priority * 100 + reach * 50 - min(age, 30)` with `reach = 1 - distance / range`. Lowest score goes first: lower priority, then among equals the voice furthest out of its range and longest playing.
+- A loop coming back into range only steals a voice it outranks by 10 points (`LOOP_STEAL_MARGIN`), so two loops at the class limit do not trade one voice back and forth every check.
+- On mobile every class voice limit is scaled by 0.5, minimum 2.
+- Finished one-shots are checked for release every 8 frames. A distance layer with crossfade weight below 0.02 gets no voice, and a voice is culled only past 1.1 times its range.
+
 ## The anti-blur pass
 
 Textures were originally tiled far too coarsely: a single 1K texture stretched over 12 to 40 studs per tile, which reads as blur at first-person eye height. Commit `f7c72c7` retiled every surface to a target texel density and tightened bloom, which was masking the same problem as glow.
@@ -190,6 +200,8 @@ Labels to watch:
 - `Heartbeat`: every audio and VFX system, `ChunkSpawner.step`, `ZombieAI` (the 0.2 s accumulator means four out of five frames cost nothing), `WeaponService` reload jobs.
 - `PreSimulation` (server): `ZombieHitboxes` moving the hit boxes onto the bones.
 - `Particles`, `Lighting`, `Physics/Step`.
+
+`src/client/systems/EnvironmentQuality.luau` takes its Studio triangle and draw-call measurement 3 s after a biome change, because the new biome needs that long to stream in before the count means anything.
 
 The in-game FPS counter (`src/client/systems/FpsCounter.luau`, half-second average, toggled by the `fpsCounter` setting) is the coarse check for live sessions where the profiler is unavailable.
 

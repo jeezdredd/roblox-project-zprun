@@ -1,10 +1,5 @@
 --!strict
 
--- Interface sounds and the chase duck. With the spatial audio engine on the clicks are
--- UI-class voices on the ui bus, which joins the mix after the duck compressor so a
--- menu never dips under gunfire; the chase duck still goes through
--- MusicController.setDuck, which scales the music fader.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")

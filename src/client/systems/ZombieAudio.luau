@@ -1,12 +1,5 @@
 --!strict
 
--- Zombie voices: a looping growl on every body, periodic idle moans from nearby
--- bodies, an alert bark volley when the horde aggros, bites, and the horde walla bed.
--- With the spatial audio engine on every voice is a ZombieLoop, ZombieVocal or Bite
--- class voice following the body, so it propagates (distance curve, air, occlusion,
--- delay); the walla is a 2D ambience bed. The Sound path from before stays for the
--- flag off.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -116,7 +109,6 @@ local function attachGrowl(model: Model)
 			return
 		end
 		body:SetAttribute(GROWL_ATTRIBUTE, true)
-		-- the voice follows the body and releases itself when the model leaves the world
 		AudioEngine.play({
 			id = AudioConfig.ZOMBIE_GROWL_ID,
 			class = "ZombieLoop",

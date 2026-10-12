@@ -1,12 +1,5 @@
 --!strict
 
--- The player's own body: heartbeat and wind loops driven by health and speed, gear
--- rattle on every step, landings, the cloth whoosh on a hard lateral flip, and the
--- concussion filter after damage. Everything here sits on the listener, so with the
--- spatial audio engine on it plays as 2D PlayerFoley voices on the sfx bus and the
--- concussion drives the sfx bus equaliser; with it off the Sounds and the
--- EqualizerSoundEffect from before stay.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")

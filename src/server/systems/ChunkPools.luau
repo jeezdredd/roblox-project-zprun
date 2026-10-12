@@ -1,13 +1,5 @@
 --!strict
 
--- Built chunks waiting to be placed (wiki: Map Segments), kept in ServerStorage so they
--- never replicate until the spawner moves them into Workspace:
---   pools: plain chunks per location (no blend), reused as the run passes them;
---   transitions: the blended first chunks of a map, built ahead for each fork option
---   under the key "<from>|<to>|<k>".
--- ChunkSpawner takes from both; MapPreload fills them over several frames and frees
--- what the run has left behind.
-
 local ServerStorage = game:GetService("ServerStorage")
 
 local ChunkPools = {}
@@ -52,7 +44,6 @@ function ChunkPools.count(locationId: string): number
 	return if pool then #pool else 0
 end
 
--- Destroys a location's pooled chunks (the run has left every map that uses it).
 function ChunkPools.free(locationId: string): number
 	local pool = pools[locationId]
 	if not pool then
@@ -85,8 +76,6 @@ function ChunkPools.takeTransition(key: string): Model?
 	return model
 end
 
--- Drops every pre-built transition chunk into `toLocation` from `fromLocation` (the
--- option the vote did not choose, or all of them with nil).
 function ChunkPools.dropTransitions(fromLocation: string?, toLocation: string?)
 	for key, model in transitions do
 		local from, to = string.match(key, "^([^|]+)|([^|]+)|")
@@ -104,7 +93,6 @@ function ChunkPools.clearAll()
 	ChunkPools.dropTransitions(nil, nil)
 end
 
--- Pooled chunk counts per location and the transition count, for the Studio line.
 function ChunkPools.describe(): string
 	local parts = {}
 	for id, pool in pools do

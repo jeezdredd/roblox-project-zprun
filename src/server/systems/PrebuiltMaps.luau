@@ -1,16 +1,5 @@
 --!strict
 
--- Places the prebuilt maps (docs/environment/prebuilt-maps.md): every enabled entry in
--- PrebuiltMapsConfig.maps reads its generated layout module (src/server/prebuilt/<map>.luau,
--- server only,
--- from tools/city_import/split_scene.py), loads each cell's Model asset
--- (AssetIds.model.maps.<map>.<cell>) through InsertService and puts its meshes where the
--- layout says, under Workspace.PrebuiltMaps/<map>/<cell>. One Model per cell, streamed
--- atomically, so a cell arrives or leaves as a whole. Collision follows the layout's hint
--- (none, box, hull). In Studio each cell prints a budget line like the chunk reports and
--- keeps it as the BudgetLine attribute. A missing layout, id or mesh is a warning, never
--- an error: the rest of the map still builds.
-
 local AssetService = game:GetService("AssetService")
 local InsertService = game:GetService("InsertService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -66,9 +55,6 @@ local function vector(values: { number }): Vector3
 	return Vector3.new(values[1], values[2], values[3])
 end
 
--- The collision the hint asks for. A Box or Hull fidelity can only come from a fresh
--- mesh build (CollisionFidelity is not writable at run time), so the part takes the
--- geometry of a MeshPart built with it; the part keeps its size and SurfaceAppearance.
 local function applyCollision(part: MeshPart, hint: string)
 	local collision = PrebuiltMapMath.collision(hint)
 	part.CanCollide = collision.canCollide
@@ -103,7 +89,6 @@ local function report(holder: Instance, label: string, result: PrebuiltMapMath.R
 	print(line)
 end
 
--- One cell; runs inside a worker's pcall, so an error here only loses this cell.
 local function buildCell(entry: PrebuiltMapsConfig.MapEntry, layout: PrebuiltMapMath.Layout, cell: PrebuiltMapMath.Cell, assetId: number, parent: Instance)
 	local ok, container = pcall(function()
 		return InsertService:LoadAsset(assetId)
@@ -170,8 +155,6 @@ local function buildMap(entry: PrebuiltMapsConfig.MapEntry)
 		warn(`[PrebuiltMaps] {entry.map}: {skipped} of {#layout.cells} cells have no asset id yet (model/maps/{entry.map}/)`)
 	end
 
-	-- a fixed pool of workers takes the cells in order; each cell runs in pcall, so a
-	-- failure never holds a slot or stops the others
 	local nextJob = 1
 	local running = 0
 	local function worker()

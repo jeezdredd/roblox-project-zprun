@@ -1,13 +1,5 @@
 --!strict
 
--- Hit and kill markers (docs/gameplay/hit-markers.md), after Modern Warfare 2019's hip
--- fire: four short diagonal ticks around the crosshair when the server confirms the
--- local shooter's shot hurt a zombie, tinted for a headshot, larger and red for a kill.
--- Driven only by the server's confirmation in the WeaponHit "Shot" reply (its sixth
--- value), never by the client's prediction, so a marker never shows for a hit the
--- server did not count. One marker at a time, restarted by the next confirmation
--- (HitMarkerMath); the "Hit markers" setting turns them off.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -25,7 +17,6 @@ local HitMarkers = {}
 
 local player = Players.LocalPlayer
 
--- the four ticks: their direction from the centre and their rotation
 local CORNERS = {
 	{ -1, -1, 45 },
 	{ 1, -1, -45 },
@@ -71,8 +62,6 @@ local function build()
 	end
 end
 
--- The crosshair the weapon HUD draws (it moves with hip aim); the screen's centre when
--- it is not there.
 local function crosshairCentre(): UDim2
 	local hud = player:FindFirstChild("PlayerGui") and (player.PlayerGui :: PlayerGui):FindFirstChild("WeaponHud")
 	local crosshair = hud and hud:FindFirstChild("Crosshair")
@@ -116,7 +105,6 @@ local function playSound(key: string)
 	SfxPlayer.play2D(id, HitMarkerConfig.SOUND_VOLUME)
 end
 
--- The server's confirmation for one of the local player's shots.
 local function onConfirm(raw: any)
 	if not enabled or typeof(raw) ~= "table" then
 		return
@@ -164,8 +152,6 @@ function HitMarkers.init()
 			holder.Visible = false
 		end
 	end)
-	-- the same reply WeaponController draws other players' shots from; only the local
-	-- shooter's own shots carry a confirmation for this player
 	DamageNumbers.init()
 	Remotes.getEvent(Remotes.Event.WeaponHit).OnClientEvent:Connect(function(kind, _origin, hits, shooter, _weaponId, confirm)
 		if kind == "Shot" and shooter == player then

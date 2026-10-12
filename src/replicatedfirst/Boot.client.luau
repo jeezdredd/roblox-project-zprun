@@ -110,17 +110,9 @@ local function tween(instance: Instance, time: number, goals: { [string]: any })
 	TweenService:Create(instance, TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), goals):Play()
 end
 
--- Everything visual the first run needs: the mesh templates and their textures in
--- ReplicatedStorage, and every texture and mesh id in AssetIds (world props, PBR sets).
--- Without this the textures arrive while the player is already running and visibly
--- sharpen from a blurry first mip.
 local PRELOAD_FOLDERS = { "ViewModels", "ViewModelArms", "ZombieMeshes" }
 local PRELOAD_BRANCHES = { "texture", "mesh" }
 
--- Returns what to hand PreloadAsync and how many assets that should come to. The asset
--- folders go in as instances: SurfaceAppearance maps cannot be read from a game script
--- (reading ColorMap needs the Plugin capability), but PreloadAsync fetches everything an
--- instance references, so the folders load in full without reading them.
 local function collectContent(): ({ any }, number)
 	local seen: { [string]: boolean } = {}
 	local list: { any } = {}
@@ -174,11 +166,9 @@ end
 
 type PreloadProgress = { total: number, loaded: number, done: boolean }
 
--- Starts the preload in the background; the returned table fills in as assets arrive.
 local function startPreload(): PreloadProgress
 	local progress: PreloadProgress = { total = 0, loaded = 0, done = false }
 	task.spawn(function()
-		-- whatever goes wrong, the boot must not wait on a preload that died
 		local ok, err = pcall(function()
 			local list, expected = collectContent()
 			progress.total = math.max(expected, 1)
@@ -194,9 +184,6 @@ local function startPreload(): PreloadProgress
 	return progress
 end
 
--- Share of the bar each phase fills: uplink, assets (driven by the real preload count),
--- priming, deploying. The asset phase is the only one that waits on anything, and it
--- shows its count so a slow first load reads as progress rather than a hang.
 local BAR_SPLIT = { 0.08, 0.8, 0.06, 0.06 }
 
 local function runLoadingPhase(gui: BootGui)

@@ -1,9 +1,5 @@
 --!strict
 
--- Per-chunk cost estimate against the desktop and mobile budgets. Pure Luau with no
--- requires: the counts and the triangle tables (DressingConfig) come in as arguments,
--- so the server counter (ChunkBudgetCounter) and the tests share the arithmetic.
-
 export type Budget = {
 	parts: number,
 	triangles: number,
@@ -21,9 +17,7 @@ export type Config = {
 
 export type Counts = {
 	parts: number,
-	-- mesh instances per mesh name
 	meshes: { [string]: number },
-	-- primitive parts per shape name (Block, Wedge, Cylinder, Ball)
 	primitives: { [string]: number },
 	instances: number,
 	decals: number,
@@ -63,7 +57,6 @@ function ChunkBudget.report(config: Config, counts: Counts): Report
 	}
 end
 
--- Names of the measures over the budget, in the table's order.
 function ChunkBudget.over(report: Report, budget: Budget): { string }
 	local out = {}
 	for _, measure in MEASURES do

@@ -1,14 +1,5 @@
 --!strict
 
--- Studio test yard (Sandbox): the zombie clip gallery. Every skin gets a row with one
--- standing model per clip, each looping its clip in place so it can be judged from the
--- side. Walk and run clips have their root travel removed (tools/zombie_pack), so each
--- walker stands on a strip whose texture the client scrolls at the clip's measured
--- ground speed (SandboxInput): feet that stay planted on the moving ground mean the
--- speed data, and so the in-game playback rate, is right. One-shots (attack, hit,
--- scream, deaths) hold their last frame for a moment and start again. Bullets pass
--- through the gallery (no queryable parts), so the range next to it is safe to use.
-
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -28,8 +19,6 @@ type Station = {
 	holdUntil: number?,
 }
 
--- clip slots in display order (AssetIds.animation.zombie_sf.<rig>.<slot>, and the "_ue"
--- slots from AssetIds.animation.zombie_fab.<rig>, the retargeted Fab UEFN pack)
 local SLOT_ORDER = {
 	"idle",
 	"idle_b",
@@ -62,17 +51,13 @@ local LOOPED: { [string]: boolean } = {
 	run_ue = true,
 	crawl_ue = true,
 }
--- which ZombiesConfig entry builds each skin (the config only sets health and speeds)
 local SKIN_CONFIG: { [string]: string } = { Walker = "Walker", Hazmat = "Walker", Ghoul = "Runner" }
 local SKINS = { "Walker", "Hazmat", "Ghoul" }
 
 local COLUMN_SPACING = 9
 local ROW_SPACING = 28
 local STATION_LABEL_RANGE = 24
--- a one-shot's last frame is held this long before it starts again
 local HOLD = 1.2
--- one frame short of the end: a non-looped track that reaches its end stops, and the
--- rig would snap to its bind pose before the next play
 local END_MARGIN = 0.06
 
 local stations: { Station } = {}
@@ -99,8 +84,6 @@ local function groundSpeed(skin: ZombieSkins.Skin, id: number): number
 	return 0
 end
 
--- Ground strip under a walking model; the client scrolls its texture along +X's
--- opposite (the model faces +X, so the ground moves toward its back).
 local function treadmill(parent: Instance, position: Vector3, speed: number)
 	local strip = Instance.new("Part")
 	strip.Name = "Treadmill"
@@ -117,7 +100,6 @@ local function treadmill(parent: Instance, position: Vector3, speed: number)
 	texture.StudsPerTileU = 2
 	texture.StudsPerTileV = 2
 	texture.Parent = strip
-	-- stripes make the motion easy to read at any distance
 	for i = -3, 3, 2 do
 		local line = Instance.new("Part")
 		line.Name = "Stripe"
@@ -177,11 +159,9 @@ local function buildStation(parent: Instance, config: ZombiesConfig.ZombieConfig
 		text ..= string.format("  %.2f st/s", speed)
 		treadmill(parent, ground, speed)
 	end
-	-- short range: from in front of one row the labels of the rows behind stay hidden
 	label(text, ground + Vector3.new(0, 7.5, 0), parent, STATION_LABEL_RANGE)
 end
 
--- Holds each one-shot on its last frame for HOLD seconds, then restarts it.
 local function step()
 	local now = os.clock()
 	for _, station in stations do

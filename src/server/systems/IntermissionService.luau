@@ -1,22 +1,5 @@
 --!strict
 
--- The helicopter intermission (docs/gameplay/heli-intermission.md), between the squad's
--- launch countdown (SquadService) and the run (MissionService.startSquad):
---
---   Cabin  the squad sits in a helicopter cabin far off the map. Ready check: the run
---          goes when everyone still here is ready, or after READY_TIMEOUT for whoever
---          is here. Loadout and perk swaps are open (LoadoutWindow, the "Cabin" panel
---          of ShopService); a member may leave back to the hub.
---   Crash  the crash cinematic. The server only waits CRASH_LENGTH (the short,
---          skippable version when every member has run before); the camera, light and
---          sound are the client's. Nothing can be changed and nobody can leave.
---   Wake   MissionService.startSquad spawns whoever is still here at the wreck and
---          each gets GraceUntil (server time): ZombieAI neither chases nor hurts them
---          until it passes, and the client shows "RUN".
---
--- One intermission at a time (one run at a time); SquadService refuses a launch while
--- one is busy. The rules are IntermissionMath (pure, tests/intermission).
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -72,7 +55,6 @@ local function cabinOrigin(): CFrame
 	return CFrame.new(vec(IntermissionConfig.CABIN_ORIGIN))
 end
 
--- The wreck: an offset from the run's start, in its frame.
 function IntermissionService.wreckCFrame(): CFrame
 	return HangarConfig.RUN_START_CFRAME * CFrame.new(vec(IntermissionConfig.WRECK_OFFSET))
 end
@@ -104,7 +86,6 @@ local function buildCabin()
 		seat.Parent = model
 		seatParts[index] = seat
 
-		-- the seated eye for IntermissionCamera, looking along the seat at the open door
 		local view = Instance.new("Part")
 		view.Name = "SeatView" .. index
 		view.Size = Vector3.new(0.2, 0.2, 0.2)
@@ -127,8 +108,6 @@ local function buildCabin()
 		light.Brightness = 2.5
 		light.Parent = strip
 	end
-	-- the hub's dusk lighting leaves the olive cabin near black: a dim warm dome light
-	-- over the troop seats and the green of the instruments in the cockpit
 	local floor = model:FindFirstChild("Floor")
 	if floor and floor:IsA("BasePart") then
 		for _, spec in IntermissionConfig.CABIN_FILL_LIGHTS do
@@ -140,7 +119,6 @@ local function buildCabin()
 			fill.Color = Color3.fromRGB(spec.color[1], spec.color[2], spec.color[3])
 			fill.Brightness = spec.brightness
 			fill.Range = spec.range
-			-- no shadows: the seats and crates would black out the floor under them
 			fill.Shadows = false
 			fill.Parent = attachment
 		end
@@ -240,8 +218,6 @@ local function disconnect(current: Session, player: Player)
 	end
 end
 
--- Keeps a member in their seat: after a character reset, and when the seat lets go
--- (a jump), seated again on the next frame.
 local function watchMember(current: Session, player: Player)
 	disconnect(current, player)
 	local list: { RBXScriptConnection } = {}
@@ -266,7 +242,6 @@ local function watchMember(current: Session, player: Player)
 	end
 end
 
--- Takes a player out of the intermission's state (attributes, seat, watches).
 local function release(current: Session, player: Player)
 	disconnect(current, player)
 	unseat(current, player)
@@ -287,8 +262,6 @@ local function sendHome(player: Player)
 	Remotes.getEvent(Remotes.Event.IntermissionState):FireClient(player, nil)
 end
 
--- A member out of the intermission: they left the game, or chose to leave the cabin
--- (sent back to the hub). The rest carry on; an empty cabin ends it.
 local function removeMember(player: Player, toHub: boolean)
 	local current = session
 	if not current then
@@ -328,7 +301,6 @@ local function toCrash(current: Session)
 	publish()
 end
 
--- The wake-up: whoever is still here spawns at the wreck with the grace window.
 local function finish(current: Session)
 	session = nil
 	local present: { Player } = {}
@@ -351,7 +323,6 @@ local function finish(current: Session)
 		if MissionState.isParticipant(player) then
 			player:SetAttribute(GRACE_ATTRIBUTE, graceUntil)
 		else
-			-- the run did not take them (dead, or a run already going): back home
 			sendHome(player)
 		end
 	end
@@ -394,9 +365,6 @@ function IntermissionService.isBusy(): boolean
 	return session ~= nil
 end
 
--- Called by SquadService at the end of the launch countdown in place of
--- MissionService.startSquad. False when another intermission is going or nobody
--- could board.
 function IntermissionService.begin(members: { Player }, config: Squad.SquadConfig, seed: number): boolean
 	if session or MissionState.isActive() or not cabin then
 		return false
@@ -472,7 +440,6 @@ local function onSkip(player: Player)
 	end
 end
 
--- The squad leave button: out of the cabin back to the hub, during the ready check only.
 local function onLeave(player: Player)
 	local current = session
 	if current and current.stage == "Cabin" and table.find(current.members, player) then
@@ -484,8 +451,6 @@ function IntermissionService.init()
 	buildCabin()
 	Remotes.getEvent(Remotes.Event.IntermissionReady).OnServerEvent:Connect(onReady)
 	Remotes.getEvent(Remotes.Event.IntermissionSkip).OnServerEvent:Connect(onSkip)
-	-- the same remote the hangar's squad panel uses; SquadService ignores a player who
-	-- is no longer in a hangar squad
 	Remotes.getEvent(Remotes.Event.SquadLeave).OnServerEvent:Connect(onLeave)
 	Players.PlayerRemoving:Connect(function(player)
 		lastToggleAt[player] = nil

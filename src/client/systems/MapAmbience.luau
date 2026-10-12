@@ -1,13 +1,5 @@
 --!strict
 
--- Each map's ambience bed during a run (wiki: Map Segments), crossfaded over a map
--- boundary: inside the transition zone (MapBlend* Workspace attributes from
--- ChunkSpawner) the old map's bed and the new one's play at equal-power gains for this
--- player's place in the zone; elsewhere the map at the lead runner plays alone. A bed
--- whose id is 0 (AssetIds.audio.ambience, still needed) is silence, so this runs before
--- any bed is uploaded. Through the audio engine's AmbienceBed class when it is on, a
--- plain looped Sound in the Sfx group otherwise.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -29,7 +21,6 @@ type Bed = {
 	gain: number,
 }
 
--- the bed's level at full gain, and how fast a gain follows its target (per second)
 local VOLUME = 0.45
 local FOLLOW = 2.5
 local FADE_OUT = 1.5
@@ -96,7 +87,6 @@ local function setGain(bed: Bed, gain: number)
 	end
 end
 
--- The wanted gain per map for this frame.
 local function targets(): { [string]: number }
 	local out: { [string]: number } = {}
 	if Players.LocalPlayer:GetAttribute("FlowPhase") ~= "Mission" then

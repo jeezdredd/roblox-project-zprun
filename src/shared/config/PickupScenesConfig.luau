@@ -1,24 +1,12 @@
 --!strict
 
--- Diegetic weapon pickups (docs/gameplay/weapon-pickups.md): weapons lie in the world
--- as staged scenes placed along the corridor by the world generator, deterministic
--- from the run seed, taken by holding the prompt. Data only, no engine types: the pure
--- planner (src/shared/world/PickupPlanner.luau) and its tests read this table under the
--- standalone Luau CLI, so colours are {r, g, b} and sizes {x, y, z}; the server builder
--- (WeaponPickups) turns them into parts. Scenes are built from primitives and the props
--- already in WorldMeshConfig (police car, sandbags, supply crate): no new asset, no id.
-
 export type Vec = { number }
 
--- One part of a scene, in the scene's own frame (x right, y up, -z toward the road).
 export type PartSpec = {
-	-- "box", "cylinder" (axis along x, as Roblox cylinders are), "ball", or "mesh" (a
-	-- WorldMeshConfig group placed through WorldMeshes with `fallback` when not loaded)
 	kind: string,
 	name: string,
 	size: Vec?,
 	at: Vec,
-	-- degrees
 	yaw: number?,
 	pitch: number?,
 	roll: number?,
@@ -26,7 +14,6 @@ export type PartSpec = {
 	material: string?,
 	collide: boolean?,
 	group: string?,
-	-- mesh: the footprint length along z (placeByLength) or the height
 	length: number?,
 	height: number?,
 	fallback: { PartSpec }?,
@@ -35,20 +22,12 @@ export type PartSpec = {
 export type SceneConfig = {
 	id: string,
 	displayName: string,
-	-- the WeaponsConfig id handed over; a disabled scene may name a weapon that does not
-	-- exist yet (the chainsaw)
 	weaponId: string,
 	enabled: boolean,
-	-- the prompt's object text
 	prompt: string,
-	-- biomes (LocationsConfig ids) the scene may appear in; nil means any
 	biomes: { string }?,
-	-- pick weight among the scenes allowed in a biome
 	weight: number,
-	-- ground footprint radius, for the occupancy check against the chunk's props
 	radius: number,
-	-- where the weapon prop sits in the scene frame; the prompt and the highlight
-	-- anchor there
 	weaponAt: Vec,
 	weaponYaw: number?,
 	weaponPitch: number?,
@@ -58,36 +37,24 @@ export type SceneConfig = {
 
 local PickupScenesConfig = {}
 
--- The prompt: hold this long, from this far. The server accepts a trigger from a
--- little further than the prompt shows, for the latency of a running player.
 PickupScenesConfig.HOLD_DURATION = 0.3
 PickupScenesConfig.PROMPT_DISTANCE = 10
 PickupScenesConfig.PICKUP_DISTANCE = 16
 
--- Highlights: Roblox renders 31 at once, the pool never holds more than this many; the
--- nearest scenes get them and a held one keeps its slot until a new scene is closer by
--- the margin (studs), so two scenes at the same distance never trade the outline.
 PickupScenesConfig.HIGHLIGHT_BUDGET = 24
 PickupScenesConfig.HIGHLIGHT_SWAP_MARGIN = 6
 PickupScenesConfig.HIGHLIGHT_REFRESH = 0.25
 PickupScenesConfig.HIGHLIGHT_OUTLINE = { 232, 200, 120 }
 PickupScenesConfig.HIGHLIGHT_OUTLINE_DROP = { 236, 74, 58 }
 
--- Placement: no scene in the first chunks (the squad starts with its loadout), clear
--- of the chunk ends, on the road shoulder this far inside the playable edge, facing
--- the road with a little yaw jitter. The planner offers this many candidate spots per
--- scene and the server takes the first one free of the chunk's props.
 PickupScenesConfig.START_CLEARANCE_CHUNKS = 2
 PickupScenesConfig.END_CLEARANCE = 14
 PickupScenesConfig.SHOULDER_INSET = { 4, 12 }
 PickupScenesConfig.YAW_JITTER = 20
 PickupScenesConfig.CANDIDATES = 3
--- the supply drop lands in the middle of the lane, this fraction of the playable half
--- width either side, and never within this many studs along the road of a scene
 PickupScenesConfig.DROP_LANE_FRACTION = 0.5
 PickupScenesConfig.SCENE_DROP_GAP = 24
 
--- Chance of one scene per chunk, per biome (LocationsConfig ids).
 PickupScenesConfig.density = {
 	City = 0.45,
 	Wasteland = 0.4,
@@ -96,9 +63,6 @@ PickupScenesConfig.density = {
 	Cornfield = 0.25,
 } :: { [string]: number }
 
--- The crashed supply drop (the reworked mystery box): red smoke, opened for run
--- credits, the weapon rolled from the weighted table server-side. Green smoke stays
--- the ammo crate's (AmmoCrates).
 PickupScenesConfig.supplyDrop = {
 	cost = 250,
 	chance = {
@@ -126,7 +90,6 @@ local POLICE_WHITE = { 214, 214, 210 }
 local POLICE_BLACK = { 30, 30, 34 }
 local CRATE = { 92, 98, 70 }
 
--- The weapon props by weapon id, in the gun's frame (-z along the barrel, y up).
 PickupScenesConfig.weaponProps = {
 	Pistol = {
 		{ kind = "box", name = "Slide", size = { 0.34, 0.36, 1.5 }, at = { 0, 0.18, -0.2 }, color = POLICE_BLACK, material = "Metal" },
@@ -160,7 +123,6 @@ end
 PickupScenesConfig.order = { "DeadSoldier", "FencePost", "PoliceCar", "Checkpoint", "Sawmill" }
 
 PickupScenesConfig.scenes = {
-	-- A soldier who did not make it, his carbine beside him. Any biome.
 	DeadSoldier = scene({
 		id = "DeadSoldier",
 		displayName = "Fallen soldier",
@@ -187,7 +149,6 @@ PickupScenesConfig.scenes = {
 			{ kind = "box", name = "Pack", size = { 1.6, 0.7, 1.4 }, at = { -0.1, 1.0, 0.6 }, color = { 60, 62, 48 }, material = "Fabric" },
 		},
 	}),
-	-- A pump shotgun left leaning on a fence post at the field's edge.
 	FencePost = scene({
 		id = "FencePost",
 		displayName = "Fence post",
@@ -196,8 +157,6 @@ PickupScenesConfig.scenes = {
 		prompt = "S870 Shotgun",
 		biomes = { "Farmstead", "Cornfield", "Forest" },
 		weight = 3,
-		-- the fence is centred on the scene origin: posts at x -2.75 and 2.75, the crate
-		-- past the near post, everything inside this radius
 		radius = 4.5,
 		weaponAt = { -2.2, 1.9, 0.35 },
 		weaponYaw = 8,
@@ -210,7 +169,6 @@ PickupScenesConfig.scenes = {
 			{ kind = "box", name = "Crate", size = { 1.6, 1.2, 1.6 }, at = { -3.6, 0.6, 0.9 }, yaw = 15, color = CRATE, material = "WoodPlanks" },
 		},
 	}),
-	-- A sidearm on the hood of an abandoned police car.
 	PoliceCar = scene({
 		id = "PoliceCar",
 		displayName = "Police car",
@@ -242,7 +200,6 @@ PickupScenesConfig.scenes = {
 			{ kind = "box", name = "Cone", size = { 0.9, 1.4, 0.9 }, at = { 4.6, 0.7, 5.2 }, color = { 226, 96, 40 }, material = "SmoothPlastic" },
 		},
 	}),
-	-- An SMG on the sandbags of an abandoned checkpoint.
 	Checkpoint = scene({
 		id = "Checkpoint",
 		displayName = "Checkpoint",
@@ -273,7 +230,6 @@ PickupScenesConfig.scenes = {
 			{ kind = "box", name = "SignPost", size = { 0.16, 2.2, 0.16 }, at = { 3.4, 1.1, 0.8 }, color = STEEL, material = "Metal" },
 		},
 	}),
-	-- The chainsaw at the sawmill: a config entry only, until a melee system exists.
 	Sawmill = scene({
 		id = "Sawmill",
 		displayName = "Sawmill",
@@ -295,7 +251,6 @@ function PickupScenesConfig.get(id: string): SceneConfig?
 	return PickupScenesConfig.scenes[id]
 end
 
--- Whether a scene may appear in `biome`.
 function PickupScenesConfig.allowedIn(config: SceneConfig, biome: string): boolean
 	if not config.enabled then
 		return false

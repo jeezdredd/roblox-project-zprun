@@ -16,12 +16,8 @@ local LightingDirector = {}
 local PHASE_ATTRIBUTE = "FlowPhase"
 local NIGHT_ATTRIBUTE = "NightMission"
 local BIOME_ATTRIBUTE = "Biome"
--- the map at the lead runner and the boundary zone being crossed (ChunkSpawner): over
--- the zone the preset is the two maps' presets blended by where this player is, so the
--- light changes across the transition chunks instead of at the boundary
 local MAP_ATTRIBUTE = "Map"
 local BLEND_ATTRIBUTES = { "MapBlendFrom", "MapBlendTo", "MapBlendStart", "MapBlendEnd" }
--- Studio QA: a preset id forced from the command bar or the biome strip (nil releases it)
 local DEV_PRESET_ATTRIBUTE = "DevLightingPreset"
 
 local atmosphere: Atmosphere
@@ -121,8 +117,6 @@ local function presetForMap(mapId: string): LightingConfig.LightingPreset?
 	return LightingConfig.get(id)
 end
 
--- Over a map boundary zone: the two maps' presets blended by this player's place in
--- the zone; nil outside one (or with a preset forced in Studio).
 local function zoneTarget(): LightingConfig.LightingPreset?
 	if RunService:IsStudio() and Workspace:GetAttribute(DEV_PRESET_ATTRIBUTE) ~= nil then
 		return nil
@@ -205,7 +199,6 @@ function LightingDirector.init()
 	Workspace:GetAttributeChangedSignal(NIGHT_ATTRIBUTE):Connect(refreshTarget)
 	Workspace:GetAttributeChangedSignal(BIOME_ATTRIBUTE):Connect(refreshTarget)
 	Workspace:GetAttributeChangedSignal(MAP_ATTRIBUTE):Connect(refreshTarget)
-	-- leaving a zone hands the target back to the map's own preset
 	Workspace:GetAttributeChangedSignal(BLEND_ATTRIBUTES[1]):Connect(refreshTarget)
 	Workspace:GetAttributeChangedSignal("SandboxActive"):Connect(snapToTarget)
 	if RunService:IsStudio() then
@@ -216,7 +209,6 @@ function LightingDirector.init()
 	RunService.Heartbeat:Connect(step)
 end
 
--- The preset on screen right now (mid-lerp values included), for PostFx.
 function LightingDirector.getCurrent(): LightingConfig.LightingPreset
 	return current or LightingConfig.get("Hub")
 end

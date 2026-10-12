@@ -1,14 +1,5 @@
 --!strict
 
--- Authored viewmodel poses. Each pose is a table of bone name -> CFrame offset that
--- multiplies the bone's rest transform, so an empty table is the neutral pose.
---
--- Bone names come from ViewmodelBuilder: weaponRoot, slide, pump, magazine,
--- handR / handRWrist / handRForearm, handL / handLWrist / handLForearm.
---
--- Every pose here was checked in Studio with screen_capture before being committed;
--- see docs/asset-policy.md.
-
 export type Pose = { [string]: CFrame }
 
 local PoseLibrary = {}
@@ -23,9 +14,7 @@ end
 
 local EMPTY: Pose = {}
 
--- Left hand over the pistol slide, palm down (see pistol rackGrab).
 local RACK_GRIP = angles(74.1, -36.1, -39.9)
--- Left hand hooking the rifle charging handle (see rifle rackGrab).
 local CHARGE_GRIP = angles(-98.9, -65.2, -24.5)
 
 PoseLibrary.pistol = {
@@ -38,9 +27,6 @@ PoseLibrary.pistol = {
 		handLForearm = angles(-4, 0, 0),
 	},
 
-	-- Kept deliberately small: see the note on ViewmodelConfig.sprint. The player
-	-- sprints for the entire run, so anything that takes the barrel off the crosshair
-	-- here is permanent rather than transient.
 	sprint = {
 		weaponRoot = offset(-0.05, -0.05, 0.03, -4, 3, -3),
 		handLForearm = angles(3, -4, 0),
@@ -52,10 +38,6 @@ PoseLibrary.pistol = {
 		handLForearm = angles(-10, 0, 0),
 	},
 
-	-- Draw: the pistol comes up canted to the left and the left hand comes over the top,
-	-- takes the rear of the slide overhand, racks it back and lets it go. Hand offsets are
-	-- in weapon space, unscaled units of pistol.rig.txt; the hand frame was built with
-	-- fingers across the slide toward +X and the palm down.
 	rackGrab = {
 		weaponRoot = offset(-0.2, 0.06, 0.02, 8, 18, 38),
 		handL = CFrame.new(0.03, 0.4, 0.16) * RACK_GRIP,
@@ -125,11 +107,6 @@ PoseLibrary.pistol = {
 	},
 } :: { [string]: Pose }
 
--- Longarms share the pistol layout but need a wider support-hand travel and a bolt
--- instead of a slide; the shotgun overrides the reload with a pump stroke.
--- Left hand on the magazine, in weapon space: turned so the hand's grip axis runs up the
--- magazine (Rx 90), then swung about that axis so the forearm leaves the frame down and
--- back instead of lying across it.
 local MAG_GRIP = angles(0, 55, 0) * angles(90, 0, 0)
 
 PoseLibrary.rifle = {
@@ -148,9 +125,6 @@ PoseLibrary.rifle = {
 		weaponRoot = offset(0, -0.5, 0.06, -32, 10, 0),
 	},
 
-	-- Draw: the rifle is pushed out canted to the left, the left hand comes over the top
-	-- of the upper receiver, hooks the charging handle, pulls it back and lets it go.
-	-- Hand frame built with the fingers up and across the receiver toward +X.
 	rackGrab = {
 		weaponRoot = offset(-0.3, 0.08, -0.45, 12, 16, 32),
 		handL = CFrame.new(-0.039, 0.189, 1.033) * CHARGE_GRIP,
@@ -166,13 +140,6 @@ PoseLibrary.rifle = {
 		handL = CFrame.new(-0.45, -0.15, 1.2) * CHARGE_GRIP,
 	},
 
-	-- Magazine change with the mesh arms, checked frame by frame in Studio. Hand offsets
-	-- are in weapon space (ViewmodelBuilder converts them for the mesh hand pivots), in
-	-- the same unscaled units as assets/viewmodels/rifle.rig.txt: the left hand's rest
-	-- pivot sits on the handguard axis at (0, 0.15, -0.47), the magazine centre at
-	-- (0, -0.49, 0.02). The weapon comes up towards the centre and rolls to show the well, the left hand comes off
-	-- the handguard, takes the magazine, strips it, drops out of frame to the vest,
-	-- brings a fresh one back, seats it with a push and returns.
 	reloadStart = {
 		weaponRoot = offset(-0.12, 0.16, 0.1, 6, 14, -22),
 		handL = CFrame.new(-0.16, -0.14, 0.1),
@@ -207,14 +174,11 @@ PoseLibrary.rifle = {
 		handL = CFrame.new(-0.02, -0.74, 0.5) * MAG_GRIP,
 	},
 
-	-- the heel of the hand pushes the magazine home: the weapon jumps a little
 	magSeat = {
 		weaponRoot = offset(-0.2, 0.36, 0.14, 13, 17, -26),
 		handL = CFrame.new(-0.02, -0.66, 0.5) * MAG_GRIP,
 	},
 
-	-- empty magazine: the left hand slaps the bolt release on the left of the receiver,
-	-- just above the magazine well
 	boltBack = {
 		weaponRoot = offset(-0.14, 0.2, 0.1, 8, 14, -20),
 		handL = CFrame.new(-0.3, -0.34, 0.56) * MAG_GRIP,
@@ -258,7 +222,6 @@ PoseLibrary.shotgun = {
 		weaponRoot = offset(0, -0.5, 0.06, -32, 10, 0),
 	},
 
-	-- Draw: rack the pump (the box support hand rides on the pump)
 	rackGrab = {
 		weaponRoot = offset(0, 0.02, 0.04, -4, 6, -8),
 	},
@@ -275,7 +238,6 @@ PoseLibrary.shotgun = {
 		handL = CFrame.new(),
 	},
 
-	-- shotguns cycle by pump rather than a magazine swap
 	reloadStart = {
 		weaponRoot = offset(0.02, -0.08, 0.04, -10, 8, -8),
 	},
@@ -321,8 +283,6 @@ PoseLibrary.shotgun = {
 	},
 } :: { [string]: Pose }
 
--- The SMG still uses box arms, whose hand offsets are not in weapon space, so it takes
--- the rifle poses without the mesh-hand draw (the Equip sequence falls back to idle).
 local smg: { [string]: Pose } = table.clone(PoseLibrary.rifle)
 smg.rackGrab = nil
 smg.rackPull = nil

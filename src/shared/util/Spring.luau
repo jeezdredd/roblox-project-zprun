@@ -1,11 +1,5 @@
 --!strict
 
--- Semi-implicit Euler spring integrator.
--- An underdamped spring given an impulse overshoots its target and settles with a
--- decaying wobble: Spring.number(120, 12, 0) with :Impulse(10) rises past 0, crosses
--- back, and converges to 0 within roughly a second. Critical damping is damping =
--- 2 * sqrt(stiffness); values below that overshoot, values above crawl in.
-
 local MAX_STEP = 1 / 30
 
 export type NumberSpring = {
@@ -27,7 +21,6 @@ export type VectorSpring = {
 	target: Vector3,
 	stiffness: number,
 	damping: number,
-	-- integration step cap; nil is MAX_STEP (see Spring.vector)
 	maxStep: number?,
 	SetTarget: (VectorSpring, Vector3) -> (),
 	Impulse: (VectorSpring, Vector3) -> (),
@@ -118,10 +111,6 @@ function Spring.number(stiffness: number, damping: number, initial: number?): Nu
 	return (spring :: any) :: NumberSpring
 end
 
--- `maxStep` caps the integration step. At the default 1/30 an impulse loses most of its
--- velocity to the damping term in the first step, so the response depends on the frame
--- rate (a recoil kick peaks at 0.86 degrees at 60 fps and 0.26 at 15). Springs driven by
--- impulses that must feel the same at any frame rate pass a small step such as 1/240.
 function Spring.vector(stiffness: number, damping: number, initial: Vector3?, maxStep: number?): VectorSpring
 	local start = initial or Vector3.zero
 	local spring = setmetatable({

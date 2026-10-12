@@ -1,9 +1,5 @@
 --!strict
 
--- Damage numbers (DamageNumbers.luau): pool size, times in seconds (the fade starts at
--- FADE_FROM of the duration), rise and sideways jitter in studs, the BillboardGui size and
--- text sizes in pixels, hidden beyond MAX_DISTANCE studs.
-
 local DamageNumberConfig = {}
 
 DamageNumberConfig.POOL_SIZE = 24

@@ -306,7 +306,6 @@ function ShopGui.render(catalog: any)
 	end
 end
 
--- `titleOverride` replaces the vendor's display name (the cabin's loadout panel has no room).
 function ShopGui.open(vendorId: string, titleOverride: string?)
 	local gui = screen
 	local frame = panel

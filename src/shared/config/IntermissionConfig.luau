@@ -1,13 +1,5 @@
 --!strict
 
--- The helicopter intermission (docs/gameplay/heli-intermission.md): between the
--- squad's launch countdown and the run, the squad sits in a helicopter cabin off the
--- map for a ready check, then waits out the crash cinematic, then wakes at the wreck
--- with a grace window. Data only, no engine types: the pure IntermissionMath and its
--- tests read this table under the standalone Luau CLI. Positions are {x, y, z},
--- colours {r, g, b}; the server builds CFrames from them. The cabin is primitives
--- through SceneParts (PartSpec shape), no asset.
-
 export type Vec = { number }
 
 export type PartSpec = {
@@ -30,59 +22,35 @@ export type PartSpec = {
 
 local IntermissionConfig = {}
 
--- The ready check: everyone ready, or this many seconds and the run starts for
--- whoever is there.
 IntermissionConfig.READY_TIMEOUT = 90
 
--- The crash cinematic: the server only waits this long. The first time a squad sees
--- it (any member with no run in the profile) it is the full length and cannot be
--- skipped; a squad of members who have all run before gets the short version, ended
--- early when every member votes to skip.
 IntermissionConfig.CRASH_LENGTH = 13
 IntermissionConfig.CRASH_LENGTH_REPEAT = 5
 IntermissionConfig.CRASH_LENGTH_MIN = 12
 IntermissionConfig.CRASH_LENGTH_MAX = 15
 
--- The wake-up: zombies ignore a player whose GraceUntil (server time) is ahead, for
--- this many seconds after the spawn at the wreck; the client shows "RUN" meanwhile.
 IntermissionConfig.GRACE_SECONDS = 6
 
--- Where the squad wakes: an offset from HangarConfig.RUN_START_CFRAME, in its frame
--- (-z is the run direction), so the wreck stays on the start platform.
 IntermissionConfig.WRECK_OFFSET = { 0, 0, -4 }
 
--- The cabin, far off the map and high (no chunk, hub or diorama is near it).
 IntermissionConfig.CABIN_ORIGIN = { 4000, 600, 4000 }
--- red cabin light
 IntermissionConfig.CABIN_LIGHT = { 255, 70, 50 }
--- fill lights in the cabin's frame (from the floor's top): warm over the seats, green
--- from the instrument console
 IntermissionConfig.CABIN_FILL_LIGHTS = {
 	{ name = "DomeLight", at = { -1.5, 6.2, 0 }, color = { 255, 222, 190 }, brightness = 2.2, range = 18 },
 	{ name = "ConsoleLight", at = { 0, 3.6, -12.6 }, color = { 90, 220, 140 }, brightness = 2, range = 12 },
 } :: { { name: string, at: Vec, color: Vec, brightness: number, range: number } }
 
--- Remote rate limit per player for the ready and skip toggles.
 IntermissionConfig.TOGGLE_COOLDOWN = 0.25
 
--- The troop seats along the left wall, facing the open door on the right wall (+x).
--- One per squad member (HangarConfig.SQUAD_CAPACITY is 3).
 IntermissionConfig.seats = {
 	{ -3.3, 1.0, -3.2 },
 	{ -3.3, 1.0, 0 },
 	{ -3.3, 1.0, 3.2 },
 } :: { Vec }
--- the seat faces this yaw in degrees (-90 looks along +x, at the door)
 IntermissionConfig.SEAT_YAW = -90
--- the seated eye, from the seat's centre in the seat's frame, and how far down the
--- view tilts (degrees)
 IntermissionConfig.EYE_OFFSET = { 0, 3.1, -0.2 }
 IntermissionConfig.VIEW_PITCH = -8
 
--- Look around during the ready check while the right mouse button is held (the cursor
--- stays free for the panel): degrees from the SeatView frame, yaw either side and
--- pitch down/up, degrees per pixel of mouse travel, and how fast the view eases to
--- where the mouse put it (per second, exponential). The crash beat keeps the fixed view.
 IntermissionConfig.LOOK_YAW = 100
 IntermissionConfig.LOOK_PITCH_MIN = -50
 IntermissionConfig.LOOK_PITCH_MAX = 40
@@ -96,8 +64,6 @@ local WEBBING = { 96, 92, 70 }
 local FLIGHT = { 60, 66, 54 }
 local SKIN = { 150, 120, 96 }
 
--- The cabin in its own frame: origin on the cabin floor's centre, x across (the door
--- at +x), y up, -z toward the cockpit.
 IntermissionConfig.parts = {
 	{ kind = "box", name = "Floor", size = { 9, 0.6, 16 }, at = { 0, -0.3, 0 }, color = DARK, material = "DiamondPlate", collide = true },
 	{ kind = "box", name = "WallLeft", size = { 0.4, 7, 16 }, at = { -4.7, 3.5, 0 }, color = OLIVE, material = "Metal", collide = true },
@@ -120,7 +86,6 @@ IntermissionConfig.parts = {
 	{ kind = "box", name = "CrateB", size = { 1.8, 1.2, 1.6 }, at = { 2.4, 2.2, 6.5 }, yaw = -6, color = { 84, 90, 64 }, material = "WoodPlanks", collide = true },
 	{ kind = "box", name = "CargoNet", size = { 4, 3, 0.08 }, at = { 1.6, 2.4, 7.9 }, color = { 60, 60, 50 }, material = "Fabric", transparency = 0.35 },
 	{ kind = "cylinder", name = "Extinguisher", size = { 1.2, 0.5, 0.5 }, at = { -4.2, 1.2, 6.6 }, roll = 90, color = { 190, 40, 34 }, material = "SmoothPlastic" },
-	-- the cockpit beyond the bulkhead opening
 	{ kind = "box", name = "CockpitFloor", size = { 9, 0.6, 6 }, at = { 0, -0.3, -11.2 }, color = DARK, material = "DiamondPlate", collide = true },
 	{ kind = "box", name = "CockpitLeft", size = { 0.4, 7, 6 }, at = { -4.7, 3.5, -11.2 }, color = OLIVE, material = "Metal", collide = true },
 	{ kind = "box", name = "CockpitRight", size = { 0.4, 7, 6 }, at = { 4.7, 3.5, -11.2 }, color = OLIVE, material = "Metal", collide = true },
@@ -133,8 +98,6 @@ IntermissionConfig.parts = {
 	{ kind = "box", name = "CopilotSeat", size = { 2, 1, 2 }, at = { 1.9, 1.0, -11.4 }, color = DARK, material = "Fabric", collide = true },
 } :: { PartSpec }
 
--- The two crew figures, each built into its own Model (Pilot, Copilot) so the crash
--- cinematic can move them; parts in the figure's frame, the figure's origin on its seat.
 IntermissionConfig.crew = {
 	{
 		name = "Pilot",

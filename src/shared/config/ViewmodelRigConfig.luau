@@ -1,28 +1,5 @@
 --!strict
 
--- Numeric specification of the first-person rig, transcribed from the free
--- "Gun Viewmodel Kit" by HowToRoblox (asset 11994419773) and its Glock viewmodel.
--- It lives here as data rather than as a binary model so the rig stays in git as
--- text, diffable and reviewable, and so Rojo owns it like every other config.
---
--- Axis conventions, measured rather than assumed:
---   arms  - built around HumanoidRootPart; every limb sits at 90 deg about X
---   gun   - +Z is the muzzle direction, +X is up, +Y is the width axis
---
--- TWO HARD LIMITS, both measured in Studio rather than assumed:
---
--- 1. `MeshPart.MeshId` cannot be written by a script in any context available to us -
---    it reports "lacking capability NotAccessible" in both a running game and the edit
---    session. So this table cannot be turned into a rig by a runtime builder. The rig
---    has to arrive as instances: either cloned from an inserted model, or shipped as an
---    .rbxmx that Rojo mounts, which is the route we take.
---
--- 2. The kit's published animation ids DO NOT LOAD for us. Every one returns
---    "Animation failed to load" and a track length of 0, because a Roblox Animation
---    asset is only usable by the account or group that uploaded it. The ids below are
---    kept purely as a record of what the kit's own clips were; they are not playable
---    here and must be replaced by clips authored and published under this account.
-
 export type PartSpec = {
 	name: string,
 	size: Vector3,
@@ -57,7 +34,6 @@ export type AttachmentSpec = {
 export type GunSpec = {
 	parts: { GunPartSpec },
 	attachments: { AttachmentSpec },
-	-- where the right hand grips the weapon, in the weapon's own frame
 	gripOffset: CFrame,
 	clips: { [string]: number },
 	referenceClips: { [string]: number }?,
@@ -81,7 +57,6 @@ ViewmodelRigConfig.arms = {
 	{ name = "RightHand", size = Vector3.new(1.1741, 0.5032, 1.1741), meshId = 1699715557, color = SKIN },
 } :: { PartSpec }
 
--- Joint names are load-bearing: the published clips address these exact tracks.
 ViewmodelRigConfig.joints = {
 	{
 		name = "LeftShoulder",
@@ -127,9 +102,6 @@ ViewmodelRigConfig.joints = {
 	},
 } :: { JointSpec }
 
--- Offsets are relative to the weapon's Main part, which is the hub every other piece
--- hangs off. `movable = true` earns a Motor6D so a clip can drive it; everything else
--- is welded, which also keeps the Animation Editor's track list down to what matters.
 ViewmodelRigConfig.guns = {
 	Pistol = {
 		parts = {
@@ -163,8 +135,6 @@ ViewmodelRigConfig.guns = {
 			{ name = "CasingEject", offset = CFrame.new(0.5448, 0.0024, 0.4573) },
 		},
 		gripOffset = CFrame.new(-0.2247, 0.0024, -0.6404),
-		-- Reference only: these are the kit's own clip ids and they do not load for us
-		-- (see limit 2 above). Replace with ids published from this account.
 		referenceClips = {
 			Idle = 11987083741,
 			Equip = 11987174932,

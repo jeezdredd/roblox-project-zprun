@@ -48,8 +48,6 @@ type ZombieState = {
 	targetPoint: Vector3?,
 	nextFacingAt: number,
 	alertAt: number?,
-	-- skinned rigs: top speed the skin's clips can show, the swing holding it, and
-	-- whether it has screamed at a player yet
 	speedCap: number,
 	attackUntil: number,
 	spotted: boolean,
@@ -63,9 +61,7 @@ local AI_FULL_RANGE = 180
 local AI_FAR_STRIDE = 4
 
 local LURE_RANGE = 80
--- a zombie this close to a player swings at them (the damage itself is the Hitbox touch)
 local ATTACK_REACH = 7
--- speed kept while a swing plays, as a share of the chase speed
 local ATTACK_SLOWDOWN = 0.3
 local GRAB_DAMAGE_SCALE = 3
 
@@ -152,8 +148,6 @@ end
 local GLANCE_MIN = 0.35
 local rightAxis = GameConstants.RUN_DIRECTION:Cross(Vector3.yAxis)
 
--- A player waking at the wreck (GraceUntil, server time, set by IntermissionService)
--- is neither chased nor hurt until the window closes.
 local function inGrace(player: Player): boolean
 	return IntermissionMath.inGrace(player:GetAttribute("GraceUntil"), Workspace:GetServerTimeNow())
 end
@@ -220,7 +214,6 @@ end
 local function onDied(state: ZombieState)
 	state.mode = "Down"
 	local model = state.model
-	-- skinned rigs fall through their death clip, so the body stays upright and still
 	if ZombieAnimator.playDeath(state.tracks, random) then
 		local root = state.root
 		local _, yaw = root.CFrame:ToEulerAnglesYXZ()
@@ -272,7 +265,6 @@ local function buildModel(config: ZombiesConfig.ZombieConfig, skinName: string?)
 end
 
 local function acquireModel(config: ZombiesConfig.ZombieConfig, skinName: string?): Model
-	-- a forced skin skips the pool, whose models carry whatever skin they were built with
 	if skinName then
 		return buildModel(config, skinName)
 	end
@@ -318,7 +310,6 @@ local function spawnCorpse(position: Vector3): Model
 	end
 	for _, descendant in model:GetDescendants() do
 		if descendant:IsA("BasePart") then
-			-- skinned: only the rig's meshes stay, the hit boxes go
 			local hitBox = skinned and not descendant:IsA("MeshPart") and descendant.Name ~= "Rig" and descendant ~= model.PrimaryPart
 			if descendant.Name == "Hitbox" or descendant.Name == "Eye" or hitBox then
 				descendant:Destroy()
@@ -333,7 +324,6 @@ local function spawnCorpse(position: Vector3): Model
 	local groundY = groundedY(position) - ZombieFactory.ROOT_HEIGHT
 	local yaw = random:NextNumber() * 2 * math.pi
 	if skinned then
-		-- the death clip lays the body down from standing
 		model:PivotTo(CFrame.new(position.X, groundY + ZombieFactory.ROOT_HEIGHT, position.Z) * CFrame.Angles(0, yaw, 0))
 	else
 		model:PivotTo(CFrame.new(position.X, groundY + 0.75, position.Z) * CFrame.Angles(0, yaw, 0) * CFrame.Angles(math.pi / 2, 0, 0))
@@ -588,7 +578,6 @@ local function aiStep()
 	local difficulty = MissionConfig.getDifficulty()
 	local speedScale = difficulty.zombieSpeedMultiplier * (1 + getModifierSpeedBonus())
 	local aggroActive = difficulty.zombiesChase and DistanceTracker.getMaxDistance() >= difficulty.aggroDistance
-	-- Studio test yard: aggro is a switch (Sandbox), not a distance run
 	if RunService:IsStudio() and Workspace:GetAttribute("SandboxActive") == true then
 		aggroActive = Workspace:GetAttribute("SandboxAggro") == true
 	end
@@ -1184,7 +1173,6 @@ local function fallbackSection(location: LocationsConfig.LocationConfig): Zombie
 end
 
 local function spawnStep()
-	-- the Studio test yard places its own zombies
 	if RunService:IsStudio() and Workspace:GetAttribute("SandboxActive") == true then
 		return
 	end
@@ -1227,7 +1215,6 @@ local function spawnStep()
 	end
 end
 
--- Studio test yard only: one zombie of a given config and skin at a position.
 function ZombieAI.devSpawn(position: Vector3, configId: string, skinName: string?, faceAt: Vector3?, startAlert: boolean?): Model?
 	if not RunService:IsStudio() then
 		return nil

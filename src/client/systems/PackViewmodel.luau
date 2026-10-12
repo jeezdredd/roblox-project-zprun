@@ -1,15 +1,5 @@
 --!strict
 
--- First-person rig built from a weapon pack (ReplicatedStorage.ViewModelPacks, loaded by
--- the server's ViewmodelPacks) and driven by its baked clips through ViewmodelClipPlayer.
--- Viewmodel.luau owns the procedural layer (sway, recoil, bob) and hands this module the
--- camera-space placement each frame; this module owns the clips: equip, the idle or walk
--- loop underneath, fire, reload sequences and their sound phases.
---
--- One-shots run as a queue of entries (a clip section with its own speed, fade and
--- phase tag). When the queue runs dry the idle/walk loop is blended back in over the
--- last entry's `blendOut`, which is how a cut reload returns to the ready pose.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -21,10 +11,6 @@ local DroppedMagazines = require(script.Parent.DroppedMagazines)
 
 local PackViewmodel = {}
 
--- One clip section in the one-shot queue. `duration` fits the from..to section to that
--- many seconds and wins over `speed`. `tag` travels with every phase the entry emits
--- ("fire", "tactical", "empty", "shell", "chamber", "equip", "inspect") so listeners can
--- tell a pump after a shot (ejects a hull) from the chambering pump after a reload.
 export type Entry = {
 	name: string,
 	speed: number?,
@@ -35,26 +21,19 @@ export type Entry = {
 	tag: string?,
 	phases: { ViewmodelPackConfig.Phase }?,
 	blendOut: number?,
-	-- ViewmodelClipPlayer weight: share of the clip's move that is applied
 	weight: number?,
 }
 
 export type ReloadPlan = {
 	config: WeaponsConfig.WeaponConfig,
-	-- the magazine (or tube) was empty: empty clip cut, chambering pump for shells
 	empty: boolean,
-	-- shell reloads: how many shells go in
 	shells: number,
-	-- SkillEffects.reloadScale as replicated by the server (1 = config timings)
 	scale: number,
 }
 
 export type ReloadCancel = {
-	-- seconds to blend back to the ready pose (or into the chambering pump)
 	exit: number,
-	-- seconds of chambering pump after the exit, when nothing is chambered
 	chamber: number?,
-	-- a shell is in the hand and still goes in before the exit
 	finishShell: boolean,
 }
 
@@ -65,7 +44,6 @@ export type Rig = {
 	root: BasePart,
 	player: ViewmodelClipPlayer.Player,
 	parts: { BasePart },
-	-- each part's CFrame relative to the root; the parts follow the root every frame
 	offsets: { CFrame },
 	placed: { CFrame },
 	muzzle: Attachment,
@@ -73,52 +51,32 @@ export type Rig = {
 	muzzleLocal: CFrame,
 	ejectLocal: CFrame,
 	eyeInverse: CFrame,
-	-- the class's `hold` offset, applied between the camera and the eye point, the one
-	-- used while a reload, draw or inspect plays, and the blend between them (1 = action)
 	hold: CFrame,
 	actionHold: CFrame,
 	holdBlend: number,
-	-- the wall pull-back on top of the hold (WallPullback): identity in the open
 	wallPose: CFrame,
-	-- the stance, magazine check and lean counter-pose on top of that (Stances):
-	-- identity at mid with no lean
 	stancePose: CFrame,
-	-- looping clip underneath (idle or walk), nil while a one-shot plays
 	base: string?,
 	queue: { Entry },
-	-- the one-shot playing now, nil while the base loop plays
 	entry: Entry?,
-	-- clip time phases were last checked at
 	phaseTime: number,
-	-- fade for the next return to the base loop
 	returnFade: number,
-	-- the magazine is empty (WeaponController's prediction): the bolt or slide holds back
 	empty: boolean,
 	locked: boolean,
-	-- the held bones and their Transforms while locked back (ViewmodelPackConfig.lockBack)
 	lockHolds: { { bone: Bone, pose: CFrame } },
-	-- the speed reload has dropped its magazine (reset when the empty reload ends)
 	dropped: boolean,
-	-- magazine meshes hidden by the speed reload, with the transparency they had
 	hiddenParts: { [BasePart]: number },
-	-- part -> index into parts/offsets
 	partIndex: { [BasePart]: number },
 }
 
 local DEFAULT_RETURN_FADE = 0.25
--- a shot out of a reload, equip or inspect pose: MW blends the cut over 0.1-0.15 s,
--- a hard cut would pop the arms across the screen
 local INTERRUPT_FADE = 0.12
--- a shot out of idle or another shot: the kick has to land on the frame
 local SNAP_FADE = 0.03
 local CHAIN_FADE = 0.08
--- fire + follow (pump) must close within this share of the fire interval
 local FOLLOW_BUDGET = 0.9
 local MAX_FOLLOW_SPEED = 1.5
--- how far past the ShellIn marker a cancelled shell is allowed to run
 local SEAT_MARGIN = 0.015
 local MAX_TRANSITIONS_PER_STEP = 4
--- time constant of the blend between `hold` and `actionHold`
 local HOLD_BLEND_TIME = 0.1
 
 local SOFT_TAGS: { [string]: boolean } = {
@@ -144,8 +102,6 @@ local function clipData(pack: ViewmodelPackConfig.ClassPack): ViewmodelClipPlaye
 	if cached then
 		return cached
 	end
-	-- the committed packs live in Shared.viewmodel_clips; Fab packs in Shared.fab, which
-	-- exists only on the owner's machine (the Fab licence keeps them out of the repo)
 	local module: Instance? = nil
 	for _, name in { "viewmodel_clips", "fab" } do
 		local folder = ReplicatedStorage.Shared:FindFirstChild(name)
@@ -177,8 +133,6 @@ function PackViewmodel.available(class: string): boolean
 	return pack ~= nil and template(class) ~= nil and clipData(pack) ~= nil
 end
 
--- Front and top of the weapon mesh at rest, expressed in the weapon bone's frame so it
--- follows the bone through every clip. The packs' weapons point down -Z in rig space.
 local function weaponAnchors(model: Model, root: BasePart, pack: ViewmodelPackConfig.ClassPack, boneRest: CFrame): (CFrame, CFrame)
 	local mesh: BasePart? = nil
 	for _, item in model:GetDescendants() do
@@ -199,8 +153,6 @@ local function weaponAnchors(model: Model, root: BasePart, pack: ViewmodelPackCo
 		local port = local_ * CFrame.new(size.X * 0.5, size.Y * 0.3, -size.Z * 0.05)
 		return inverse * front, inverse * port
 	end
-	-- a turned rest pose: measure the mesh box along the upright rig axes and put the
-	-- anchors back into rest space with the upright orientation turned by `tilt`
 	local upright = tilt:Inverse() * local_
 	local r = upright.Rotation
 	local function extent(axis: Vector3): number
@@ -231,8 +183,6 @@ local function start(rig: Rig, entry: Entry): boolean
 	return ok
 end
 
--- Replaces whatever plays with `entries` back to back. Entries whose clip is missing
--- from the pack are skipped.
 local function runQueue(rig: Rig, entries: { Entry }): boolean
 	rig.queue = entries
 	while #rig.queue > 0 do
@@ -248,7 +198,6 @@ local function playEntry(rig: Rig, entry: Entry): boolean
 	return runQueue(rig, { entry })
 end
 
--- Back to the idle/walk loop over `fade` seconds from wherever the arms are now.
 local function returnToBase(rig: Rig, fade: number)
 	rig.queue = {}
 	rig.entry = nil
@@ -272,12 +221,6 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 	end
 	local scale = ViewmodelPackConfig.RIG_SCALE
 	model:ScaleTo(scale * (pack.importScale or 1))
-	-- The parts are anchored, so moving the root leaves them where the template had them.
-	-- The skinned meshes still draw on the bones, but the engine picks each mesh's level
-	-- of detail (and its bounds) from the part: left near the world origin, thousands of
-	-- studs from the camera, the arms rendered from the lowest detail level and parts of
-	-- the left arm flickered into the view for single frames (the owner's recording,
-	-- 2026-10-01). The parts are carried with the root every frame instead.
 	local parts: { BasePart } = {}
 	local offsets: { CFrame } = {}
 	for _, item in model:GetDescendants() do
@@ -319,7 +262,6 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 		eyeInverse = (CFrame.new(pack.eye.Position * scale) * pack.eye.Rotation):Inverse(),
 		hold = CFrame.new(pack.hold or Vector3.zero) * anglesOf(pack.holdAngles),
 		actionHold = CFrame.new(pack.actionHold or pack.hold or Vector3.zero),
-		-- the rig starts on the draw
 		holdBlend = 1,
 		wallPose = CFrame.identity,
 		stancePose = CFrame.identity,
@@ -355,20 +297,14 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 			end
 		end
 	end
-	-- the draw always plays at natural speed; WeaponsConfig.drawTime decides when a shot
-	-- may cut its tail
 	playEntry(rig, { name = pack.equip, tag = "equip" })
 	return rig
 end
 
--- The magazine ran dry (or was filled): with a `lockBack` the bolt or slide holds back
--- from the last shot until the empty reload's release.
 function PackViewmodel.setEmpty(rig: Rig, empty: boolean)
 	rig.empty = empty
 end
 
--- Rig parts whose name matches `pattern`; with a `bone`, only the one nearest it at rest
--- (two magazines can carry rounds of the same name).
 local function partsMatching(rig: Rig, pattern: string, bone: string?): { BasePart }
 	local found: { BasePart } = {}
 	for _, part in rig.parts do
@@ -402,9 +338,6 @@ local function setHidden(rig: Rig, part: BasePart, hidden: boolean)
 	end
 end
 
--- The bolt or slide held back on an empty magazine, except while the empty reload runs
--- (its own clip starts locked back and releases it). Written after the clips each frame,
--- relative to the gun, so it rides along with every clip and the procedural layer.
 local function updateLockBack(rig: Rig)
 	if #rig.lockHolds == 0 then
 		return
@@ -413,7 +346,6 @@ local function updateLockBack(rig: Rig)
 	local want = rig.empty and not (entry ~= nil and entry.tag == "empty")
 	if want ~= rig.locked then
 		rig.locked = want
-		-- Studio knob for checking it from the command bar
 		rig.model:SetAttribute("LockedBack", want)
 	end
 	if want then
@@ -423,8 +355,6 @@ local function updateLockBack(rig: Rig)
 	end
 end
 
--- The speed reload: hides the magazine meshes over their windows and, when the clip
--- passes the drop point, throws a world-size copy of the magazine out of the well.
 local function updateMagDrop(rig: Rig, rootCFrame: CFrame)
 	local drop = rig.pack.magDrop
 	if not drop then
@@ -455,7 +385,6 @@ local function updateMagDrop(rig: Rig, rootCFrame: CFrame)
 		if not bone or not rest then
 			continue
 		end
-		-- a mesh skinned to several bones takes them along, posed as drawn now
 		local skin: { [string]: CFrame }? = nil
 		if piece.skin then
 			local worlds: { [string]: CFrame } = {}
@@ -472,8 +401,6 @@ local function updateMagDrop(rig: Rig, rootCFrame: CFrame)
 			local bones: { [string]: CFrame }? = skin
 			local body = piece.body
 			if skin and piece.tuck and part:IsA("MeshPart") then
-				-- tucked joints move their vertices inside the magazine and ride with it
-				-- (RootPart space at rest: offset * mesh point)
 				local tucked = table.clone(skin)
 				local toPart = part.Size / part.MeshSize
 				local carry = bone * rest:Inverse()
@@ -504,14 +431,10 @@ local function updateMagDrop(rig: Rig, rootCFrame: CFrame)
 	DroppedMagazines.drop(pieces, camera.CFrame.Position, drop.worldScale, velocity)
 end
 
--- The wall pull-back's pose for the next steps, in the hold space (WallPullback eases
--- it; identity puts the gun back in the ready pose).
 function PackViewmodel.setWallPose(rig: Rig, pose: CFrame)
 	rig.wallPose = pose
 end
 
--- The stance pose for the next steps, in the hold space after the wall pose (Stances
--- eases it; identity is the class's own hold).
 function PackViewmodel.setStancePose(rig: Rig, pose: CFrame)
 	rig.stancePose = pose
 end
@@ -526,7 +449,6 @@ function PackViewmodel.setVisible(rig: Rig, visible: boolean)
 	end
 end
 
--- One-shot clip; the idle or walk loop resumes underneath when it ends.
 function PackViewmodel.play(rig: Rig, name: string, options: ViewmodelClipPlayer.PlayOptions?): boolean
 	local opts: ViewmodelClipPlayer.PlayOptions = options or {}
 	return playEntry(rig, {
@@ -539,7 +461,6 @@ function PackViewmodel.play(rig: Rig, name: string, options: ViewmodelClipPlayer
 	})
 end
 
--- Clips back to back, stretched together to `duration` when given.
 function PackViewmodel.playSequence(rig: Rig, names: { string }, duration: number?, tag: string?)
 	local present = {}
 	local total = 0
@@ -571,9 +492,6 @@ local function currentFireFade(rig: Rig): number
 	return if tag and SOFT_TAGS[tag] then INTERRUPT_FADE else SNAP_FADE
 end
 
--- `interval` is the weapon's fire interval. A class with a follow clip (the pump) keeps
--- only the recoil part of Fire and speeds both up together, no faster than 1.5x, so
--- the action is closed before the next shot is allowed.
 function PackViewmodel.fire(rig: Rig, interval: number?)
 	local pack = rig.pack
 	local player = rig.player
@@ -629,8 +547,6 @@ local function reloadShells(rig: Rig, shell: ViewmodelPackConfig.ShellClips, tim
 	runQueue(rig, entries)
 end
 
--- Magazine reloads play one clip section fitted to the config time (tactical cut or
--- empty), shell reloads build enter + N shells + leave (+ pump from empty).
 function PackViewmodel.reload(rig: Rig, plan: ReloadPlan)
 	local config = plan.config
 	local pack = rig.pack
@@ -683,9 +599,6 @@ local function shellSeat(pack: ViewmodelPackConfig.ClassPack, loop: ViewmodelPac
 	return loop.to or 1
 end
 
--- Fire (or a swap) interrupting a reload. For shells the one in the hand still reaches
--- its ShellIn marker, then the arms blend back over `exit` (or into the chambering
--- pump); anything else blends back right away.
 function PackViewmodel.cancelReload(rig: Rig, cancel: ReloadCancel)
 	local shell = rig.pack.shell
 	local chamberEntry: Entry? = nil
@@ -730,9 +643,6 @@ function PackViewmodel.inspect(rig: Rig): boolean
 	return playEntry(rig, { name = name, fade = 0.2, tag = "inspect" })
 end
 
--- Emits the markers the stepped clip crossed. `clip` is the clip that was playing
--- before the step, so a marker right at the end still fires on the step that finishes
--- the clip, and a cut clip never reaches the markers past its end.
 local function firePhases(rig: Rig, clipName: string?, clipDuration: number, onPhase: (string, string?) -> ())
 	local entry = rig.entry
 	local time = rig.player.time
@@ -764,7 +674,6 @@ local function desiredBase(rig: Rig, moving: boolean): string
 	return if moving and pack.move and rig.player:has(pack.move) then pack.move else pack.idle
 end
 
--- Makes sure something plays: the next queued entry, else the idle/walk loop.
 local function advance(rig: Rig, moving: boolean)
 	local player = rig.player
 	if player:isPlaying() then
@@ -789,21 +698,14 @@ local function advance(rig: Rig, moving: boolean)
 	rig.returnFade = DEFAULT_RETURN_FADE
 end
 
--- `placement` is the camera CFrame with the procedural offsets applied; the rig's eye
--- point is put on it.
 function PackViewmodel.step(rig: Rig, deltaTime: number, placement: CFrame, moving: boolean, onPhase: (string, string?) -> ())
 	local player = rig.player
-	-- debug knob for checking clips frame by frame from the command bar:
-	-- workspace.CurrentCamera:SetAttribute("ViewmodelTimeScale", 0.1)
 	local camera = rig.model.Parent
 	local timeScale = if camera then camera:GetAttribute("ViewmodelTimeScale") else nil
 	if typeof(timeScale) == "number" then
 		deltaTime *= math.max(timeScale, 0)
 	end
 
-	-- A clip that ends mid-frame hands the rest of the frame to the next one, so a chain
-	-- of short sections (shell after shell) stays on the WeaponsConfig timeline instead
-	-- of losing a frame at every seam.
 	local remaining = deltaTime
 	for _ = 1, MAX_TRANSITIONS_PER_STEP do
 		advance(rig, moving)
@@ -827,8 +729,6 @@ function PackViewmodel.step(rig: Rig, deltaTime: number, placement: CFrame, movi
 	local blendTarget = if tag and SOFT_TAGS[tag] then 1 else 0
 	rig.holdBlend += (blendTarget - rig.holdBlend) * (1 - math.exp(-deltaTime / HOLD_BLEND_TIME))
 
-	-- framing knob for tuning a class's `hold` from the command bar:
-	-- workspace.CurrentCamera:SetAttribute("ViewmodelHold", Vector3.new(0.05, -0.1, 0.05))
 	local tune = if camera then camera:GetAttribute("ViewmodelHold") else nil
 	local tuneAngles = if camera then camera:GetAttribute("ViewmodelHoldAngles") else nil
 	local hold = rig.hold:Lerp(rig.actionHold, rig.holdBlend)

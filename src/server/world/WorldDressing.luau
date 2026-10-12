@@ -1,10 +1,5 @@
 --!strict
 
--- Turns DressingPlanner placements into instances in a chunk: the PBR props through
--- WorldMeshes, a primitive stand-in per group when a mesh is not loaded, the burn
--- patches, and the tags the mobile tier and the counter read. Chunk-local coordinates,
--- parented under the chunk model so the props pool with it.
-
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -36,7 +31,6 @@ local CAR_PAINT = {
 	Color3.fromRGB(134, 126, 112),
 }
 
--- SurfaceAppearance tints per biome: the same maps read burnt and dusty in the ruins.
 local TINTS: { [string]: { [string]: Color3 } } = {
 	Wasteland = {
 		car_burned = Color3.fromRGB(170, 158, 142),
@@ -74,7 +68,6 @@ local function part(name: string, size: Vector3, cframe: CFrame, color: Color3, 
 	return p
 end
 
--- A box of the fallback size standing on the ground in the prop's own frame.
 local function box(name: string, base: CFrame, size: { number }, color: Color3, material: Enum.Material, placement: DressingPlanner.Placement, parent: Instance): Part
 	return part(name, Vector3.new(size[1], size[3], size[2]), base * CFrame.new(0, size[3] / 2, 0), color, material, placement, parent)
 end
@@ -147,7 +140,6 @@ local FALLBACKS: { [string]: Fallback } = {
 	end,
 }
 
--- Sizes of every loaded prop the recipes can ask for, keyed by mesh name.
 local function loadedSizes(): { [string]: DressingPlanner.Size }
 	local sizes: { [string]: DressingPlanner.Size } = {}
 	for _, recipe in DressingConfig.recipes do
@@ -183,7 +175,6 @@ local function placePatch(placement: DressingPlanner.Placement, rng: Random, par
 	p.Color = Color3.fromRGB(70, 64, 58)
 	p.Material = Enum.Material.Ground
 	if not MaterialUtil.apply(p, name) then
-		-- the burn map is the point of the patch; a flat tint would only read as a stain
 		p:Destroy()
 		return
 	end
@@ -216,9 +207,6 @@ local function placeOne(biome: string, placement: DressingPlanner.Placement, rng
 	end
 end
 
--- Dresses the chunk for `biome`; returns the number of props placed.
--- `density` (0..1, default 1) scales the clusters and the prop cap: a map transition
--- dresses a chunk with both locations at their shares of the blend.
 function WorldDressing.dress(biome: string, rng: Random, halfLength: number, parent: Instance, density: number?): number
 	local placements = DressingPlanner.plan(DressingConfig, biome, rng, ChunkOccupancy, {
 		halfLength = halfLength,

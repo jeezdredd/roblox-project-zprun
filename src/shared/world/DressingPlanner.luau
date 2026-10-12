@@ -1,17 +1,7 @@
 --!strict
 
--- Decides where road dressing goes in a chunk. Pure Luau: no services, no engine types
--- and no requires, so it runs under the standalone Luau CLI (tests/world/run.luau). The
--- rules come in as the DressingConfig table; the server (WorldDressing) turns the
--- placements into instances.
---
--- Inputs: the config, an Rng (Random fits), an occupancy object (ChunkOccupancy fits)
--- and the loaded prop sizes. Coordinates are chunk-local: x across the road, z along
--- it, the chunk spanning -halfLength..halfLength.
-
 export type Range = { number }
 
--- The shapes below mirror DressingConfig's exported types.
 export type Member = {
 	group: string,
 	count: Range,
@@ -65,15 +55,12 @@ export type Occupancy = {
 	claim: (x: number, z: number, radius: number) -> boolean,
 }
 
--- footprint x, footprint z, height, in studs
 export type Size = { number }
 
 export type Placement = {
-	-- 1-based index of the cluster within the chunk
 	cluster: number,
 	recipe: string,
 	group: string,
-	-- mesh name when one is loaded; nil means the primitive stand-in
 	name: string?,
 	x: number,
 	y: number,
@@ -90,19 +77,14 @@ export type Placement = {
 
 export type Options = {
 	halfLength: number,
-	-- mesh names per group (WorldMeshConfig.groups)
 	groups: { [string]: { string } },
-	-- real size per loaded mesh name (WorldMeshes.naturalSize)
 	sizes: { [string]: Size },
-	-- 0..1, scales the clusters and the prop cap (a map transition dresses with both
-	-- locations at their shares); nil is 1
 	density: number?,
 }
 
 local DressingPlanner = {}
 
 local TWO_PI = math.pi * 2
--- spots tried for a scattered member before it is dropped
 local TRIES = 3
 
 function DressingPlanner.groundHeight(config: Config, biome: string, x: number): number
@@ -118,7 +100,6 @@ function DressingPlanner.groundHeight(config: Config, biome: string, x: number):
 	return config.GROUND_DEFAULT
 end
 
--- The zone's x range for this biome, with the biome's overrides applied.
 local function zoneRange(config: Config, rules: BiomeRules, zoneName: string): (number, number)
 	local override = rules.zones and rules.zones[zoneName]
 	if override then
@@ -128,7 +109,6 @@ local function zoneRange(config: Config, rules: BiomeRules, zoneName: string): (
 	return zone.inner, zone.outer
 end
 
--- Picks a loaded mesh for the group, or nil with the fallback size.
 local function pickName(config: Config, group: string, rng: Rng, options: Options): (string?, Size)
 	local names = options.groups[group]
 	local loaded = {}
@@ -146,7 +126,6 @@ local function pickName(config: Config, group: string, rng: Rng, options: Option
 	return nil, config.fallbackSizes[group] or { 2, 2, 2 }
 end
 
--- Axis-aligned footprint along x and z once the prop is turned by yaw.
 local function turnedFootprint(size: Size, yaw: number): (number, number)
 	local s, c = math.abs(math.sin(yaw)), math.abs(math.cos(yaw))
 	return size[1] * c + size[2] * s, size[1] * s + size[2] * c
@@ -159,7 +138,6 @@ local function memberYaw(member: Member, rng: Rng): number
 	return rng:NextNumber(0, TWO_PI)
 end
 
--- Centres a footprint inside the zone; a prop wider than the zone sits on its middle.
 local function fitX(inner: number, outer: number, width: number, rng: Rng): number
 	local low, high = inner + width / 2, outer - width / 2
 	if low > high then
@@ -183,7 +161,6 @@ type Spot = {
 local function place(config: Config, biome: string, spot: Spot, occupancy: Occupancy, halfLength: number): Placement?
 	local fx, fz = turnedFootprint(spot.size, spot.yaw)
 	local radius = math.max(fx, fz) / 2 + config.FOOTPRINT_MARGIN
-	-- keep the footprint inside the chunk; the neighbour chunk dresses its own ground
 	local reach = halfLength - 2 - fz / 2
 	local z = math.clamp(spot.z, -reach, reach)
 	if not occupancy.claim(spot.x, z, radius) then
@@ -203,7 +180,6 @@ local function place(config: Config, biome: string, spot: Spot, occupancy: Occup
 		zone = spot.member.zone,
 		collide = zone.collide,
 		shadow = zone.shadow and height >= config.SHADOW_MIN_HEIGHT,
-		-- the anchor always stays, so a cluster survives the mobile tier
 		detail = spot.index > 1 and (zone.detail or spot.index >= config.DETAIL_FROM_MEMBER),
 		radius = radius,
 		size = spot.size,
@@ -211,8 +187,6 @@ local function place(config: Config, biome: string, spot: Spot, occupancy: Occup
 	}
 end
 
--- Places one recipe around (sign, anchorZ). Returns its placements, empty when the
--- first member found no room (a cluster never ships without its anchor).
 local function placeCluster(
 	config: Config,
 	biome: string,
@@ -236,12 +210,10 @@ local function placeCluster(
 		end
 		local inner, outer = zoneRange(config, rules, member.zone)
 		if member.layout == "line" then
-			-- the members follow each other along the road, long side along z
 			local name, size = pickName(config, member.group, rng, options)
 			local yaw = if size[2] >= size[1] then 0 else math.pi / 2
 			local width, length = turnedFootprint(size, yaw)
 			local x = sign * fitX(inner, outer, width, rng)
-			-- each piece claims a circle, so the step clears two margins as well
 			local step = length + config.FOOTPRINT_MARGIN * 2 + 0.5
 			local z = anchorZ - (count - 1) * step / 2
 			for _ = 1, count do
@@ -283,7 +255,6 @@ local function placeCluster(
 	return out
 end
 
--- Picks a z for the next cluster on `sign` that keeps the spacing rules, or nil.
 local function pickAnchorZ(config: Config, rng: Rng, sign: number, lastZ: { [number]: number }, lastGap: { [number]: number }, halfLength: number): number?
 	local limit = halfLength - config.END_CLEARANCE
 	for _ = 1, 8 do

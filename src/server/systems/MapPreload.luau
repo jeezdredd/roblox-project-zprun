@@ -1,20 +1,5 @@
 --!strict
 
--- Prepares the next map while the squad runs the current one (wiki: Map Segments).
--- When a map becomes current (the lead runner enters it), for both fork options at its
--- end:
---   - warms each sub-location's chunk pool to MapsConfig.POOL_WARM_CHUNKS;
---   - builds the map transition's blended chunks (the old map's last sub-location into
---     the option's first one, MAP_TRANSITION_CHUNKS of them), so the vote's choice is
---     placed the moment it closes;
---   - tells the clients to preload the options' meshes and textures (the MapPreload
---     Workspace attribute, MapPreloader on the client);
--- and frees the pools of maps two steps behind. The work runs in a queue under a
--- per-frame budget (MapsConfig.WARM_BUDGET_MS, at least one chunk a frame), into
--- ServerStorage (ChunkPools), so nothing replicates until it is placed. In Studio the
--- time to warm both options is printed and kept as MapWarmSeconds (the measurement
--- behind MapsConfig.preloadSeconds).
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -34,7 +19,6 @@ local MapPreload = {}
 type Job = {
 	kind: string,
 	location: string,
-	-- transition jobs: the blend's target, its index and the option it serves
 	to: string?,
 	k: number?,
 	option: string,
@@ -48,8 +32,6 @@ local queue: { Job } = {}
 local queuedPools: { [string]: number } = {}
 local currentRun: RoutePlan.MapRun? = nil
 local warmStartedAt: number? = nil
--- the slowest single build of the current warm-up, ms: at least one chunk is built per
--- frame, so this, not WARM_BUDGET_MS, is the real worst frame
 local slowestBuildMs = 0
 
 local function obstacleCount(): number
@@ -99,7 +81,6 @@ local function onMapCurrent(run: RoutePlan.MapRun, index: number)
 	end
 	local fork = RoutePlan.forkAfter(run)
 	local info = if fork then fork.fork else nil
-	-- the transition chunks first (the vote waits on them), then the pools
 	if fork and info and fork.prevLocationId then
 		for slot, option in info.options do
 			for k = 0, MapsConfig.MAP_TRANSITION_CHUNKS - 1 do
@@ -144,7 +125,6 @@ end
 
 local function step()
 	if not MissionState.isActive() then
-		-- the run is over: nothing stays warm in ServerStorage between runs
 		if currentRun or #queue > 0 then
 			queue = {}
 			queuedPools = {}
@@ -164,15 +144,12 @@ local function step()
 	processQueue()
 end
 
--- The vote chose `choice`: the other option's queued work and pre-built transition
--- chunks go (unless both options start in the same sub-location).
 function MapPreload.onForkResolved(entry: RoutePlan.PlanEntry, choice: string)
 	local info = entry.fork
 	if not info then
 		return
 	end
 	local chosenSlot = table.find(info.options, choice)
-	-- locations still needed: the chosen map's and the current map's
 	local needed: { [string]: boolean } = {}
 	local current = if currentRun then currentRun.id else choice
 	for _, id in { choice, current } do
@@ -198,7 +175,6 @@ function MapPreload.onForkResolved(entry: RoutePlan.PlanEntry, choice: string)
 			if not keep and entry.prevLocationId then
 				ChunkPools.dropTransitions(entry.prevLocationId, to)
 			end
-			-- the option not taken: its warmed pools go now (it never joins the history)
 			local map = MapsConfig.get(option)
 			for _, location in if map then map.locationIds else {} do
 				if not needed[location] then

@@ -1,22 +1,12 @@
 --!strict
 
--- Pure math for the third-person body: aim smoothing and spread, the wire encoding of
--- the aim, recoil springs, the reload / equip / pump gesture timelines built from
--- WeaponsConfig numbers, the sprint blend and the LOD bands. Numbers in, numbers out,
--- no Roblox services or datatypes, so `luau tests/body/run.luau` exercises it outside
--- Studio and the server relay can share the validation. Angles are degrees, times
--- seconds, distances studs.
-
 local BodyMath = {}
 
 export type AimSpread = {
-	-- the clamped aim: the head ends on it, the gun on `gunPitch` and `yaw`
 	pitch: number,
 	yaw: number,
-	-- the chest's share
 	waistPitch: number,
 	waistYaw: number,
-	-- the gun's pitch, reduced in a sprint
 	gunPitch: number,
 }
 
@@ -56,7 +46,6 @@ function BodyMath.wrapDegrees(angle: number): number
 	return if wrapped == -180 then 180 else wrapped
 end
 
--- Exponential approach with a time constant, wrapping so the short way round is taken.
 function BodyMath.approachAngle(current: number, target: number, deltaTime: number, timeConstant: number): number
 	local difference = BodyMath.wrapDegrees(target - current)
 	if timeConstant <= 0 then
@@ -77,8 +66,6 @@ function BodyMath.smoothstep(alpha: number): number
 	return t * t * (3 - 2 * t)
 end
 
--- Signed yaw of a flat direction relative to a flat reference direction: positive when
--- the direction is to the left of the reference (a positive Y rotation).
 function BodyMath.signedYaw(referenceX: number, referenceZ: number, directionX: number, directionZ: number): number
 	local cross = referenceZ * directionX - referenceX * directionZ
 	local dot = referenceX * directionX + referenceZ * directionZ
@@ -88,15 +75,10 @@ function BodyMath.signedYaw(referenceX: number, referenceZ: number, directionX: 
 	return math.deg(math.atan2(cross, dot))
 end
 
--- Pitch of a look vector from its vertical component: positive looking up.
 function BodyMath.pitchOf(lookY: number): number
 	return math.deg(math.asin(math.clamp(lookY, -1, 1)))
 end
 
--- The aim over the body, clamped first: the chest turns by its share (the torso twists
--- before the feet turn), the head and the gun end on the whole aim, measured from the
--- root's upright frame so the locomotion clip's lean does not tip them. `armScale`
--- lowers the gun's pitch in a sprint.
 function BodyMath.spreadAim(pitch: number, yaw: number, shares: AimShares, armScale: number): AimSpread
 	local clampedPitch = math.clamp(pitch, -shares.pitchClamp, shares.pitchClamp)
 	local clampedYaw = math.clamp(yaw, -shares.yawClamp, shares.yawClamp)
@@ -109,12 +91,10 @@ function BodyMath.spreadAim(pitch: number, yaw: number, shares: AimShares, armSc
 	}
 end
 
--- Whole degrees on the wire.
 function BodyMath.quantize(angle: number): number
 	return math.floor(angle + 0.5)
 end
 
--- Send when either angle moved a whole degree and the rate allows, or on the keepalive.
 function BodyMath.shouldSend(
 	lastPitch: number,
 	lastYaw: number,
@@ -134,7 +114,6 @@ function BodyMath.shouldSend(
 	return math.abs(pitch - lastPitch) >= minChange or math.abs(BodyMath.wrapDegrees(yaw - lastYaw)) >= minChange
 end
 
--- Server-side check of an aim packet: both numbers, finite, clamped into the limits.
 function BodyMath.validateAim(pitch: any, yaw: any, pitchLimit: number, yawLimit: number): (boolean, number, number)
 	if typeof(pitch) ~= "number" or typeof(yaw) ~= "number" then
 		return false, 0, 0
@@ -145,10 +124,6 @@ function BodyMath.validateAim(pitch: any, yaw: any, pitchLimit: number, yawLimit
 	return true, math.clamp(pitch, -pitchLimit, pitchLimit), math.clamp(BodyMath.wrapDegrees(yaw), -yawLimit, yawLimit)
 end
 
--- Damped spring toward zero, stepped with the closed-form solution of the oscillator
--- (under-, critically and over-damped branches), so any frame time lands on the exact
--- curve: no substeps, no numerical over-damping, and the peak of an impulse is where
--- impulseForPeak says. The recoil kick and snap are impulses on the velocity.
 function BodyMath.springStep(state: SpringState, stiffness: number, damping: number, deltaTime: number): number
 	if deltaTime <= 0 then
 		return state.value
@@ -190,16 +165,10 @@ function BodyMath.springImpulse(state: SpringState, impulse: number)
 	state.velocity += impulse
 end
 
--- The velocity impulse that makes a spring near critical damping peak at `peak`: with
--- x(t) = v t e^(-w t) the peak is v / (w e) at t = 1 / w.
 function BodyMath.impulseForPeak(peak: number, stiffness: number): number
 	return peak * math.sqrt(math.max(stiffness, 1e-6)) * math.exp(1)
 end
 
--- The magazine reload as poses of the support hand over time: to the belt, to the mag
--- well with the fresh magazine, the seat at ammo-add, then the chambering action from
--- empty (bolt / charging handle: the hand to the charge socket, pulled, released) and
--- back on the gun by the total. `chargeTime` is how long the pull and release take.
 function BodyMath.magazineTimeline(ammoAdd: number, total: number, empty: boolean, chargeTime: number): Timeline
 	local seat = math.min(ammoAdd, total)
 	local travel = math.min(0.45, seat * 0.4)
@@ -221,8 +190,6 @@ function BodyMath.magazineTimeline(ammoAdd: number, total: number, empty: boolea
 	return timeline
 end
 
--- The pump shotgun reload: the gun rolls over (`start`), one belt-to-port cycle per
--- shell seated at `addAt` inside it, the finish, and the pump when nothing was chambered.
 function BodyMath.shellTimeline(shell: ShellReloadNumbers, shells: number, empty: boolean, scale: number): Timeline
 	local timeline: Timeline = { { t = 0, pose = "grip" } }
 	local start = shell.start * scale
@@ -249,8 +216,6 @@ function BodyMath.shellTimeline(shell: ShellReloadNumbers, shells: number, empty
 	return timeline
 end
 
--- The pump stroke after a shot on a weapon that does not eject on fire, starting `delay`
--- seconds after the shot so the kick reads first.
 function BodyMath.pumpTimeline(duration: number, delay: number): Timeline
 	return {
 		{ t = 0, pose = "grip" },
@@ -261,7 +226,6 @@ function BodyMath.pumpTimeline(duration: number, delay: number): Timeline
 	}
 end
 
--- The draw: from the lowered pose up to the grip over the weapon's draw time.
 function BodyMath.equipTimeline(drawTime: number): Timeline
 	return {
 		{ t = 0, pose = "lowered" },
@@ -275,8 +239,6 @@ function BodyMath.timelineDuration(timeline: Timeline): number
 	return if last then last.t else 0
 end
 
--- The segment of a timeline at `elapsed` with a smoothstep alpha between its two poses;
--- before the first keyframe it holds the first pose, after the last it holds the last.
 function BodyMath.poseAt(timeline: Timeline, elapsed: number, sample: PoseSample): PoseSample
 	local count = #timeline
 	if count == 0 then
@@ -310,8 +272,6 @@ function BodyMath.poseAt(timeline: Timeline, elapsed: number, sample: PoseSample
 	return sample
 end
 
--- Sprint switches on above the threshold and off below it minus the hysteresis, so a
--- speed hovering at the edge does not flicker the pose.
 function BodyMath.sprintTarget(speed: number, threshold: number, hysteresis: number, sprinting: boolean): boolean
 	if sprinting then
 		return speed > threshold - hysteresis
@@ -319,8 +279,6 @@ function BodyMath.sprintTarget(speed: number, threshold: number, hysteresis: num
 	return speed >= threshold
 end
 
--- Update cadence in frames for a character at `distance` (0 means never) and whether
--- the hand IK stays on.
 function BodyMath.lodBand(distance: number, bands: LodBands): (number, boolean)
 	local ikOn = distance <= bands.ikRange
 	if distance <= bands.full then
@@ -333,7 +291,6 @@ function BodyMath.lodBand(distance: number, bands: LodBands): (number, boolean)
 	return 0, false
 end
 
--- Whether a character with `index` in the round robin updates this frame at `cadence`.
 function BodyMath.updatesThisFrame(frame: number, index: number, cadence: number): boolean
 	if cadence <= 0 then
 		return false

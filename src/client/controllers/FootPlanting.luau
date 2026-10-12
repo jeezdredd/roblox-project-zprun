@@ -10,9 +10,6 @@ local RAY_UP = 2.2
 local RAY_DOWN = 4.5
 local MAX_OFFSET = 1.6
 local LERP_SPEED = 9
--- Planting is for standing on uneven ground. Above this ground speed it fades out: the
--- running clips place the feet themselves, and chasing the moving feet with IK threw
--- the hips about (2026-09-30: the soldier ran with the pelvis rolled 60 degrees).
 local STAND_SPEED = 1.5
 
 type FootRig = {
@@ -53,7 +50,6 @@ local function buildFoot(character: Model, humanoid: Humanoid, footName: string,
 	local control = Instance.new("IKControl")
 	control.Name = footName .. "Ik"
 	control.Type = Enum.IKControlType.Position
-	-- the chain starts at the thigh: hip, knee and ankle bend, the pelvis stays with the clip
 	control.ChainRoot = character:FindFirstChild(legName) or character:FindFirstChild("LowerTorso") or root
 	control.EndEffector = character:FindFirstChild(endEffectorName) or foot
 	control.Target = target
@@ -105,8 +101,6 @@ local function update(deltaTime: number)
 		end
 		local origin = part.Position + Vector3.new(0, RAY_UP, 0)
 		local result = Workspace:Raycast(origin, Vector3.new(0, -(RAY_UP + RAY_DOWN), 0), rayParams)
-		-- the foot part's centre sits half its height above the sole (0.55 on the block
-		-- body, 0.28 on the soldier)
 		local targetY = if result then result.Position.Y + part.Size.Y / 2 else part.Position.Y
 		local offset = math.clamp(targetY - part.Position.Y, -MAX_OFFSET, MAX_OFFSET)
 		foot.current += (offset - foot.current) * (1 - math.exp(-LERP_SPEED * deltaTime))

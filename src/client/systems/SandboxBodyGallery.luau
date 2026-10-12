@@ -1,13 +1,5 @@
 --!strict
 
--- Studio test yard, client side: the third-person body gallery. A row of mannequins per
--- weapon class (clones of the local character with the class's WorldWeapon built on),
--- one column per station: idle, walk, run, strafe, sprint, aim sweep, fire burst,
--- tactical reload, empty reload, shells and equip. Each station drives its BodyRig with
--- scripted inputs on a loop, so the hold, the aim spread, the recoil and every gesture
--- can be judged by eye at the class's real WeaponsConfig timings. Placed relative to the
--- SandboxOrigin attribute in the free strip east of the zombie gallery.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -24,10 +16,8 @@ local SandboxBodyGallery = {}
 
 type StationSpec = {
 	title: string,
-	-- run clip speed (0 for none) and the reported body speed
 	clip: number,
 	speed: number,
-	-- seconds of one loop; the driver runs on `phase` inside it
 	loop: number,
 }
 
@@ -44,11 +34,9 @@ type Station = {
 	started: boolean,
 	pending: number,
 	track: AnimationTrack?,
-	-- updates since the label was last written
 	labelAge: number,
 }
 
--- clear ground south of the props at real size (the first spot, z -170, stood among them)
 local ORIGIN_OFFSET = Vector3.new(80, 0, -300)
 local COLUMN_SPACING = 9
 local ROW_SPACING = 14
@@ -100,11 +88,6 @@ local function makeLabel(parent: BasePart, text: string): TextLabel
 	return label
 end
 
--- A copy of the local character stood on `cframe`: root anchored, scripts and the
--- server's gun removed, name hidden, the class's gun built on. The copy also drops the
--- local character's IKControls (FootPlanting's foot chains, and the body layer's own
--- when V was on): with their targets left on the real character, and no animator track
--- rewriting the joints each frame, they bent the mannequins over at the hips.
 local function makeMannequin(template: Model, config: WeaponsConfig.WeaponConfig, cframe: CFrame, name: string): Model?
 	local wasArchivable = template.Archivable
 	template.Archivable = true
@@ -136,7 +119,6 @@ local function makeMannequin(template: Model, config: WeaponsConfig.WeaponConfig
 		return nil
 	end
 	humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-	-- a posed prop: no falling-down or getting-up states on an anchored root
 	humanoid.EvaluateStateMachine = false
 	model:PivotTo(cframe)
 	root.Anchored = true
@@ -204,7 +186,6 @@ local function buildStation(parent: Instance, template: Model, class: string, co
 	table.insert(stations, station)
 end
 
--- Seconds of one loop of a gesture station at this class's timings, plus a rest.
 local function gestureLoop(station: Station): number
 	local title = station.spec.title
 	local config = station.config
@@ -222,7 +203,6 @@ local function gestureLoop(station: Station): number
 	return station.spec.loop
 end
 
--- The scripted input of one station for this update.
 local function drive(station: Station, deltaTime: number)
 	local title = station.spec.title
 	local rig = station.rig
@@ -288,8 +268,6 @@ local function step(deltaTime: number)
 	local eye = if camera then camera.CFrame.Position else Vector3.zero
 	local updated = 0
 	local count = #stations
-	-- start the round at a different station each frame: with every station in full
-	-- cadence the per-frame cap would otherwise starve the same last rows every frame
 	for offset = 1, count do
 		local station = stations[(frame + offset) % count + 1]
 		station.pending += deltaTime
@@ -303,8 +281,6 @@ local function step(deltaTime: number)
 		station.rig:update(station.pending)
 		station.pending = 0
 		updated += 1
-		-- per station, not per frame: with the round robin a station and a frame
-		-- multiple rarely met, and the labels froze for seconds
 		station.labelAge += 1
 		if station.labelAge >= 4 then
 			station.labelAge = 0
@@ -330,7 +306,6 @@ local function build(origin: Vector3, template: Model)
 		local z = base.Z - (row - 1) * ROW_SPACING
 		for column, spec in STATIONS do
 			local x = base.X + (column - 1) * COLUMN_SPACING
-			-- the mannequins face +z, so the walkway along the south side sees them head on
 			local cframe = CFrame.new(x, base.Y + 3, z) * CFrame.Angles(0, math.rad(180), 0)
 			buildStation(folder, template, class, config, spec, cframe)
 		end

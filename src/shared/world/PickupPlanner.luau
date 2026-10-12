@@ -1,16 +1,5 @@
 --!strict
 
--- Decides which pickup scene a chunk gets and where (docs/gameplay/weapon-pickups.md).
--- Pure Luau: no services, no engine types, no requires, so it runs under the standalone
--- Luau CLI (tests/pickups/run.luau). The rules come in as the PickupScenesConfig table
--- and the randomness as an Rng (Random fits) the server seeds from the run seed and the
--- chunk index, so the same run puts the same scenes in the same places for everyone.
---
--- Coordinates are chunk-local: x across the road (the playable band is
--- -halfWidth..halfWidth), z along it (-halfLength..halfLength). Every placement comes
--- with a few candidate spots in order; the server takes the first one that is free of
--- the chunk's props.
-
 export type Rng = {
 	NextNumber: (self: Rng, min: number, max: number) -> number,
 	NextInteger: (self: Rng, min: number, max: number) -> number,
@@ -19,12 +8,10 @@ export type Rng = {
 export type Spot = {
 	x: number,
 	z: number,
-	-- radians, the scene's yaw (its -z faces the road)
 	yaw: number,
 }
 
 export type Placement = {
-	-- "Scene" or "Drop"
 	kind: string,
 	sceneId: string?,
 	radius: number,
@@ -65,8 +52,6 @@ export type Options = {
 
 local PickupPlanner = {}
 
--- Picks from `order` by `weights` with one unit random in [0, 1): the first id whose
--- cumulative weight passes it. Zero and missing weights never win; nil when nothing can.
 function PickupPlanner.weightedPick(order: { string }, weights: { [string]: number }, unit: number): string?
 	local total = 0
 	for _, id in order do
@@ -91,7 +76,6 @@ function PickupPlanner.weightedPick(order: { string }, weights: { [string]: numb
 	return last
 end
 
--- The scene ids allowed in `biome`, in config order.
 function PickupPlanner.allowedScenes(config: Config, biome: string): { string }
 	local ids: { string } = {}
 	for _, id in config.order do
@@ -103,7 +87,6 @@ function PickupPlanner.allowedScenes(config: Config, biome: string): { string }
 	return ids
 end
 
--- One scene for `biome`, weighted, or nil when none is allowed there.
 function PickupPlanner.chooseScene(config: Config, biome: string, rng: Rng): string?
 	local ids = PickupPlanner.allowedScenes(config, biome)
 	if #ids == 0 then
@@ -116,7 +99,6 @@ function PickupPlanner.chooseScene(config: Config, biome: string, rng: Rng): str
 	return PickupPlanner.weightedPick(ids, weights, rng:NextNumber(0, 1))
 end
 
--- The weapon a supply drop gives, from the weighted table.
 function PickupPlanner.rollDrop(config: Config, unit: number): string?
 	return PickupPlanner.weightedPick(config.supplyDrop.order, config.supplyDrop.weights, unit)
 end
@@ -126,14 +108,11 @@ local function shoulderSpot(config: Config, rng: Rng, options: Options): Spot
 	local inset = rng:NextNumber(config.SHOULDER_INSET[1], config.SHOULDER_INSET[2])
 	local x = side * (options.halfWidth - inset)
 	local z = rng:NextNumber(-options.halfLength + config.END_CLEARANCE, options.halfLength - config.END_CLEARANCE)
-	-- CFrame.Angles(0, yaw, 0) looks along (-sin yaw, 0, -cos yaw): the right shoulder
-	-- (x > 0) looks toward -x, the left toward +x
 	local facing = if side > 0 then math.pi / 2 else -math.pi / 2
 	local jitter = math.rad(rng:NextNumber(-config.YAW_JITTER, config.YAW_JITTER))
 	return { x = x, z = z, yaw = facing + jitter }
 end
 
--- tries at a lane spot clear of every scene candidate before the spot is given up
 local LANE_TRIES = 6
 
 local function clearOf(z: number, avoid: { number }, gap: number): boolean
@@ -145,9 +124,6 @@ local function clearOf(z: number, avoid: { number }, gap: number): boolean
 	return true
 end
 
--- A lane spot at least SCENE_DROP_GAP along the road from every z in `avoid` (all the
--- scene's candidates, since the server may use any of them), or nil when none of the
--- tries lands clear.
 local function laneSpot(config: Config, rng: Rng, options: Options, avoid: { number }): Spot?
 	local reach = options.halfWidth * config.DROP_LANE_FRACTION
 	local zMin = -options.halfLength + config.END_CLEARANCE
@@ -162,9 +138,6 @@ local function laneSpot(config: Config, rng: Rng, options: Options, avoid: { num
 	return nil
 end
 
--- The placements for chunk `chunkIndex` of `biome`: at most one scene and one supply
--- drop, the scene with `CANDIDATES` spots, the drop with up to that many (each clear
--- of every scene candidate). Nothing before START_CLEARANCE_CHUNKS.
 function PickupPlanner.plan(config: Config, biome: string, chunkIndex: number, rng: Rng, options: Options): { Placement }
 	local placements: { Placement } = {}
 	if chunkIndex < config.START_CLEARANCE_CHUNKS then

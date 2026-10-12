@@ -16,14 +16,9 @@ export type ZombieTracks = {
 	attack: AnimationTrack?,
 	feeding: AnimationTrack?,
 	rise: AnimationTrack?,
-	-- a looped idle at Core priority that never stops: whenever the other tracks are
-	-- fading (every idle/walk/run switch) the rig falls back to this instead of its rest
-	-- pose, which is a T-pose
 	base: AnimationTrack?,
 	jitter: number,
 	phase: number,
-	-- skinned rigs (ZombieSkins): every walk and run clip with its ground speed, the one
-	-- playing, and the one-shots
 	skinned: boolean,
 	moves: { Move },
 	move: Move?,
@@ -38,8 +33,6 @@ local IDLE_VARIANTS = { AssetIds.animation.zombie.idle_a, AssetIds.animation.zom
 local WALK_VARIANTS = { AssetIds.animation.zombie.walk_shuffle }
 local RUN_VARIANTS = { AssetIds.animation.zombie.run_ragged }
 
--- The Dormant rise and the Feeding pose take the Mixamo clips once they are uploaded
--- (docs/animation/third-person-locomotion.md) and the Quaternius clips until then.
 local function uploaded(ids: { number }): { number }
 	local out = {}
 	for _, id in ids do
@@ -56,12 +49,6 @@ if #RISE_VARIANTS == 0 then
 end
 local FEEDING_ID = if AssetIds.animation.zombie.biting_ground > 0 then AssetIds.animation.zombie.biting_ground else AssetIds.animation.zombie.feeding
 
--- Ground speed each clip covers at playback speed 1 on the walker2 rig (FULL_SCALE 0.92),
--- measured 2026-09-28 from the planted foot's travel over 60 samples of the cycle: walk
--- 2.56 studs/s on the leading foot (the shuffle drags the other), run about 4.3. The old
--- references (6 and 12) played the walk at half speed and the run at a third of what the
--- body covered, so the feet skated. Very fast zombies still outrun the clip at the cap;
--- past about 2.2x the cycle reads as frantic rather than fast.
 local WALK_SPEED_REFERENCE = 2.5
 local RUN_SPEED_REFERENCE = 4.3
 local SPEED_RATIO_MIN = 0.35
@@ -70,24 +57,15 @@ local JITTER_MIN = 0.9
 local JITTER_MAX = 1.12
 local PHASE_SETTLE = 0.1
 
--- Skinned rigs pick, from all their walk and run clips, the one whose ground speed is
--- closest (as a ratio) to the zombie's speed and play it at speed / groundSpeed, so the
--- feet stay planted. A new clip has to win by MOVE_SWITCH_MARGIN (log ratio) so the
--- cycle does not flap between two clips while the AI eases the speed.
 local MOVE_RATIO_MIN = 0.55
 local MOVE_RATIO_MAX = 2.4
 local MOVE_SWITCH_MARGIN = 0.25
 local MOVE_FADE = 0.3
--- a swing never holds the zombie longer than this (Hazmat's is a 3.5 s clip)
 local ATTACK_MAX_DURATION = 1.8
 local ATTACK_FALLBACK_DURATION = 0.9
--- the Hazmat scream when it first notices a player, sped up so it does not stand for 5 s
 local SPOTTED_RATE = 1.4
--- a flinch stops the legs, so only zombies standing or shuffling get one
 local HIT_MAX_SPEED = 4
 local HIT_RATE = 1.25
--- a death clip is frozen this long before its end (a non-looped track that reaches its
--- end stops and the rig would stand back up)
 local DEATH_HOLD_MARGIN = 0.1
 
 local function pickVariant(variants: { number }, rng: Random): number
@@ -124,7 +102,6 @@ local function playLooped(track: AnimationTrack, fade: number, phase: number, sp
 	end)
 end
 
--- Length is 0 until the clip has loaded.
 local function waitLength(track: AnimationTrack, timeout: number): number
 	local waited = 0
 	while track.Length <= 0 and waited < timeout do
@@ -187,9 +164,6 @@ local function setupSkinned(animator: Animator, skin: ZombieSkins.Skin, rng: Ran
 	tracks.skinned = true
 	tracks.base = loadTrack(animator, pickClip(skin.idle, rng), true, Enum.AnimationPriority.Core)
 	tracks.idle = loadTrack(animator, pickClip(skin.idle, rng), true, Enum.AnimationPriority.Idle)
-	-- Each zombie keeps one of its skin's walks and one of its runs, picked at random, so a
-	-- crowd of one skin does not move in step: with every clip loaded the speed fit always
-	-- chose the same one (walk_a and walk_b share a ground speed, walk_b never played).
 	for _, group in { skin.walk, skin.run } do
 		local usable: { ZombieSkins.Clip } = {}
 		for _, clip in group do
@@ -265,8 +239,6 @@ local function moveRate(move: Move, speed: number): number
 	return math.clamp(speed / move.speed, MOVE_RATIO_MIN, MOVE_RATIO_MAX)
 end
 
--- How wrong a clip looks at `speed`: mostly the skating left once its playback rate is
--- clamped, a little for how far from its natural rate it plays.
 local function moveScore(move: Move, speed: number): number
 	local wanted = math.max(speed, 0.1) / move.speed
 	local rate = math.clamp(wanted, MOVE_RATIO_MIN, MOVE_RATIO_MAX)
@@ -406,7 +378,6 @@ local function attacking(tracks: ZombieTracks): boolean
 	return false
 end
 
--- Swing at a player in reach. Returns how long the swing lasts (0 when none started).
 function ZombieAnimator.attack(tracks: ZombieTracks?, rng: Random): number
 	if not tracks or tracks.dead or attacking(tracks) then
 		return 0
@@ -430,7 +401,6 @@ function ZombieAnimator.attack(tracks: ZombieTracks?, rng: Random): number
 	return if track.Length > 0 then track.Length / rate else ATTACK_FALLBACK_DURATION
 end
 
--- Flinch from a bullet; `speed` is how fast the zombie is moving.
 function ZombieAnimator.hit(tracks: ZombieTracks?, speed: number)
 	if not tracks or tracks.dead or not tracks.hit or speed > HIT_MAX_SPEED or attacking(tracks) then
 		return
@@ -439,7 +409,6 @@ function ZombieAnimator.hit(tracks: ZombieTracks?, speed: number)
 	tracks.hit:AdjustSpeed(HIT_RATE)
 end
 
--- Scream on first noticing a player. Returns how long it lasts (0 when there is none).
 function ZombieAnimator.spotted(tracks: ZombieTracks?): number
 	local track = tracks and tracks.spotted
 	if not tracks or tracks.dead or not track or track.IsPlaying then
@@ -450,8 +419,6 @@ function ZombieAnimator.spotted(tracks: ZombieTracks?): number
 	return track.Length / SPOTTED_RATE
 end
 
--- Play one of the skin's death clips and hold its last frame. Returns false when the rig
--- has none (the body then falls as before).
 function ZombieAnimator.playDeath(tracks: ZombieTracks?, rng: Random): boolean
 	if not tracks or tracks.dead or #tracks.deaths == 0 then
 		return false
@@ -470,8 +437,6 @@ function ZombieAnimator.playDeath(tracks: ZombieTracks?, rng: Random): boolean
 	return true
 end
 
--- Lay a corpse down in the last frame of one of its skin's death clips. The corpse has no
--- Humanoid, so an AnimationController drives it; call once the model is in the world.
 function ZombieAnimator.poseCorpse(model: Model, rng: Random): boolean
 	local skinName = model:GetAttribute("ZombieSkin")
 	local skin = if typeof(skinName) == "string" then ZombieSkins.get(skinName) else nil
@@ -544,8 +509,6 @@ function ZombieAnimator.playRise(tracks: ZombieTracks?): number
 	return tracks.rise.Length / math.max(tracks.jitter, 0.1)
 end
 
--- Recycling: stop everything and free the tracks, since the next spawn from the pool
--- loads a fresh set on the same Animator.
 function ZombieAnimator.stopAll(tracks: ZombieTracks?)
 	if not tracks then
 		return

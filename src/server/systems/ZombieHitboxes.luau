@@ -1,13 +1,5 @@
 --!strict
 
--- Hit parts of skinned zombies. A skinned MeshPart is raycast against in its bind pose
--- (a T-pose), so the parts WeaponService and ZombieAI look for (Head, UpperTorso,
--- LowerTorso, limbs) are invisible boxes jointed to the HumanoidRootPart with a Motor6D,
--- and every PreSimulation (after the Animator has posed the bones, before physics moves
--- the assembly) each joint's Transform is set so the box sits on its bone as the clip has
--- posed it. Motor6D.Transform does not replicate, which is what we want: only the
--- server raycasts against these.
-
 local RunService = game:GetService("RunService")
 
 local ZombieHitboxes = {}
@@ -17,15 +9,11 @@ type Rig = { root: BasePart, entries: { Entry }, far: boolean }
 
 local Players = game:GetService("Players")
 
--- Zombies further than this from every player keep their boxes where they are: nobody
--- shoots that far through the fog, and reading bone transforms costs.
 local FOLLOW_RANGE = 220
 local RANGE_CHECK_INTERVAL = 0.5
 
 local rigs: { [Model]: Rig } = {}
 
--- `boxes`: hit part -> (driving bone, box world CFrame at rest). Call while the rig is
--- still in its bind pose (no clip applied), right after building.
 function ZombieHitboxes.attach(model: Model, root: BasePart, boxes: { [BasePart]: { bone: Bone, rest: CFrame } })
 	local entries = {}
 	for part, info in boxes do
@@ -45,7 +33,6 @@ function ZombieHitboxes.attach(model: Model, root: BasePart, boxes: { [BasePart]
 	end)
 end
 
--- Stop following (corpses: the model is anchored and posed once).
 function ZombieHitboxes.detach(model: Model)
 	rigs[model] = nil
 end

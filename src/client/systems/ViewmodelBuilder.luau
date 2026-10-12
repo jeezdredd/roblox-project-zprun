@@ -11,8 +11,6 @@ local MeshTemplates = require(ReplicatedStorage.Shared.util.MeshTemplates)
 
 local ViewmodelBuilder = {}
 
--- Rojo-mounted MeshParts render at the mesh's native size (see MeshTemplates), so the
--- weapon and arm meshes are loaded through MeshTemplates as soon as this module loads.
 local MESH_FOLDERS = { "ViewModels", "ViewModelArms" }
 for _, folderName in MESH_FOLDERS do
 	local folder = ReplicatedStorage:FindFirstChild(folderName)
@@ -21,8 +19,6 @@ for _, folderName in MESH_FOLDERS do
 	end
 end
 
--- Yields until the weapon and arm meshes have loaded, so the first equip does not build
--- from wrongly sized templates. Only call it where yielding is allowed.
 function ViewmodelBuilder.waitForMeshes(timeout: number)
 	for _, folderName in MESH_FOLDERS do
 		local folder = ReplicatedStorage:FindFirstChild(folderName)
@@ -38,9 +34,6 @@ export type Node = {
 	rest: CFrame,
 	bone: string?,
 	motor: Motor6D?,
-	-- authored offsets for this bone are in the parent's axes (weapon space), not in the
-	-- bone's own rest frame; pose() converts them. Set on the mesh hand pivots, whose rest
-	-- frames are turned far from the weapon's axes.
 	parentSpace: boolean?,
 }
 
@@ -62,13 +55,7 @@ export type PoseOverrides = {
 	pump: CFrame?,
 	magazine: CFrame?,
 	supportHand: CFrame?,
-	-- authored pose offsets from AnimationSequencer, keyed by bone name; they
-	-- multiply the bone's rest transform and stack with the mechanical overrides
 	bones: { [string]: CFrame }?,
-	-- An Animator drives Motor6D.Transform, and so do we. Writing both in the same frame
-	-- means the later write wins and the clip appears to do nothing. When a clip owns the
-	-- bones, we keep the root - which carries sway, bob and recoil - and leave the joints
-	-- to it.
 	animated: boolean?,
 }
 
@@ -97,10 +84,6 @@ end
 
 local NIGHT_ATTRIBUTE = "NightMission"
 
--- One helper for both build paths. The fill is what makes the weapon readable against a
--- bright desert sky, but under the Night modifier it lights the player permanently and
--- the flashlight beam stops registering, so it tracks the mission attribute live rather
--- than being decided once at equip time.
 local function attachFillLight(part: BasePart)
 	local fill = ViewmodelConfig.FILL_LIGHT
 	if not fill.enabled then
@@ -157,8 +140,6 @@ local function addNode(
 	if material == Enum.Material.Metal then
 		part.Reflectance = 0.12
 	end
-	-- Only the root is anchored. A joint cannot move an anchored part, so every
-	-- other piece hangs off the root through the joint chain.
 	part.Anchored = false
 	part.Massless = true
 	part.CanCollide = false
@@ -174,8 +155,6 @@ local function addNode(
 	local node: Node = { part = part, parent = parentBone, rest = rest, bone = bone }
 
 	if bone then
-		-- Animatable joints are Motor6D and carry the bone name, so a published
-		-- Roblox animation targeting the same names drives this rig unchanged.
 		local motor = Instance.new("Motor6D")
 		motor.Name = bone
 		motor.Part0 = parentPart
@@ -197,9 +176,6 @@ local function addNode(
 	return part
 end
 
--- Adopts a part that already exists, rather than creating one. This is the only way to
--- get mesh geometry into the rig: MeshPart.MeshId cannot be written by a script, so the
--- meshes arrive as instances mounted by Rojo and we join them here.
 local function adoptNode(rig: Rig, part: BasePart, rest: CFrame, parentBone: string?, bone: string?)
 	part.Anchored = false
 	part.Massless = true
@@ -234,9 +210,6 @@ local function adoptNode(rig: Rig, part: BasePart, rest: CFrame, parentBone: str
 	table.insert(rig.nodes, node)
 end
 
--- Mesh geometry for a class, if Rojo has mounted any. `Main` is the hub the rest hangs
--- off, and the three moving pieces take the same bone names the procedural rig used, so
--- PoseLibrary and the spring layer carry over untouched.
 local MESH_BONES: { [string]: string } = {
 	Main = "weaponRoot",
 	Slide = "slide",
@@ -260,10 +233,6 @@ local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): HandMou
 	end
 
 	local clone = template:Clone()
-	-- The mounted template ships its own joints so it reads correctly in Studio. We
-	-- rebuild them here against this rig's root, and leaving the originals in place
-	-- would put two Motor6Ds on the same part - which over-constrains the rig and stops
-	-- an Animator driving it at all.
 	for _, descendant in clone:GetDescendants() do
 		if descendant:IsA("Motor6D") or descendant:IsA("Weld") or descendant:IsA("WeldConstraint") then
 			descendant:Destroy()
@@ -295,14 +264,9 @@ local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): HandMou
 		end
 	end
 
-	-- The procedural path runs every size and rest offset through ViewmodelConfig.SCALE,
-	-- and so do the arms below. Adopting the mesh at its authored size left a full-size
-	-- weapon in hands shrunk to 0.72, and made the authored pose translations - which
-	-- ViewmodelBuilder.pose also scales - land short.
 	local scale = ViewmodelConfig.SCALE
 	main.Size = main.Size * scale
 
-	-- weaponRoot first, so every other piece can hang off it
 	adoptNode(rig, main, CFrame.identity, nil, "weaponRoot")
 
 	for _, child in clone:GetChildren() do
@@ -314,9 +278,6 @@ local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): HandMou
 	end
 	clone:Destroy()
 
-	-- A template without a Barrel bone and without a Muzzle marker used to leave these
-	-- nil and then index them, taking the client down at equip time. weaponRoot is always
-	-- present by this point, so it is the floor.
 	local rootNode = rig.byBone.weaponRoot
 	local muzzle: Node? = rig.byBone.barrel
 	local eject: Node? = nil
@@ -334,9 +295,6 @@ local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): HandMou
 	local ejectPart = if eject then eject.part else rootNode.part
 
 	rig.muzzle.Name = "Muzzle"
-	-- A dedicated Muzzle marker already sits at the barrel tip, so it needs no offset.
-	-- Falling back to the barrel itself means the attachment would otherwise sit at the
-	-- part's centre and spawn the flash halfway down the weapon.
 	rig.muzzle.Position = if muzzleIsMarker then Vector3.zero else Vector3.new(0, 0, -muzzlePart.Size.Z / 2)
 	rig.muzzle.Parent = muzzlePart
 	rig.eject.Name = "Eject"
@@ -350,9 +308,6 @@ local function buildMeshWeapon(rig: Rig, class: string, camera: Camera): HandMou
 	return mounts
 end
 
--- An Animator matches a clip's poses to parts by name, so two parts sharing a name
--- across the left and right arm stops the whole clip driving anything. Every part here
--- carries its side.
 local function buildArm(rig: Rig, side: number, handRest: CFrame, handBone: string, parentBone: string?, elbowPitch: number)
 	local suffix = if side > 0 then "R" else "L"
 	addNode(rig, "Part", "Hand" .. suffix, Vector3.new(0.34, 0.26, 0.4), COLOR_GLOVE, Enum.Material.Fabric, handRest, parentBone, handBone)
@@ -371,24 +326,13 @@ local function buildArm(rig: Rig, side: number, handRest: CFrame, handBone: stri
 	local wristBone = handBone .. "Wrist"
 	addNode(rig, "Part", "Wrist" .. suffix, Vector3.new(0.28, 0.22, 0.24), COLOR_SKIN, Enum.Material.SmoothPlastic, CFrame.new(side * 0.06, -0.08, 0.2), handBone, wristBone)
 
-	-- Only the forearm stub is ever inside a first-person frame; an upper arm would
-	-- chain behind the camera and render as nothing.
 	local forearmBone = handBone .. "Forearm"
 	local forearmRest = CFrame.Angles(math.rad(elbowPitch), math.rad(side * 12), 0)
 	addNode(rig, "Part", "ForearmPivot" .. suffix, Vector3.new(0.05, 0.05, 0.05), COLOR_SLEEVE, Enum.Material.Fabric, forearmRest, wristBone, forearmBone).Transparency = 1
 	addNode(rig, "Part", "SleeveCuff" .. suffix, Vector3.new(0.3, 0.3, 0.16), COLOR_SLEEVE:Lerp(Color3.new(), 0.25), Enum.Material.Fabric, CFrame.new(0, 0, 0.08), forearmBone)
-	-- a short stub: measured in Studio, a 0.95-long forearm sat 1.1 studs from the
-	-- camera and covered 60% of screen height on its own
 	applyTexture(addNode(rig, "Part", "Forearm" .. suffix, Vector3.new(0.28, 0.28, 0.5), COLOR_SLEEVE, Enum.Material.Fabric, CFrame.new(0, 0, 0.3), forearmBone), TexturesConfig.FABRIC, 0.7)
 end
 
--- Mesh arms cut from a Mixamo soldier (tools/arms_rig). Same bone names as the box arms
--- (handR, handRWrist, handRForearm and the L set), so PoseLibrary and the spring layer
--- drive them unchanged. The bones sit on invisible pivots: the hand bone on the grip
--- axis, the wrist bone on the wrist, and the meshes hang off them by their centres.
--- Returns false when the meshes are not uploaded yet, and the caller falls back to boxes.
--- Roblox's glTF importer turns uploaded meshes 180 degrees about Y (see ZombieFactory),
--- so each arm mesh is turned back about its own centre.
 local GLTF_FLIP = CFrame.Angles(0, math.pi, 0)
 
 local function buildMeshArm(rig: Rig, class: string, side: number, mountRest: CFrame, handBone: string, parentBone: string?): boolean
@@ -470,8 +414,6 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 		barrelLength = 1.35
 	end
 
-	-- Prefer real mesh geometry when Rojo has mounted some for this class; the procedural
-	-- box weapon below stays as the fallback for classes that have no mesh yet.
 	local mounts = buildMeshWeapon(rig, class, camera)
 	local gripRest = if mounts
 		then CFrame.new(0, -0.1, 0.05) * CFrame.Angles(math.rad(-12), 0, 0)
@@ -639,9 +581,6 @@ function ViewmodelBuilder.build(config: WeaponsConfig.WeaponConfig, camera: Came
 	return rig
 end
 
--- The root carries the whole procedural layer; every other piece follows through its
--- joint. Bone offsets go into Motor6D.Transform, which is the same channel an Animator
--- writes, so authored poses and a published clip cannot fight over the rest transform.
 function ViewmodelBuilder.pose(rig: Rig, rootCFrame: CFrame, overrides: PoseOverrides)
 	rig.root.CFrame = rootCFrame
 
@@ -668,14 +607,9 @@ function ViewmodelBuilder.pose(rig: Rig, rootCFrame: CFrame, overrides: PoseOver
 
 		local authored = if bones then bones[boneName] else nil
 		if authored then
-			-- PoseLibrary is authored in design units against the unscaled rig, so its
-			-- translations have to follow ViewmodelConfig.SCALE like every rest offset.
 			offset = offset * scaled(authored)
 		end
 		if node.parentSpace and offset ~= CFrame.identity then
-			-- Motor6D.Transform acts in the bone's rest frame; turn a weapon-space offset
-			-- into that frame so it moves and turns the hand along the weapon's axes,
-			-- still pivoting about the hand
 			local restRotation = node.rest.Rotation
 			offset = restRotation:Inverse() * offset * restRotation
 		end

@@ -59,8 +59,6 @@ local function applyToCharacter(player: Player, character: Model)
 	if not humanoid or not humanoid:IsA("Humanoid") then
 		return
 	end
-	-- the soldier body is meshes, not catalog parts: ApplyDescription would swap it back
-	-- to blocks, so the skin tints the uniform instead
 	if character:GetAttribute(SoldierBody.ATTRIBUTE) then
 		for _, child in character:GetChildren() do
 			if child:IsA("Accessory") or child:IsA("Clothing") or child:IsA("ShirtGraphic") then

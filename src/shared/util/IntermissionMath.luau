@@ -1,11 +1,5 @@
 --!strict
 
--- The helicopter intermission's rules (docs/gameplay/heli-intermission.md): the ready
--- check, the skip vote, the crash length and the grace window. Pure Luau: no
--- services, no engine types, no requires, so it runs under the standalone Luau CLI
--- (tests/intermission/run.luau). Members are keys (the server uses the player's
--- UserId); times are server seconds passed in.
-
 export type ReadyCheck = {
 	members: { number },
 	ready: { [number]: boolean },
@@ -13,9 +7,6 @@ export type ReadyCheck = {
 	timeout: number,
 }
 
--- "Waiting": someone is not ready and time remains. "AllReady": every member still
--- here is ready. "TimedOut": the AFK timeout passed; the run starts for whoever is
--- here. "Empty": nobody is left.
 export type ReadyStatus = "Waiting" | "AllReady" | "TimedOut" | "Empty"
 
 export type SkipVote = {
@@ -36,7 +27,6 @@ function IntermissionMath.newReadyCheck(members: { number }, now: number, timeou
 	return { members = table.clone(members), ready = {}, startedAt = now, timeout = math.max(timeout, 0) }
 end
 
--- Marks a member ready or not; false for someone who is not a member.
 function IntermissionMath.setReady(check: ReadyCheck, member: number, ready: boolean): boolean
 	if table.find(check.members, member) == nil then
 		return false
@@ -45,7 +35,6 @@ function IntermissionMath.setReady(check: ReadyCheck, member: number, ready: boo
 	return true
 end
 
--- A member left (the game, or the cabin): their vote goes with them.
 function IntermissionMath.removeMember(check: ReadyCheck, member: number)
 	local index = table.find(check.members, member)
 	if index then
@@ -85,8 +74,6 @@ function IntermissionMath.newSkipVote(members: { number }): SkipVote
 	return { members = table.clone(members), votes = {} }
 end
 
--- A member's vote to skip; false for someone who is not a member. A vote cannot be
--- taken back (one press, like the reference).
 function IntermissionMath.voteSkip(vote: SkipVote, member: number): boolean
 	if table.find(vote.members, member) == nil then
 		return false
@@ -113,14 +100,10 @@ function IntermissionMath.skipCount(vote: SkipVote): number
 	return count
 end
 
--- Passes when every member still here voted (and someone is here).
 function IntermissionMath.skipPasses(vote: SkipVote): boolean
 	return #vote.members > 0 and IntermissionMath.skipCount(vote) == #vote.members
 end
 
--- The crash's length and whether it can be skipped: the short, skippable version only
--- when every member has run before (`runs` per member, the profile's lifetime count);
--- an empty squad gets the full length. The full length is clamped to the config range.
 function IntermissionMath.crashFor(config: CrashConfig, runs: { number }): (number, boolean)
 	local full = math.clamp(config.CRASH_LENGTH, config.CRASH_LENGTH_MIN, config.CRASH_LENGTH_MAX)
 	if #runs == 0 then
@@ -134,8 +117,6 @@ function IntermissionMath.crashFor(config: CrashConfig, runs: { number }): (numb
 	return math.min(config.CRASH_LENGTH_REPEAT, full), true
 end
 
--- The grace window: until when a player at the wreck is ignored, and whether they are
--- now. A missing or non-number value never protects.
 function IntermissionMath.graceUntil(now: number, seconds: number): number
 	return now + math.max(seconds, 0)
 end
@@ -152,17 +133,12 @@ export type LookConfig = {
 	LOOK_EASE: number,
 }
 
--- The look target after a mouse move of (dx, dy) pixels, in degrees from the seat's
--- view, clamped: yaw within +-LOOK_YAW, pitch within LOOK_PITCH_MIN..LOOK_PITCH_MAX.
--- Moving the mouse right turns right (negative yaw about +y), down looks down.
 function IntermissionMath.lookAfter(config: LookConfig, yaw: number, pitch: number, dx: number, dy: number): (number, number)
 	local nextYaw = math.clamp(yaw - dx * config.LOOK_SENSITIVITY, -config.LOOK_YAW, config.LOOK_YAW)
 	local nextPitch = math.clamp(pitch - dy * config.LOOK_SENSITIVITY, config.LOOK_PITCH_MIN, config.LOOK_PITCH_MAX)
 	return nextYaw, nextPitch
 end
 
--- One frame of easing toward the target (exponential, frame-rate independent), so the
--- view never snaps; within a hundredth of a degree it lands.
 function IntermissionMath.easeLook(config: LookConfig, current: number, target: number, deltaTime: number): number
 	local nextValue = current + (target - current) * (1 - math.exp(-config.LOOK_EASE * math.max(deltaTime, 0)))
 	if math.abs(target - nextValue) < 0.01 then
@@ -171,7 +147,6 @@ function IntermissionMath.easeLook(config: LookConfig, current: number, target: 
 	return nextValue
 end
 
--- Seconds left, whole and rounded up, for a countdown label (0 when past).
 function IntermissionMath.secondsLeft(endsAt: number, now: number): number
 	return math.max(math.ceil(endsAt - now), 0)
 end

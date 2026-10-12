@@ -1,20 +1,5 @@
 --!strict
 
--- Keys for the Studio test yard (server Sandbox, DevConfig.SANDBOX):
---   G sends a chasing wave, H resets the yard, J calms everyone, T teleports back to the
---   start (server commands);
---   V third person on/off (the stock orbit camera, viewmodel hidden, body visible);
---   Z slow motion: 1, 1/4, 1/10 for the viewmodel, casings, both clip galleries and the
---     treadmills (camera ViewmodelTimeScale, workspace DevTimeScale, server gallery);
---   B plays the sound lane;
---   K shows the audio engine overlay (every live voice with its distance, delay,
---     occlusion and filter), L fires a remote rifle shot 30 studs ahead with reflections.
--- Studio's own free camera (Shift+P) works too.
--- The dev button at the top centre swaps the test yard and the normal run while
--- playing (server Sandbox, DevMode); M does the same, and holding Left Alt frees the
--- cursor to click it. The yard keys (G H J T Z B) only act in the yard. Does nothing
--- outside Studio.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -36,7 +21,6 @@ local SERVER_KEYS: { [Enum.KeyCode]: string } = {
 	[Enum.KeyCode.J] = "calm",
 	[Enum.KeyCode.T] = "start",
 }
--- keys that only mean something in the yard
 local YARD_KEYS: { [Enum.KeyCode]: boolean } = {
 	[Enum.KeyCode.G] = true,
 	[Enum.KeyCode.H] = true,
@@ -89,7 +73,6 @@ end
 
 local function setThirdPerson(on: boolean)
 	thirdPerson = on
-	-- CameraController reads this (Studio only) like DevConfig.THIRD_PERSON_VIEW
 	Workspace:SetAttribute("DevThirdPerson", on)
 	Viewmodel.setVisible(not on)
 	refreshStatus()
@@ -107,7 +90,6 @@ local function setTimeScale(index: number, remote: RemoteEvent)
 	refreshStatus()
 end
 
--- the dev button: shows where you are and goes to the other mode
 local function buildModeButton(remote: RemoteEvent)
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "DevModeButton"
@@ -115,7 +97,6 @@ local function buildModeButton(remote: RemoteEvent)
 	gui.DisplayOrder = 50
 	gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 	local button = Instance.new("TextButton")
-	-- top centre: the goals panel owns the top left corner
 	button.AnchorPoint = Vector2.new(0.5, 0)
 	button.Position = UDim2.new(0.5, 0, 0, 8)
 	button.Size = UDim2.fromOffset(196, 30)

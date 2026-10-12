@@ -1,12 +1,5 @@
 --!strict
 
--- Loads the skinned zombie rigs (ZombieSkins) from their Model assets into
--- ServerStorage.ZombieRigs at require time, one template per skin, prepared for
--- ZombieFactory: the part that holds the Bones is renamed "Rig" (the clips address it by
--- that name), the importer's AnimationController and InitialPoses go, every visual part
--- is made non-colliding, non-queryable and massless, and the skin's `surfaces` replace
--- the SurfaceAppearances the importer built wrong (SurfaceTemplates).
-
 local InsertService = game:GetService("InsertService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
@@ -39,7 +32,6 @@ local function prepare(model: Model, skin: ZombieSkins.Skin): Model?
 		end
 	end
 	holder.Name = "Rig"
-	-- flatten: every part straight under the model
 	local flat = Instance.new("Model")
 	for _, item in model:GetDescendants() do
 		if item:IsA("BasePart") then
@@ -90,7 +82,6 @@ for name in ZombieSkins.skins do
 	end
 end
 
--- The template for a skin, waiting up to `timeout` seconds while it loads.
 function ZombieRigs.get(name: string, timeout: number?): Model?
 	local found = folder:FindFirstChild(name)
 	if found or not timeout or not coroutine.isyieldable() then

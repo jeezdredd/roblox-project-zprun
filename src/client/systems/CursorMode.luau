@@ -15,8 +15,6 @@ local openModals: { [string]: boolean } = {}
 local modalCount = 0
 local freeConnection: RBXScriptConnection? = nil
 local frozenCFrame: CFrame? = nil
--- systems that drive the camera themselves while a menu is open (the helicopter
--- cabin's view, IntermissionCamera): the held camera is theirs, only the cursor is ours
 local cameraOwners: { [string]: boolean } = {}
 
 local function cameraOwned(): boolean
@@ -89,8 +87,6 @@ function CursorMode.setModalOpen(id: string, open: boolean)
 	end
 end
 
--- A system that drives the camera itself (`owned` true) while a menu frees the
--- cursor: the menu no longer holds the camera still or hands it back to Custom.
 function CursorMode.setCameraOwner(id: string, owned: boolean)
 	cameraOwners[id] = if owned then true else nil
 end
@@ -106,17 +102,9 @@ function CursorMode.focus(button: GuiButton?)
 	end
 end
 
--- A menu only frees the cursor if it remembers to announce itself, and anything built
--- outside this codebase never will - which leaves the player staring at a menu they
--- cannot click. So rather than trusting every panel to call setModalOpen, watch for one
--- that looks modal: an enabled ScreenGui holding a solid frame over a good part of the
--- screen. Panels that do announce themselves are unaffected; the id is separate.
 local EXTERNAL_ID = "ExternalMenu"
 local MODAL_FRACTION = 0.3
 
--- GuiObject.Visible reports only its own flag, and a hidden parent still leaves children
--- flagged visible with a real AbsoluteSize. Checking the chain is what separates an open
--- menu from a closed one whose panels were never individually hidden.
 local function shownOnScreen(object: GuiObject, gui: ScreenGui): boolean
 	local current: Instance? = object
 	while current and current ~= gui do

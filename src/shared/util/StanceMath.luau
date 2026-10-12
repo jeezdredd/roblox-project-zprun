@@ -1,11 +1,5 @@
 --!strict
 
--- The rules behind stances, lean and the magazine check (wiki: Stances): the eased
--- stance weights, the raise a shot from high or low ready waits for, the check's
--- timing and readout, the lean's camera offset, viewmodel counter-pose and body roll,
--- and the lean value on the wire. Pure Luau: no services, no engine types, no requires;
--- tests/stances/run.luau. The state tables are updated in place, like the springs.
-
 export type Pose = {
 	aside: number,
 	up: number,
@@ -61,17 +55,12 @@ type Raise = {
 }
 
 export type State = {
-	-- the stance the key chose: "mid", "high" or "low"
 	selected: string,
-	-- shown weights, 0..1, of the high and low ready poses and of the magazine check
 	high: number,
 	low: number,
 	mag: number,
-	-- a raise in progress (a shot asked for the gun to come up)
 	raising: Raise?,
-	-- the gun stays up until then after a shot
 	upUntil: number,
-	-- the magazine check: held, when it started, and whether R was let go already
 	checking: boolean,
 	checkStartedAt: number,
 	checkReleased: boolean,
@@ -97,8 +86,6 @@ function StanceMath.new(): State
 	}
 end
 
--- Poses ------------------------------------------------------------------------------
-
 function StanceMath.scaled(pose: Pose, factor: number): Pose
 	local out = {} :: any
 	for _, field in FIELDS do
@@ -115,21 +102,16 @@ function StanceMath.added(a: Pose, b: Pose): Pose
 	return out :: Pose
 end
 
--- The stance and check pose shown now: each pose at its weight, summed.
 function StanceMath.pose(config: Config, state: State): Pose
 	local pose = StanceMath.added(StanceMath.scaled(config.poses.high, state.high), StanceMath.scaled(config.poses.low, state.low))
 	return StanceMath.added(pose, StanceMath.scaled(config.MAG_CHECK.pose, state.mag))
 end
-
--- Easing -----------------------------------------------------------------------------
 
 local function smoothstep(t: number): number
 	local x = math.clamp(t, 0, 1)
 	return x * x * (3 - 2 * x)
 end
 
--- One frame toward the target, exponential at rateIn going up and rateOut coming down,
--- landing exactly within a thousandth (as WallPullbackMath.ease).
 function StanceMath.ease(current: number, target: number, rateIn: number, rateOut: number, deltaTime: number): number
 	local rate = if target > current then rateIn else rateOut
 	local nextValue = current + (target - current) * (1 - math.exp(-rate * math.max(deltaTime, 0)))
@@ -139,9 +121,6 @@ function StanceMath.ease(current: number, target: number, rateIn: number, rateOu
 	return nextValue
 end
 
--- Stances ----------------------------------------------------------------------------
-
--- The stance after `current` in the cycle (an unknown one goes back to the first).
 function StanceMath.nextStance(config: Config, current: string): string
 	local cycle = config.CYCLE
 	for index, name in cycle do
@@ -156,22 +135,16 @@ function StanceMath.select(state: State, stance: string)
 	state.selected = stance
 end
 
--- Whether the gun is up: no raise running and every weight at or under the threshold.
 function StanceMath.isUp(config: Config, state: State): boolean
 	local threshold = config.UP_THRESHOLD
 	return state.raising == nil and state.high <= threshold and state.low <= threshold and state.mag <= threshold
 end
 
--- Seconds a raise from the current weights takes for this class: each full-stance time
--- scaled by how far in that stance is, the longest wins.
 function StanceMath.raiseDuration(config: Config, state: State, class: string?): number
 	local times = (if class then config.raiseTime[class] else nil) or config.RAISE_DEFAULT
 	return math.max(times.high * state.high, times.low * state.low, config.MAG_CHECK.raiseTime * state.mag)
 end
 
--- A shot asks to leave. True when the gun is up (the stay-up timer restarts); otherwise
--- the raise starts (or keeps running) and the shot has to wait for it. Either way the
--- magazine check ends.
 function StanceMath.requestFire(config: Config, state: State, class: string?, now: number): boolean
 	state.checking = false
 	state.checkReleased = false
@@ -187,7 +160,6 @@ function StanceMath.requestFire(config: Config, state: State, class: string?, no
 	return false
 end
 
--- Seconds until a raise in progress is done (0 when none runs).
 function StanceMath.raiseRemaining(state: State): number
 	local raise = state.raising
 	if not raise then
@@ -196,8 +168,6 @@ function StanceMath.raiseRemaining(state: State): number
 	return math.max(raise.duration - raise.elapsed, 0)
 end
 
--- One frame. `suppressed` (a reload, the draw, an inspect playing) eases every pose out
--- without changing the chosen stance.
 function StanceMath.step(config: Config, state: State, deltaTime: number, now: number, suppressed: boolean)
 	local raise = state.raising
 	if raise then
@@ -213,7 +183,6 @@ function StanceMath.step(config: Config, state: State, deltaTime: number, now: n
 		return
 	end
 
-	-- a released check ends once it has been shown for minShow
 	if state.checking and state.checkReleased and now - state.checkStartedAt >= config.MAG_CHECK.minShow then
 		state.checking = false
 		state.checkReleased = false
@@ -223,7 +192,6 @@ function StanceMath.step(config: Config, state: State, deltaTime: number, now: n
 	local targetHigh = if not up and state.selected == "high" then 1 else 0
 	local targetLow = if not up and state.selected == "low" then 1 else 0
 	local targetMag = if state.checking and not suppressed then 1 else 0
-	-- the check replaces the stance while it is held
 	if targetMag > 0 then
 		targetHigh = 0
 		targetLow = 0
@@ -234,9 +202,6 @@ function StanceMath.step(config: Config, state: State, deltaTime: number, now: n
 	state.mag = StanceMath.ease(state.mag, targetMag, check.easeIn, check.easeOut, deltaTime)
 end
 
--- Magazine check ---------------------------------------------------------------------
-
--- R held this long: true once it is a check rather than a reload.
 function StanceMath.isHold(config: Config, heldFor: number): boolean
 	return heldFor >= config.MAG_CHECK.holdTime
 end
@@ -250,7 +215,6 @@ function StanceMath.startCheck(state: State, now: number)
 	state.checkStartedAt = now
 end
 
--- R let go: the check ends now, or once it has been shown for minShow.
 function StanceMath.releaseCheck(config: Config, state: State, now: number)
 	if not state.checking then
 		return
@@ -263,18 +227,15 @@ function StanceMath.releaseCheck(config: Config, state: State, now: number)
 	end
 end
 
--- A reload or a weapon change ends the check at once.
 function StanceMath.cancelCheck(state: State)
 	state.checking = false
 	state.checkReleased = false
 end
 
--- Whether the count is on screen: only while the weapon is tipped far enough in.
 function StanceMath.countVisible(config: Config, state: State): boolean
 	return state.mag >= config.MAG_CHECK.showAt
 end
 
--- The text the check shows for `mag` rounds of `size`.
 function StanceMath.readout(mode: string, mag: number, size: number): string
 	local rounds = math.max(math.floor(mag), 0)
 	if mode ~= "estimate" then
@@ -294,9 +255,6 @@ function StanceMath.readout(mode: string, mag: number, size: number): string
 	return "Almost empty"
 end
 
--- Lean -------------------------------------------------------------------------------
-
--- Hold mode: -1 left, 1 right, 0 none; with both keys down the one pressed last wins.
 function StanceMath.leanHeld(leftHeld: boolean, rightHeld: boolean, lastSide: number): number
 	if leftHeld and rightHeld then
 		return if lastSide < 0 then -1 else 1
@@ -308,7 +266,6 @@ function StanceMath.leanHeld(leftHeld: boolean, rightHeld: boolean, lastSide: nu
 	return 0
 end
 
--- Toggle mode: a press of the side already leaned to comes back, any other leans.
 function StanceMath.leanToggled(current: number, side: number): number
 	if current == side then
 		return 0
@@ -316,8 +273,6 @@ function StanceMath.leanToggled(current: number, side: number): number
 	return side
 end
 
--- How much of the lean's sideways offset fits: a wall hit at `hitDistance` (studs from
--- the eye along the lean, nil when clear) keeps `wallMargin` from the camera.
 function StanceMath.leanRoom(config: Config, hitDistance: number?): number
 	local lean = config.LEAN
 	if hitDistance == nil or lean.offset <= 0 then
@@ -326,9 +281,6 @@ function StanceMath.leanRoom(config: Config, hitDistance: number?): number
 	return math.clamp((hitDistance - lean.wallMargin) / lean.offset, 0, 1)
 end
 
--- The camera's lean at `lean` (-1..1) with `room` of the offset available: sideways
--- offset and drop in studs, roll in degrees with CFrame.Angles' sign (a lean right
--- rolls the top of the view to the right, a negative Z angle).
 function StanceMath.leanCamera(config: Config, lean: number, room: number): (number, number, number)
 	local settings = config.LEAN
 	local value = math.clamp(lean, -1, 1)
@@ -336,7 +288,6 @@ function StanceMath.leanCamera(config: Config, lean: number, room: number): (num
 	return value * settings.offset * share, -math.abs(value) * settings.drop * share, -value * settings.roll
 end
 
--- The viewmodel's counter-pose: back part of the camera's roll, a nudge toward the lean.
 function StanceMath.leanViewmodel(config: Config, lean: number): Pose
 	local settings = config.LEAN
 	local value = math.clamp(lean, -1, 1)
@@ -350,18 +301,14 @@ function StanceMath.leanViewmodel(config: Config, lean: number): Pose
 	}
 end
 
--- The third-person waist roll in degrees (CFrame.Angles' sign, as the camera).
 function StanceMath.bodyRoll(config: Config, lean: number): number
 	return -math.clamp(lean, -1, 1) * config.LEAN.bodyRoll
 end
 
--- On the wire: tenths, so a slow lean sends a handful of packets.
 function StanceMath.quantizeLean(lean: number): number
 	return math.floor(math.clamp(lean, -1, 1) * 10 + 0.5) / 10
 end
 
--- The relay's check of a lean value: a finite number clamped to -1..1; anything else
--- (an old client sending none) is 0. Visual only, never used for a game rule.
 function StanceMath.validateLean(value: any): number
 	if typeof(value) ~= "number" or value ~= value or math.abs(value) == math.huge then
 		return 0

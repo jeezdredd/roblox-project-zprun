@@ -16,7 +16,6 @@ local WeaponService = require(script.Parent.WeaponService)
 
 local ShopService = {}
 
--- the cabin's loadout panel (docs/gameplay/heli-intermission.md); not a vendor room
 ShopService.CABIN_VENDOR = "Cabin"
 
 export type CatalogEntry = {
@@ -68,7 +67,6 @@ local function weaponEntries(data: ProfileManager.ProfileData): { CatalogEntry }
 			id = weaponId,
 			kind = if owned then "WeaponUpgrade" else "Weapon",
 			displayName = config.displayName,
-			-- the ladder made visible: the damage now, the next level's price and gain
 			description = WeaponLadderText.describe(WeaponsConfig, config, level),
 			price = if maxed then 0 else price,
 			level = level,
@@ -188,7 +186,6 @@ local function buildCatalog(player: Player, vendorId: string): Catalog?
 	elseif vendorId == PerkService.VENDOR_ID then
 		entries = PerkService.entries(data)
 	elseif vendorId == ShopService.CABIN_VENDOR then
-		-- the helicopter cabin during the ready check: swaps only, nothing to buy
 		if not LoadoutWindow.inCabin(player) then
 			return nil
 		end

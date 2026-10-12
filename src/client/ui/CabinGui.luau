@@ -1,17 +1,5 @@
 --!strict
 
--- The helicopter intermission's panel (docs/gameplay/heli-intermission.md):
---
---   Cabin  the ready check: the squad with a mark per member, the AFK timer, READY
---          (a toggle), LOADOUT (the shop panel on the "Cabin" catalog: loadout slots
---          and perk equips, nothing to buy) and LEAVE (back to the hub).
---   Crash  the timer and, on a repeat run, SKIP with the votes so far.
---   Wake   a large "RUN" while GraceUntil is ahead, with the seconds left.
---
--- Everything shown comes from the server's IntermissionState snapshot; the buttons
--- only send requests (IntermissionReady, IntermissionSkip, SquadLeave) the server
--- validates.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -99,7 +87,6 @@ local function build()
 	screen.Name = "CabinGui"
 	screen.ResetOnSpawn = false
 	screen.IgnoreGuiInset = true
-	-- above the intermission's black fade (50)
 	screen.DisplayOrder = 60
 	screen.Enabled = false
 	screen.Parent = player:WaitForChild("PlayerGui")
@@ -203,7 +190,6 @@ local function render()
 	end
 	screen.Enabled = true
 	local inCabin = snapshot.stage == "Cabin"
-	-- the crash beat is the cinematic's screen: the panel only stays for a skip vote
 	local showPanel = inCabin or snapshot.skippable
 	panel.Visible = showPanel
 	setModal(showPanel)

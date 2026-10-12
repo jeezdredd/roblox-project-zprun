@@ -1,21 +1,5 @@
 --!strict
 
--- The helicopter's two crew as soldiers (docs/gameplay/heli-intermission.md), client
--- only. The server builds the Pilot and Copilot as block figures in
--- Workspace.IntermissionCabin; while this player is in the cabin they are hidden locally
--- and two soldier bodies (clones of StarterPlayer.StarterCharacter, the same Mixamo
--- soldier every player wears) sit in the cockpit seats with the seated clip. The crash
--- beat (CrashCinematic) drives them through pose():
---
---   the pilot turns his head to the copilot (an IKControl LookAt)
---   the copilot turns his head to the pilot and brings a pistol up to the pilot's head
---   (an IKControl Transform whose end effector is the pistol's muzzle, so the barrel
---   points at the head whatever the hand's grip offset)
---   the shot: the pilot's head snaps aside and he slumps onto the console (the neck
---   and waist joints rotated after the animator, every PostSimulation)
---
--- No blood or wound: everyone sees the beat and the Gore toggle does not apply.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -30,13 +14,10 @@ local WorldWeaponModel = require(ReplicatedStorage.Shared.util.WorldWeaponModel)
 local CabinCrew = {}
 
 local CABIN_NAME = "IntermissionCabin"
--- each soldier's root over its cockpit seat, in the cabin's frame (floor top, -z forward)
 local PILOT_AT = Vector3.new(-1.9, 1.8, -11.3)
 local COPILOT_AT = Vector3.new(1.9, 1.8, -11.3)
--- flight suits: a dull olive over the soldier's uniform texture
 local SUIT_TORSO = Color3.fromRGB(96, 104, 78)
 local SUIT_LEGS = Color3.fromRGB(80, 86, 66)
--- how close to the pilot's head the copilot holds the muzzle
 local MUZZLE_GAP = 0.9
 
 export type Member = {
@@ -57,7 +38,6 @@ export type Crew = {
 	muzzle: Attachment?,
 	hidden: { [BasePart]: number },
 	tracks: { AnimationTrack },
-	-- the pilot's slump after the shot (0..1) and the head's knock aside (0..1)
 	slump: number,
 	knock: number,
 	connection: RBXScriptConnection?,
@@ -126,7 +106,6 @@ local function makeMember(template: Model, name: string, cframe: CFrame, parent:
 		return nil
 	end
 	humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-	-- a posed prop on an anchored root: no falling or getting-up states
 	humanoid.EvaluateStateMachine = false
 	model:PivotTo(cframe)
 	root.Anchored = true
@@ -166,8 +145,6 @@ local function hideBlocks(cabin: Model, hidden: { [BasePart]: number })
 	end
 end
 
--- The neck and waist after the animator and the IK, every frame: the shot's knock and
--- the slump onto the console.
 local function applySlump(current: Crew)
 	local model = current.pilot.model
 	local waist = model:FindFirstChild("Waist", true)
@@ -180,8 +157,6 @@ local function applySlump(current: Crew)
 	end
 end
 
--- Builds the crew in the cabin (once); nil when the cabin or the soldier is missing,
--- and the block figures stay.
 function CabinCrew.ensure(): Crew?
 	local existing = crew
 	if existing and existing.cabin.Parent then
@@ -205,8 +180,6 @@ function CabinCrew.ensure(): Crew?
 	end
 	folder:SetAttribute("Cabin", cabin.Name)
 
-	-- the copilot's sidearm, holstered (hidden) until the beat brings it up; its muzzle
-	-- is carried as an attachment on the hand so the arm's IK can aim the barrel itself
 	local pistol: Model? = nil
 	local muzzle: Attachment? = nil
 	local config = WeaponsConfig.get("Pistol")
@@ -263,9 +236,6 @@ function CabinCrew.ensure(): Crew?
 	return current
 end
 
--- The beat's crew poses. `look`, `raise` and `pilotLook` are 0..1 weights from the
--- cinematic's timeline, `slump` and `knock` the shot's aftermath, `recoil` the pistol's
--- kick (0..1).
 function CabinCrew.pose(current: Crew, pilotLook: number, copilotLook: number, raise: number, recoil: number, knock: number, slump: number)
 	local pilotHead = current.pilot.head.Position
 	local copilotHead = current.copilot.head.Position
@@ -275,7 +245,6 @@ function CabinCrew.pose(current: Crew, pilotLook: number, copilotLook: number, r
 	current.copilot.lookTarget.WorldPosition = pilotHead
 	current.copilot.look.Weight = copilotLook
 
-	-- the muzzle a hand's width from the pilot's temple, the barrel on his head
 	local from = (pilotHead - copilotHead)
 	local flat = Vector3.new(from.X, 0, from.Z)
 	local direction = if flat.Magnitude > 1e-3 then flat.Unit else Vector3.new(-1, 0, 0)
@@ -297,12 +266,10 @@ function CabinCrew.pose(current: Crew, pilotLook: number, copilotLook: number, r
 	current.knock = knock
 end
 
--- The muzzle the flash and the shot come from, or nil.
 function CabinCrew.muzzle(current: Crew): Attachment?
 	return current.muzzle
 end
 
--- Removes the soldiers and shows the block figures again.
 function CabinCrew.destroy()
 	local current = crew
 	if not current then
@@ -326,7 +293,6 @@ function CabinCrew.destroy()
 	end
 end
 
--- the local player only ever sees one cabin; a respawn or a leave drops the crew
 Players.LocalPlayer.CharacterRemoving:Connect(function()
 	if Players.LocalPlayer:GetAttribute("FlowPhase") ~= "Cabin" then
 		CabinCrew.destroy()

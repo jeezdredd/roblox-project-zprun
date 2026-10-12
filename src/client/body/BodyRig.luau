@@ -1,14 +1,5 @@
 --!strict
 
--- One third-person body: the aim on the waist and neck, the weapon frame with its
--- recoil, sprint, draw and reload gestures, and the two hand IK chains that follow it.
--- The weapon leads and the hands follow: nothing here poses an arm joint directly.
--- Written in PreSimulation on top of whatever the Animator left in the joints (see
--- docs/animation/third-person-body.md section 3.1). The chest, the head and the gun are
--- aimed from the root's upright frame, worked out down the joint chain for this frame's
--- pose, so the run clip's forward lean does not tip the gun at the ground. Fed by
--- BodyController for real players and by SandboxBodyGallery for the yard mannequins.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ThirdPersonConfig = require(ReplicatedStorage.Shared.config.ThirdPersonConfig)
@@ -20,19 +11,14 @@ local StanceMath = require(ReplicatedStorage.Shared.util.StanceMath)
 local BodyRig = {}
 BodyRig.__index = BodyRig
 
--- how close a read-back Transform must be to the last write to count as untouched
 local WRITE_EPSILON = 1e-4
 
--- a joint the layer multiplies: what it wrote last and the animator pose under it, so a
--- frame where the animator did not rewrite the joint (no track playing, or throttled)
--- starts from the same base instead of stacking the twist
 type Joint = {
 	motor: Motor6D,
 	written: CFrame,
 	base: CFrame,
 }
 
--- an arm's three joints, read each update for the reach (an avatar rescale moves them)
 type Arm = {
 	shoulder: Motor6D,
 	elbow: Motor6D,
@@ -71,7 +57,6 @@ type Fields = {
 	aimYaw: number,
 	targetPitch: number,
 	targetYaw: number,
-	-- the manual lean (Stances), -1 left to 1 right: shown and wanted
 	lean: number,
 	targetLean: number,
 	smoothing: number,
@@ -136,17 +121,12 @@ local function findArm(character: Model, side: string): Arm?
 	return nil
 end
 
--- The shoulder joint in torso space and how far the hand's centre gets from it with the
--- arm straight.
 local function armReach(arm: Arm): (Vector3, number)
 	local upper = (arm.elbow.C0.Position - arm.shoulder.C1.Position).Magnitude
 	local lower = (arm.wrist.C0.Position - arm.elbow.C1.Position).Magnitude
 	return arm.shoulder.C0.Position, upper + lower + arm.wrist.C1.Position.Magnitude
 end
 
--- The smallest slide along `back` (a unit vector) that brings `point` within `reach` of
--- `origin`, at most `limit`: 0 when the point is already in reach, or when sliding back
--- does not bring it closer.
 local function slideIntoReach(point: Vector3, origin: Vector3, reach: number, back: Vector3, limit: number): number
 	local offset = point - origin
 	local excess = offset:Dot(offset) - reach * reach
@@ -181,7 +161,6 @@ local function makeControl(name: string, humanoid: Humanoid, chainRoot: Instance
 	return control
 end
 
--- Binds an R15 character, or returns nil when it is not one or its arms are missing.
 function BodyRig.new(character: Model): BodyRig?
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	if not humanoid or humanoid.RigType ~= Enum.HumanoidRigType.R15 then
@@ -258,8 +237,6 @@ local function socketFrame(grip: BasePart, name: string): CFrame?
 	return nil
 end
 
--- Reads the weapon's class and sockets; nil clears the weapon (the hands go back to
--- the animator).
 function BodyRig.setWeapon(self: BodyRig, weapon: Model?, config: WeaponsConfig.WeaponConfig?)
 	self.weapon = weapon
 	self.config = config
@@ -300,7 +277,6 @@ function BodyRig.setAim(self: BodyRig, pitch: number, yaw: number)
 	self.targetYaw = yaw
 end
 
--- The manual lean, -1 (left) to 1 (right): the upper torso rolls toward it at the waist.
 function BodyRig.setLean(self: BodyRig, lean: number)
 	self.targetLean = math.clamp(lean, -1, 1)
 end
@@ -323,8 +299,6 @@ local function startTimeline(self: BodyRig, kind: string, timeline: BodyMath.Tim
 	self.elapsed = 0
 end
 
--- A shot: the kick and snap springs, and the pump stroke on a gun that does not eject
--- on fire.
 function BodyRig.fire(self: BodyRig)
 	local class = self.class
 	local config = self.config
@@ -338,8 +312,6 @@ function BodyRig.fire(self: BodyRig)
 	end
 end
 
--- A reload on the weapon's own timeline: `shells` for the pump shotgun (how many go
--- in), `empty` adds the chambering action, `scale` is the player's ReloadScale.
 function BodyRig.startReload(self: BodyRig, empty: boolean, shells: number, scale: number)
 	local class = self.class
 	local config = self.config
@@ -355,7 +327,6 @@ function BodyRig.startReload(self: BodyRig, empty: boolean, shells: number, scal
 	startTimeline(self, "reload", BodyMath.magazineTimeline(ammoAdd, total, empty, chargeTime))
 end
 
--- The reload ended or was cancelled: the support hand returns to the gun.
 function BodyRig.endReload(self: BodyRig)
 	if self.timelineKind ~= "reload" then
 		return
@@ -365,7 +336,6 @@ function BodyRig.endReload(self: BodyRig)
 	startTimeline(self, "cancel", { { t = 0, pose = from }, { t = GESTURES.cancelReturn, pose = "grip" } })
 end
 
--- The draw after an equip.
 function BodyRig.equip(self: BodyRig)
 	local config = self.config
 	if not config then
@@ -374,8 +344,6 @@ function BodyRig.equip(self: BodyRig)
 	startTimeline(self, "equip", BodyMath.equipTimeline(config.drawTime))
 end
 
--- The support hand's frame in grip space for a gesture pose; the belt is in torso
--- space, so it is returned with `inTorso` true.
 local function poseFrame(self: BodyRig, sockets: Sockets, class: ThirdPersonConfig.ClassSpec, pose: string): (CFrame, boolean)
 	if pose == "belt" then
 		return GESTURES.belt, true
@@ -416,13 +384,8 @@ local function supportTarget(self: BodyRig, weaponFrame: CFrame, sockets: Socket
 	return from:Lerp(to, sample.alpha)
 end
 
--- The animator's pose under the layer this frame (see the Joint type): a Transform that
--- still reads back as the last write was not touched by the animator, so the base under
--- that write is used again instead of stacking on it.
 local function baseOf(joint: Joint): CFrame
 	local current = joint.motor.Transform
-	-- Transform does not read back bit-exact (Studio, 2026-09-30), so an exact compare
-	-- took every frame for an animator write and stacked the twist
 	return if current:FuzzyEq(joint.written, WRITE_EPSILON) then joint.base else current
 end
 
@@ -433,13 +396,10 @@ local function setJoint(joint: Joint, base: CFrame, twist: CFrame)
 	joint.written = written
 end
 
--- The rotation a joint's Transform has to add on top of `joint` (the joint frame under
--- the animator's pose, in world space) so Part1 ends on the world rotation `wanted`.
 local function twistFor(joint: CFrame, motor: Motor6D, wanted: CFrame): CFrame
 	return joint.Rotation:Inverse() * wanted * motor.C1.Rotation
 end
 
--- Part1's rotation relative to Part0 when the joint's Transform is identity.
 local function restOf(motor: Motor6D): CFrame
 	return (motor.C0 * motor.C1:Inverse()).Rotation
 end
@@ -457,8 +417,6 @@ local function stepTimeline(self: BodyRig, deltaTime: number)
 	end
 end
 
--- The draw's blend from the lowered pose (1 at the start of the draw, 0 once up) and
--- its IK weight.
 local function equipBlend(self: BodyRig): number
 	if self.timelineKind ~= "equip" then
 		return 0
@@ -470,7 +428,6 @@ local function equipBlend(self: BodyRig): number
 	return if sample.from == "lowered" then 1 - sample.alpha else 0
 end
 
--- One update, `deltaTime` seconds since the last one for this rig.
 function BodyRig.update(self: BodyRig, deltaTime: number)
 	local humanoid = self.humanoid
 	self.alive = humanoid.Parent ~= nil and humanoid.Health > 0
@@ -491,7 +448,6 @@ function BodyRig.update(self: BodyRig, deltaTime: number)
 	local spread = BodyMath.spreadAim(if self.alive then self.aimPitch else 0, if self.alive then self.aimYaw else 0, SHARES, armScale)
 	self.spread = spread
 
-	-- the hands' IK weight first: the chest straightens only as far as they hold the gun
 	local equipping = equipBlend(self)
 	local targetWeight = if holding and self.ikAllowed then 1 - equipping * (1 - IK.equipWeight) else 0
 	local fade = if not self.alive then IK.deathFade elseif targetWeight > self.weight then IK.fadeIn else IK.fadeOut
@@ -500,8 +456,6 @@ function BodyRig.update(self: BodyRig, deltaTime: number)
 		self.weight = 0
 	end
 
-	-- this frame's pose in world space, from the root up the joint chain; `upright` is
-	-- the root's rotation, what the torso and the head face with the clip's lean taken out
 	local rootMotor = self.rootMotor
 	local rootCFrame = self.rootPart.CFrame
 	local lower = rootCFrame * rootMotor.C0 * rootMotor.Transform * rootMotor.C1:Inverse()
@@ -517,8 +471,6 @@ function BodyRig.update(self: BodyRig, deltaTime: number)
 		upper = joint * motor.C1:Inverse()
 		chestRest = upright * restOf(motor)
 		if self.alive then
-			-- the aim's waist share (plus the recoil's) over the upright chest, keeping only
-			-- part of the clip's lean while a gun is held
 			local waistPitch = spread.waistPitch + self.snap.value * RECOIL.waistShare
 			local lean = chestRest:Inverse() * upper.Rotation
 			local keep = 1 - AIM.chestStabilize * self.weight
@@ -532,7 +484,6 @@ function BodyRig.update(self: BodyRig, deltaTime: number)
 
 	local neck = self.neck
 	if neck and self.alive then
-		-- the head ends on the whole aim with a little of the clip's motion left in
 		local motor = neck.motor
 		local base = baseOf(neck)
 		local joint = upper * motor.C0 * base
@@ -553,9 +504,6 @@ function BodyRig.update(self: BodyRig, deltaTime: number)
 		return
 	end
 
-	-- the weapon frame: the hold, lowered for the draw and the sprint, placed from the
-	-- point between the shoulders along the aim over the upright chest, then kicked by the
-	-- recoil; kept in torso space, where the two hand targets live
 	local hold = class.hold
 	if equipping > 0 then
 		hold = hold:Lerp(hold * class.lowered, equipping)
@@ -582,11 +530,6 @@ function BodyRig.update(self: BodyRig, deltaTime: number)
 		end
 	end
 
-	-- Both hands inside the arms' reach, whatever the avatar's proportions: a grip past
-	-- the right arm's reach brings the whole gun back along its axis, and a support socket
-	-- past the left arm's slides back along the gun (no closer than a hand's width to the
-	-- right hand), so the left hand lands on the receiver instead of stopping short of the
-	-- handguard in the air.
 	local back = weaponFrame.ZVector
 	local rightArm = self.rightArm
 	if rightArm then
@@ -611,7 +554,6 @@ function BodyRig.update(self: BodyRig, deltaTime: number)
 	self.leftTarget.CFrame = support
 end
 
--- Whether the rig can still be used (the character is in the world).
 function BodyRig.isValid(self: BodyRig): boolean
 	return self.character.Parent ~= nil and self.upperTorso.Parent ~= nil
 end
@@ -628,14 +570,12 @@ function BodyRig.destroy(self: BodyRig)
 	end
 end
 
--- For the yard label: the live gesture and IK state.
 function BodyRig.describe(self: BodyRig): string
 	local timeline = self.timeline
 	local gesture = if timeline then string.format("%s %s>%s %.2fs", self.timelineKind, self.sample.from, self.sample.to, self.elapsed) else "-"
 	return string.format("ik %.2f  pitch %.0f  yaw %.0f  %s", self.weight, self.aimPitch, self.aimYaw, gesture)
 end
 
--- The animator reused its last pose this frame, so a multiplied twist would stack.
 function BodyRig.isThrottled(self: BodyRig): boolean
 	local animator = self.animator
 	return animator ~= nil and animator.EvaluationThrottled

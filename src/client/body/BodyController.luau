@@ -1,13 +1,5 @@
 --!strict
 
--- Runs a BodyRig on every other player's character, and on the local one while the
--- third-person view is on (Studio only). Feeds each rig from what already replicates:
--- the WorldWeapon model and the WeaponId attribute for the gun and the draw, the
--- Reloading / AmmoMag / AmmoReserve / ReloadScale attributes for reloads, the
--- WeaponHit "Shot" remote for the kick, the BodyAim packets for the aim, and the root
--- velocity for the sprint. Updates are scheduled by distance (ThirdPersonConfig.lod)
--- in PreSimulation, after the animator, with a cap per frame.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -119,7 +111,6 @@ local function bind(player: Player, character: Model)
 	bindWeapon(entry, character:FindFirstChild(WorldWeaponModel.NAME))
 	table.insert(entry.connections, character.ChildAdded:Connect(function(child)
 		if child.Name == WorldWeaponModel.NAME then
-			-- the sockets are children of the grip and arrive with the model
 			task.defer(bindWeapon, entry, child)
 		end
 	end))
@@ -136,8 +127,6 @@ local function bind(player: Player, character: Model)
 	end
 end
 
--- The character is bound once its arms and torso exist; a character that never gets
--- them (an R6 avatar) is left to the animator.
 local function watchCharacter(player: Player, character: Model)
 	task.spawn(function()
 		local humanoid = character:WaitForChild("Humanoid", 10)
@@ -196,8 +185,6 @@ local function onAim(player: Player, pitch: number, yaw: number, lean: any)
 	end
 end
 
--- The local character joins the set only while the third-person view is on, and its
--- aim comes straight from the camera.
 local function updateLocal()
 	local player = Players.LocalPlayer
 	local character = player.Character
@@ -260,8 +247,6 @@ local function step(deltaTime: number)
 	end
 end
 
--- For the yard label under a real player: seconds since their last aim packet, or nil
--- for a player without a rig.
 function BodyController.packetAge(player: Player): number?
 	local entry = entries[player]
 	if not entry or entry.lastPacketAt == 0 then

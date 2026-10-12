@@ -15,19 +15,14 @@ local RunEconomy = require(script.Parent.RunEconomy)
 
 local WeaponService = {}
 
--- A reload in progress, on the WeaponsConfig timeline the client predicts with. It is
--- advanced every Heartbeat and again right before a shot is judged, so a shot that
--- arrives just after the ammo-add sees the rounds.
 type ReloadJob = {
 	style: string,
 	startedAt: number,
 	empty: boolean,
 	scale: number,
 	endsAt: number,
-	-- magazine: the mag seats here; after it a shot may cut the tail
 	ammoAddAt: number,
 	ammoAdded: boolean,
-	-- shell: planned, counted so far, most that will go in (lowered by a cancel)
 	planned: number,
 	loaded: number,
 	limit: number,
@@ -40,12 +35,9 @@ type PlayerWeaponState = {
 	reserve: number,
 	lastFireAt: number,
 	reload: ReloadJob?,
-	-- no shots before this (the draw after an equip)
 	drawUntil: number,
 }
 
--- The client starts its reload one trip earlier than the server and its shots arrive
--- one trip later, so both sides line up on the same timeline; this only absorbs jitter.
 local SYNC_TOLERANCE = 0.1
 local ORIGIN_TOLERANCE = 5
 local RATE_TOLERANCE = 0.97
@@ -57,17 +49,11 @@ type AmmoSnapshot = { mag: number, reserve: number, lastFireAt: number }
 
 local states: { [Player]: PlayerWeaponState } = {}
 local savedAmmo: { [Player]: { [string]: AmmoSnapshot } } = {}
--- the loadout for the current run once a pickup replaced a slot: the profile's loadout
--- with the found weapons in, gone when the run ends (WeaponPickups, MissionService)
 local runLoadout: { [Player]: { string } } = {}
--- the levels bought at an upgrade station this run, per weapon id: read over the
--- profile's level for damage, gone with the run (UpgradeStations, MissionService)
 local runLevels: { [Player]: { [string]: number } } = {}
 local random = Random.new()
 local lastGongAt: { [Player]: number } = {}
 
--- The weapon's level for this run: the level bought at a station this run, else the
--- profile's (1 for a weapon the profile does not own, such as a found one).
 local function levelOf(player: Player, weaponId: string): number
 	local levels = runLevels[player]
 	local bought = if levels then levels[weaponId] else nil
@@ -105,10 +91,6 @@ local function endReload(player: Player, state: PlayerWeaponState)
 	player:SetAttribute("Reloading", false)
 end
 
--- Applies whatever the reload has reached by `now`: the magazine's ammo-add, each shell
--- at its add point, and the end. Attributes are synced on every count change so the
--- HUD ticks per shell.
--- A full magazine and reserve, as a hub refill and a found gun give.
 local function fillWeapon(player: Player, state: PlayerWeaponState, config: WeaponsConfig.WeaponConfig)
 	state.mag = config.magSize
 	state.reserve = config.magSize * config.reserveMags
@@ -156,8 +138,6 @@ local function advanceReload(player: Player, state: PlayerWeaponState, now: numb
 	end
 end
 
--- The loadout the 1 and 2 keys read: the run's once a pickup changed it, else the
--- profile's.
 local function loadoutFor(player: Player): { string }
 	local override = runLoadout[player]
 	if override then
@@ -190,7 +170,6 @@ local function onEquip(player: Player, weaponId: any)
 		return
 	end
 	local config = WeaponsConfig.get(weaponId)
-	-- ALL_WEAPONS_UNLOCKED is the temporary test flag: any weapon, owned or not
 	if not config or not (WeaponsConfig.ALL_WEAPONS_UNLOCKED or ownsWeapon(player, weaponId)) then
 		return
 	end
@@ -208,8 +187,6 @@ local function onEquip(player: Player, weaponId: any)
 		saved[current.weaponId] = { mag = current.mag, reserve = current.reserve, lastFireAt = current.lastFireAt }
 	end
 
-	-- a reload in progress is dropped with the old state: before its ammo-add the old
-	-- count stands, shells already in stay in
 	local state = defaultState(weaponId)
 	local prior = saved[weaponId]
 	if prior then
@@ -220,8 +197,6 @@ local function onEquip(player: Player, weaponId: any)
 	state.drawUntil = os.clock() + config.drawTime
 	states[player] = state
 	player:SetAttribute("Reloading", false)
-	-- the client runs its reload prediction with this, so it has to be there before the
-	-- first reload request
 	player:SetAttribute("ReloadScale", SkillEffects.reloadScale(player))
 	syncAttributes(player, state)
 end
@@ -261,9 +236,6 @@ local function findZombieModel(instance: Instance): Model?
 	return nil
 end
 
--- Applies one ray's hit. Returns what it did to a zombie (the damage dealt, a head hit,
--- a kill) for the shooter's hit marker, or nil when it hurt none; the damage rules are
--- unchanged, the outcome is read from them after the fact.
 local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, result: RaycastResult): HitMarkerMath.Confirm?
 	local part = result.Instance
 	if part.Name == "RangeGong" then
@@ -289,7 +261,6 @@ local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, res
 
 	local data = ProfileManager.get(player)
 	local progress = if data then data.WeaponsOwned[config.id] else nil
-	-- the level bought at a station this run counts over the profile's
 	local damage = WeaponsConfig.damageAt(config, levelOf(player, config.id))
 	local headshot = part.Name == "Head"
 	if headshot then
@@ -302,7 +273,6 @@ local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, res
 	if killed then
 		ProfileManager.addKill(player)
 		MissionGoals.report(player, "Kills", 1)
-		-- the kill pays into the run balance at once (RunEconomy)
 		local zombieId = model:GetAttribute("ZombieId")
 		RunEconomy.onKill(player, if typeof(zombieId) == "string" then zombieId else nil, headshot)
 		if progress then
@@ -344,7 +314,6 @@ local function onFire(player: Player, origin: any, direction: any)
 		local job = state.reload
 		if job then
 			if job.style == "magazine" and job.ammoAdded then
-				-- the magazine is seated: firing cuts the rest of the reload
 				endReload(player, state)
 			else
 				return
@@ -369,8 +338,6 @@ local function onFire(player: Player, origin: any, direction: any)
 	if originDistance > 0.05 then
 		local losParams = RaycastParams.new()
 		losParams.FilterType = Enum.RaycastFilterType.Exclude
-		-- only world geometry may block the head-to-camera gap: a zombie hit box pressed
-		-- against the player (a grab, a lunge) must not swallow a point-blank shot
 		local ignore: { Instance } = if character then { character } else {}
 		local zombies = Workspace:FindFirstChild("Zombies")
 		if zombies then
@@ -411,7 +378,6 @@ local function onFire(player: Player, origin: any, direction: any)
 	params.FilterDescendantsInstances = filter
 
 	local hits: { { position: Vector3, normal: Vector3, material: string } } = {}
-	-- what each pellet did to a zombie, summed into the shooter's hit confirmation
 	local outcomes: { HitMarkerMath.Confirm } = {}
 	for _ = 1, config.pellets do
 		local shotDirection = if config.pellets > 1 or config.spreadDeg > 0
@@ -433,9 +399,6 @@ local function onFire(player: Player, origin: any, direction: any)
 		end
 	end
 
-	-- the sixth value is the server's own confirmation of this shot (damage dealt, a
-	-- head hit, a kill) for the shooter's hit marker, nil when it hurt no zombie; the
-	-- client never sends any of it
 	Remotes.getEvent(Remotes.Event.WeaponHit):FireAllClients("Shot", origin, hits, player, state.weaponId, HitMarkerMath.combine(outcomes))
 end
 
@@ -487,10 +450,6 @@ local function onReload(player: Player)
 	player:SetAttribute("Reloading", true)
 end
 
--- Fire pressed during a reload. Shells: the one in the hand is still counted, the loop
--- stops, and the job lives on through the fast exit (plus the pump from empty), which
--- is what keeps fire blocked for that window. Magazines: before ammo-add the old count
--- stands, after it the tail is cut; either way the reload ends now.
 local function onReloadCancel(player: Player)
 	local state = states[player]
 	if not state or not state.reload then
@@ -539,9 +498,6 @@ function WeaponService.equip(player: Player, weaponId: string)
 	onEquip(player, weaponId)
 end
 
--- A weapon found in the world (WeaponPickups): it takes the slot of the weapon in hand
--- for the rest of the run and is equipped the way a loadout equip is, full. Finding a
--- weapon already carried refills that one instead. False for an unknown id.
 function WeaponService.pickUp(player: Player, weaponId: string): boolean
 	local config = WeaponsConfig.get(weaponId)
 	if not config then
@@ -554,7 +510,6 @@ function WeaponService.pickUp(player: Player, weaponId: string): boolean
 		or 1
 	loadout[slot] = weaponId
 	runLoadout[player] = loadout
-	-- a found gun is full: the ammo it had the last time it was carried is forgotten
 	local saved = savedAmmo[player]
 	if saved then
 		saved[weaponId] = nil
@@ -568,8 +523,6 @@ function WeaponService.pickUp(player: Player, weaponId: string): boolean
 	return true
 end
 
--- Republishes the level attribute for the weapon in hand: after the profile loads (the
--- default Pistol may already be current, so no equip runs) and after a Gunsmith upgrade.
 function WeaponService.refreshLevel(player: Player)
 	local state = states[player]
 	if state then
@@ -586,8 +539,6 @@ function WeaponService.levelOf(player: Player, weaponId: string): number
 	return levelOf(player, weaponId)
 end
 
--- A level bought at an upgrade station (UpgradeStations has taken the credits): it
--- holds for the rest of the run, over the profile's level, and is never written back.
 function WeaponService.setRunLevel(player: Player, weaponId: string, level: number)
 	local levels = runLevels[player]
 	if not levels then
@@ -601,9 +552,6 @@ function WeaponService.setRunLevel(player: Player, weaponId: string, level: numb
 	end
 end
 
--- The run is over: the found weapons and the bought levels go with it and the
--- profile's loadout is back in the slots; a hand still holding a found weapon draws
--- the profile's primary.
 function WeaponService.clearRunLoadout(player: Player)
 	runLevels[player] = nil
 	local state = states[player]

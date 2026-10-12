@@ -1,11 +1,5 @@
 --!strict
 
--- Pure helpers for MaterialUtil's set list (no services, no engine types), tested by
--- `luau tests/megascans/run.luau`. The Megascans sets come from the generated
--- config/MegascansMaterials.luau (docs/environment/megascans.md); every
--- entry is checked here before MaterialUtil turns it into a PbrSet, so a damaged or
--- hand-edited file drops that entry instead of breaking the Materials stage.
-
 export type Entry = {
 	name: string,
 	asset: string?,
@@ -19,7 +13,6 @@ export type Entry = {
 	replaces: string?,
 }
 
--- the fields every set has, whatever its base material type
 type Named = {
 	name: string,
 	baseMaterial: any,
@@ -35,7 +28,6 @@ local function positiveId(value: any): boolean
 	return type(value) == "number" and value > 0 and value == math.floor(value)
 end
 
--- One generated entry, field by field. Returns the entry, or nil and the reason.
 function MaterialSets.validate(raw: any): (Entry?, string?)
 	if type(raw) ~= "table" then
 		return nil, "not a table"
@@ -79,8 +71,6 @@ function MaterialSets.validate(raw: any): (Entry?, string?)
 		nil
 end
 
--- The valid entries of a loaded list, plus one line per entry dropped. A list that is
--- not a table gives no entries.
 function MaterialSets.readList(list: any): ({ Entry }, { string })
 	local entries: { Entry } = {}
 	local dropped: { string } = {}
@@ -102,7 +92,6 @@ function MaterialSets.readList(list: any): ({ Entry }, { string })
 	return entries, dropped
 end
 
--- base followed by the extra sets whose names base does not already use.
 function MaterialSets.merge<T>(base: { T }, extra: { T }): { T }
 	local merged: { T } = table.clone(base)
 	local taken: { [string]: boolean } = {}
@@ -119,7 +108,6 @@ function MaterialSets.merge<T>(base: { T }, extra: { T }): { T }
 	return merged
 end
 
--- replaced set name -> the set that stands in for it (the first claim wins).
 function MaterialSets.replacements(sets: { any }): { [string]: string }
 	local map: { [string]: string } = {}
 	for _, set in sets do
@@ -131,8 +119,6 @@ function MaterialSets.replacements(sets: { any }): { [string]: string }
 	return map
 end
 
--- The set to use for a requested name: its stand-in when that one is registered, else
--- the name itself, so a missing Megascans variant falls back to the original set.
 function MaterialSets.resolve(name: string, replacements: { [string]: string }, registered: { [string]: boolean }): string
 	local standIn = replacements[name]
 	if standIn and registered[standIn] then
@@ -141,9 +127,6 @@ function MaterialSets.resolve(name: string, replacements: { [string]: string }, 
 	return name
 end
 
--- base material -> the set that overrides it: the last registered set asking for it,
--- so a Megascans set (listed after the project's own) takes over an override only
--- once its variant has actually arrived.
 function MaterialSets.overrides(sets: { any }, registered: { [string]: boolean }): { [any]: string }
 	local map: { [any]: string } = {}
 	for _, set in sets do

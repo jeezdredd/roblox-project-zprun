@@ -1,21 +1,11 @@
 --!strict
 
--- Spent magazines dropped by a speed reload (PackViewmodel, ViewmodelPackConfig.magDrop).
--- The viewmodel magazine is copied at world size where the eye sees it (the rig is a
--- scaled-down copy around the eye, so scaling the position from the eye keeps the
--- image), then falls with the runner's velocity, bounces once or twice on whatever is
--- below and lies flat until it expires. Anchored and moved by hand like the casings: no
--- physics owner, nothing for the character to trip over.
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local DroppedMagazines = {}
 
--- `bones`: world CFrames of the joints a mesh skinned to several bones is drawn with
--- (ViewmodelPackConfig.MagDrop `skin`); `body`: the magazine's box in mesh space when
--- the mesh bounds are larger than the magazine
 export type Piece = {
 	part: BasePart,
 	cframe: CFrame,
@@ -36,7 +26,6 @@ type Mag = {
 	expires: number,
 }
 
--- about real gravity at 28 cm per stud; the drop has to be seen, not snapped to the floor
 local GRAVITY = 40
 local RESTITUTION = 0.22
 local FRICTION = 0.55
@@ -98,7 +87,6 @@ local function remove(index: number)
 	end
 end
 
--- lies the magazine flat on `normal`, keeping its heading
 local function settle(mag: Mag, position: Vector3, normal: Vector3)
 	local rotation = mag.pivot.Rotation
 	local flat = rotation:VectorToWorldSpace(mag.flatAxis)
@@ -159,9 +147,6 @@ local function step(deltaTime: number)
 	end
 end
 
--- `pieces` are the viewmodel meshes with the CFrame they are drawn at now, `eye` the
--- camera position the rig is scaled around, `scale` the rig-to-world factor,
--- `velocity` what the magazine leaves the hands with (the runner's own speed).
 function DroppedMagazines.drop(pieces: { Piece }, eye: Vector3, scale: number, velocity: Vector3)
 	if #pieces == 0 then
 		return
@@ -169,8 +154,6 @@ function DroppedMagazines.drop(pieces: { Piece }, eye: Vector3, scale: number, v
 	while #mags >= MAX_MAGS do
 		remove(1)
 	end
-	-- one model per magazine: a skinned copy finds its bones by name within its model,
-	-- so the bones of two dropped magazines must not share one
 	local model = Instance.new("Model")
 	model.Name = "Magazine"
 	local parts: { BasePart } = {}
@@ -208,7 +191,6 @@ function DroppedMagazines.drop(pieces: { Piece }, eye: Vector3, scale: number, v
 	local main = parts[1]
 	local pivot = worlds[1]
 	local size = main.Size
-	-- the magazine turns about its own centre and lies on its own faces
 	local body = pieces[1].body
 	if body and main:IsA("MeshPart") then
 		local toPart = main.Size / main.MeshSize
@@ -219,7 +201,6 @@ function DroppedMagazines.drop(pieces: { Piece }, eye: Vector3, scale: number, v
 	for index, world in worlds do
 		offsets[index] = pivot:ToObjectSpace(world)
 	end
-	-- the thinnest local axis of the body is the one it lies on
 	local flatAxis = Vector3.xAxis
 	local thinnest = size.X
 	if size.Y < thinnest then

@@ -1,38 +1,23 @@
 --!strict
 
--- Ground and wall marks per biome. `key` names an entry of AssetIds.texture.decal; a key
--- that is missing or 0 places nothing, so the list can name marks the project does not
--- have yet (docs/world/assets-needed.md). Data only, no engine types.
---
--- Zones: "lane" is the playable band minus a margin, "shoulder" the strip just inside the
--- corridor edge, "edge" the corridor edge row, "wall" a card on a road-facing wall part.
--- "floor" is a tiled Texture on the floor's top face rather than a card.
-
 export type Entry = {
 	key: string,
 	biomes: { string },
 	zone: string,
-	-- card size in studs: { min, max } for a square card, or { width, depth } when fixed
 	size: { number },
 	fixed: boolean?,
 	count: { number },
 	transparency: { number },
-	-- render order between overlapping marks: cracks 1, stains 2, blood 3
 	layer: number,
-	-- tile size for floor textures
 	tile: { number }?,
 }
 
 local DecalsConfig = {}
 
--- A card sits this far above the ground, plus LAYER_STEP per layer, so layers never fight.
 DecalsConfig.CARD_LIFT = 0.02
 DecalsConfig.LAYER_STEP = 0.01
--- Wall cards stand this far in front of the wall face.
 DecalsConfig.WALL_GAP = 0.06
--- Cards beyond this many per chunk are detail the mobile tier removes.
 DecalsConfig.BASE_CARDS = 2
--- Lane cards keep off the road centre line by this much, and off the chunk ends.
 DecalsConfig.LANE_HALF = 24
 DecalsConfig.END_CLEARANCE = 8
 
@@ -54,8 +39,6 @@ DecalsConfig.entries = {
 	{ key = "blood_pool_a", biomes = { "City", "Forest", "Wasteland", "Farmstead", "Cornfield" }, zone = "shoulder", size = { 3, 5 }, count = { 0, 2 }, transparency = { 0.1, 0.3 }, layer = 3 },
 } :: { Entry }
 
--- Wall parts, by name, that may carry a wall card. All are thin along their local x and
--- face the road.
 DecalsConfig.WALL_PARTS = { "Divider", "RuinFront", "Shopfront" }
 
 function DecalsConfig.forBiome(biome: string): { Entry }
@@ -68,7 +51,6 @@ function DecalsConfig.forBiome(biome: string): { Entry }
 	return out
 end
 
--- The asset id behind a key from a lookup table; anything missing or non-positive is 0.
 function DecalsConfig.idOf(ids: { [string]: any }?, key: string): number
 	if not ids then
 		return 0

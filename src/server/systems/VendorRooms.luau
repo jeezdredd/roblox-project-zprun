@@ -488,7 +488,6 @@ local function buildBubblegumStand(base: CFrame, size: Vector3, parent: Instance
 	buildTableSet(base * CFrame.new(halfW - 12, 1, -4), parent)
 end
 
--- A flask on a stand: the lab's own prop, a glass cylinder with a lit fill.
 local function buildFlask(base: CFrame, fillColor: Color3, parent: Instance)
 	local stand = makePart("Part", "FlaskStand", Vector3.new(2, 0.4, 2), base * CFrame.new(0, 0.2, 0), DARK_STEEL, Enum.Material.Metal, parent)
 	decor(stand)
@@ -506,9 +505,6 @@ local function buildFlask(base: CFrame, fillColor: Color3, parent: Instance)
 	light.Parent = fill
 end
 
--- The Perk Lab: steel benches with lit flasks along the back, a whiteboard of the six
--- perks on one side, a rack of sealed cases on the other. Same shell and prompt as
--- every other room; the catalog is PerkService's.
 local function buildPerkLab(base: CFrame, size: Vector3, parent: Instance)
 	local halfW = size.X / 2
 	local halfD = size.Z / 2
@@ -521,8 +517,6 @@ local function buildPerkLab(base: CFrame, size: Vector3, parent: Instance)
 		Color3.fromRGB(200, 90, 150),
 		Color3.fromRGB(150, 230, 100),
 	}
-	-- six benches along the back: flasks on the first four, the two monitors on the
-	-- last two (a flask and a monitor never share a bench)
 	local FLASK_BENCHES = 4
 	local benchX: { number } = {}
 	for i = 1, #flaskColors do

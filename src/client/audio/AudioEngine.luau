@@ -1,13 +1,5 @@
 --!strict
 
--- The spatial audio engine: a fixed pool of voices (AudioPlayer -> AudioFilter ->
--- AudioEmitter on the voice's own Attachment in Terrain, or a bus fader), one play API
--- for every consumer, and the per-frame
--- propagation update that gives each voice its distance curve, air absorption,
--- occlusion, doorway loss, speed-of-sound delay and distance layers. Nothing is
--- allocated per frame; a play picks a free voice or steals the least valuable one.
--- Design and numbers: docs/audio/spatial-audio.md.
-
 local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -26,28 +18,22 @@ local AudioMath = require(script.Parent.AudioMath)
 local AudioEngine = {}
 
 export type PlaySpec = {
-	-- an AssetIds.audio path ("zombie.idle_01") or a raw asset id; layers instead for
-	-- close / mid / far perspectives (keys or ids per layer name)
 	key: string?,
 	id: number?,
 	layers: { [string]: string }?,
 	layerIds: { [string]: number }?,
 	class: string,
-	-- a fixed point, or an instance with a position to follow (BasePart, Attachment)
 	position: Vector3?,
 	follow: Instance?,
 	volume: number?,
 	pitch: number?,
-	-- seconds on top of the distance delay
 	delay: number?,
 	loop: boolean?,
 	fadeIn: number?,
-	-- per-call overrides of the class
 	range: number?,
 	hold: number?,
 	bus: string?,
 	pitchJitter: number?,
-	-- an extra low-pass cap, for reflections coloured by their surface
 	cutoff: number?,
 }
 
@@ -73,7 +59,6 @@ type Voice = {
 	userVolume: number,
 	layerWeight: number,
 	layerBand: SpatialAudioConfig.LayerBand?,
-	-- occlusion and doorway attenuation from the last propagation
 	gain: number,
 	fade: number,
 	fadeTarget: number,
@@ -93,13 +78,8 @@ type Voice = {
 
 type VoiceRef = { voice: Voice, generation: number }
 
--- A 3D loop outlives its voices: out of range, or robbed by a louder sound, it keeps
--- this record and takes a voice again once it is back in range and one is free or worth
--- stealing. A horde's growls and a street of fires stay right however many there are;
--- only the nearest hold real voices.
 type LoopRecord = {
 	play: PlaySpec,
-	-- a later start: no start delay, a short fade in
 	resume: PlaySpec,
 	className: string,
 	spec: SpatialAudioConfig.ClassSpec,
@@ -110,7 +90,6 @@ type LoopRecord = {
 	position: Vector3,
 	userVolume: number,
 	pitch: number?,
-	-- the same table as the handle's refs: the voice the loop holds right now, if any
 	refs: { VoiceRef },
 	alive: boolean,
 }
@@ -128,17 +107,11 @@ local NEAR = SpatialAudioConfig.NEAR_DISTANCE
 local ABSORPTION = SpatialAudioConfig.ABSORPTION
 local OCCLUSION = SpatialAudioConfig.OCCLUSION
 local ENVIRONMENT = SpatialAudioConfig.ENVIRONMENT
--- one-shots that stopped playing are checked for release this often
 local FINISH_CHECK_FRAMES = 8
--- layer weights below this are not worth a voice
 local LAYER_MIN_WEIGHT = 0.02
--- a voice culled for range is stopped past this share of its range
 local CULL_MARGIN = 1.1
--- loops without a voice look for one this often, fading in over LOOP_FADE_IN
 local LOOP_CHECK_FRAMES = 15
 local LOOP_FADE_IN = 0.3
--- a returning loop only steals a voice it clearly outranks, so two loops at the class
--- limit do not trade one voice back and forth
 local LOOP_STEAL_MARGIN = 10
 
 local random = Random.new()
@@ -243,11 +216,6 @@ local function createVoice(index: number, folder: Instance): Voice
 	attachment.Name = "AudioVoice" .. index
 	attachment.Parent = Workspace.Terrain
 
-	-- The emitter sits on the voice's attachment and the attachment is moved onto the
-	-- source every frame: AudioEmitter.PositionType / PositionInstance are in the API but
-	-- not enabled yet (Studio, 2026-09-29), and an emitter whose parent has no position
-	-- (the AudioPlayer) is inaudible. Parenting it into a followed model would destroy it
-	-- with the model.
 	local emitter = Instance.new("AudioEmitter")
 	emitter.Name = "Emitter"
 	emitter.DistanceAttenuationMode = Enum.DistanceAttenuationMode.Custom
@@ -329,7 +297,6 @@ type ClassLayers = { ordered: { SpatialAudioConfig.LayerBand }, names: { string 
 
 local layerCache: { [SpatialAudioConfig.ClassSpec]: ClassLayers } = {}
 
--- A class's layer bands in close -> far order, built once per class.
 local function classLayers(spec: SpatialAudioConfig.ClassSpec): ClassLayers
 	local cached = layerCache[spec]
 	if cached then
@@ -359,9 +326,6 @@ local function stealScore(voice: Voice): number
 	return AudioMath.stealScore(voice.class.priority, voice.distance, voice.range, now() - voice.startedAt)
 end
 
--- A free voice, or the least valuable active one when the new sound outranks it, or
--- nil when the new sound is the one to drop. Class limits are enforced first, so a
--- horde of moans steals from itself before it steals a footstep.
 local function acquire(className: string, spec: SpatialAudioConfig.ClassSpec, distance: number, range: number, margin: number?): Voice?
 	local newScore = AudioMath.stealScore(spec.priority, distance, range, 0) - (margin or 0)
 	local classCount = 0
@@ -435,8 +399,6 @@ local function applyCutoff(voice: Voice, cutoff: number)
 	end
 end
 
--- The propagation update of one 3D voice: distance, culling, absorption, occlusion,
--- doorway loss, distance layers, then the filter and the volume.
 local function propagate(voice: Voice, deltaTime: number, rays: number, forceRays: boolean)
 	local position = sourcePosition(voice)
 	if not position then
@@ -447,7 +409,6 @@ local function propagate(voice: Voice, deltaTime: number, rays: number, forceRay
 	voice.distance = distance
 
 	if distance > voice.range * CULL_MARGIN then
-		-- a one-shot is over; a loop's record takes a voice again when it comes back
 		release(voice)
 		return
 	end
@@ -513,7 +474,6 @@ local function stepFade(voice: Voice, deltaTime: number): boolean
 	return true
 end
 
--- defined after startVoice
 local stepLoops: () -> ()
 
 local function step(deltaTime: number)
@@ -557,8 +517,6 @@ local function step(deltaTime: number)
 			end
 			continue
 		end
-		-- the emitter's attachment tracks a moving source every frame; propagation
-		-- (filters, occlusion, volume) runs on the slower cadence below
 		if voice.follow then
 			local position = sourcePosition(voice)
 			if position then
@@ -632,9 +590,6 @@ local function startVoice(voice: Voice, id: number, spec: SpatialAudioConfig.Cla
 	voice.startedAt = now()
 
 	if is3D then
-		-- first propagation before the sound starts, with its own rays and a long step so
-		-- the smoothing lands at once: a voice born behind a wall is muffled from its
-		-- first sample
 		propagate(voice, 10, if spec.reflections then 2 else 1, true)
 		if not voice.active then
 			return
@@ -660,8 +615,6 @@ local function loopVoice(record: LoopRecord): Voice?
 	return nil
 end
 
--- Gives a loop record a voice when its source is in range; `resume` starts it at a
--- random point of the loop with a short fade, so returning growls never start in step.
 local function startLoop(record: LoopRecord, resume: boolean, margin: number): boolean
 	local distance = (record.position - listenerPosition).Magnitude
 	if distance > record.range then
@@ -714,7 +667,6 @@ stepLoops = function()
 	end
 end
 
--- Every voice of a handle, when it is still the generation the handle was given.
 local function eachVoice(self: Handle, callback: (Voice) -> ())
 	for _, ref in self.refs do
 		if ref.voice.active and ref.voice.generation == ref.generation then
@@ -829,7 +781,6 @@ function AudioEngine.profileName(): string
 	return profileName
 end
 
--- Rays a reflection fan casts on this platform.
 function AudioEngine.reflectionRays(): number
 	return profile.reflectionRays
 end
@@ -846,8 +797,6 @@ function AudioEngine.mixerTime(): number
 	return mixerTime()
 end
 
--- Plays a sound and returns a handle; a silent request (id 0, out of range, or no voice
--- worth stealing) returns an empty handle whose methods do nothing.
 function AudioEngine.play(play: PlaySpec): Handle
 	local handle = newHandle()
 	if not AudioEngine.enabled() then
@@ -914,8 +863,6 @@ function AudioEngine.play(play: PlaySpec): Handle
 		return handle
 	end
 
-	-- distance layers: one voice per band that has weight, each falling back to the
-	-- nearest key the sound actually has
 	local available: { [string]: boolean } = {}
 	for name in ids do
 		available[name] = true
@@ -965,7 +912,6 @@ export type VoiceInfo = {
 	is3D: boolean,
 }
 
--- Rows for the debug overlay (allocates; only called while the overlay is open).
 function AudioEngine.snapshot(): ({ VoiceInfo }, number, number)
 	local rows: { VoiceInfo } = {}
 	local active = 0

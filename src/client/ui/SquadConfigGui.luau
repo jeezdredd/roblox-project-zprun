@@ -165,7 +165,6 @@ function SquadConfigGui.create(handlers: Handlers): GuiController
 	membersLabel.LayoutOrder = 2
 
 	local mapOptions: { Option } = {}
-	-- the start map: Random, then the maps with content (disabled ones are not offered)
 	for _, id in MapsConfig.order do
 		if MapsConfig.isSelectable(id) then
 			local map = MapsConfig.get(id)

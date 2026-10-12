@@ -5,10 +5,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local AnimationTimings = require(ReplicatedStorage.Shared.config.AnimationTimings)
 local PoseLibrary = require(ReplicatedStorage.Shared.config.PoseLibrary)
 
--- Plays authored pose sequences and hands the resulting bone offsets back to the
--- viewmodel. It never touches the procedural layer: sway, bob and recoil are applied
--- by Viewmodel on top of whatever this returns.
-
 export type Sequencer = {
 	class: string,
 	activeId: string?,
@@ -96,12 +92,6 @@ function AnimationSequencer:isPlaying(id: string?): boolean
 	return self.activeId ~= nil
 end
 
--- Any sequence can be cut off mid-frame; the current pose becomes the blend origin
--- so the switch never snaps.
--- `targetDuration` stretches or squeezes the whole sequence to that many seconds (the
--- reload plays over the weapon's reloadTime); omitted, the authored timings stand.
--- `blendTime` overrides the sequence's own blend-in: Fire has none so the kick lands on
--- the frame, but a shot that cuts a reload tail needs one or the arms jump.
 function AnimationSequencer:play(id: string, targetDuration: number?, blendTime: number?)
 	local sequence = AnimationTimings.get(id)
 	if not sequence then
@@ -172,10 +162,6 @@ function AnimationSequencer:update(deltaTime: number): PoseLibrary.Pose
 							self:firePhase(nextStep.phase)
 						end
 					elseif sequence.looped then
-						-- Restart from the top. Pointing the index back at the last step
-						-- left its clock already spent, so alpha hit 1 again on the very
-						-- next frame, this branch re-fired every frame and the pose froze
-						-- on the final step instead of cycling.
 						self.stepIndex = 1
 						self.stepClock = 0
 						local firstStep = sequence.steps[1]

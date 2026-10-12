@@ -15,10 +15,6 @@ local IntermissionService = require(script.Parent.IntermissionService)
 local ProfileManager = require(script.Parent.ProfileManager)
 local WeaponService = require(script.Parent.WeaponService)
 
--- Iteration harness. Everything here is gated on RunService:IsStudio(), so none of it
--- can reach a published server. Its whole purpose is to make one weapon change cost a
--- single Play click instead of a scripted walk to the helicopter and a squad launch.
-
 local DevBench = {}
 
 local TARGET_TAG = "DevBenchTarget"
@@ -47,8 +43,6 @@ local function launchSolo(player: Player)
 	end
 	launching[player] = true
 	local seed = DevConfig.QUICK_RUN.seed or Random.new():NextInteger(1, 2147483646)
-	-- through the cabin like a squad launch (DevConfig.QUICK_LAUNCH), or straight in;
-	-- always straight in for the test yard, the cabin has nothing to test there
 	if DevConfig.QUICK_LAUNCH.intermission and not DevMode.yard() then
 		IntermissionService.begin({ player }, benchConfig(), seed)
 	else
@@ -67,7 +61,6 @@ local function watchPlayer(player: Player)
 
 	local function onCharacter()
 		task.delay(quick.delay, function()
-			-- only from the hub: a character reset in the cabin is not a new launch
 			if player.Parent and player:GetAttribute(PHASE_ATTRIBUTE) == "Hub" then
 				launchSolo(player)
 			end
@@ -92,9 +85,6 @@ local function watchPlayer(player: Player)
 	end
 end
 
--- A dummy is any Model with a Humanoid that is not a player, which is exactly what
--- WeaponService.findZombieModel already accepts, so hit registration and gore both
--- work without the bench knowing anything about them.
 local function buildTarget(position: Vector3, label: string): Model
 	local settings = DevConfig.TARGET_RANGE
 	local model = Instance.new("Model")
@@ -204,9 +194,6 @@ function DevBench.clearTargetRange()
 	end
 end
 
--- Server-side command surface. The Studio command bar runs in a separate Lua VM from
--- the game scripts, so module state is not shared and calling DevBench directly from
--- there does nothing useful; a BindableEvent is the one channel that does reach us.
 local function installCommands()
 	local existing = ReplicatedStorage:FindFirstChild("DevBench")
 	if existing then
@@ -234,8 +221,6 @@ local function installCommands()
 		elseif command == "ammo" then
 			WeaponService.refillAmmo(player)
 		elseif command == "weapon" and typeof(argument) == "string" then
-			-- WeaponService refuses to equip a weapon the profile does not own, so the
-			-- bench grants it first rather than putting a bypass into the live path.
 			local data = ProfileManager.get(player)
 			if data and not data.WeaponsOwned[argument] then
 				data.WeaponsOwned[argument] = { level = 1, xp = 0 }

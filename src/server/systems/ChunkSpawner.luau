@@ -27,17 +27,12 @@ type ActiveChunk = {
 	pooled: boolean,
 }
 
--- Workspace attributes for the clients (wiki: Map Segments): the map at the lead
--- runner, and the map boundary being crossed (the zone's ends in run distance; each
--- client works out its own alpha from where it is, LightingDirector and MapAmbience)
 local MAP_ATTRIBUTE = "Map"
 local BLEND_FROM = "MapBlendFrom"
 local BLEND_TO = "MapBlendTo"
 local BLEND_START = "MapBlendStart"
 local BLEND_END = "MapBlendEnd"
 local BLEND_ALPHA = "MapBlendAlpha"
--- set by ForkService when a vote closes; the spawner reports how long the boundary
--- chunk took to be placed after it (Studio measurement of the vote lead)
 local RESOLVED_AT = "ForkResolvedAt"
 local PLACED_AFTER = "ForkPlacedAfter"
 
@@ -55,12 +50,10 @@ local currentBiomeId: string? = nil
 local currentMapId: string? = nil
 local blendRun: RoutePlan.MapRun? = nil
 
--- What a chunk is built from: the location, and the blend into another one.
 local function chunkPlan(index: number): (RoutePlan.PlanEntry, LocationsConfig.LocationConfig, ChunkFactory.Blend?, string?)
 	local entry, nextEntry = RoutePlan.entryAt(index)
 	local location = LocationsConfig.get(entry.locationId) :: LocationsConfig.LocationConfig
 
-	-- a map's first chunks blend from the previous map's last sub-location
 	local k = index - entry.startIndex
 	if entry.mapStart and entry.prevLocationId and entry.fork == nil then
 		local alpha = MapMath.transitionAlpha(k, mapTransitionChunks)
@@ -70,7 +63,6 @@ local function chunkPlan(index: number): (RoutePlan.PlanEntry, LocationsConfig.L
 		end
 	end
 
-	-- inside a map, the last TRANSITION_CHUNKS of a sub-location blend into the next one
 	local blendStart = entry.endIndex - transitionChunks + 1
 	local sameMap = nextEntry ~= nil and nextEntry.fork == nil and nextEntry.mapId == entry.mapId
 	if nextEntry and sameMap and index >= blendStart and nextEntry.locationId ~= entry.locationId then
@@ -93,7 +85,6 @@ local function spawnChunk(index: number)
 	if pooled then
 		model = ChunkPools.take(entry.locationId) or ChunkFactory.build(location, nil, random, obstacleCount)
 	else
-		-- MapPreload built the chosen option's transition chunks while the map ran
 		model = (if transitionKey then ChunkPools.takeTransition(transitionKey) else nil)
 			or ChunkFactory.build(location, blend, random, obstacleCount)
 	end
@@ -111,7 +102,6 @@ local function spawnChunk(index: number)
 	end
 
 	AmmoCrates.spawnForChunk(index, model:GetPivot(), chunkLength, MissionConfig.getDifficulty().ammoCrateChance)
-	-- the station first, so the chunk's pickups keep clear of it
 	UpgradeStations.spawnForChunk(index, model, entry.locationId)
 	WeaponPickups.spawnForChunk(index, model, entry.locationId)
 end
@@ -153,7 +143,6 @@ local function updateAttributes(distance: number)
 		Workspace:SetAttribute("Biome", entry.locationId)
 	end
 
-	-- the map at the lead, and the boundary zone ahead or under it once its map is known
 	local index = RoutePlan.indexForDistance(distance)
 	local run = RoutePlan.mapAt(index)
 	if run and run.id ~= currentMapId then
@@ -209,7 +198,6 @@ local function step()
 	end
 end
 
--- A run from the lobby's map choice (an id or "Random"); the seed draws the route.
 function ChunkSpawner.configure(seed: number, mapChoice: string?)
 	random = Random.new(seed + 1)
 	RoutePlan.configure(seed, mapChoice)
@@ -242,7 +230,6 @@ function ChunkSpawner.init()
 	folder.Name = "Chunks"
 	folder.Parent = Workspace
 	chunksFolder = folder
-	-- Studio only: presets whose fog would let a chunk be seen spawning
 	ChunkBudgetCounter.checkFog()
 	UpgradeStations.init(WeaponPickups.init())
 	RunService.Heartbeat:Connect(step)

@@ -31,10 +31,6 @@ local function isHeadPiece(instance: Instance): boolean
 	return parent ~= nil and parent:IsA("Accessory")
 end
 
--- Even with "Show Own Body" on, the torso and arms sit inside the camera and fill
--- the frame with giant untextured slabs, and the arms duplicate the viewmodel's.
--- Only the legs read correctly when looking down, so everything above the waist
--- is hidden regardless of the setting.
 local ALWAYS_HIDDEN = {
 	UpperTorso = true,
 	LowerTorso = true,
@@ -57,7 +53,6 @@ local function isAlwaysHidden(instance: Instance): boolean
 	if ALWAYS_HIDDEN[part.Name] then
 		return true
 	end
-	-- the third-person weapon model is welded to the hand and would double the viewmodel
 	local ancestor = part.Parent
 	while ancestor do
 		if ancestor.Name == "WorldWeapon" then
@@ -111,14 +106,11 @@ local function updateCamera(deltaTime: number)
 		return
 	end
 
-	-- Studio QA: a fixed shot for screenshots, set from the command bar as the workspace
-	-- attribute DevCameraCFrame (nil gives the camera back)
 	if RunService:IsStudio() then
 		local shot = Workspace:GetAttribute("DevCameraCFrame")
 		if typeof(shot) == "CFrame" then
 			camera.CameraType = Enum.CameraType.Scriptable
 			camera.CFrame = shot
-			-- a fixed shot of the third-person body (V in the test yard) has to show it
 			if Workspace:GetAttribute("DevThirdPerson") == true then
 				unhideCharacter()
 			end
@@ -138,11 +130,6 @@ local function updateCamera(deltaTime: number)
 		return
 	end
 
-	-- Reviewing animation on the third-person body: give the camera back to Roblox's
-	-- orbit controller, keep the character visible and open up the zoom clamp that
-	-- CursorMode uses to hold first person. Checked before FREEZE_RUN because both are
-	-- inspection modes and this one wants the stock camera either way.
-	-- (the test yard toggles the same view at run time with V, SandboxInput)
 	if RunService:IsStudio() and (DevConfig.THIRD_PERSON_VIEW or Workspace:GetAttribute("DevThirdPerson") == true) then
 		if camera.CameraType ~= Enum.CameraType.Custom then
 			camera.CameraType = Enum.CameraType.Custom
@@ -152,8 +139,6 @@ local function updateCamera(deltaTime: number)
 			localPlayer.CameraMode = Enum.CameraMode.Classic
 		end
 		if localPlayer.CameraMaxZoomDistance < 24 then
-			-- maximum first: Roblox clamps a new minimum to the current maximum (0.5 while
-			-- first person is held), which left the camera inside the head
 			localPlayer.CameraMaxZoomDistance = 24
 			localPlayer.CameraMinZoomDistance = 6
 		end
@@ -161,16 +146,10 @@ local function updateCamera(deltaTime: number)
 		return
 	end
 
-	-- With the run frozen for inspection, the fixed runner camera would leave you staring
-	-- down the corridor with no way to look at anything, since it has no mouse look at
-	-- all. Hand the camera back to Roblox's own first-person controller and keep only the
-	-- body hiding. The viewmodel tracks whatever drives camera.CFrame, so it follows.
 	if DevMode.frozen() then
 		if camera.CameraType ~= Enum.CameraType.Custom then
 			camera.CameraType = Enum.CameraType.Custom
 		end
-		-- Not while a menu is open: this runs every frame, so forcing the lock here
-		-- overrode CursorMode releasing the cursor and left menus unclickable.
 		if not CursorMode.isAnyOpen() then
 			Players.LocalPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
 		end

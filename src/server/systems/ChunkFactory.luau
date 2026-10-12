@@ -62,13 +62,10 @@ local function applyTexture(part: BasePart, face: Enum.NormalId, textureId: numb
 	texture.Face = face
 	texture.StudsPerTileU = studsPerTile
 	texture.StudsPerTileV = studsPerTile
-	-- tint with the part colour, otherwise the texture's own grey wins and every
-	-- biome floor reads the same
 	texture.Color3 = part.Color:Lerp(Color3.new(1, 1, 1), 0.35)
 	texture.Parent = part
 end
 
--- A mesh tree with an invisible trunk collider, so only the trunk blocks the runner.
 local function buildMeshTree(group: string, position: Vector3, height: number, rng: Random, parent: Instance, collide: boolean): boolean
 	local base = CFrame.new(position) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0)
 	local mesh = WorldMeshes.placeFrom(group, rng, base, height, parent, { shadow = true, sink = 0.4 })
@@ -177,7 +174,6 @@ local function buildMeshCar(group: string, position: Vector3, yaw: number, lengt
 	if not name then
 		return nil
 	end
-	-- the meshes face either way along z; flip half of them so rows do not repeat
 	local flip = if rng:NextNumber() < 0.5 then math.pi else 0
 	return WorldMeshes.placeByLength(name, CFrame.new(position) * CFrame.Angles(0, yaw + flip, 0), length, parent, { collide = true, sink = 0.2 })
 end
@@ -247,7 +243,6 @@ local function buildDivider(position: Vector3, rng: Random, parent: Instance)
 	local name = WorldMeshes.pick("barrier", rng)
 	local natural = name and WorldMeshes.naturalSize(name)
 	if name and natural then
-		-- the barrier's long side runs along the road, segments end to end
 		local yaw = if natural.Z >= natural.X then 0 else math.pi / 2
 		local length = math.max(natural.X, natural.Z) + 0.4
 		for i = 0, segments - 1 do
@@ -269,8 +264,6 @@ local function buildDivider(position: Vector3, rng: Random, parent: Instance)
 	end
 end
 
--- Hedgehogs and a sandbag wall across a lane: the checkpoint blocker of the City and
--- the Wasteland. Falls back to the divider when the props are not loaded.
 local function buildBlock(position: Vector3, rng: Random, parent: Instance)
 	local hedgehog = WorldMeshes.pick("hedgehog", rng)
 	local hedgehogSize = hedgehog and WorldMeshes.naturalSize(hedgehog)
@@ -283,7 +276,6 @@ local function buildBlock(position: Vector3, rng: Random, parent: Instance)
 	local step = math.max(hedgehogSize.X, hedgehogSize.Z) + 1
 	for i = -1, 1 do
 		if i == 0 and sandbags and sandbagSize then
-			-- the wall's long side runs across the road
 			local yaw = if sandbagSize.X >= sandbagSize.Z then 0 else math.pi / 2
 			WorldMeshes.placeNatural(sandbags, CFrame.new(position) * CFrame.Angles(0, yaw, 0), parent, { collide = true, sink = 0.15 })
 		else
@@ -379,7 +371,6 @@ local function buildFencePost(position: Vector3, rng: Random, parent: Instance)
 	post.CanCollide = false
 end
 
--- A tussock of dry grass: a low mound with thin blades leaning outwards.
 local function buildDryGrass(position: Vector3, rng: Random, parent: Instance)
 	if WorldMeshes.placeFrom("grass_dry", rng, CFrame.new(position) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0), rng:NextNumber(3, 4.5), parent, { shadow = false, sink = 0.2, stretch = Vector3.new(rng:NextNumber(1, 1.6), 1, rng:NextNumber(1, 1.6)) }) then
 		return
@@ -460,8 +451,6 @@ end
 local CORN_GREEN = Color3.fromRGB(96, 118, 52)
 local CORN_TASSEL = Color3.fromRGB(196, 176, 102)
 
--- A stand of corn: a few rows across the corridor with a pale tassel line on top and
--- stalk lines on the face towards the runner. Blocks sight, not movement.
 local function buildMeshCorn(position: Vector3, rng: Random, parent: Instance): boolean
 	local name = WorldMeshes.pick("corn", rng)
 	local native = name and WorldMeshes.nativeSize(name)
@@ -500,7 +489,6 @@ local function buildCornWall(position: Vector3, rng: Random, parent: Instance)
 		row.CanCollide = false
 		row.CanQuery = false
 		if r == rows then
-			-- the face the runner sees: stalk lines so the block reads as corn, not hedge
 			local step = 1.4
 			local x = -rowLength / 2 + rng:NextNumber(0.3, 1)
 			while x < rowLength / 2 - 0.3 do
@@ -858,15 +846,11 @@ local function buildRailFence(sign: number, zStart: number, length: number, rng:
 	end
 end
 
--- Free run of the edge strip after each element, so the dressing clusters have room.
 local EDGE_GAP_MIN = 6
 local EDGE_GAP_MAX = 18
 
--- `otherKind` and `alpha` mix two styles along the edge in a transition: each element
--- is the other style with probability alpha.
 local function buildCorridorEdge(baseKind: string, sign: number, rng: Random, parent: Instance, otherKind: string?, alpha: number?)
 	if baseKind == "corn" and (otherKind == nil or otherKind == "corn") then
-		-- the flank crop rows start right at the corridor edge
 		return
 	end
 	local edgeX = corridorEdgeX(sign)
@@ -875,14 +859,10 @@ local function buildCorridorEdge(baseKind: string, sign: number, rng: Random, pa
 		local kind = if otherKind and rng:NextNumber() < (alpha or 0) then otherKind else baseKind
 		local roll = rng:NextNumber()
 		local remaining = chunkLength / 2 - z
-		-- the z the element takes, its full extent plus its own gap
 		local used: number
 		if kind == "corn" then
-			-- the crop rows of a cornfield flank reach the edge on their own
 			used = rng:NextNumber(8, 14)
 		elseif kind == "buildings" then
-			-- the street wall lives in WorldFlanks; this row is the kerb-side clutter in
-			-- front of it
 			if roll < 0.12 then
 				local count = 2
 				buildCarRow(sign, z, count, rng, parent)
@@ -934,20 +914,11 @@ local function buildCorridorEdge(baseKind: string, sign: number, rng: Random, pa
 				used = 14
 			end
 		end
-		-- the element's footprint is recorded so lane debris, flank props and the
-		-- dressing clusters keep out of it; the gap after it is theirs
 		ChunkOccupancy.reserveBox(edgeX - sign * 1, z, edgeX + sign * 8, z + used)
 		z += used + rng:NextNumber(EDGE_GAP_MIN, EDGE_GAP_MAX)
 	end
 end
 
--- In a transition, irregular patches of the other location's ground on a floor or an
--- apron: as many as its share of the blend asks for (none at either end, most at the
--- middle), so the ground reads as a mix instead of a seam. One patch is a cluster of
--- overlapping turned slabs and discs, so its outline reads as worn ground rather than
--- a laid tile. Along the chunk they thicken toward `towardZ` (the end where the other
--- ground's share grows: ahead before the base ground switches, behind after it) and
--- may hang over that end a little, so the switch itself is broken up too.
 local PATCH_MAX = 6
 local PATCH_PIECES = { 2, 4 }
 local PATCH_OVERHANG = 0.3
@@ -966,7 +937,6 @@ local function addGroundPatches(surface: BasePart, other: LocationsConfig.Locati
 		local spanX = rng:NextNumber(10, math.min(28, surface.Size.X))
 		local spanZ = rng:NextNumber(8, 22)
 		local centreX = rng:NextNumber(-half.X + spanX / 2, half.X - spanX / 2)
-		-- density rising linearly toward `towardZ`, like the blend share itself
 		local limit = half.Z - spanZ * (0.5 - PATCH_OVERHANG)
 		local centreZ = towardZ * (-limit + 2 * limit * math.sqrt(rng:NextNumber()))
 		local pieces = rng:NextInteger(PATCH_PIECES[1], PATCH_PIECES[2])
@@ -975,7 +945,6 @@ local function addGroundPatches(surface: BasePart, other: LocationsConfig.Locati
 			local depth = spanZ * rng:NextNumber(0.4, 0.65)
 			local x = centreX + rng:NextNumber(-0.5, 0.5) * (spanX - width)
 			local z = centreZ + rng:NextNumber(-0.5, 0.5) * (spanZ - depth)
-			-- stacked a hair apart so overlapping pieces do not fight over the same plane
 			local place = surface.CFrame
 				* CFrame.new(x, half.Y + 0.025 + index * 0.004, z)
 				* CFrame.Angles(0, rng:NextNumber(0, math.pi), 0)
@@ -983,7 +952,6 @@ local function addGroundPatches(surface: BasePart, other: LocationsConfig.Locati
 			local patch: Part
 			if disc then
 				local diameter = math.min(width, depth) * rng:NextNumber(1, 1.3)
-				-- a cylinder's axis is its X: turned up, its +X end is the top face
 				patch = createPart("Patch", Vector3.new(0.05, diameter, diameter), place * CFrame.Angles(0, 0, math.pi / 2), color, material, model)
 				patch.Shape = Enum.PartType.Cylinder
 			else
@@ -1017,16 +985,12 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	model.Name = "Chunk_" .. location.id
 
 	local floor = createPart("Floor", Vector3.new(laneWidth, 1, chunkLength), CFrame.new(), floorColor, floorMaterial, model)
-	-- the biome's material variants (docs/world/environment.md, section 5.2); the flat
-	-- texture tiles stay as the fallback when a variant has not shipped
 	local materials = DressingConfig.materials[effective.id]
 	if not (materials and MaterialUtil.apply(floor, materials.floor)) then
 		applyTexture(floor, Enum.NormalId.Top, floorTextureId, 8)
 	end
-	-- the location the base ground is not, and its share of the blend
 	local mixWith = if nextLocation then (if far then location else nextLocation) else nil
 	local mixShare = if far then 1 - alpha else alpha
-	-- the run goes toward -Z: ahead is where the next location's share grows
 	local mixToward = if far then 1 else -1
 	if mixWith then
 		addGroundPatches(floor, mixWith, true, mixShare, mixToward, rng, model)
@@ -1107,7 +1071,6 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	ChunkOccupancy.reset()
 
 	for _, sign in { -1, 1 } do
-		-- in a transition the edge mixes both styles, element by element, by the blend
 		if nextLocation then
 			buildCorridorEdge(location.edgeProps, sign, rng, model, nextLocation.edgeProps, alpha)
 		else
@@ -1204,7 +1167,6 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 			1,
 			-chunkLength / 2 + 10,
 			chunkLength / 2 - 10,
-			-- between the last crop row and the windbreak trees of the farm flank
 			GameConstants.PLAYABLE_HALF_WIDTH + 4 + 93,
 			rng,
 			model
@@ -1248,8 +1210,6 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 		end
 	end
 
-	-- the props and marks go last, into whatever ground the obstacles and flanks left
-	-- in a transition both locations dress the chunk, each at its share of the density
 	if nextLocation then
 		WorldDressing.dress(location.id, rng, chunkLength / 2, model, 1 - alpha)
 		WorldDressing.dress(nextLocation.id, rng, chunkLength / 2, model, alpha)
@@ -1258,8 +1218,6 @@ function ChunkFactory.build(location: LocationsConfig.LocationConfig, blend: Ble
 	end
 	WorldDecals.dress(effective.id, rng, floor, GameConstants.PLAYABLE_HALF_WIDTH, chunkLength / 2, model)
 
-	-- the footprints stay with the model (pooled chunks keep their props), for what is
-	-- placed after the build: WeaponPickups tests its spots against them
 	ChunkOccupancy.remember(model)
 	model.PrimaryPart = floor
 	ChunkBudgetCounter.report(model, effective.id)

@@ -1,13 +1,5 @@
 --!strict
 
--- The per-run credit balance of each participant, separate from the profile balance
--- (docs/economy/run-economy-and-perks.md). Kills pay into it the moment they happen
--- (WeaponService), the distance pay DistanceTracker always made is folded into the
--- same balance, and the one number is replicated as the RunCredits player attribute.
--- The balance is banked into the profile by whoever ends the run (DeathService on the
--- results screen, MissionService when a participant leaves alive): nothing earned is
--- ever lost, whether the run ends in a death, a Continue or a walk back to the hub.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local RunEconomyConfig = require(ReplicatedStorage.Shared.config.RunEconomyConfig)
@@ -22,8 +14,6 @@ local BALANCE_ATTRIBUTE = "RunCredits"
 
 type RunState = {
 	balance: RunEconomyMath.Balance,
-	-- distance pay already banked this run: a Continue keeps the distance, so the pay
-	-- for it is owed only once
 	distanceBanked: number,
 	kills: number,
 	streak: number,
@@ -50,8 +40,6 @@ function RunEconomy.beginRun(player: Player)
 	publish(player, state)
 end
 
--- A kill by `player`: pays the zombie's base, the headshot and the streak bonus, all
--- scaled by the difficulty multiplier, into the run balance at once.
 function RunEconomy.onKill(player: Player, zombieId: string?, headshot: boolean)
 	local state = runs[player]
 	if not state then
@@ -65,8 +53,6 @@ function RunEconomy.onKill(player: Player, zombieId: string?, headshot: boolean)
 	publish(player, state)
 end
 
--- The distance pay for the furthest point reached, less what a bank earlier in the run
--- already paid for it (the distance survives a Continue, its pay does not repeat).
 function RunEconomy.setDistance(player: Player, traveled: number)
 	local state = runs[player]
 	if not state then
@@ -97,8 +83,6 @@ function RunEconomy.snapshot(player: Player): Snapshot
 	}
 end
 
--- Spends run credits (a supply drop): false, and nothing changes, when the balance
--- does not cover it. The distance half spent counts as banked distance pay.
 function RunEconomy.spend(player: Player, amount: number): boolean
 	local state = runs[player]
 	if not state then
@@ -114,8 +98,6 @@ function RunEconomy.spend(player: Player, amount: number): boolean
 	return true
 end
 
--- Takes the balance out of the run: returns what the caller pays into the profile and
--- leaves the run at zero, so a Continue earns afresh and a second bank pays nothing.
 function RunEconomy.bank(player: Player): number
 	local state = runs[player]
 	if not state then
@@ -128,8 +110,6 @@ function RunEconomy.bank(player: Player): number
 	return banked
 end
 
--- The run is over: what is still unbanked is returned for the caller to pay, and the
--- state and the attribute go.
 function RunEconomy.endRun(player: Player): number
 	local banked = RunEconomy.bank(player)
 	runs[player] = nil

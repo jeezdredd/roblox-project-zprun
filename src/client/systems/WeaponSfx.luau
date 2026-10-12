@@ -16,18 +16,6 @@ local WeaponAudioMath = require(script.Parent.Parent.audio.WeaponAudioMath)
 local SfxPlayer = require(script.Parent.SfxPlayer)
 local MusicController = require(script.Parent.MusicController)
 
--- Every sound is resolved by its AssetIds.audio.weapons KEY at play time, so a real
--- recording dropped into assets/manifest.json (for example `rifle_bolt_back`) takes
--- over from the generic placeholder without a code change. A key that is missing or 0
--- falls back to the generic key, and to silence when that is missing too.
---
--- Two paths (docs/audio/weapons-integration.md). With SfxConfig.WEAPONS_ON_ENGINE the
--- shooter's layers play on the engine's OwnGunshot class, the tail is picked by the
--- listener's acoustic environment, a reflection fan runs from the muzzle, teammates'
--- shots are GunshotRemote with distance layers, casings and the gong and bullet
--- impacts take their own classes. Off, every function takes the Sound-pool path it had
--- before, so the two can be compared in Studio.
-
 local WeaponSfx = {}
 
 local player = Players.LocalPlayer
@@ -35,10 +23,6 @@ local player = Players.LocalPlayer
 local function onEngine(): boolean
 	return SfxConfig.WEAPONS_ON_ENGINE == true and AudioEngine.enabled()
 end
-
----------------------------------------------------------------------------------------
--- Legacy path: a Weapons SoundGroup with a room reverb, per-id Sound pools, acoustic
--- zones scanned from Workspace.
 
 local weaponGroup: SoundGroup? = nil
 local reverb: ReverbSoundEffect? = nil
@@ -88,7 +72,6 @@ local function ensureGroup(): SoundGroup
 	created.Volume = 1
 	created.Parent = MusicController.getSfxGroup()
 
-	-- a room, so indoors only (updateTail): outdoors the recordings carry their own space
 	local reverbEffect = Instance.new("ReverbSoundEffect")
 	reverbEffect.Enabled = false
 	reverbEffect.DecayTime = 1.5
@@ -103,13 +86,8 @@ local function ensureGroup(): SoundGroup
 	return created
 end
 
--- Voices: each sound id gets a small pool played round-robin. A voice that is still
--- playing is never restarted (that chops its tail, the classic Roblox gun-audio
--- artefact); the pool grows instead, and only past MAX_VOICES does the voice furthest
--- into its playback get reused, the least audible cut available.
 local MIN_VOICES = 4
 local MAX_VOICES = 8
--- per-voice variation so repeats never sound identical
 local PITCH_JITTER = 0.04
 local GAIN_JITTER_DB = 1.5
 
@@ -181,8 +159,6 @@ local function playPooled(soundId: number, volume: number, pitch: number)
 	end)
 end
 
--- The shooter's own layers: 2D on the weapons bus through OwnGunshot (the class adds
--- the pitch and gain jitter and feeds the duck sidechain), or the legacy pool.
 local function playOneShot(soundId: number, volume: number, pitch: number)
 	if soundId <= 0 or volume <= 0 then
 		return
@@ -198,7 +174,6 @@ local function weaponSoundId(key: string): number
 	return (AssetIds.audio.weapons :: { [string]: number })[key] or 0
 end
 
--- First key with a real id, or 0.
 local function firstSoundId(keys: { string }): number
 	for _, key in keys do
 		local id = weaponSoundId(key)
@@ -212,7 +187,6 @@ end
 function WeaponSfx.preload()
 	local weapons = AssetIds.audio.weapons :: { [string]: number }
 	if onEngine() then
-		-- the engine's own preload skips the weapons category, so it is done here
 		local assets: { string } = {}
 		for _, id in weapons do
 			if id > 0 then
@@ -251,7 +225,6 @@ end
 
 local lastVariation: { [string]: number } = {}
 
--- Picks one of `keys` that has an id, never the same one twice in a row per `slot`.
 local function pickVariation(slot: string, keys: { string }): number
 	local ids: { number } = {}
 	for _, key in keys do
@@ -283,17 +256,11 @@ end
 local TAIL_COOLDOWN = 0.55
 local lastTailAt = 0
 
--- `tail_open_<class>` is the rest of the same outdoor recording as the close shot: the
--- range's reflection and its decay, padded so both start at the blast. Played together at
--- the same volume and pitch they rebuild the original shot. Indoors the close shot keeps
--- its blast and takes the room tail instead. The generic `tail_open` (another recording)
--- stands in, quieter, for a class without its own tail.
 local function tailFor(config: WeaponsConfig.WeaponConfig, environment: string): (number, number)
 	local id, share = WeaponAudioMath.tailFor(environment, config.class, weaponSoundId)
 	return id, config.shotVolume * share
 end
 
--- the legacy path only knows interior or not
 local function legacyEnvironment(interior: boolean): string
 	return if interior then "Interior" else "Open"
 end
@@ -308,10 +275,6 @@ local function playTail(config: WeaponsConfig.WeaponConfig, environment: string)
 	playOneShot(tailId, volume, config.shotPitch)
 end
 
--- The environment layer (the MW2019 reflections): a fan of rays from the muzzle, each
--- hit playing the shot again from that surface. One fan per REFLECTION_INTERVAL, so
--- automatic fire spawns a slap every second shot or so; the Reflection class caps the
--- live slaps.
 local REFLECTION_INTERVAL = 0.09
 local REFLECTION_VOLUME = 0.6
 local lastOwnFanAt = -math.huge
@@ -321,12 +284,7 @@ local function fireFan(position: Vector3, id: number, config: WeaponsConfig.Weap
 	AudioReflections.fire(position, id, "weapons", config.shotVolume * REFLECTION_VOLUME, config.shotPitch, AudioEngine.reflectionRays())
 end
 
--- Low-ammo cue: a metallic spring layer on each shot once the mag is down to
--- config.lowAmmo, rising to +3 dB on the last round, where the slide/bolt lock clack
--- joins it. Both keys stay silent until their recordings exist (the lock falls back to
--- the generic bolt only on the pistol, whose slide really locks back).
 local SUB_KEYS = { "gunshot_sub_01", "gunshot_sub_02" }
--- kept light: the recordings carry their own low end
 local SUB_VOLUME: { [string]: number } = { Pistol = 0.08, SMG = 0.1, Rifle = 0.15, Shotgun = 0.2 }
 
 local LOW_AMMO_VOLUME = 0.22
@@ -344,10 +302,6 @@ local function playLowAmmo(config: WeaponsConfig.WeaponConfig, remaining: number
 	end
 end
 
--- `remaining` is the magazine count after this shot, for the low-ammo layer; `muzzle`
--- is the world position of the muzzle, the origin of the reflection fan. The spent
--- casing's sound is no longer on a timer here: it plays when the visible casing lands
--- (WeaponVfx.onCasingLanded -> WeaponSfx.playCasingLand).
 function WeaponSfx.playShot(weaponId: string, remaining: number?, muzzle: Vector3?)
 	local config = WeaponsConfig.get(weaponId)
 	if not config then
@@ -363,7 +317,6 @@ function WeaponSfx.playShot(weaponId: string, remaining: number?, muzzle: Vector
 
 	local id = shotSoundId(config)
 	playOneShot(id, config.shotVolume, config.shotPitch)
-	-- a little weight under the blast (spec: mech + punch + sub + tail)
 	local subVolume = SUB_VOLUME[config.class]
 	if subVolume then
 		playOneShot(weaponSoundId(SUB_KEYS[math.random(1, #SUB_KEYS)]), subVolume, 1)
@@ -386,11 +339,6 @@ function WeaponSfx.playDryfire()
 	playOneShot(weaponSoundId("dryfire"), 0.45, 1)
 end
 
--- Phase markers from the viewmodel clips (PackViewmodel, AnimationSequencer), so the
--- sound lands on the animation beat rather than on a timer that drifts when the clip is
--- cut. Resolution per phase: the class key (`rifle_bolt_back`), then the generic keys.
--- A class key of "" means that class makes no sound on that phase (a pump has no
--- magazine to pull out).
 type PhaseSound = { generic: { string }, volume: number, pitch: number? }
 
 local PHASE_SOUNDS: { [string]: PhaseSound } = {
@@ -400,7 +348,6 @@ local PHASE_SOUNDS: { [string]: PhaseSound } = {
 	BoltForward = { generic = { "bolt" }, volume = 0.4, pitch = 1.08 },
 	SlideBack = { generic = { "bolt" }, volume = 0.4, pitch = 1.05 },
 	SlideRelease = { generic = { "bolt" }, volume = 0.45, pitch = 1.1 },
-	-- a shell pushed into the tube: the magazine seat, shorter and higher
 	ShellIn = { generic = { "mag_in" }, volume = 0.32, pitch = 1.3 },
 	Draw = { generic = { "weapon_draw" }, volume = 0.4 },
 	Holster = { generic = { "weapon_holster" }, volume = 0.35 },
@@ -436,8 +383,6 @@ local CLASS_PHASE_KEYS: { [string]: { [string]: string } } = {
 	},
 }
 
--- Placeholder pitch per class while the generic samples stand in: a pump reads heavier,
--- a pistol lighter.
 local CLASS_GENERIC_PITCH: { [string]: number } = {
 	Pistol = 1.12,
 	Rifle = 1,
@@ -445,7 +390,6 @@ local CLASS_GENERIC_PITCH: { [string]: number } = {
 	SMG = 1.06,
 }
 
--- the dropped magazine hits the ground about this long after it leaves the gun
 local MAG_DROP_DELAY = 0.5
 
 local function currentClass(): string?
@@ -454,8 +398,6 @@ local function currentClass(): string?
 	return if config then config.class else nil
 end
 
--- The sound a clip marker plays for a weapon class: id (0 = silent), volume, pitch.
--- Also used by the Studio test yard to play markers at a gallery rig.
 function WeaponSfx.resolvePhase(phase: string, class: string?): (number, number, number)
 	local entry = PHASE_SOUNDS[phase]
 	if not entry then
@@ -482,7 +424,6 @@ function WeaponSfx.playPhase(phase: string, class: string?, tag: string?)
 	end
 	playOneShot(id, volume, pitch)
 
-	-- empty reloads drop the spent magazine instead of pouching it
 	if phase == "MagOut" and tag == "empty" then
 		task.delay(MAG_DROP_DELAY, function()
 			playOneShot(weaponSoundId("mag_drop"), 0.3, 1)
@@ -490,16 +431,10 @@ function WeaponSfx.playPhase(phase: string, class: string?, tag: string?)
 	end
 end
 
--- Casing landings. On the engine: the Casing class (45 studs, culled by the engine,
--- half-strength occlusion, 12 voices). Legacy: positional voices on attachments in
--- Terrain (no Part per sound), pooled like the 2D voices; with every voice busy a
--- landing is dropped, never cut.
 local CASING_VOICES = 12
 local CASING_VOLUME = 0.32
 local CASING_MIN_DISTANCE = 2
 local CASING_MAX_DISTANCE = 45
--- impact speed into the surface (studs/s) that plays at full volume: a casing dropped
--- from the hip under world gravity lands at about 35-45, its bounce well under that
 local CASING_FULL_SPEED = 36
 
 type CasingVoice = { attachment: Attachment, sound: Sound }
@@ -525,8 +460,6 @@ local function ensureCasingVoices()
 	end
 end
 
--- volume and pitch by what the casing hit: brass rings on metal and stone, goes dull on
--- wood and all but disappears in grass, sand or mud
 type SurfaceProfile = { volume: number, pitch: number }
 local SURFACE_HARD: SurfaceProfile = { volume = 0.85, pitch = 1 }
 local SURFACE_METAL: SurfaceProfile = { volume = 1, pitch = 1.1 }
@@ -574,7 +507,6 @@ local BRASS_KEYS = { "casing_brass_01", "casing_brass_02", "casing_brass_03" }
 local HULL_KEYS = { "casing_shotgun_01", "casing_shotgun_02" }
 local CASING_FALLBACK_KEYS = { "shell_01", "shell_02" }
 
--- Registered with WeaponVfx.onCasingLanded; `caliber` is the WeaponsConfig casing.
 function WeaponSfx.playCasingLand(position: Vector3, material: Enum.Material, caliber: string, impactSpeed: number)
 	local engine = onEngine()
 	if not engine then
@@ -595,7 +527,6 @@ function WeaponSfx.playCasingLand(position: Vector3, material: Enum.Material, ca
 	local soundId = pickVariation(if hull then "casing_hull" else "casing_brass", if hull then HULL_KEYS else BRASS_KEYS)
 	if soundId <= 0 then
 		soundId = pickVariation("casing_fallback", CASING_FALLBACK_KEYS)
-		-- the brass tinkle stands in for a plastic hull: lower and softer reads as a thunk
 		if hull then
 			pitch *= 0.62
 			volume *= 0.8
@@ -636,7 +567,6 @@ end
 
 local DISTANT_THRESHOLD = 40
 
--- A ghost part for the legacy 3D one-shots, gone after `lifetime` seconds.
 local function anchorAt(position: Vector3, lifetime: number): BasePart
 	local anchor = Instance.new("Part")
 	anchor.Anchored = true
@@ -652,11 +582,6 @@ local function anchorAt(position: Vector3, lifetime: number): BasePart
 	return anchor
 end
 
--- A teammate's shot. On the engine: GunshotRemote with the close, mid and far layers
--- (a layer without a recording falls back to the nearest one that exists, so the close
--- take plays at every distance until the mid and far takes land), the class's air
--- absorption, occlusion and speed-of-sound delay, and the reflection fan from the
--- muzzle. Legacy: nothing inside 40 studs, then a 3D take and its tail on an anchor.
 function WeaponSfx.playDistantShot(position: Vector3, weaponId: string)
 	local config = WeaponsConfig.get(weaponId)
 	if not config then
@@ -686,7 +611,6 @@ function WeaponSfx.playDistantShot(position: Vector3, weaponId: string)
 	end
 	local anchor = anchorAt(position, 4)
 	SfxPlayer.play3D(anchor, shotSoundId(config), config.shotVolume * 0.8, 30, 400, 0.06)
-	-- the close part alone is a dry 0.13 s crack; the reflection is what carries at range
 	scanZones()
 	local tailId, tailVolume = tailFor(config, legacyEnvironment(isInterior(position)))
 	SfxPlayer.play3D(anchor, tailId, tailVolume * 0.8, 30, 400, 0)
@@ -703,12 +627,6 @@ function WeaponSfx.playGong(position: Vector3)
 	SfxPlayer.play3D(anchor, AssetIds.audio.range.gong, GONG_VOLUME, 20, 300, 0.04)
 end
 
--- Bullet impacts on the Impact class (120 studs, strong air absorption, one occlusion
--- ray, the distance delay, so a hit on a far wall arrives after the shot). The family's
--- own recordings (`impact_<family>_01..`) when they exist, else a Kenney impact already
--- in the manifest stands in. A volley plays its first IMPACTS_PER_VOLLEY hits, so a
--- shotgun's pellets read as one impact. Engine path only: the legacy path never had
--- impact sounds.
 local IMPACT_VOLUME = 0.7
 local IMPACT_FLESH_VOLUME = 0.5
 local IMPACT_VARIATIONS = 2
@@ -718,7 +636,6 @@ local RICOCHET_VOLUME = 0.5
 
 export type Hit = { position: Vector3, normal: Vector3, material: string }
 
--- Kenney Impact Sounds (CC0) that are already in the manifest, per family.
 local IMPACT_PLACEHOLDERS: { [string]: () -> number } = {
 	concrete = function()
 		return AssetIds.audio.foley.land_hard
@@ -759,7 +676,6 @@ function WeaponSfx.playImpacts(hits: { Hit })
 			continue
 		end
 		local volume = if family == "flesh" then IMPACT_FLESH_VOLUME else IMPACT_VOLUME
-		-- the stand-ins are foley recordings, closer to the mic than a bullet strike
 		if placeholder then
 			volume *= 0.6
 		end

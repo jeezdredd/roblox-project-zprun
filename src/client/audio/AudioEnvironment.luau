@@ -1,10 +1,5 @@
 --!strict
 
--- Where a sound is: the AcousticSpace zones, the biome and the flow phase resolve into
--- an environment id (Hangar, Interior, Street, Forest, Open); the material table gives
--- the loss and cutoff of whatever blocks a path; and the occlusion raycasts run inside
--- a per-frame budget so a full zombie wave never spends more than a handful of rays.
-
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -18,9 +13,7 @@ local ZONE_ATTRIBUTE = "AcousticSpace"
 local HANGAR_ZONE = "HangarInteriorZone"
 local PHASE_ATTRIBUTE = "FlowPhase"
 local BIOME_ATTRIBUTE = "Biome"
--- parts that sound passes through freely (tag them in the world builders)
 local TRANSPARENT_TAG = "AudioTransparent"
--- a ray stops this short of the source so the source's own part never occludes it
 local SOURCE_CLEARANCE = 2.5
 local EXCLUDE_REFRESH = 0.5
 
@@ -76,8 +69,6 @@ function AudioEnvironment.init()
 	refreshExcludes()
 end
 
--- The most recently added zone containing the point, pruning zones that left the
--- world on the way.
 function AudioEnvironment.zoneAt(position: Vector3): BasePart?
 	for index = #zones, 1, -1 do
 		local zone = zones[index]
@@ -137,14 +128,10 @@ function AudioEnvironment.raysLeft(): number
 	return rayBudget - raysUsed
 end
 
--- A raycast outside the per-frame budget (reflection fans pay their own cap).
 function AudioEnvironment.cast(origin: Vector3, direction: Vector3): RaycastResult?
 	return Workspace:Raycast(origin, direction, rayParams)
 end
 
--- Blocked fraction (0 open .. 1 blocked) of the listener-to-source path plus the material
--- of the first blocking part, or nil when this frame's ray budget is spent. `rays` is 1
--- or 2; the second ray runs parallel, offset sideways, so an edge reads as half blocked.
 function AudioEnvironment.occlusion(listener: Vector3, source: Vector3, rays: number): (number?, SpatialAudioConfig.MaterialSpec?)
 	if raysUsed + rays > rayBudget then
 		return nil, nil

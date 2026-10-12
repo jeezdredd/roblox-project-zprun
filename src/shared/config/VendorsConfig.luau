@@ -66,8 +66,6 @@ VendorsConfig.vendors = {
 		wallColor = Color3.fromRGB(80, 70, 84),
 		color = Color3.fromRGB(210, 120, 190),
 	},
-	-- perks and perk slots, Credits only (PerkService); beside the Canteen on the west
-	-- wall, clear of the gate on the south wall
 	PerkLab = {
 		id = "PerkLab",
 		displayName = "Perk Lab",

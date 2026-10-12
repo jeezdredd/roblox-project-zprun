@@ -1,30 +1,5 @@
 --!strict
 
--- The helicopter crash beat (docs/gameplay/heli-intermission.md, roadmap: "the pilot
--- turns, the copilot shoots him"), client only, played over the cabin the server built
--- (Workspace.IntermissionCabin: the SeatView parts, the Pilot and Copilot figures, the
--- LightStrip, the ConsoleGlow). No gore: everyone sees it and the Gore toggle does not
--- apply, so the shot is a flash, a jolt and a slump.
---
--- One 13 s timeline (seconds):
---   0.0-1.5   the seated view turns from the door to the cockpit
---   1.4-2.2   the pilot turns his head to the copilot
---   1.8-3.2   the copilot turns, raises a pistol to the pilot's head
---   3.6       the shot: muzzle flash, gunshot, camera jolt; the pilot's head snaps aside
---             and he slumps onto the console
---   4.0       the alarm and the red strobe; the helicopter starts to spin and drop
---   5.2-6.5   the view swings back to the door: the ground turns and rises outside
---   11.6      impact: white flash, the hardest shake, impact and debris
---   11.85     black; ringing in the ears until the wake-up at the wreck
--- A shorter beat (the repeat run's skippable version) plays the end of the same
--- timeline, so the impact always lands on the beat's last second.
---
--- The flight and the spin are faked: the cabin stays where the server built it and a
--- local ground (`Outside`: desert, a road, blocks of a town) slides under it during the
--- ready check, then turns and rises under it in the beat, which is the same picture
--- through the door without moving server parts the seated characters are welded to.
--- Everything the beat changes in the cabin is put back by stop().
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local SoundService = game:GetService("SoundService")
@@ -38,16 +13,12 @@ local MusicController = require(script.Parent.MusicController)
 local CrashCinematic = {}
 
 export type Options = {
-	-- server time the beat ends (the wake-up)
 	endsAt: number,
-	-- this player's seat (CabinSeat)
 	seat: number,
-	-- turns the screen black over `seconds` (the intermission camera's fade)
 	blackout: ((seconds: number) -> ())?,
 }
 
 local RENDER_NAME = "TfzCrashCinematic"
--- after the intermission camera (Camera + 5), so this is the last write
 local RENDER_PRIORITY = Enum.RenderPriority.Camera.Value + 6
 local CABIN_NAME = "IntermissionCabin"
 
@@ -69,10 +40,8 @@ local T_IMPACT = 11.6
 local T_BLACK = 11.85
 local T_RING = 11.95
 
--- the turn of the helicopter at full spin (radians per second) and the bank it pulls
 local SPIN_RATE = math.pi * 2 * 0.85
 local BANK = math.rad(13)
--- the ground under the cabin when the spin starts, and at the impact
 local ALTITUDE_START = 420
 local ALTITUDE_END = 7
 local GROUND_SIZE = 3200
@@ -116,25 +85,20 @@ type State = {
 	gui: ScreenGui,
 	white: Frame,
 	noiseSeed: number,
-	-- the cabin floor's centre, x across to the door, -z to the cockpit
 	frame: CFrame,
 	fieldOfView: number,
 }
 
 local state: State? = nil
--- the rotor drone of the ready check, handed to the beat when it starts
 local ambience: Sound? = nil
 local AMBIENCE_VOLUME = 0.4
 
--- the ground outside, shared by the ready check's flight and the beat
 type Outside = {
 	model: Model,
 	parts: { BasePart },
 	offsets: { CFrame },
 	placed: { CFrame },
-	-- the cabin floor's frame the ground hangs under
 	frame: CFrame,
-	-- studs flown so far (the town slides back along +z)
 	flown: number,
 }
 local outside: Outside? = nil
@@ -151,7 +115,6 @@ local function smooth(x: number): number
 	return u * u * (3 - 2 * u)
 end
 
--- eased 0..1 between two timeline marks
 local function between(t: number, a: number, b: number): number
 	return smooth((t - a) / (b - a))
 end
@@ -202,8 +165,6 @@ local function part(model: Model?, name: string): BasePart?
 	return if found and found:IsA("BasePart") then found else nil
 end
 
--- The ground the helicopter falls toward: a desert plane and blocks of a town, built
--- locally around the cabin's floor and moved every frame.
 local function buildOutside(cabinCFrame: CFrame): Outside
 	local model = Instance.new("Model")
 	model.Name = "CrashOutside"
@@ -246,8 +207,6 @@ local function buildOutside(cabinCFrame: CFrame): Outside
 	return { model = model, parts = parts, offsets = offsets, placed = table.create(#parts), frame = cabinCFrame, flown = 0 }
 end
 
--- Puts the ground under the cabin: `flown` slides the town back (each block wraps
--- round far out in the haze), `spin` turns it about the cabin, `altitude` below it.
 local function placeOutside(ground: Outside, spin: number, altitude: number)
 	local base = ground.frame * CFrame.Angles(0, -spin, 0) * CFrame.new(0, -altitude, 0)
 	local half = GROUND_SIZE / 2
@@ -303,7 +262,6 @@ local function altitudeAt(t: number): number
 	return ALTITUDE_START + (ALTITUDE_END - ALTITUDE_START) * s ^ 2.2
 end
 
--- spin rate ramps in from T_SPIN to T_SPIN_FULL
 local function spinRateAt(t: number): number
 	return SPIN_RATE * between(t, T_SPIN, T_SPIN_FULL)
 end
@@ -318,7 +276,6 @@ local function noise3(current: State, t: number, frequency: number): Vector3
 end
 
 local function poseCrew(current: State, t: number)
-	-- the soldier crew (CabinCrew) when it could be built; the block figures otherwise
 	local crew = CabinCrew.ensure()
 	if crew then
 		local recoil = if t >= T_SHOT then math.exp(-(t - T_SHOT) * 14) else 0
@@ -333,7 +290,6 @@ local function poseCrew(current: State, t: number)
 		)
 		return
 	end
-	-- the pilot: head turns to the copilot, then the shot knocks it aside and he slumps
 	local pilot = current.pilot
 	if pilot then
 		local origin = current.pilotOrigin
@@ -357,7 +313,6 @@ local function poseCrew(current: State, t: number)
 		end
 	end
 
-	-- the copilot: head to the pilot, right arm up with the pistol at the pilot's head
 	local copilot = current.copilot
 	if copilot then
 		local origin = current.copilotOrigin
@@ -445,7 +400,6 @@ local function moveOutside(current: State, t: number, dt: number)
 	current.spinAngle += spinRateAt(t) * dt
 	local ground = outside
 	if ground then
-		-- forward flight fades out as the spin takes over
 		ground.flown += dt * FLIGHT_SPEED * (1 - between(t, T_SPIN, T_SPIN_FULL))
 		placeOutside(ground, current.spinAngle, altitudeAt(t))
 	end
@@ -467,8 +421,6 @@ local function placeCamera(current: State, t: number)
 	local view = seated:Lerp(atCockpit, between(t, 0, T_LOOK))
 	view = view:Lerp(atDoor, between(t, T_TO_DOOR, T_AT_DOOR))
 
-	-- the bank of the turn, and the shake: rotor buzz always, the spin's buffeting, the
-	-- shot's jolt and the impact
 	local spin = spinRateAt(t) / SPIN_RATE
 	local bank = BANK * spin * (1 + 0.25 * math.sin(t * 1.7))
 	local buzz = 0.0025 + 0.02 * spin + 0.03 * between(t, T_SPIN_FULL, T_IMPACT)
@@ -496,11 +448,8 @@ local function step(dt: number)
 	if not current then
 		return
 	end
-	-- debug knob for reviewing the beat slowly from the command bar (client):
-	-- workspace.CurrentCamera:SetAttribute("CinematicTimeScale", 0.2)
 	local camera = Workspace.CurrentCamera
 	local scale = if camera then camera:GetAttribute("CinematicTimeScale") else nil
-	-- or pinned to one moment: workspace.CurrentCamera:SetAttribute("CinematicAt", 3.6)
 	local pinned = if camera then camera:GetAttribute("CinematicAt") else nil
 	local t
 	if typeof(pinned) == "number" then
@@ -520,8 +469,6 @@ local function step(dt: number)
 	flashScreen(current, t)
 end
 
--- Starts the beat; returns false when the cabin or the seat view is missing (the
--- caller keeps its plain black fade then).
 function CrashCinematic.play(options: Options): boolean
 	CrashCinematic.stop()
 	local cabin = Workspace:FindFirstChild(CABIN_NAME)
@@ -595,8 +542,6 @@ function CrashCinematic.play(options: Options): boolean
 	}
 	figureParts(current.pilot, current, current.pilotParts)
 	figureParts(current.copilot, current, current.copilotParts)
-	-- a figure's pivot is its seat origin only if the server built it that way; use the
-	-- torso's position as the anchor so the poses stay on the figure either way
 	local pilotTorso = part(current.pilot, "Torso")
 	if pilotTorso then
 		current.pilotOrigin = pilotTorso.CFrame * CFrame.new(0, -1.0, -0.2)
@@ -630,7 +575,6 @@ function CrashCinematic.play(options: Options): boolean
 		current.pistol = pistol
 		current.flashLight = flash
 	end
-	-- with the soldier crew the flash comes from the copilot's own pistol
 	local crew = CabinCrew.ensure()
 	local crewMuzzle = if crew then CabinCrew.muzzle(crew) else nil
 	if crewMuzzle and current.flashLight then
@@ -652,7 +596,6 @@ function CrashCinematic.play(options: Options): boolean
 	end
 	current.alarm = alarm
 
-	-- the spin already run before a late start (the short beat)
 	local t = 0
 	while t < offset do
 		local dt = math.min(1 / 30, offset - t)
@@ -666,8 +609,6 @@ function CrashCinematic.play(options: Options): boolean
 	return true
 end
 
--- The rotor drone while the squad sits in the cabin (the ready check); the beat takes
--- it over, so the sound runs on without a seam into the crash.
 function CrashCinematic.setCabinAmbience(on: boolean)
 	if on then
 		if state ~= nil then
@@ -680,9 +621,7 @@ function CrashCinematic.setCabinAmbience(on: boolean)
 			end
 			ambience = sound
 		end
-		-- the two soldiers in the cockpit
 		CabinCrew.ensure()
-		-- the town sliding by under the open door
 		if not flightBound and ensureOutside() then
 			flightBound = true
 			RunService:BindToRenderStep(FLIGHT_NAME, RENDER_PRIORITY - 2, function(dt: number)
@@ -709,7 +648,6 @@ function CrashCinematic.isPlaying(): boolean
 	return state ~= nil
 end
 
--- Ends the beat and puts the cabin back as the server built it.
 function CrashCinematic.stop()
 	local current = state
 	if not current then
@@ -735,7 +673,6 @@ function CrashCinematic.stop()
 		(current.pistol :: BasePart):Destroy()
 	end
 	for _, sound in current.sounds do
-		-- the ringing carries over the wake-up; everything else stops now
 		if sound.Looped then
 			sound:Destroy()
 		else

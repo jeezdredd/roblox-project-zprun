@@ -20,21 +20,13 @@ Remotes.Event = table.freeze({
 	WeaponEquip = "WeaponEquip",
 	WeaponFire = "WeaponFire",
 	WeaponReload = "WeaponReload",
-	-- client -> server, no args: fire pressed during a shell reload. The shell in hand
-	-- is still counted, the loop stops and fire stays blocked for the fast exit.
 	WeaponReloadCancel = "WeaponReloadCancel",
 	WeaponHit = "WeaponHit",
 	ShopSync = "ShopSync",
 	PromptPurchase = "PromptPurchase",
 	AmmoPickup = "AmmoPickup",
-	-- server -> client: a weapon pickup's or upgrade station's outcome ("Weapon"
-	-- weaponId position, "Drop" weaponId position, "Upgrade" weaponId position level,
-	-- or "Refused" message position level?)
 	WeaponPickup = "WeaponPickup",
 	PlayerGlanced = "PlayerGlanced",
-	-- the helicopter intermission (IntermissionService): client -> server, a boolean
-	-- (ready or not) during the ready check; client -> server, no args, a skip vote
-	-- during a skippable crash; server -> client, the cabin snapshot or nil when over
 	IntermissionReady = "IntermissionReady",
 	IntermissionSkip = "IntermissionSkip",
 	IntermissionState = "IntermissionState",
@@ -45,8 +37,6 @@ Remotes.Function = table.freeze({
 	ShopPurchase = "ShopPurchase",
 })
 
--- Lossy, unordered, for values that change every frame and are replaced by the next
--- packet: the third-person aim (pitch, yaw offset) relayed at most 20 times a second.
 Remotes.Unreliable = table.freeze({
 	BodyAim = "BodyAim",
 })

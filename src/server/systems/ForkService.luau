@@ -1,14 +1,5 @@
 --!strict
 
--- Route forks: every map ends in a fork between two of its neighbours (wiki: Map
--- Segments). Builds the centre divider and signs before the map boundary, closes the
--- vote when the lead runner crosses the vote line (ForkConfig.VOTE_LEAD before the
--- boundary), and hands the choice to RoutePlan and MapPreload. The vote is physical:
--- each living runner counts for the side of the divider they are on. In Studio the
--- lead at the vote and the time until the boundary chunk is placed are kept as
--- Workspace attributes (ForkResolvedLead, ForkPlacedAfter) for measuring the lead.
--- See wiki/project-zprun/Route Forks.md.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -46,7 +37,6 @@ local builtFor: RoutePlan.PlanEntry? = nil
 local builtModels: { Built } = {}
 
 local function worldAt(distance: number, lateral: number, height: number): Vector3
-	-- lateral > 0 is the runner's right (+X when running towards -Z)
 	return origin + runDirection * distance + Vector3.new(lateral, height, 0)
 end
 
@@ -77,7 +67,6 @@ local function signLabel(surface: SurfaceGui, text: string, xScale: number, alig
 	label.Position = UDim2.fromScale(xScale, 0)
 	label.Font = Enum.Font.GothamBlack
 	label.TextScaled = true
-	-- Keep scaled text off the board edges; without it the descenders were clipped.
 	local padding = Instance.new("UIPadding")
 	padding.PaddingTop = UDim.new(0.18, 0)
 	padding.PaddingBottom = UDim.new(0.18, 0)
@@ -98,8 +87,6 @@ local function buildDivider(entry: RoutePlan.PlanEntry, boundary: number): Built
 	local model = Instance.new("Model")
 	model.Name = "RouteFork"
 
-	-- Jersey barriers down the centre line, with small gaps so it reads as a road
-	-- divider and a runner who strays onto it is nudged rather than walled.
 	local segment = 10
 	local gap = 2
 	local d = startDistance
@@ -108,7 +95,6 @@ local function buildDivider(entry: RoutePlan.PlanEntry, boundary: number): Built
 		d += segment + gap
 	end
 
-	-- Sign gantry at the divider start, facing the runners.
 	local signPos = worldAt(startDistance - 2, 0, floorTop + ForkConfig.SIGN_HEIGHT)
 	local post = part("SignPost", Vector3.new(1, ForkConfig.SIGN_HEIGHT, 1), worldAt(startDistance - 2, 0, floorTop + ForkConfig.SIGN_HEIGHT / 2), model)
 	post.Color = Color3.fromRGB(60, 62, 64)
@@ -117,7 +103,6 @@ local function buildDivider(entry: RoutePlan.PlanEntry, boundary: number): Built
 	board.Color = Color3.fromRGB(34, 60, 42)
 	board.Material = Enum.Material.SmoothPlastic
 	local surface = Instance.new("SurfaceGui")
-	-- Runners face RUN_DIRECTION, which is the part's look vector, so they see the Back face.
 	surface.Face = Enum.NormalId.Back
 	surface.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
 	surface.PixelsPerStud = 40

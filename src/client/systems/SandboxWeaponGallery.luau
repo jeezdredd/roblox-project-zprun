@@ -1,18 +1,5 @@
 --!strict
 
--- Studio test yard (Sandbox), client side:
---   * the first-person weapon gallery: every pack clip on its own copy of the pack rig,
---     standing in the world at the uploaded size (about twice life size) and seen from
---     the side, looping with a short pause; the in-game uses of a clip (tactical and
---     empty reload cuts, the shotgun's shell loop and chambering pump, fire into pump)
---     get their own stations. Clip markers flash on the label and play their sound at
---     the rig, so sound sync can be judged by eye and ear.
---   * the zombie gallery's treadmills (SandboxGallery on the server): strips scrolled at
---     each walk/run clip's measured ground speed.
---   * the sound lane: speakers played in turn (B) with a gunshot, a zombie call and an
---     explosion.
--- Everything honours the workspace attribute DevTimeScale (set by SandboxInput, Z).
-
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -45,13 +32,8 @@ type Station = {
 	flashText: string,
 }
 
--- rigs at 1.6x their uploaded size (about 3.5x life): hands, bolts and magazines read
--- from the walkway. Each rig's eye point (where the game puts the camera) stands at
--- EYE_HEIGHT above the station, so every exhibit is framed the way the game frames it
--- and its weapon sits at about the walkway's eye height.
 local GALLERY_SCALE = 1.6
 local EYE_HEIGHT = 5.9
--- studs from the post top to the station label, clear of the arms above the weapon
 local LABEL_ABOVE_POST = 3.4
 local COLUMN_SPACING = 10
 local ROW_SPACING = 30
@@ -59,7 +41,6 @@ local STEP_RANGE = 45
 local SOUND_RANGE = 25
 local REST = 0.9
 local CLASS_ORDER = { "Pistol", "Rifle", "Shotgun", "SMG" }
--- display order; clips not listed follow alphabetically
 local CLIP_ORDER = {
 	"Equip",
 	"Idle",
@@ -83,7 +64,6 @@ local function timeScale(): number
 	return if typeof(value) == "number" then value else 1
 end
 
--- `height` is studs above the post's centre; the label floats over the rig
 local function makeLabel(parent: BasePart, text: string, height: number): TextLabel
 	local gui = Instance.new("BillboardGui")
 	gui.Size = UDim2.fromOffset(180, 36)
@@ -114,7 +94,6 @@ local function segment(pack: ViewmodelPackConfig.ClassPack, clip: string, from: 
 	return { clip = clip, from = from or 0, to = to or 1, phases = phases }
 end
 
--- Every clip in the pack plus the in-game cuts of this class.
 local function entriesFor(pack: ViewmodelPackConfig.ClassPack, clips: { [string]: any }): { { title: string, segments: { Segment } } }
 	local names = {}
 	for name in clips do
@@ -164,9 +143,6 @@ local function playSegment(station: Station)
 	station.lastFraction = seg.from
 end
 
--- World centre of the weapon body as the player posed it last. The weapon bone's own
--- origin can sit far from the gun (the rifle's Grip_01 is below and behind it), so the
--- weapon mesh's rest centre is carried along with the bone.
 local function weaponCenter(model: Model, root: BasePart, pack: ViewmodelPackConfig.ClassPack, player: ViewmodelClipPlayer.Player): Vector3?
 	local posed = player:boneWorld(pack.weaponBone)
 	local rest = player:restWorld(pack.weaponBone)
@@ -192,7 +168,6 @@ local function buildStation(parent: Instance, template: Model, data: any, class:
 	if GALLERY_SCALE ~= 1 then
 		model:ScaleTo(GALLERY_SCALE)
 	end
-	-- move the whole model so the root lands on the station, then drive it by the root
 	model:PivotTo(model:GetPivot() * root.CFrame:Inverse() * cframe)
 	for _, item in model:GetDescendants() do
 		if item:IsA("BasePart") then
@@ -206,10 +181,6 @@ local function buildStation(parent: Instance, template: Model, data: any, class:
 	model.Parent = parent
 	local root_ = root :: BasePart
 	local player = ViewmodelClipPlayer.new(data, root_, GALLERY_SCALE)
-	-- The bind pose is no guide to where the clips hold the weapon (the pistol pack's
-	-- bind pose has it several studs below the idle hold, which left every pistol rig
-	-- hanging far above its post), so the rig is lifted by its eye point and the post
-	-- stands under the weapon body as the idle clip's first frame holds it.
 	local pack = ViewmodelPackConfig.get(class)
 	if pack then
 		local eye = root_.CFrame * (pack.eye.Position * GALLERY_SCALE)
@@ -280,8 +251,6 @@ local function build(origin: Vector3)
 		local z = origin.Z - (row - 1) * ROW_SPACING
 		for column, entry in entriesFor(pack, (data :: any).clips) do
 			local x = origin.X - (column - 1) * COLUMN_SPACING
-			-- the rig looks down its -Z: turn it to look down world -X, so the +Z walkway
-			-- sees its right side (ejection port, bolt, mag well)
 			local cframe = CFrame.new(x, origin.Y + 0.5, z) * CFrame.Angles(0, math.rad(90), 0)
 			buildStation(folder, template, data, class, entry.title, entry.segments, cframe)
 		end
@@ -363,7 +332,6 @@ local function stepTreadmills(deltaTime: number)
 		if texture then
 			texture.OffsetStudsU = (texture.OffsetStudsU + shift) % texture.StudsPerTileU
 		end
-		-- the stripes run toward the model's back (-X) and wrap within the strip
 		local half = strip.Size.X / 2
 		for _, stripe in strip:GetChildren() do
 			if stripe:IsA("BasePart") then
@@ -377,11 +345,7 @@ local function stepTreadmills(deltaTime: number)
 	end
 end
 
--- The sound lane: each speaker in turn plays a gunshot, a zombie call and an explosion.
 local laneBusy = false
--- the lane is a distance test, so it only makes sense from its pad: pressed anywhere else
--- (the spawn is 300 studs away, where every speaker is about -30 dB or quieter) B moves
--- you there
 local PAD_REACH = 12
 
 local function goToListeningPad()
@@ -392,7 +356,6 @@ local function goToListeningPad()
 	end
 	local standAt = pad.Position + Vector3.new(0, 3, 0)
 	if (character:GetPivot().Position - standAt).Magnitude > PAD_REACH then
-		-- the speakers stand toward -Z of the pad
 		character:PivotTo(CFrame.lookAt(standAt, standAt + Vector3.new(0, 0, -1)))
 		task.wait(0.3)
 	end
@@ -417,16 +380,11 @@ function SandboxWeaponGallery.playSoundLane()
 		local weapons = AssetIds.audio.weapons :: { [string]: number }
 		local zombie = AssetIds.audio.zombie :: { [string]: number }
 		local world = AssetIds.audio.world :: { [string]: number }
-		-- the rifle shot is two files (the dry close part and its outdoor reflection,
-		-- WeaponSfx.tailFor) that together make the recording
 		local sounds = {
 			{ id = weapons.close_rifle or 0, tail = weapons.tail_open_rifle or 0, volume = 1, class = "GunshotRemote", reflect = true },
 			{ id = zombie.alert_bark or 0, tail = 0, volume = 1, class = "ZombieVocal", reflect = false },
 			{ id = world.distant_boom or 0, tail = 0, volume = 1, class = "Explosion", reflect = false },
 		}
-		-- through the engine's real classes when the weapons are on it (the remote
-		-- gunshot with its reflection fan, the zombie vocal, the explosion), else the
-		-- plain 3D wrapper
 		local onEngine = SfxConfig.WEAPONS_ON_ENGINE == true and AudioEngine.enabled()
 		for _, box in speakers do
 			local color = box.Color
@@ -468,7 +426,6 @@ function SandboxWeaponGallery.init()
 			task.wait(0.5)
 		end
 		local origin = Workspace:GetAttribute("SandboxOrigin") :: Vector3
-		-- wait for the yard, so the gallery is built once the player is there
 		while Workspace:GetAttribute("SandboxActive") ~= true do
 			task.wait(0.5)
 		end

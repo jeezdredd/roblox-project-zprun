@@ -13,15 +13,10 @@ local MissionGoals = {}
 type RunProgress = { [string]: number }
 
 local progress: { [Player]: RunProgress } = {}
--- the goals whose bonus a results screen has already paid this run
 local paid: { [Player]: { [string]: boolean } } = {}
 
--- The run HUD reads the progress from one attribute (docs/gameplay/goals-hud-and-ladder.md);
--- reports come every frame for the distance, so the string is written at most every
--- PUBLISH_INTERVAL and only when a whole unit changed.
 local PROGRESS_ATTRIBUTE = "GoalsProgress"
 local PUBLISH_INTERVAL = 0.25
--- the distances are shown in steps of 5 studs, the counts whole
 local STEPS = { Distance = 5, CleanDistance = 5 }
 local dirty: { [Player]: boolean } = {}
 local lastPublishAt = 0
@@ -91,8 +86,6 @@ function MissionGoals.bonusCredits(player: Player): number
 	return total
 end
 
--- Pays the bonus of every completed goal not paid yet this run and marks them paid, so
--- the death after a Continue pays only the goals completed since.
 function MissionGoals.claimBonus(player: Player): number
 	local rewards: { [string]: number } = {}
 	for _, goalId in MissionGoalsConfig.order do

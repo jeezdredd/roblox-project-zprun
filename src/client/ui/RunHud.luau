@@ -70,7 +70,6 @@ local function build()
 	earnings.TextColor3 = Color3.fromRGB(168, 178, 132)
 	earnings.Parent = screen
 
-	-- the run balance: kill pay and distance pay folded into one number (RunEconomy)
 	local function refreshEarnings()
 		local runCredits = Players.LocalPlayer:GetAttribute("RunCredits")
 		earnings.Text = if typeof(runCredits) == "number" then string.format("+%d CR THIS RUN", runCredits) else ""
@@ -78,7 +77,6 @@ local function build()
 	Players.LocalPlayer:GetAttributeChangedSignal("RunCredits"):Connect(refreshEarnings)
 	refreshEarnings()
 
-	-- the perks riding along, as text badges under the wallet corner
 	local badges = Instance.new("Frame")
 	badges.Name = "PerkBadges"
 	badges.AnchorPoint = Vector2.new(1, 0)
@@ -124,12 +122,9 @@ local function build()
 	Players.LocalPlayer:GetAttributeChangedSignal("PerksEquipped"):Connect(refreshBadges)
 	refreshBadges()
 
-	-- the run's goals with their progress, top left, one line each; the server packs
-	-- them into the GoalsProgress attribute (docs/gameplay/goals-hud-and-ladder.md)
 	local goals = Instance.new("Frame")
 	goals.Name = "Goals"
 	goals.AnchorPoint = Vector2.new(0, 0)
-	-- under the FPS counter (12, 88), clear of the wallet row above it
 	goals.Position = UDim2.fromOffset(16, 116)
 	goals.Size = UDim2.fromOffset(250, 18 * #MissionGoalsConfig.order + 20)
 	goals.BackgroundTransparency = 1

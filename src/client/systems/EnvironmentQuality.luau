@@ -1,12 +1,5 @@
 --!strict
 
--- The client side of the per-chunk budgets. The server builds one world to the desktop
--- budget and tags what the mobile tier can lose (DressingConfig.TAGS): on a touch-only
--- device the tagged clutter and decal cards are removed locally and the near-band
--- shadow casters stop casting, on streamed-in chunks too. In Studio it also prints the
--- real scene triangle and draw-call counts when the biome changes, so the server's
--- per-chunk estimate can be compared with a measurement.
-
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -19,7 +12,6 @@ local DressingConfig = require(ReplicatedStorage.Shared.config.DressingConfig)
 local EnvironmentQuality = {}
 
 local TAGS = DressingConfig.TAGS
--- the scene needs a moment to stream the new biome in before its count means anything
 local MEASURE_DELAY = 3
 
 local started = false

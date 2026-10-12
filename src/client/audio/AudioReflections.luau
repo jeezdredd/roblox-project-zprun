@@ -1,12 +1,5 @@
 --!strict
 
--- Reflections for loud events (the MW2019 approach): a fan of rays from the source
--- finds nearby surfaces, and each hit plays the sound again from that point, later by
--- the extra path over the direct one, quieter by the path and the surface, and
--- low-passed by the material. An open field has no hits and no reflections; a street
--- gets slapback from its facades; an interior keeps at most two because the bus reverb
--- already carries the rest.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local SpatialAudioConfig = require(ReplicatedStorage.Shared.config.SpatialAudioConfig)
@@ -27,7 +20,6 @@ local function fan(rays: number): { Vector3 }
 	local pitch = math.rad(REFLECTIONS.upwardRayDegrees)
 	for index = 1, rays do
 		local angle = yaw + (index - 1) * math.pi * 2 / rays
-		-- every third ray looks a little up, for balconies, canopies and ceilings
 		local up = if index % 3 == 0 then math.sin(pitch) else 0
 		local flat = if index % 3 == 0 then math.cos(pitch) else 1
 		table.insert(directions, Vector3.new(math.cos(angle) * flat, up, math.sin(angle) * flat))
@@ -35,9 +27,6 @@ local function fan(rays: number): { Vector3 }
 	return directions
 end
 
--- `id` is the recording to reflect (usually the shot itself), `bus` the bus of the
--- event's class, `volume` the event's volume before the class gain. `rays` overrides
--- the profile count.
 function AudioReflections.fire(position: Vector3, id: number, bus: string, volume: number, pitch: number, rays: number)
 	if not AudioEngine.enabled() or id <= 0 or rays <= 0 then
 		return
@@ -82,8 +71,6 @@ function AudioReflections.fire(position: Vector3, id: number, bus: string, volum
 		end
 		local path = hit.sourceToHit + hitToListener
 		local gain = AudioMath.reflectionGain(path, hit.material.reflect, REFLECTIONS.gain, REFLECTIONS.referenceDistance)
-		-- the engine adds the hit-to-listener leg itself (Reflection has delay = true),
-		-- so only the source-to-hit leg goes in here
 		AudioEngine.play({
 			id = id,
 			class = "Reflection",

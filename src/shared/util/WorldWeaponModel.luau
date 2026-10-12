@@ -1,12 +1,5 @@
 --!strict
 
--- The third-person gun: a five-part model welded to the right hand, built by the server
--- (WorldWeapon) for every character and by the yard's body gallery for its mannequins.
--- The grip part carries the sockets the body layer reads, all in grip space (x right, y
--- up, -z along the barrel): GripSocket is where the right hand sits, SupportSocket,
--- MagazineSocket, ChargeSocket, PortSocket and PumpSocket are where the support hand
--- goes, Muzzle is the barrel end.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ThirdPersonConfig = require(ReplicatedStorage.Shared.config.ThirdPersonConfig)
@@ -16,14 +9,8 @@ local WorldWeaponModel = {}
 
 WorldWeaponModel.NAME = "WorldWeapon"
 WorldWeaponModel.CLASS_ATTRIBUTE = "WeaponClass"
--- the grip part relative to the right hand: in the fist, just past the hand's end along
--- its -y (the fingers' way), the barrel along the forearm. It sat 0.9 studs out before
--- (2026-09-30), which left the hand under the stock and the grip floating ahead of it
--- once the body layer put the hands on the gun.
 local HAND_ROTATION = CFrame.Angles(math.rad(-80), 0, 0)
 WorldWeaponModel.HAND_OFFSET = CFrame.new(0, -0.3, -0.1) * HAND_ROTATION
--- A hand carrying this Vector3 attribute (the soldier body, SoldierBody.GRIP_ATTRIBUTE)
--- has a modelled fist: the grip sits at that point of the hand instead, same rotation.
 WorldWeaponModel.GRIP_ATTRIBUTE = "GripOffset"
 
 local function gripOffsetOf(hand: Instance?): Vector3?
@@ -31,16 +18,11 @@ local function gripOffsetOf(hand: Instance?): Vector3?
 	return if typeof(offset) == "Vector3" then offset else nil
 end
 
--- The grip part relative to `hand`.
 function WorldWeaponModel.handOffsetFor(hand: Instance?): CFrame
 	local offset = gripOffsetOf(hand)
 	return if offset then CFrame.new(offset) * HAND_ROTATION else WorldWeaponModel.HAND_OFFSET
 end
 
--- Lengths along the barrel in studs: receiver, barrel, stock (0 for none). Sized to the
--- default R15 body, whose arms reach about 1.8 studs from the shoulder joint across a
--- chest 2 studs wide: the first rifle (receiver 2.1, stock 0.9) put its handguard 2.8
--- studs ahead of the chest and its stock through it.
 type Lengths = { receiver: number, barrel: number, stock: number }
 local LENGTHS: { [string]: Lengths } = {
 	Pistol = { receiver = 0.9, barrel = 0.4, stock = 0 },
@@ -85,9 +67,6 @@ local function socket(name: string, cframe: CFrame, parent: Instance): Attachmen
 	return attachment
 end
 
--- The support hand's frame on the gun: the right hand's orientation rolled about the
--- barrel, placed so the hand's fist (`supportGrip`, zero for a block hand) lands on
--- `position`.
 local function supportFrame(position: Vector3, roll: number, supportGrip: Vector3): CFrame
 	return CFrame.new(position) * HAND_ROTATION:Inverse() * CFrame.Angles(0, 0, math.rad(roll)) * CFrame.new(-supportGrip)
 end
@@ -122,8 +101,6 @@ local function addSockets(
 	end
 end
 
--- Builds the gun for `config` on `character`'s right hand, replacing any previous one.
--- Returns nil when the character has no hand yet.
 function WorldWeaponModel.build(character: Model, config: WeaponsConfig.WeaponConfig): Model?
 	local existing = character:FindFirstChild(WorldWeaponModel.NAME)
 	if existing then
@@ -160,7 +137,6 @@ function WorldWeaponModel.build(character: Model, config: WeaponsConfig.WeaponCo
 		local furnitureColor = if isShotgun then COLOR_WOOD else COLOR_GRIP
 		local furnitureMaterial = if isShotgun then Enum.Material.WoodPlanks else Enum.Material.SmoothPlastic
 		if lengths.stock > 0 then
-			-- from the receiver's back end (0.24 behind the grip) rearwards
 			local stock = makePart("Stock", Vector3.new(0.24, 0.38, lengths.stock), furnitureColor, furnitureMaterial, model)
 			weldTo(hand, stock, handOffset * CFrame.new(0, 0.5, 0.24 + lengths.stock / 2))
 		end

@@ -1,10 +1,5 @@
 --!strict
 
--- The burning city outside the hangar: siren patrols orbiting on invisible parts in
--- bursts, and the rotor loop of every patrol chopper. With the spatial audio engine on
--- each one is an AmbienceSource voice following its part (long linear curve, air
--- absorption, occluded by the hangar); with it off the Sounds from before stay.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")

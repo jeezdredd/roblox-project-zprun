@@ -1,10 +1,5 @@
 --!strict
 
--- Loads the first-person pack rigs (skinned arms + weapon, uploaded as Model assets by
--- scripts/upload_assets.py) into ReplicatedStorage.ViewModelPacks, one Model per class,
--- for the client's PackViewmodel to clone. Skinned MeshParts and their Bone tree cannot
--- be written by Rojo, so they come in through InsertService at server start.
-
 local AssetService = game:GetService("AssetService")
 local InsertService = game:GetService("InsertService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -15,9 +10,6 @@ local SurfaceTemplates = require(script.Parent.SurfaceTemplates)
 
 local ViewmodelPacks = {}
 
--- The importer leaves RenderFidelity on Automatic, which drops a mesh to a coarser level of
--- detail by distance; the arms fill the screen, so every mesh is reapplied at full detail.
--- The skin weights travel with the mesh data, the part keeps its size, textures and bones.
 local function fullDetail(part: MeshPart)
 	if part.RenderFidelity == Enum.RenderFidelity.Precise then
 		return

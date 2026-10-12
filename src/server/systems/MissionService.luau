@@ -40,19 +40,11 @@ local function disconnectDied(player: Player)
 	end
 end
 
--- The client owns its character, and a teleport could come back: measured 2026-10-12 on
--- relaunched runs, the server put the character at the wreck and 0.3 s later the
--- client's own simulation, freshly given the character back as it left the cabin seat,
--- returned it to the cabin, 8000 studs off (the run then ended a minute later with
--- nobody on the road). The server holds the character while the new CFrame reaches the
--- client, then hands it back; the checks repeat the teleport if it still came back.
--- A runner covers a few dozen studs in the checked seconds, far inside the tolerance.
 local OWNERSHIP_HOLD = 0.5
 local TELEPORT_CHECKS = { 1, 2, 3 }
 local TELEPORT_TOLERANCE = 200
 
 local function setOwner(root: BasePart, owner: Player?)
-	-- refused for an anchored assembly (a corpse pose), which stays where it is anyway
 	pcall(function()
 		root:SetNetworkOwner(owner)
 	end)
@@ -136,8 +128,6 @@ local function tearDownIfEmpty()
 	restoreEnvironment()
 end
 
--- `spawnCFrame` is where the squad stands up (the wreck after the helicopter
--- intermission); the run's start when omitted.
 function MissionService.startSquad(players: { Player }, config: Squad.SquadConfig, seed: number, spawnCFrame: CFrame?)
 	if MissionState.isActive() then
 		return
@@ -193,15 +183,12 @@ function MissionService.removeFromMission(player: Player)
 	disconnectDied(player)
 	MissionState.removeParticipant(player)
 	DistanceTracker.endRun(player)
-	-- whatever the run still holds is banked (a death has banked its share already);
-	-- the perks chosen for this run are spent with it
 	local unbanked = RunEconomy.endRun(player)
 	if unbanked > 0 then
 		ProfileManager.addCredits(player, unbanked)
 	end
 	PerkService.onRunEnd(player)
 	WeaponService.clearRunLoadout(player)
-	-- the goals go with the run on a quit too (DeathService ends them on a death)
 	MissionGoals.endRun(player)
 	player:SetAttribute("GraceUntil", nil)
 	tearDownIfEmpty()
@@ -217,8 +204,6 @@ function MissionService.stop(player: Player)
 end
 
 function MissionService.init()
-	-- the profile's session ends synchronously on PlayerRemoving and on BindToClose, so
-	-- the run is settled (banked, perks cleared) before it, while the data is still there
 	ProfileManager.onReleasing(function(player)
 		MissionService.removeFromMission(player)
 	end)

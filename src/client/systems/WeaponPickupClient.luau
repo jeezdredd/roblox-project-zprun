@@ -1,13 +1,5 @@
 --!strict
 
--- The client half of the weapon pickups (docs/gameplay/weapon-pickups.md) and the
--- upgrade station (docs/gameplay/upgrade-station.md): the Highlight outlines that let
--- a scene or a station read through the fog, pooled below Roblox's limit of 31
--- rendered Highlights and handed to the nearest by the pure HighlightBudget; the toast
--- when the server hands over a weapon, upgrades one or refuses; the announcer line and
--- the burst on an upgrade; and the station prompt's quote, written into the prompt's
--- action text locally for this player's weapon. The prompts are the server's.
-
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ProximityPromptService = game:GetService("ProximityPromptService")
@@ -82,7 +74,6 @@ local function makeHighlight(): Highlight
 	return highlight
 end
 
--- One from the pool, made only while the pool is under the budget.
 local function acquireHighlight(): Highlight?
 	local highlight = table.remove(pool)
 	if highlight then
@@ -193,8 +184,6 @@ local function toast(text: string, tint: Color3)
 	end)
 end
 
--- An announcer line, 2D, when its id is non-zero (the slots are `needed` in the
--- manifest until real licensed files exist; nothing plays until then).
 local function announce(key: string)
 	local ids = AssetIds.audio.upgrade :: { [string]: number }
 	local id = ids[key]
@@ -208,8 +197,6 @@ local function announce(key: string)
 	SfxPlayer.play2D(id, UpgradeStationConfig.ANNOUNCER_VOLUME)
 end
 
--- The station prompt's action text is this player's quote: the level bought and its
--- price, or why not, from the attributes the server keeps (WeaponLevel, RunCredits).
 local function quotePrompt(prompt: ProximityPrompt)
 	local level = player:GetAttribute("WeaponLevel")
 	local credits = player:GetAttribute("RunCredits")
@@ -295,7 +282,6 @@ function WeaponPickupClient.init()
 	end
 end
 
--- For the debug overlay and tests in Studio: highlights live right now.
 function WeaponPickupClient.liveHighlights(): number
 	local count = 0
 	for _ in held do

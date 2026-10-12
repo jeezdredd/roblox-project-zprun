@@ -41,10 +41,6 @@ local function getAliveHumanoid(): Humanoid?
 	return humanoid
 end
 
--- Past the band by more than this the character is not on the run at all: still in the
--- cabin or the hub while the server's teleport to the wreck is on its way. Clamped there,
--- it was thrown to the band's edge at the cabin's height and z, overwrote the teleport
--- (the client owns its character) and fell out of the map (2026-10-12, relaunches).
 local OFF_FIELD_MARGIN = 100
 
 local function clampToField(root: BasePart)
@@ -61,9 +57,6 @@ function RunController.start(force: boolean?)
 	if connection then
 		return
 	end
-	-- Frozen: leave the default controls enabled instead of taking them over, so you can
-	-- actually walk around and look at things rather than being rooted in place. `force`
-	-- is how the unfreeze debug command overrides the switch without editing config.
 	if not force and DevMode.frozen() then
 		return
 	end

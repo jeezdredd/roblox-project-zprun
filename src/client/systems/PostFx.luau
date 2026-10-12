@@ -80,7 +80,6 @@ local function step(deltaTime: number)
 	damageEffect.Saturation = -(lowness * 0.35 * (0.6 + pulse * 0.4)) - deathFade * 0.65
 	damageEffect.TintColor = Color3.fromRGB(255, 255 - math.floor(damagePulse * 90), 255 - math.floor(damagePulse * 90))
 	damageEffect.Brightness = -damagePulse * 0.06
-	-- the biome and night presets carry their own bloom (LightingConfig)
 	local preset = LightingDirector.getCurrent()
 	bloom.Intensity = preset.bloomIntensity + deathFade * 1.6 + damagePulse * 0.5
 	bloom.Threshold = preset.bloomThreshold

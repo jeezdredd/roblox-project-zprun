@@ -1,13 +1,5 @@
 --!strict
 
--- The local character's locomotion clips. With a weapon held the gait comes from the
--- weapon class's clip set (AnimationsConfig.locomotionSets, LocomotionMath): idle,
--- walk, run, sprint and the strafes, blended by weight and played at the ground speed.
--- A gait whose clip has not been uploaded falls back inside the set and then to the
--- generic Run, so the character never stops animating. The tracks replicate through the
--- Animator, so teammates see the same gait; the body layer (src/client/body) writes its
--- aim and hand IK after the Animator on top of whatever plays here.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -28,7 +20,6 @@ type LoadedClip = {
 
 local tracks: { [string]: LoadedClip } = {}
 local available: { [string]: boolean } = {}
--- the seated pose, kept apart from the gait tracks the update loop blends
 local sitTrack: AnimationTrack? = nil
 local seated = false
 local animator: Animator? = nil
@@ -77,9 +68,6 @@ local function loadClip(foundAnimator: Animator, config: AnimationsConfig.ClipCo
 	end
 end
 
--- The engine gives every character its default Animate script, whose run and walk
--- tracks played under ours at full weight (two gaits blended: the stumbling run seen on
--- 2026-09-30). The locomotion here replaces it, so it goes, with its tracks.
 local function removeDefaultAnimate(character: Model, foundAnimator: Animator)
 	local animate = character:FindFirstChild("Animate")
 	if animate and animate:IsA("LocalScript") then
@@ -122,7 +110,6 @@ local function loadClips(character: Model)
 	for _, config in AnimationsConfig.locomotionClips do
 		loadClip(foundAnimator, config)
 	end
-	-- 0 until the clip is uploaded: then seating only pauses the gait layer
 	sitTrack = loadTrack(foundAnimator, AnimationsConfig.SIT_CLIP)
 	if AnimationsConfig.ENABLED and next(tracks) ~= nil then
 		removeDefaultAnimate(character, foundAnimator)
@@ -134,7 +121,6 @@ local function loadClips(character: Model)
 	end
 end
 
--- The clip set of the weapon the local player holds.
 local function currentSet(): string
 	local weaponId = Players.LocalPlayer:GetAttribute("WeaponId")
 	local config = if typeof(weaponId) == "string" then WeaponsConfig.get(weaponId) else nil
@@ -150,8 +136,6 @@ local function update(deltaTime: number)
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	local alive = humanoid ~= nil and humanoid.Health > 0
 
-	-- In a seat (the helicopter cabin): the sit pose plays and the gait layer is paused,
-	-- its tracks faded out; on unseat the pose stops and the gaits pick up again.
 	local nowSeated = alive and humanoid ~= nil and humanoid.SeatPart ~= nil
 	if nowSeated ~= seated then
 		seated = nowSeated
@@ -178,7 +162,6 @@ local function update(deltaTime: number)
 
 	local running = alive and ExertionState.isRunning()
 	local speed = ExertionState.getSpeed()
-	-- sideways share of the ground velocity in the character's frame
 	local axis = 0
 	local root = character and character:FindFirstChild("HumanoidRootPart")
 	if root and root:IsA("BasePart") and speed > 0.5 then
@@ -195,7 +178,6 @@ local function update(deltaTime: number)
 	currentGait = gait
 	local set = currentSet()
 	local targets = LocomotionMath.targets(set, gait, available)
-	-- the set's measured clip speeds, or the legacy Run's when the set has no clip
 	local references = if targets.Run then AnimationsConfig.GAIT_REFERENCE else (AnimationsConfig.SET_GAIT_REFERENCE[set] or AnimationsConfig.GAIT_REFERENCE)
 	local ratio = LocomotionMath.playbackRatio(gait, speed, references, AnimationsConfig.RUN_SPEED_MIN, AnimationsConfig.RUN_SPEED_MAX)
 
@@ -211,7 +193,6 @@ local function update(deltaTime: number)
 				loaded.track:Play(0.15)
 			end
 			loaded.track:AdjustWeight(loaded.weight, 0.1)
-			-- the legacy strafes are additive leans and keep their own rate
 			if target > 0 and id ~= "StrafeLeft" and id ~= "StrafeRight" then
 				loaded.track:AdjustSpeed(ratio * loaded.config.speed)
 			end
@@ -230,8 +211,6 @@ function AnimationController.playOneShot(clipId: string)
 	loaded.track:AdjustWeight(loaded.config.weight, 0.1)
 end
 
--- Plays the set's one-shot for `kind` ("reload", "hit") for the weapon held, when its
--- clip exists.
 function AnimationController.playAction(kind: string)
 	local set = AnimationsConfig.locomotionSets[currentSet()]
 	local clipId = set and set[kind]
@@ -240,7 +219,6 @@ function AnimationController.playAction(kind: string)
 	end
 end
 
--- Whether the local character is seated (the sit pose, the gait layer paused).
 function AnimationController.isSeated(): boolean
 	return seated
 end
@@ -249,15 +227,10 @@ function AnimationController.hasClips(): boolean
 	return next(tracks) ~= nil
 end
 
--- The gait playing right now, for overlays and the yard.
 function AnimationController.currentGait(): LocomotionMath.Gait
 	return currentGait
 end
 
--- The asset ids of a weapon class's locomotion set, keyed by gait and one-shot name
--- (idle, walk, run, sprint, strafe_left, strafe_right, reload, hit); a slot whose clip
--- is not uploaded yet carries 0. For the yard mannequins and any other rig that wants to
--- run the same gaits as a player of that class.
 function AnimationController.clipSetFor(class: string?): { [string]: number }
 	local set = AnimationsConfig.locomotionSets[LocomotionMath.setFor(class)]
 	local ids: { [string]: number } = {}

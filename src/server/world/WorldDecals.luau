@@ -1,9 +1,5 @@
 --!strict
 
--- The decal layer of a chunk: marks from DecalsConfig placed as thin cards on the
--- ground, cards in front of road-facing walls, and a tiled Texture on the floor. Ids
--- come from AssetIds.texture.decal; a key that is missing or 0 places nothing.
-
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -55,7 +51,6 @@ local function cardSize(entry: DecalsConfig.Entry, rng: Random): (number, number
 	return side, side
 end
 
--- Chunk-local x for a ground zone, either side of the road.
 local function zoneX(entry: DecalsConfig.Entry, width: number, halfWidth: number, rng: Random): number?
 	if entry.zone == "lane" then
 		local limit = math.min(DecalsConfig.LANE_HALF, halfWidth) - width / 2
@@ -98,7 +93,6 @@ local function placeGround(entry: DecalsConfig.Entry, id: number, biome: string,
 	return true
 end
 
--- A card in front of a thin, axis-aligned wall part, on the face that looks at the road.
 local function placeWall(entry: DecalsConfig.Entry, id: number, wall: BasePart, rng: Random, index: number, parent: Instance)
 	local width, height = cardSize(entry, rng)
 	width = math.min(width, wall.Size.Z - 0.4)
@@ -134,7 +128,6 @@ local function placeFloor(entry: DecalsConfig.Entry, id: number, floor: BasePart
 	texture.Parent = floor
 end
 
--- Wall parts of the chunk that may take a card, in a fixed order so the rng stays in step.
 local function wallCandidates(parent: Instance): { BasePart }
 	local out: { BasePart } = {}
 	for _, item in parent:GetDescendants() do
@@ -145,7 +138,6 @@ local function wallCandidates(parent: Instance): { BasePart }
 	return out
 end
 
--- Places the biome's marks in the chunk; returns the number placed.
 function WorldDecals.dress(biome: string, rng: Random, floor: BasePart, halfWidth: number, halfLength: number, parent: Instance): number
 	local placed = 0
 	local walls: { BasePart }? = nil

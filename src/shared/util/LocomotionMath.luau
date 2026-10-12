@@ -1,20 +1,11 @@
 --!strict
 
--- Pure rules for the third-person locomotion clips: which clip set a weapon class
--- uses, which gait the movement state asks for, which loaded clip answers it (with the
--- fallbacks down to the generic Run clip) and how fast it plays. No services and no
--- requires, so tests/animation/run.luau runs it under the standalone Luau CLI.
--- Design: docs/animation/third-person-locomotion.md.
-
 local LocomotionMath = {}
 
 export type Gait = "idle" | "walk" | "run" | "sprint" | "strafe_left" | "strafe_right"
 
 export type Thresholds = {
-	-- below this speed a moving character walks
 	walkMax: number,
-	-- a sideways share of the velocity at or beyond this strafes (the auto-run swerving
-	-- at 24 forward keeps its run; moving mostly sideways side-steps)
 	strafeAxis: number,
 }
 
@@ -22,7 +13,6 @@ export type References = { [string]: number }
 
 LocomotionMath.GAITS = { "idle", "walk", "run", "sprint", "strafe_left", "strafe_right" } :: { Gait }
 
--- clip id suffix per gait
 local SUFFIX: { [string]: string } = {
 	idle = "Idle",
 	walk = "Walk",
@@ -32,7 +22,6 @@ local SUFFIX: { [string]: string } = {
 	strafe_right = "StrafeRight",
 }
 
--- gaits tried in turn inside a set when the wanted one has no clip
 local FALLBACK: { [string]: { string } } = {
 	idle = {},
 	walk = { "run" },
@@ -42,27 +31,19 @@ local FALLBACK: { [string]: { string } } = {
 	strafe_right = { "run" },
 }
 
--- the legacy additive strafe clips, played over Run when a set has no strafe gait
 local LEGACY_STRAFE: { [string]: string } = {
 	strafe_left = "StrafeLeft",
 	strafe_right = "StrafeRight",
 }
 
--- The clip set a weapon class runs with: the pistol set for a pistol, the rifle set for
--- everything else (SMGs and shotguns are carried two-handed).
 function LocomotionMath.setFor(class: string?): string
 	return if class == "Pistol" then "Pistol" else "Rifle"
 end
 
--- Clip id of a gait in a set: ("Rifle", "strafe_left") -> "RifleStrafeLeft".
 function LocomotionMath.clipId(set: string, gait: string): string
 	return set .. (SUFFIX[gait] or "")
 end
 
--- The gait the movement asks for. `lateral` is the sideways share of the ground
--- velocity in the character's frame (-1 all left, 1 all right); `sprinting` is the
--- hysteresis decision made from the sprint threshold (BodyMath.sprintTarget). Moving
--- mostly sideways side-steps at any speed, since a run clip facing forward would glide.
 function LocomotionMath.gaitFor(moving: boolean, speed: number, lateral: number, sprinting: boolean, thresholds: Thresholds): Gait
 	if not moving then
 		return "idle"
@@ -79,9 +60,6 @@ function LocomotionMath.gaitFor(moving: boolean, speed: number, lateral: number,
 	return "run"
 end
 
--- Clip weights that answer a gait with what is loaded: the set's own clip, else the
--- set's fallback gaits, else the generic Run (with the legacy additive strafe on top
--- when it exists). Idle with no idle clip plays nothing, as before the sets existed.
 function LocomotionMath.targets(set: string, gait: Gait, available: { [string]: boolean }): { [string]: number }
 	local out: { [string]: number } = {}
 	local own = LocomotionMath.clipId(set, gait)
@@ -109,8 +87,6 @@ function LocomotionMath.targets(set: string, gait: Gait, available: { [string]: 
 	return out
 end
 
--- Playback rate of a gait clip so the feet match the ground speed: the speed over the
--- gait's reference speed, clamped. Idle plays at 1.
 function LocomotionMath.playbackRatio(gait: Gait, speed: number, references: References, min: number, max: number): number
 	if gait == "idle" then
 		return 1

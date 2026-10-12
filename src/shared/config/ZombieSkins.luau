@@ -1,11 +1,5 @@
 --!strict
 
--- Skinned zombie rigs from Sketchfab (tools/zombie_pack): which rig each ZombiesConfig
--- entry wears, the rig's key bones (hit parts follow them), and its clips with their
--- ground speed (studs/s at playback speed 1, measured from root travel or the planted
--- foot by build_zombie_anims.py) so the playback speed keeps the feet planted.
--- Bone names are the ones Roblox built on import (tools/zombie_pack/roblox_bones.json).
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local AssetIds = require(ReplicatedStorage.Shared.config.AssetIds)
@@ -26,14 +20,8 @@ export type Skin = {
 	death: { Clip },
 	hit: Clip?,
 	spotted: Clip?,
-	-- fastest the AI may move this skin, for rigs with no run cycle
 	maxSpeed: number?,
-	-- where the rig sits against its imported bind pose: some packs' clips hold the
-	-- skeleton root away from the bind in every frame, and the rig is moved the other way
 	offset: Vector3?,
-	-- material name in a mesh's name -> SurfaceAppearance template in
-	-- ReplicatedStorage.ZombieSurfaces that replaces the importer's (it read the
-	-- metalness maps without the materials' metallicFactor 0: the skin came in as metal)
 	surfaces: { [string]: string }?,
 }
 
@@ -64,15 +52,11 @@ end
 local walker = anim.walker
 local hazmat = anim.hazmat
 local ghoul = anim.ghoul
--- the Fab "UEFN Manny Zombie Animation Sample Pack" retargeted onto the rigs
--- (tools/zombie_pack/retarget_ue.py; Fab content, the clips stay out of the repo, the
--- ids are ordinary uploads)
 local fab = (AssetIds.animation :: any).zombie_fab or {}
 local walkerUe = fab.walker
 local hazmatUe = fab.hazmat
 
 ZombieSkins.skins = {
-	-- "Zombie" by pxltiger (3ds Max Biped skeleton)
 	Walker = {
 		name = "Walker",
 		asset = if rigs.walker then rigs.walker.rig else 0,
@@ -96,12 +80,9 @@ ZombieSkins.skins = {
 		attack = list(clip(walker, "attack", 0), clip(walkerUe, "attack_ue", 0)),
 		death = list(clip(walker, "death_back", 0), clip(walker, "death_forward", 0), clip(walkerUe, "death_ue", 0)),
 	},
-	-- "Zombie Hazmat" by LxNazarov (Mixamo skeleton)
 	Hazmat = {
 		name = "Hazmat",
 		asset = if rigs.hazmat then rigs.hazmat.rig else 0,
-		-- the head came in as metal (metallicFactor 0 dropped); the suit's broken visor is
-		-- cut out of its colour alpha (glTF MASK), which the importer's Overlay drew opaque
 		surfaces = { ZombieHead = "hazmat_head", HazMatSuit = "hazmat_suit" },
 		head = "mixamorig:Head_06",
 		chest = "mixamorig:Spine2_04",
@@ -118,16 +99,12 @@ ZombieSkins.skins = {
 		},
 		idle = list(clip(hazmat, "idle", 0), clip(hazmatUe, "idle_ue", 0)),
 		walk = list(clip(hazmat, "walk_a", 0.774), clip(hazmatUe, "walk_ue", 1.125)),
-		-- the pack's own set had no run and no death (a 2-stud/s cap and no corpse pose);
-		-- the retargeted UE clips fill both
 		run = list(clip(hazmatUe, "run_ue", 7.525)),
 		attack = list(clip(hazmat, "attack", 0), clip(hazmatUe, "attack_ue", 0)),
 		death = list(clip(hazmatUe, "death_ue", 0)),
 		spotted = clip(hazmat, "spotted", 0),
-		-- only a shuffle when there is no run: past about 2.6x the cycle reads as frantic
 		maxSpeed = if hazmatUe and (hazmatUe.run_ue or 0) > 0 then nil else 2,
 	},
-	-- "ZOMBIE. Animation test for the game" by stasbelyk13 (Blender skeleton), the runner
 	Ghoul = {
 		name = "Ghoul",
 		asset = if rigs.ghoul then rigs.ghoul.rig else 0,
@@ -150,13 +127,10 @@ ZombieSkins.skins = {
 		attack = list(clip(ghoul, "attack", 0), clip(ghoul, "attack_b", 0)),
 		death = list(clip(ghoul, "death_back", 0), clip(ghoul, "death_forward", 0)),
 		hit = clip(ghoul, "hit", 0),
-		-- every Ghoul clip holds Bone.009 3.08 studs below its bind (measured 2026-09-29
-		-- from the Pose tracks: a constant, the same in all 11 clips), which sank the body
 		offset = Vector3.new(0, 3.077, -0.2),
 	},
 } :: { [string]: Skin }
 
--- which skins each ZombiesConfig id wears, with weights
 ZombieSkins.byConfig = {
 	Walker = { { skin = "Walker", weight = 0.65 }, { skin = "Hazmat", weight = 0.35 } },
 	Runner = { { skin = "Ghoul", weight = 1 } },
@@ -170,7 +144,6 @@ function ZombieSkins.get(name: string): Skin?
 	return nil
 end
 
--- `withDeath`: only skins that have a death clip (corpses are posed from it)
 function ZombieSkins.pick(configId: string, rng: Random, withDeath: boolean?): Skin?
 	local options = ZombieSkins.byConfig[configId]
 	if not options then

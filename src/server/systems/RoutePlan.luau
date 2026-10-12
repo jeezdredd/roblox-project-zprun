@@ -1,13 +1,5 @@
 --!strict
 
--- The run's route as a chain of maps (wiki: Map Segments). Each map is planned whole
--- when it begins: its length in chunks from a drawn duration and the speed expected
--- there (MapMath.lengthChunks, never under the floor), filled with its sub-locations
--- in turn. Its end is a fork between two enabled neighbours, chosen when the map
--- begins so both can be prepared while the squad runs it (MapPreload); the fork
--- carries each option's first sub-location so their transition chunks can be built
--- ahead. Nothing is planned past an open fork: the spawner holds at the boundary.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ForkConfig = require(ReplicatedStorage.Shared.config.ForkConfig)
@@ -19,9 +11,7 @@ local MapMath = require(ReplicatedStorage.Shared.world.MapMath)
 local RoutePlan = {}
 
 export type ForkInfo = {
-	-- map ids; options[1] is the left side of the divider, options[2] the right
 	options: { string },
-	-- each option's first sub-location, drawn when the fork is planned
 	firstLocations: { string },
 	resolved: boolean,
 	choice: string?,
@@ -32,12 +22,8 @@ export type PlanEntry = {
 	mapId: string,
 	startIndex: number,
 	endIndex: number,
-	-- the first entry of a map after a boundary: its first MAP_TRANSITION_CHUNKS blend
-	-- from prevLocationId
 	mapStart: boolean,
 	prevLocationId: string?,
-	-- set on the placeholder entry that stands for the next map until the vote closes;
-	-- its locationId and mapId are the first option's until then
 	fork: ForkInfo?,
 }
 
@@ -45,7 +31,6 @@ export type MapRun = {
 	id: string,
 	startIndex: number,
 	endIndex: number,
-	-- seconds into the run the map is expected to start and its drawn duration
 	startTime: number,
 	duration: number,
 	options: { string }?,
@@ -98,8 +83,6 @@ local function slowestPreload(options: { string }?): number
 	return slowest
 end
 
--- Plans a whole map from `startIndex`: length, sub-locations, and the fork at its end
--- (a placeholder entry, provisional on the first option).
 local function beginMap(mapId: string, startIndex: number, startTime: number, prevLocationId: string?, firstLocation: string?)
 	local config = MapsConfig.get(mapId) :: MapsConfig.MapConfig
 	local options = MapMath.forkOptions(mapsTable(), mapId, random:NextNumber(), random:NextNumber())
@@ -122,11 +105,9 @@ local function beginMap(mapId: string, startIndex: number, startTime: number, pr
 		local locationId = if first and firstLocation then firstLocation else drawLocation(mapId, previous)
 		local chunks = drawLength(locationId)
 		if first and prevLocationId then
-			-- the whole transition stays inside the first sub-location
 			chunks = math.max(chunks, transitionChunks + 1)
 		end
 		local endIndex = math.min(index + chunks - 1, run.endIndex)
-		-- never leave a sliver shorter than a location's minimum at the map's end
 		local rest = run.endIndex - endIndex
 		if rest > 0 and rest < 3 then
 			endIndex = run.endIndex
@@ -156,8 +137,6 @@ local function beginMap(mapId: string, startIndex: number, startTime: number, pr
 			fork = { options = options, firstLocations = firstLocations, resolved = false },
 		})
 	end
-	-- no two enabled neighbours (a config error MapMath.check reports): extendPlan runs
-	-- the same map again rather than stop
 end
 
 local function extendPlan(upToIndex: number)
@@ -169,23 +148,17 @@ local function extendPlan(upToIndex: number)
 		guard += 1
 		local last = plan[#plan]
 		if last.fork then
-			-- nothing is planned past a fork until the vote closes (resolveFork)
 			return
 		end
-		-- the same map again (it has no fork): no map transition, the sub-location blend
-		-- inside the map covers the seam
 		local run = maps[#maps]
 		beginMap(run.id, run.endIndex + 1, run.startTime + run.duration, nil, nil)
 	end
 end
 
--- Plans the route far enough ahead that forks are known before their divider has to
--- be built.
 function RoutePlan.planAhead(distance: number)
 	extendPlan(RoutePlan.indexForDistance(distance))
 end
 
--- The first fork not yet decided, with its boundary distance.
 function RoutePlan.pendingFork(): (PlanEntry?, number)
 	for _, entry in plan do
 		local fork = entry.fork
@@ -196,15 +169,11 @@ function RoutePlan.pendingFork(): (PlanEntry?, number)
 	return nil, 0
 end
 
--- The chunk index the spawner must not reach while a fork is open: the boundary
--- itself. Everything before it belongs to the current map.
 function RoutePlan.holdIndex(): number?
 	local entry = RoutePlan.pendingFork()
 	return if entry then entry.startIndex else nil
 end
 
--- The vote closed: the placeholder becomes the chosen map, planned whole from the
--- boundary with its pre-drawn first sub-location.
 function RoutePlan.resolveFork(entry: PlanEntry, mapId: string)
 	local fork = entry.fork
 	if not fork or fork.resolved then
@@ -234,7 +203,6 @@ function RoutePlan.entryAt(index: number): (PlanEntry, PlanEntry?)
 	return plan[#plan], nil
 end
 
--- The map run that contains a chunk index (the last planned one past the plan).
 function RoutePlan.mapAt(index: number): MapRun?
 	for i = #maps, 1, -1 do
 		local run = maps[i]
@@ -245,13 +213,11 @@ function RoutePlan.mapAt(index: number): MapRun?
 	return maps[1]
 end
 
--- The map run before `run`, if any.
 function RoutePlan.previousRun(run: MapRun): MapRun?
 	local index = table.find(maps, run)
 	return if index and index > 1 then maps[index - 1] else nil
 end
 
--- The fork placeholder at the end of `run`, while the vote is open.
 function RoutePlan.forkAfter(run: MapRun): PlanEntry?
 	for _, entry in plan do
 		local fork = entry.fork
@@ -262,7 +228,6 @@ function RoutePlan.forkAfter(run: MapRun): PlanEntry?
 	return nil
 end
 
--- Maps run so far, in order, as ids (MapPreload frees pools two steps behind).
 function RoutePlan.mapHistory(upToIndex: number): { string }
 	local out = {}
 	for _, run in maps do
@@ -292,7 +257,6 @@ function RoutePlan.entryBounds(entry: PlanEntry): (number, number)
 	return from, to
 end
 
--- The boundary distance of a map run and the end of its transition zone.
 function RoutePlan.transitionZone(run: MapRun): (number, number)
 	local from = indexStartDistance(run.startIndex)
 	return from, from + transitionChunks * chunkLength
@@ -313,7 +277,6 @@ function RoutePlan.sectionAt(distance: number, sections: { string }): (string?, 
 	return sections[slot], t
 end
 
--- A run from the lobby's map choice (Random or an id); the seed draws everything.
 function RoutePlan.configure(seed: number, mapChoice: string?)
 	random = Random.new(seed)
 	plan = {}

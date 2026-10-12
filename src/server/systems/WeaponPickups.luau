@@ -1,15 +1,5 @@
 --!strict
 
--- Diegetic weapon pickups (docs/gameplay/weapon-pickups.md): the staged scenes of
--- PickupScenesConfig built along the corridor per chunk by the world generator
--- (ChunkSpawner), placed by the pure PickupPlanner from a Random seeded with the run
--- seed and the chunk index, so a run puts the same scenes in the same places for every
--- player. Each scene carries a ProximityPrompt held 0.3 s; the server validates the
--- run phase, the distance and that the scene is still there, then hands the weapon to
--- WeaponService.pickUp. The crashed supply drop is the reworked mystery box: red smoke,
--- opened for run credits through RunEconomy, the weapon rolled from the weighted table.
--- Highlights are the client's (WeaponPickupClient), pooled below Roblox's limit.
-
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -37,16 +27,11 @@ WeaponPickups.TAG = "WeaponPickup"
 WeaponPickups.PROMPT_NAME = "PickupPrompt"
 
 local FLOOR_TOP = 0.5
--- the box the occupancy check sweeps above the floor (stains and markings sit below it)
 local CHECK_FLOOR = 1
 local CHECK_HEIGHT = 5
--- per-chunk seed spacing, so neighbouring chunks never share a stream; the plan, the
--- drop roll and the mesh picks each get their own Random off it, so the plan's stream
--- never shifts with what happened to load
 local CHUNK_SEED_STEP = 7919
 local SEED_ROLL = 1
 local SEED_MESH = 2
--- an ammo crate's footprint, for the spot check
 local CRATE_RADIUS = 3
 
 type Pickup = {
@@ -64,7 +49,6 @@ local pickups: { [Model]: Pickup } = {}
 local seed = 0
 local folder: Folder? = nil
 
--- The gun itself, as a sub-model the pickup removes when taken.
 local function buildWeaponProp(weaponId: string, base: CFrame, parent: Instance): Model
 	local prop = Instance.new("Model")
 	prop.Name = "Weapon"
@@ -140,8 +124,6 @@ local function buildRedSmoke(anchor: BasePart)
 	glow.Parent = anchor
 end
 
--- The crashed drop: the crate on its side in a scrape of earth, the parachute silk
--- collapsed beside it, the red smoke canister on top.
 local function buildSupplyDrop(base: CFrame, rng: Random, parent: Model): BasePart
 	local scrape = makePart({ kind = "box", name = "Scrape", size = { 9, 0.05, 6 }, at = { 0, 0.03, 0 }, yaw = 12, color = { 52, 44, 36 }, material = "Ground" }, base, parent)
 	scrape.CastShadow = false
@@ -166,7 +148,6 @@ local function tell(player: Player, kind: string, payload: string, position: Vec
 	Remotes.getEvent(Remotes.Event.WeaponPickup):FireClient(player, kind, payload, position)
 end
 
--- The server's own check of who is asking and from where.
 local function canTake(player: Player, pickup: Pickup): boolean
 	if pickup.taken then
 		return false
@@ -211,8 +192,6 @@ local function onTriggered(pickup: Pickup, player: Player)
 		tell(player, "Refused", string.format("Need %d CR", cost), position)
 		return
 	end
-	-- the roll is seeded per drop; the weapon already in hand is rerolled once, so the
-	-- credits buy a gun and not a refill
 	local rollRng = Random.new(seed + pickup.chunkIndex * CHUNK_SEED_STEP + SEED_ROLL)
 	local weaponId = PickupPlanner.rollDrop(PickupScenesConfig, rollRng:NextNumber())
 	if weaponId == player:GetAttribute("WeaponId") then
@@ -269,18 +248,12 @@ local function buildDrop(base: CFrame, rng: Random, chunkIndex: number)
 	local model = Instance.new("Model")
 	model.Name = "PickupSupplyDrop"
 	local canister = buildSupplyDrop(base, rng, model)
-	-- the canister lies on its side; the smoke rises from its position, unrolled
 	local anchor = buildAnchor(CFrame.new(canister.Position), model)
 	buildRedSmoke(anchor)
 	local prompt = buildPrompt(anchor, PickupScenesConfig.supplyDrop.displayName, string.format("Crack open · %d CR", PickupScenesConfig.supplyDrop.cost))
 	register(model, anchor, prompt, chunkIndex, "Drop", nil, PickupScenesConfig.supplyDrop.radius)
 end
 
--- Whether the spot is free: of the chunk's footprints remembered at its build (the
--- query below cannot see non-queryable dressing such as corn walls, dry grass and
--- undergrowth), of any queryable part of the chunk or of another pickup inside a box
--- of the footprint above the floor, of the pickups and upgrade stations already
--- standing (their small parts are not queryable either) and of the chunk's ammo crates.
 local function spotIsFree(chunk: Model, chunkIndex: number, localX: number, localZ: number, position: Vector3, radius: number): boolean
 	if not ChunkOccupancy.isFreeFor(chunk, localX, localZ, radius) then
 		return false
@@ -299,7 +272,6 @@ local function spotIsFree(chunk: Model, chunkIndex: number, localX: number, loca
 			return false
 		end
 	end
-	-- the station's lamp, mat and vise are not queryable either
 	for _, station in UpgradeStations.footprintsForChunk(chunkIndex) do
 		local reach = radius + station.radius
 		local delta = station.position - position
@@ -319,7 +291,6 @@ function WeaponPickups.configure(runSeed: number)
 	seed = runSeed
 end
 
--- Called by ChunkSpawner once the chunk stands at its pivot.
 function WeaponPickups.spawnForChunk(chunkIndex: number, chunk: Model, biome: string)
 	local rng = Random.new(seed + chunkIndex * CHUNK_SEED_STEP)
 	local placements = PickupPlanner.plan(PickupScenesConfig, biome, chunkIndex, rng, {
@@ -356,7 +327,6 @@ function WeaponPickups.clearChunk(chunkIndex: number)
 	end
 end
 
--- Returns the folder, shared with the upgrade stations so both spot checks see both.
 function WeaponPickups.init(): Folder
 	local created = Instance.new("Folder")
 	created.Name = "Pickups"

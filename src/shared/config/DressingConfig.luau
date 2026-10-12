@@ -1,25 +1,14 @@
 --!strict
 
--- Road dressing rules: which prop clusters each biome gets, where they may stand, which
--- material variant every surface takes, and the per-chunk budgets. Data only, with no
--- engine types, so DressingPlanner and ChunkBudget and their tests load it under the
--- standalone Luau CLI. Groups are WorldMeshConfig group names; zones and bands are the
--- ones in docs/world/environment.md. Distances are studs, chunk-local; x is measured
--- outwards from the road centre and applies to both sides.
-
 export type Range = { number }
 
 export type Member = {
 	group: string,
 	count: Range,
 	zone: string,
-	-- "line": the members follow each other along the road; default: around the anchor
 	layout: string?,
-	-- how far from the cluster anchor a scattered member may land along the road
 	spread: number?,
-	-- yaw range in radians; default anywhere
 	yaw: Range?,
-	-- material variant painted on the ground under the prop (burn marks)
 	patch: string?,
 }
 
@@ -32,18 +21,14 @@ export type Zone = {
 	outer: number,
 	collide: boolean,
 	shadow: boolean,
-	-- clutter the mobile tier removes
 	detail: boolean,
 }
 
 export type BiomeRules = {
 	clusters: Range,
-	-- "alternate": clusters take turns between the two sides; "one": a single side
 	sides: string,
 	recipes: { string },
-	-- cap on props per chunk
 	props: Range,
-	-- zone overrides where a biome's flank already fills the default band
 	zones: { [string]: Range }?,
 }
 
@@ -52,7 +37,6 @@ export type Materials = {
 	apron: string,
 	sidewalk: string?,
 	divider: string?,
-	-- variant for a share of the near-band facade blocks, and that share
 	facade: string?,
 	facadeShare: number?,
 	ruin: string?,
@@ -79,21 +63,15 @@ DressingConfig.TAGS = {
 	shadowNear = "TFZ_ShadowNear",
 }
 
--- Nothing taller than this casts a shadow, whatever its zone says.
 DressingConfig.SHADOW_MIN_HEIGHT = 3
 
--- Clearance added around every footprint when it is claimed.
 DressingConfig.FOOTPRINT_MARGIN = 0.6
 
--- Cluster centres: at least this far apart along the road on one side, and across sides.
 DressingConfig.SPACING_SAME_SIDE = 30
 DressingConfig.SPACING_ACROSS = 18
--- Two consecutive gaps on one side must differ by at least this much.
 DressingConfig.GAP_DIFFERENCE = 4
--- Clusters keep this far from the chunk ends, whose ground the neighbour chunk dresses.
 DressingConfig.END_CLEARANCE = 14
 
--- Members beyond this many in a cluster are detail.
 DressingConfig.DETAIL_FROM_MEMBER = 3
 
 DressingConfig.zones = {
@@ -103,8 +81,6 @@ DressingConfig.zones = {
 	apron = { inner = 44.5, outer = 59.5, collide = true, shadow = true, detail = false },
 } :: { [string]: Zone }
 
--- Footprints (x, z, height in studs) used when a prop mesh is not loaded and the
--- primitive stands in for it. Real sizes come from WorldMeshes.naturalSize.
 DressingConfig.fallbackSizes = {
 	barrier = { 10.7, 2.2, 3 },
 	sandbags = { 7.1, 2.1, 3.2 },
@@ -199,7 +175,6 @@ DressingConfig.biomes = {
 		sides = "alternate",
 		recipes = { "abandoned", "dump", "roadside" },
 		props = { 4, 9 },
-		-- between the rail fence at 34.5 and the crop rows from 42
 		zones = { edge = { 35.5, 41.5 }, apron = { 35.5, 41.5 } },
 	},
 	Cornfield = {
@@ -207,7 +182,6 @@ DressingConfig.biomes = {
 		sides = "one",
 		recipes = { "roadside" },
 		props = { 2, 4 },
-		-- the corn mesh rows start at 37, so the edge is the last free strip before them
 		zones = { edge = { 30.6, 35 }, apron = { 30.6, 35 } },
 	},
 	Forest = {
@@ -218,8 +192,6 @@ DressingConfig.biomes = {
 	},
 } :: { [string]: BiomeRules }
 
--- Ground top per biome as a function of the distance from the centre line: the City
--- sidewalk is a 0.4 slab on the floor, the forest floor part is 0.2 on top of it.
 DressingConfig.ground = {
 	City = { { 30, 35, 0.9 } },
 	Forest = { { 34, 228, 0.7 } },
@@ -260,7 +232,6 @@ DressingConfig.materials = {
 	},
 } :: { [string]: Materials }
 
--- Ground patch under burned props: a flat part painted with the variant.
 DressingConfig.PATCH_SIZE = { 10, 16 }
 
 DressingConfig.budgets = {
@@ -268,8 +239,6 @@ DressingConfig.budgets = {
 	mobile = { parts = 240, triangles = 180000, instances = 360, decals = 6, lights = 4, shadows = 30 },
 } :: { [string]: Budget }
 
--- Triangles per mesh, from the `triangles` field of assets/manifest.json. Props uploaded
--- as Models carry no count there and take TRIANGLES_DEFAULT until one is read in Studio.
 DressingConfig.triangles = {
 	tree_oak = 3918,
 	tree_birch = 3994,
@@ -291,7 +260,6 @@ DressingConfig.triangles = {
 } :: { [string]: number }
 DressingConfig.TRIANGLES_DEFAULT = 1500
 
--- Triangles per primitive shape, the engine's own meshes.
 DressingConfig.primitiveTriangles = {
 	Block = 12,
 	Wedge = 8,
@@ -299,10 +267,8 @@ DressingConfig.primitiveTriangles = {
 	Ball = 96,
 } :: { [string]: number }
 
--- Mesh trees stay inside this distance in the Forest near band; the rest are primitive.
 DressingConfig.FOREST_MESH_TREE_MAX_X = 70
 
--- Share of City middle-band slots that take a building mesh; the rest stay facades.
 DressingConfig.CITY_MIDDLE_MESH_SHARE = 0.75
 
 return DressingConfig

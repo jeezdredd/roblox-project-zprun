@@ -1,10 +1,5 @@
 --!strict
 
--- Parts from data: the PartSpec shape of PickupScenesConfig and UpgradeStationConfig
--- (primitives with sizes, offsets and colours as plain numbers, or a WorldMeshConfig
--- group with primitive fallbacks) turned into anchored parts in a scene's frame. Shared
--- by WeaponPickups and UpgradeStations.
-
 local WorldMeshes = require(script.Parent.WorldMeshes)
 
 export type PartSpec = {

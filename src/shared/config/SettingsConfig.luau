@@ -1,6 +1,5 @@
 --!strict
 
--- "credits" is read-only: the panel shows CreditsConfig there, nothing is stored
 export type SettingKind = "toggle" | "slider" | "credits"
 
 export type SettingSpec = {

@@ -190,8 +190,6 @@ local function leave(player: Player)
 end
 
 local function doLaunch(squad: SquadRecord)
-	-- another squad's intermission or run took the helicopter first: the squad stays
-	-- as it was and the leader can launch again later
 	if MissionState.isActive() or IntermissionService.isBusy() then
 		abortLaunch(squad)
 		pushSnapshot(squad)
@@ -200,10 +198,6 @@ local function doLaunch(squad: SquadRecord)
 	local members = table.clone(squad.members)
 	local config = squad.config
 	local seed = Random.new():NextInteger(1, 2147483646)
-	-- the helicopter cabin first; IntermissionService starts the run after the ready
-	-- check and the crash (docs/gameplay/heli-intermission.md). Only once it took the
-	-- squad is the hangar squad cleared; a refusal (no cabin, nobody alive to board)
-	-- leaves the squad as it was, like the busy case above
 	if not IntermissionService.begin(members, config, seed) then
 		abortLaunch(squad)
 		pushSnapshot(squad)

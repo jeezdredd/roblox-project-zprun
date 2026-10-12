@@ -1,9 +1,5 @@
 --!strict
 
--- Lighting presets per place and biome, day and night. LightingDirector lerps between
--- them; PostFx reads the bloom fields. How far each preset lets you see is in
--- VisibilityConfig, checked by FogBudget against the chunk spawn distance.
-
 export type LightingPreset = {
 	clockTime: number,
 	brightness: number,
@@ -22,7 +18,6 @@ export type LightingPreset = {
 	gradingContrast: number,
 	gradingSaturation: number,
 	gradingTint: Color3,
-	-- bloom stays inside the wiki rule: intensity at most 0.4, threshold at least 1.2
 	bloomIntensity: number,
 	bloomThreshold: number,
 	sunRays: number,
@@ -35,8 +30,6 @@ LightingConfig.ENABLED = true
 LightingConfig.LERP_SPEED = 1.1
 
 LightingConfig.presets = {
-	-- Studio test yard (DevConfig.SANDBOX): clear afternoon light and far fog, so rigs,
-	-- casings and props can be judged without the mission grading hiding them
 	Sandbox = {
 		clockTime = 14.5,
 		brightness = 2.2,
@@ -198,7 +191,6 @@ LightingConfig.presets = {
 		sunRays = 0.1,
 		shadowSoftness = 0.25,
 	},
-	-- night fallback for biomes without their own, and the hub at night
 	Night = {
 		clockTime = 0,
 		brightness = 0.15,
@@ -222,7 +214,6 @@ LightingConfig.presets = {
 		sunRays = 0,
 		shadowSoftness = 0.5,
 	},
-	-- sodium lamps and burning barrels on a blue-black street
 	CityNight = {
 		clockTime = 0.4,
 		brightness = 0.25,
@@ -246,7 +237,6 @@ LightingConfig.presets = {
 		sunRays = 0,
 		shadowSoftness = 0.5,
 	},
-	-- mist between the trunks, no lamps, the flashlight does the work
 	ForestNight = {
 		clockTime = 23.6,
 		brightness = 0.2,
@@ -270,7 +260,6 @@ LightingConfig.presets = {
 		sunRays = 0,
 		shadowSoftness = 0.6,
 	},
-	-- clear desert night, moonlit, the furthest sight of the night set
 	WastelandNight = {
 		clockTime = 1.2,
 		brightness = 0.35,
@@ -294,7 +283,6 @@ LightingConfig.presets = {
 		sunRays = 0,
 		shadowSoftness = 0.4,
 	},
-	-- one barn lamp per barn, the rest is dark field
 	FarmsteadNight = {
 		clockTime = 0.8,
 		brightness = 0.22,
@@ -318,7 +306,6 @@ LightingConfig.presets = {
 		sunRays = 0,
 		shadowSoftness = 0.5,
 	},
-	-- thick ground mist, the shortest sight in the game
 	CornfieldNight = {
 		clockTime = 0.2,
 		brightness = 0.18,
@@ -348,7 +335,6 @@ function LightingConfig.get(id: string): LightingPreset
 	return LightingConfig.presets[id] or LightingConfig.presets.Hub
 end
 
--- The night preset for a biome, or the shared Night when it has none.
 function LightingConfig.nightFor(biome: string): string
 	local id = biome .. "Night"
 	return if LightingConfig.presets[id] then id else "Night"

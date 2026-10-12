@@ -1,11 +1,5 @@
 --!strict
 
--- The upgrade station's arithmetic (docs/gameplay/upgrade-station.md): the quote for
--- the carried weapon's next level off the WeaponsConfig ladder, and where the stations
--- stand along the run. Pure Luau: no services, no engine types, no requires, so it runs
--- under the standalone Luau CLI (tests/upgrade/run.luau); the ladder and the station
--- config come in as tables, the randomness as an Rng (Random fits).
-
 export type Ladder = {
 	MAX_LEVEL: number,
 	UPGRADE_BASE_PRICE: number,
@@ -15,7 +9,6 @@ export type Ladder = {
 
 export type Quote = {
 	ok: boolean,
-	-- the level bought when ok
 	level: number,
 	price: number,
 	reason: string?,
@@ -45,24 +38,19 @@ export type Config = {
 export type Options = {
 	halfLength: number,
 	halfWidth: number,
-	-- the run distance at the chunk's near end
 	chunkStart: number,
 }
 
 local UpgradeStationMath = {}
 
--- The price of the next level from `level` (the same ladder the Gunsmith uses).
 function UpgradeStationMath.priceFor(ladder: Ladder, level: number): number
 	return ladder.UPGRADE_BASE_PRICE + ladder.UPGRADE_PRICE_STEP * math.max(level - 1, 0)
 end
 
--- The damage multiplier the level gives over the weapon's base.
 function UpgradeStationMath.damageScale(ladder: Ladder, level: number): number
 	return 1 + ladder.DAMAGE_PER_LEVEL * math.max(math.min(level, ladder.MAX_LEVEL) - 1, 0)
 end
 
--- The quote for a weapon at `level`: the level bought and its price, or the refusal.
--- `balance` is the run balance; nil skips the affordability check (the prompt text).
 function UpgradeStationMath.quote(ladder: Ladder, level: number, balance: number?): Quote
 	local current = math.clamp(math.floor(level), 1, ladder.MAX_LEVEL)
 	if current >= ladder.MAX_LEVEL then
@@ -75,9 +63,6 @@ function UpgradeStationMath.quote(ladder: Ladder, level: number, balance: number
 	return { ok = true, level = current + 1, price = price }
 end
 
--- Whether the chunk spanning [chunkStart, chunkStart + length) gets a station: it is
--- in a station biome, past the start clearance, and its span crosses a multiple of
--- SPACING_STUDS (each multiple lands in exactly one chunk).
 function UpgradeStationMath.chunkHasStation(config: Config, biome: string, chunkStart: number, length: number): boolean
 	if table.find(config.biomes, biome) == nil then
 		return false
@@ -96,15 +81,11 @@ local function shoulderSpot(config: Config, rng: Rng, options: Options): Spot
 	local inset = rng:NextNumber(config.SHOULDER_INSET[1], config.SHOULDER_INSET[2])
 	local x = side * (options.halfWidth - inset)
 	local z = rng:NextNumber(-options.halfLength + config.END_CLEARANCE, options.halfLength - config.END_CLEARANCE)
-	-- CFrame.Angles(0, yaw, 0) looks along (-sin yaw, 0, -cos yaw): the right shoulder
-	-- (x > 0) looks toward -x, the left toward +x
 	local facing = if side > 0 then math.pi / 2 else -math.pi / 2
 	local jitter = math.rad(rng:NextNumber(-config.YAW_JITTER, config.YAW_JITTER))
 	return { x = x, z = z, yaw = facing + jitter }
 end
 
--- The candidate spots of the chunk's station, in order, or none when the chunk has
--- no station.
 function UpgradeStationMath.plan(config: Config, biome: string, rng: Rng, options: Options): { Spot }
 	local spots: { Spot } = {}
 	if not UpgradeStationMath.chunkHasStation(config, biome, options.chunkStart, options.halfLength * 2) then

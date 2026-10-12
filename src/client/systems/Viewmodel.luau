@@ -24,27 +24,16 @@ local Viewmodel = {}
 local player = Players.LocalPlayer
 
 local rig: ViewmodelBuilder.Rig? = nil
--- a weapon pack rig (skinned arms + weapon with baked clips) replaces `rig` for every
--- class ViewmodelPackConfig lists once the server has loaded its model
 local packRig: PackViewmodel.Rig? = nil
 local isVisible = true
--- what the caller last asked for (the test yard's third-person view hides the rig); a
--- rig built later keeps it, and a dead character hides the rig regardless
 local wantVisible = true
 local sequencer = AnimationSequencer.new("Pistol")
--- listeners get (phase, weapon class, tag); the tag says what the clip was doing
--- ("fire", "tactical", "empty", "shell", "chamber", "equip") so a pump after a shot can
--- be told from the chambering pump after a reload
 local phaseListeners: { (string, string, string?) -> () } = {}
 local sprintActive = false
 local currentClass = "Pistol"
--- what the legacy sequencer is playing, for the tag of the phases it emits
 local legacyTag: string? = nil
--- when the current rig started its draw; WeaponController holds fire for drawTime
 local drawnAt = 0
 
--- The viewmodel only belongs to the run. Outside the Mission phase the camera is not
--- ours, so a rig parented to it hangs in mid-air in front of the hub camera.
 local active = false
 local pendingWeaponId: string? = nil
 
@@ -58,7 +47,6 @@ local swayPos = makeSpring("sway")
 local lagRot = makeSpring("lag")
 local movePos = makeSpring("movePos")
 local moveRot = makeSpring("moveRot")
--- the recoil springs integrate in small steps so a shot kicks the same at any frame rate
 local recoilPos = makeSpring("recoilPos", 1 / 240)
 local recoilRot = makeSpring("recoilRot", 1 / 240)
 local tiltRoll = makeSpring("tiltRoll")
@@ -76,10 +64,6 @@ local magazineSpring = Spring.number(mechanismSetting.stiffness, mechanismSettin
 
 local recoilRotScale = ViewmodelConfig.RECOIL_ROTATION_SCALE_DEFAULT
 
--- When a published clip drives the Animator it owns Motor6D.Transform. The procedural
--- layer writes the same channel every RenderStepped, so both writing in one frame means
--- the later write wins and the clip silently does nothing. This flag hands the joints
--- over; the root keeps carrying sway, bob and recoil either way.
 local clipDriven = false
 
 local cameraHistory: { CFrame } = {}
@@ -163,8 +147,6 @@ function Viewmodel.setWeapon(weaponId: string)
 	if not camera then
 		return
 	end
-	-- the draw clock starts now: the old rig can stay on screen while the new one
-	-- loads, and it must not count as the new weapon being ready
 	drawnAt = os.clock()
 
 	if coroutine.isyieldable() then
@@ -210,8 +192,6 @@ function Viewmodel.setWeapon(weaponId: string)
 	emitPhase("Draw", "equip")
 end
 
--- Seconds since the current rig started its draw (huge when there is no rig, so a
--- missing viewmodel never holds fire).
 function Viewmodel.drawElapsed(): number
 	if not packRig and not rig then
 		return math.huge
@@ -219,9 +199,6 @@ function Viewmodel.drawElapsed(): number
 	return os.clock() - drawnAt
 end
 
--- Call this with true for as long as an AnimationTrack is driving rig.animator, and
--- false the moment it stops. While it is true the procedural bone offsets stand down
--- and the clip owns every joint.
 function Viewmodel.setClipDriven(value: boolean)
 	clipDriven = value
 end
@@ -274,7 +251,6 @@ function Viewmodel.onFired(config: WeaponsConfig.WeaponConfig)
 	if pack then
 		PackViewmodel.fire(pack, 1 / math.max(config.fireRate, 0.01))
 	else
-		-- a shot that cuts a reload or the draw blends out of that pose instead of snapping
 		local cutting = sequencer:isPlaying("ReloadShort") or sequencer:isPlaying("ReloadFull") or sequencer:isPlaying("Equip")
 		sequencer:play("Fire", nil, if cutting then 0.12 else nil)
 		legacyTag = "fire"
@@ -282,8 +258,6 @@ function Viewmodel.onFired(config: WeaponsConfig.WeaponConfig)
 	sprintActive = false
 end
 
--- WeaponController's predicted magazine ran dry or was filled (the bolt or slide of a
--- pack rig holds back while it is empty)
 function Viewmodel.setMagEmpty(empty: boolean)
 	local pack = packRig
 	if pack then
@@ -291,9 +265,6 @@ function Viewmodel.setMagEmpty(empty: boolean)
 	end
 end
 
--- The authored sequence drives the pose and the audio phases; the springs only add
--- the mechanical travel on top, so nothing here runs on a wall-clock timer any more.
--- The plan's times come from WeaponsConfig, the same timeline the server counts ammo on.
 function Viewmodel.playReload(plan: PackViewmodel.ReloadPlan)
 	local pack = packRig
 	if pack then
@@ -301,7 +272,6 @@ function Viewmodel.playReload(plan: PackViewmodel.ReloadPlan)
 	else
 		local config = plan.config
 		if config.reloadStyle == "shell" then
-			-- legacy fallback for a pump without its pack: one pass over the whole reload
 			sequencer:play("ReloadShort", WeaponsConfig.shellReloadTime(config, plan.shells, plan.empty, plan.scale))
 			legacyTag = "shell"
 		else
@@ -313,8 +283,6 @@ function Viewmodel.playReload(plan: PackViewmodel.ReloadPlan)
 	sprintActive = false
 end
 
--- Fire interrupting a reload (see PackViewmodel.cancelReload). The legacy rig simply
--- blends back to rest.
 function Viewmodel.cancelReload(cancel: PackViewmodel.ReloadCancel)
 	local pack = packRig
 	if pack then
@@ -514,10 +482,7 @@ local function stepPack(pack: PackViewmodel.Rig, deltaTime: number, camera: Came
 		+ Vector3.new(0, 0, tiltRoll.value.Z)
 	local placement = cameraCFrame * CFrame.new(position) * CFrame.Angles(rotation.X, rotation.Y, rotation.Z)
 	local moving = ExertionState.getSpeed() > 1
-	-- near a wall the gun draws in (WallPullback casts along the aim, eases the pose)
 	PackViewmodel.setWallPose(pack, WallPullback.update(deltaTime, cameraCFrame, pack.class))
-	-- the stance, the magazine check and the lean's counter-pose (Stances); a reload, the
-	-- draw or an inspect eases them out so the clip plays from the class's own hold
 	local entry = pack.entry
 	local suppressed = PackViewmodel.isReloading(pack) or (entry ~= nil and (entry.tag == "equip" or entry.tag == "inspect"))
 	PackViewmodel.setStancePose(pack, Stances.viewmodelPose(deltaTime, suppressed))
@@ -563,10 +528,6 @@ local function step(deltaTime: number)
 	local equipValue = equipOffset.value
 	local equipTilt = -equipValue.Y / math.max(ViewmodelConfig.equip.drop, 0.001) * ViewmodelConfig.equip.tilt
 
-	-- tiltRoll packs two different units into one spring: X is a lateral shift in studs,
-	-- Z is a roll in radians. Adding the whole vector here fed the roll back in as a
-	-- depth translation, so strafing shoved the weapon towards and away from the camera.
-	-- Only X belongs in the position sum; Z is applied in the rotation sum below.
 	local hipAim = ViewmodelConfig.hipAim
 	local position = swayPosValue
 		+ Vector3.new(aimRot.value.Y * hipAim.shift, -math.abs(aimRot.value.Y) * hipAim.dip, 0)
@@ -605,8 +566,6 @@ local function step(deltaTime: number)
 		supportHand = CFrame.new(0, -magazineDrop * 0.55, magazineDrop * 0.22) * CFrame.Angles(math.rad(magazineDrop * 20), 0, 0)
 	end
 
-	-- Sprint is the only looping sequence, and it yields to anything the player
-	-- actively triggered: firing, reloading or inspecting.
 	local isRunning = ExertionState.isRunning()
 	if not sequencer:isPlaying() and isRunning then
 		sequencer:play("Sprint")

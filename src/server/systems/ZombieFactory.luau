@@ -13,10 +13,6 @@ local ZombieHitboxes = require(script.Parent.ZombieHitboxes)
 
 local ZombieFactory = {}
 
--- Two rigs. The full R15 walker (15 textured MeshParts cut from a generated character,
--- see tools/zombie_rig) is used when every template in ReplicatedStorage.ZombieMeshes.Walker2
--- carries a real mesh id; otherwise the old reduced 7-part rig is built. The choice is
--- made once at require time, because ROOT_HEIGHT and HIP_HEIGHT depend on it.
 local FULL_RIG = ZombieRigConfig.walker2
 local FULL_SCALE = 0.92
 
@@ -36,22 +32,14 @@ local function fullTemplates(): Folder?
 end
 
 local fullSet = fullTemplates()
--- Roblox's glTF importer turns every uploaded mesh 180 degrees about Y (x and z negated,
--- measured on the walker2 and arm meshes 2026-09-28), so the zombie faced backwards with
--- its eyes on the back of its head. Each mesh part is turned back about its own centre,
--- and the joints are written so their frames stay axis-aligned in character space.
 local GLTF_FLIP = CFrame.Angles(0, math.pi, 0)
 
 local restPoint: (string, Vector3) -> Vector3
 local armRest: (string, Vector3) -> CFrame
--- Rojo-mounted MeshParts render at the mesh's native size; load every zombie mesh
--- through MeshTemplates now so spawned zombies get correctly scaled parts.
 local meshFolder = ReplicatedStorage:FindFirstChild("ZombieMeshes")
 if meshFolder then
 	MeshTemplates.prefetch(meshFolder)
 end
--- The first zombies of a run can spawn before the loads finish, and a part cloned then
--- keeps the wrong size for its whole life. The first build waits for them instead.
 local meshesSettled = meshFolder == nil
 local function settleMeshes()
 	if meshesSettled or not meshFolder or not coroutine.isyieldable() then
@@ -68,12 +56,6 @@ ZombieFactory.HIP_HEIGHT = if fullSet then FULL_RIG.rootY * FULL_SCALE else 2.35
 
 local SCALE = if fullSet then FULL_SCALE else 0.86
 
--- The zombie clips (tools/animation_pipeline, Quaternius sources) are authored against a
--- T-pose: their shoulder rotations take a horizontal arm down to the sides. walker2's arms
--- are modelled hanging, so those same rotations swung each arm up and across the chest.
--- The arm chain is therefore rest-posed horizontally here, rotated about the shoulder so
--- that shoulder-to-wrist points straight out (-X left, +X right); with no clip playing the
--- zombie stands in a T-pose, with a clip it reads as authored.
 local ARM_SIDES = {
 	Left = { parts = { LeftUpperArm = true, LeftLowerArm = true, LeftHand = true }, out = Vector3.new(-1, 0, 0) },
 	Right = { parts = { RightUpperArm = true, RightLowerArm = true, RightHand = true }, out = Vector3.new(1, 0, 0) },
@@ -106,7 +88,6 @@ local function armSide(partName: string): string?
 	return nil
 end
 
--- a point of the arm chain moved into the T-pose (character space, scale 1)
 restPoint = function(partName: string, point: Vector3): Vector3
 	local side = armSide(partName)
 	if not side then
@@ -116,7 +97,6 @@ restPoint = function(partName: string, point: Vector3): Vector3
 	return arm.shoulder + arm.turn:VectorToWorldSpace(point - arm.shoulder)
 end
 
--- rest CFrame (scaled) of a mesh part: glTF flip, plus the T-pose turn for arm parts
 armRest = function(partName: string, centre: Vector3): CFrame
 	local side = armSide(partName)
 	local turn = if side then armTurn[side].turn else CFrame.identity
@@ -220,8 +200,6 @@ local function buildFull(config: ZombiesConfig.ZombieConfig, set: Folder): Model
 		local rest = armRest(partName, info.centre)
 		part.CFrame = rest
 		rests[partName] = rest
-		-- limbs are what a bullet should hit (Head carries the headshot bonus); only the
-		-- torso collides, and only against the player (zombies share a no-collide group)
 		part.CanQuery = true
 		part.CanTouch = false
 		part.CanCollide = COLLIDING[partName] == true
@@ -236,14 +214,12 @@ local function buildFull(config: ZombiesConfig.ZombieConfig, set: Folder): Model
 		motor.Name = spec.name
 		motor.Part0 = parts[spec.part0]
 		motor.Part1 = parts[spec.part1]
-		-- joint frames are axis-aligned at the (T-posed) pivot, whatever the parts' rotation
 		local pivot = CFrame.new(restPoint(spec.part1, spec.pivot) * SCALE)
 		motor.C0 = rests[spec.part0]:Inverse() * pivot
 		motor.C1 = rests[spec.part1]:Inverse() * pivot
 		motor.Parent = parts[spec.part0]
 	end
 
-	-- a faint glow in the eye sockets keeps the ITD read of eyes in the fog
 	local head = parts.Head
 	for _, sign in { -1, 1 } do
 		local eye = Instance.new("Part")
@@ -257,7 +233,6 @@ local function buildFull(config: ZombiesConfig.ZombieConfig, set: Folder): Model
 		eye.CanTouch = false
 		eye.CastShadow = false
 		eye.Massless = true
-		-- the head part is turned by GLTF_FLIP, so the offset is given in character space
 		local offset = GLTF_FLIP:Inverse() * CFrame.new(Vector3.new(sign * 0.13, 0.08, -0.4) * SCALE)
 		eye.CFrame = head.CFrame * offset
 		eye.Parent = model
@@ -297,14 +272,6 @@ local function buildFull(config: ZombiesConfig.ZombieConfig, set: Folder): Model
 	return model
 end
 
--- Skinned zombie from a Sketchfab rig (ZombieSkins / ZombieRigs). The visual rig hangs
--- off the HumanoidRootPart by a Motor6D named Root and is animated through its Bones.
--- Bullets hit invisible boxes that ZombieHitboxes keeps on the bones (Head, Chest, Hips,
--- limbs); none of them collide, since a bone-driven box that dips below the hip height
--- (a lunge, a stumble) drags the Humanoid over. Blocking the player is left to two static
--- boxes welded to the root above the hip height (UpperTorso, LowerTorso), which the rest of
--- the game already toggles by name. The root keeps the full rig's size and height so
--- ROOT_HEIGHT and HIP_HEIGHT stay valid for every zombie.
 local function buildSkinned(config: ZombiesConfig.ZombieConfig, skin: ZombieSkins.Skin, template: Model): Model
 	local model = Instance.new("Model")
 	model.Name = config.id
@@ -328,7 +295,6 @@ local function buildSkinned(config: ZombiesConfig.ZombieConfig, skin: ZombieSkin
 	local copy = template:Clone()
 	local rig = copy:FindFirstChild("Rig") :: BasePart
 	local rootBone = rig:FindFirstChildWhichIsA("Bone")
-	-- the root bone stands on the ground in every pack
 	local feet = if rootBone then (rootBone.WorldPosition - rig.Position).Y else -rig.Size.Y / 2
 	local offset = skin.offset or Vector3.zero
 	local target = CFrame.new(Vector3.new(0, -feet, 0) + offset) * rig.CFrame.Rotation
@@ -404,7 +370,6 @@ local function buildSkinned(config: ZombiesConfig.ZombieConfig, skin: ZombieSkin
 	if hips then
 		hitPart("Hips", Vector3.new(1.8, 1, 1.1), CFrame.new(hipsPos), hips)
 	end
-	-- heights as the clips hold the body (the offset only undoes the clips' own shift)
 	local standingHead = headY - offset.Y
 	local blockBottom = ZombieFactory.HIP_HEIGHT + 0.2
 	local blockSplit = math.max(blockBottom + 0.5, hipsPos.Y - offset.Y + 0.45)
@@ -455,9 +420,7 @@ local function buildSkinned(config: ZombiesConfig.ZombieConfig, skin: ZombieSkin
 	return model
 end
 
--- `corpse`: the model will be laid down as a corpse, so only skins with a death clip
 function ZombieFactory.build(config: ZombiesConfig.ZombieConfig, corpse: boolean?, skinName: string?): Model
-	-- `skinName` forces one skin (the Studio test yard shows each skin side by side)
 	local skin = if skinName then ZombieSkins.get(skinName) else ZombieSkins.pick(config.id, variation, corpse)
 	if skin then
 		local template = ZombieRigs.get(skin.name, 8)

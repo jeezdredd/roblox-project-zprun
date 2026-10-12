@@ -1,11 +1,5 @@
 --!strict
 
--- Shared one-shot playback. With the spatial audio engine on, both calls are thin
--- wrappers over AudioEngine.play (classes Generic2D and Generic3D, the old rolloff
--- distances mapped onto range and hold), so call sites that were never moved onto the
--- engine still propagate. With it off, the pooled 2D Sounds and the per-call 3D Sound
--- from before the engine are unchanged.
-
 local SoundService = game:GetService("SoundService")
 
 local AudioEngine = require(script.Parent.Parent.audio.AudioEngine)

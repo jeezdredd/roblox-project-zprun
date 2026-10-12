@@ -1,21 +1,5 @@
 --!strict
 
--- The camera during the helicopter intermission (docs/gameplay/heli-intermission.md),
--- for now only the placeholders the server flow needs:
---
---   Cabin  the seated view from this player's seat (the SeatView part the server
---          builds per seat in Workspace.IntermissionCabin), looking at the open door;
---          holding the right mouse button looks around (yaw +-100, pitch -50..40 from
---          the seat's view, eased), the cursor staying free for the panel.
---   Crash  the crash cinematic (CrashCinematic) over the same seat for the beat's
---          length, ending in black; a plain black fade when the cabin is missing.
---          The rotor drone of the ready check runs on into it.
---   After  the black holds a moment over the teleport to the wreck, then fades out and
---          the camera goes back to the run's controller.
---
--- Bound after the camera controllers (RenderPriority.Camera + 5) so it is the last
--- write while it holds; it lets go the moment FlowPhase leaves "Cabin".
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -43,12 +27,8 @@ local bound = false
 local fade: Frame? = nil
 local view: BasePart? = nil
 local crashActive = false
--- the crash beat's end (server time) from the cabin snapshot; the stage attribute and
--- the snapshot travel separately, so the beat waits a moment for it
 local crashEndsAt: number? = nil
 local CRASH_WAIT = 0.5
--- the look around the cabin, degrees from the seat's view: where the mouse put it and
--- where the camera is on its way there
 local looking = false
 local targetYaw, targetPitch = 0, 0
 local yaw, pitch = 0, 0
@@ -111,7 +91,6 @@ local function hold(deltaTime: number)
 		camera.CameraType = Enum.CameraType.Scriptable
 	end
 	if not lookAllowed() then
-		-- the crash beat: exactly the seat's view (the cinematic will own it)
 		camera.CFrame = target.CFrame
 		return
 	end
@@ -127,7 +106,6 @@ local function bind()
 	bound = true
 	view = nil
 	resetLook()
-	-- the cabin panel frees the cursor; the camera stays ours meanwhile
 	CursorMode.setCameraOwner(CAMERA_OWNER, true)
 	RunService:BindToRenderStep(RENDER_NAME, Enum.RenderPriority.Camera.Value + 5, hold)
 end
@@ -147,8 +125,6 @@ local function unbind()
 	end
 end
 
--- The crash beat: the cinematic over this player's seat, ending on the black this
--- module holds over the teleport; a plain black fade when it cannot play.
 function IntermissionCamera.playCrash(endsAt: number)
 	local seat = player:GetAttribute("CabinSeat")
 	local started = typeof(seat) == "number"
@@ -187,7 +163,6 @@ local function apply()
 	if phase == "Cabin" then
 		bind()
 		if stage == "Crash" and not crashActive then
-			-- the view goes back to the door the moment the beat changes
 			resetLook()
 			crashActive = true
 			startCrash()
@@ -205,8 +180,6 @@ local function apply()
 	CrashCinematic.setCabinAmbience(false)
 	unbind()
 	if wasCrash then
-		-- hold the black over the teleport to the wreck (black at once when a skip vote
-		-- cut the beat short), then open on the run
 		fadeTo(0, 0.05)
 		task.delay(HOLD_AFTER, function()
 			fadeTo(1, FADE_OUT)
@@ -233,7 +206,6 @@ function IntermissionCamera.init()
 		end
 	end)
 
-	-- right mouse held: the mouse looks around; released, the view stays where it is
 	UserInputService.InputBegan:Connect(function(input, processed)
 		if input.UserInputType == Enum.UserInputType.MouseButton2 and not processed and lookAllowed() then
 			looking = true

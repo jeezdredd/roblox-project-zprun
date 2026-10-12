@@ -1,19 +1,5 @@
 --!strict
 
--- Plays clips baked by tools/fps_pack (gltf_anim.py + emit_luau.py) on an imported
--- skinned viewmodel by writing Bone.Transform every frame, so pack animations run
--- without uploading Animation assets.
---
--- A track holds, per key, the bone's model-space change from its rest pose (Roblox axes,
--- RootPart space): x, y, z in 1/2000 stud and a quaternion in 1/32767, base64 packed.
--- Roblox's importer drops bones without skin weights and folds their transforms into
--- the children, so baked local transforms would not match; a model-space change applied
--- to each bone's own rest world does:
---     targetWorld = delta(t) * restWorld
---     Transform   = boneCFrame^-1 * parentWorld^-1 * targetWorld
--- Bones are solved parent first. `extras` are nodes without skin (the pack's camera
--- bone) whose rest world was baked alongside; `extraWorld` samples them.
-
 export type ClipData = { duration: number, frames: number, tracks: { [string]: string } }
 export type PackData = { fps: number, extras: { [string]: { number } }?, clips: { [string]: ClipData } }
 
@@ -25,16 +11,9 @@ export type PlayOptions = {
 	speed: number?,
 	fade: number?,
 	looped: boolean?,
-	-- stretch or squeeze the played section (from..to) to last this many seconds
-	-- (reload timing from config); overrides `speed`
 	duration: number?,
-	-- start fraction of the clip (a shell loop skips the clip's idle lead-in)
 	from: number?,
-	-- end fraction of a one-shot: the clip reports finished there and the caller blends
-	-- to the next clip (a tactical reload stops before the bolt pull)
 	to: number?,
-	-- share of the clip's move away from the pose it started in (1 = as authored): a
-	-- lighter version of an authored motion, such as a kick that is too big
 	weight: number?,
 }
 
@@ -80,8 +59,6 @@ end
 local POS_Q = 1 / 2000
 local ROT_Q = 1 / 32767
 
--- frame indices and raw 7-number rows; free of Roblox types so it can be tested
--- outside the engine
 local function decodeRaw(encoded: string): ({ number }, { { number } })
 	local data = base64Decode(encoded)
 	local count = buffer.readu16(data, 0)
@@ -114,12 +91,9 @@ export type Player = typeof(setmetatable(
 		cache: { [string]: Clip },
 		current: Clip?,
 		time: number,
-		-- clip time at which a one-shot finishes (the `to` fraction)
 		endTime: number,
 		speed: number,
 		looped: boolean,
-		-- real seconds of the last step that were left over after a one-shot finished,
-		-- so the next clip can start in the same frame instead of losing them
 		leftover: number,
 		fade: number,
 		fadeTime: number,
@@ -131,9 +105,6 @@ export type Player = typeof(setmetatable(
 	ViewmodelClipPlayer
 ))
 
--- `root` is the importer's RootPart holding the Bone tree. Call before any Transform is
--- written so the rest worlds are read from the bind pose. `scale` multiplies the baked
--- translations, for a rig scaled with Model:ScaleTo.
 function ViewmodelClipPlayer.new(pack: PackData, root: BasePart, scale: number?): Player
 	local order: { BoneEntry } = {}
 	local function walk(parent: Instance, parentIndex: number, parentWorld: CFrame)
@@ -175,7 +146,6 @@ function ViewmodelClipPlayer.new(pack: PackData, root: BasePart, scale: number?)
 	}, ViewmodelClipPlayer)
 end
 
--- Rest world (RootPart space) of the first bone with this name.
 function ViewmodelClipPlayer.restWorld(self: Player, name: string): CFrame?
 	for _, entry in self.order do
 		if entry.name == name then
@@ -185,7 +155,6 @@ function ViewmodelClipPlayer.restWorld(self: Player, name: string): CFrame?
 	return nil
 end
 
--- World (RootPart space) the bone was given on the last step, or its rest world.
 function ViewmodelClipPlayer.boneWorld(self: Player, name: string): CFrame?
 	return self.world[name] or self:restWorld(name)
 end
@@ -254,8 +223,6 @@ function ViewmodelClipPlayer.play(self: Player, name: string, options: PlayOptio
 	return true
 end
 
--- Moves the end of the playing one-shot, never behind the current time. Used to let a
--- shell reach its insert marker and stop there when fire cancels the loop.
 function ViewmodelClipPlayer.trim(self: Player, to: number)
 	local clip = self.current
 	if not clip or self.looped then
@@ -264,7 +231,6 @@ function ViewmodelClipPlayer.trim(self: Player, to: number)
 	self.endTime = math.max(self.time, math.clamp(to, 0, 1) * clip.duration)
 end
 
--- Drops the current clip; the pose holds until the next play() crossfades out of it.
 function ViewmodelClipPlayer.stop(self: Player)
 	self.current = nil
 end
@@ -299,10 +265,6 @@ local function sample(track: Track, frame: number): CFrame
 	return values[lo]:Lerp(values[hi], u)
 end
 
--- Where a pack trades two identical meshes between bones in one frame (the G17's
--- magazines swap roles at frame 54 of both reloads), interpolating across the trade flies
--- both through the view for that frame. The tracks of `clipName` matching `pattern` hold
--- their pose of the frame before and snap on `frame` instead.
 function ViewmodelClipPlayer.cut(self: Player, clipName: string, pattern: string, frame: number)
 	local clip = load(self, clipName)
 	if not clip then
@@ -347,9 +309,6 @@ function ViewmodelClipPlayer.cut(self: Player, clipName: string, pattern: string
 	end
 end
 
--- A bone's own Transform (relative to its parent bone) at one clip time: the bolt or
--- slide locked back on an empty magazine is held at this, so it stays on the gun while
--- the gun moves through whatever else plays.
 function ViewmodelClipPlayer.localPose(self: Player, bone: string, clipName: string, time: number?): CFrame?
 	local clip = load(self, clipName)
 	if not clip then
@@ -375,8 +334,6 @@ function ViewmodelClipPlayer.localPose(self: Player, bone: string, clipName: str
 	return nil
 end
 
--- The current model-space change of a track (blended through the crossfade, and held at
--- the clip's weight from the pose it started in).
 local function delta(self: Player, clip: Clip, name: string, frame: number): CFrame
 	local track = clip.tracks[name]
 	local target = if track then sample(track, frame) else CFrame.identity
@@ -388,7 +345,6 @@ local function delta(self: Player, clip: Clip, name: string, frame: number): CFr
 	return target
 end
 
--- Rest-relative world (RootPart space) of a baked extra node, e.g. the camera bone.
 function ViewmodelClipPlayer.extraWorld(self: Player, name: string): CFrame?
 	local extras = self.pack.extras
 	local restRow = extras and extras[name]
@@ -401,7 +357,6 @@ function ViewmodelClipPlayer.extraWorld(self: Player, name: string): CFrame?
 	return d * rest
 end
 
--- Advances the clip and writes every bone. Returns true on the step a one-shot clip ends.
 function ViewmodelClipPlayer.step(self: Player, deltaTime: number): boolean
 	local clip = self.current
 	if not clip then

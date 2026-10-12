@@ -1,14 +1,5 @@
 --!strict
 
--- The upgrade station (docs/gameplay/upgrade-station.md): a field armourer's bench
--- placed along the run by the world generator (ChunkSpawner), one per
--- UpgradeStationConfig.SPACING_STUDS of road in the station biomes, its spot from a
--- Random seeded with the run seed and the chunk index. Holding its prompt upgrades the
--- carried weapon one level of the WeaponsConfig ladder for run credits through
--- RunEconomy; the level lives in WeaponService's run state and the profile is never
--- written. The station is tagged like a pickup scene so the client's pooled Highlight
--- outlines it; its bench lamp is its own light for when the pool is spent.
-
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -33,17 +24,13 @@ UpgradeStations.PROMPT_NAME = "UpgradePrompt"
 local FLOOR_TOP = 0.5
 local CHECK_FLOOR = 1
 local CHECK_HEIGHT = 7
--- the station's own chunk step, off the pickups' 7919, so no station stream ever
--- equals a pickup plan's or a drop roll's for any chunk
 local CHUNK_SEED_STEP = 7907
 local SEED_MESH = 2
--- an ammo crate's footprint, for the spot check
 local CRATE_RADIUS = 3
 
 type Station = {
 	model: Model,
 	anchor: BasePart,
-	-- the scene origin on the floor, the footprint's centre
 	origin: Vector3,
 	chunkIndex: number,
 }
@@ -154,10 +141,6 @@ local function buildStation(base: CFrame, rng: Random, chunkIndex: number)
 	register(model, anchor, prompt, base.Position, chunkIndex)
 end
 
--- The same spot check the pickups make: the chunk's remembered footprints, the chunk's
--- ammo crates (spawned first, not queryable) by radius, then the overlap query. The
--- station is placed before the pickups of its chunk; they avoid it through
--- footprintsForChunk and Workspace.Pickups.
 local function spotIsFree(chunk: Model, chunkIndex: number, localX: number, localZ: number, position: Vector3, radius: number): boolean
 	if not ChunkOccupancy.isFreeFor(chunk, localX, localZ, radius) then
 		return false
@@ -181,7 +164,6 @@ function UpgradeStations.configure(runSeed: number)
 	seed = runSeed
 end
 
--- Called by ChunkSpawner once the chunk stands at its pivot, before the pickups.
 function UpgradeStations.spawnForChunk(chunkIndex: number, chunk: Model, biome: string)
 	local chunkLength = GameConstants.CHUNK_LENGTH
 	local rng = Random.new(seed + chunkIndex * CHUNK_SEED_STEP)
@@ -209,8 +191,6 @@ export type Footprint = {
 	radius: number,
 }
 
--- The stations standing in a chunk (the lamp, the mat and the vise are not queryable),
--- for the pickups' spot check.
 function UpgradeStations.footprintsForChunk(chunkIndex: number): { Footprint }
 	local footprints: { Footprint } = {}
 	for _, station in stations do
@@ -230,7 +210,6 @@ function UpgradeStations.clearChunk(chunkIndex: number)
 	end
 end
 
--- Shares the pickups' folder so a pickup spot check sees the station.
 function UpgradeStations.init(pickupsFolder: Folder)
 	folder = pickupsFolder
 end

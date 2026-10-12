@@ -1,13 +1,5 @@
 --!strict
 
--- Client half of the map preload (wiki: Map Segments): while the squad runs a map the
--- server names both fork options in the MapPreload Workspace attribute (MapPreload);
--- this asks ContentProvider for their meshes, textures, prop surfaces and material
--- variants, so whichever option the vote picks draws at full resolution the moment it
--- streams in. The boot screen preloads everything once (Boot.client); this keeps the
--- next map's assets warm after a long run has pushed them out. Each asset is asked for
--- once per session.
-
 local ContentProvider = game:GetService("ContentProvider")
 local MaterialService = game:GetService("MaterialService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -42,7 +34,6 @@ local function addInstance(list: { any }, instance: Instance?)
 	end
 end
 
--- Everything one map draws with that is worth asking for ahead.
 function MapPreloader.assetsFor(mapId: string): { any }
 	local list: { any } = {}
 	local map = MapsConfig.get(mapId)

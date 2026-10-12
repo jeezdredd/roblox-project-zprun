@@ -1,17 +1,10 @@
 --!strict
 
--- Sequence timings live apart from the poses because they get retuned far more often.
--- A step holds until `duration` elapses, easing from the previous step's pose.
--- `phase` names fire a PhaseReached signal the moment the step starts, which is what
--- drives reload audio — a marker in the sequence, never a wall-clock timer.
-
 export type Step = {
 	pose: string,
 	duration: number,
 	easing: string,
 	phase: string?,
-	-- pose used by classes whose library has no `pose` (the rifle has the full magazine
-	-- change; the other classes reuse their four reload poses)
 	fallback: string?,
 }
 
@@ -25,14 +18,9 @@ export type Sequence = {
 
 local AnimationTimings = {}
 
--- Default blend-in for a sequence that replaces another. A sequence shorter than this
--- must set its own `blendTime`, otherwise the blend is still ramping in while the pose
--- is already easing out and the authored offsets only ever render at a fraction.
 AnimationTimings.BLEND_TIME = 0.12
 
 AnimationTimings.sequences = {
-	-- Draw: up from below, then the class's rack (rifle bolt catch, pistol slide,
-	-- shotgun pump), with the bolt phases driving the rack audio.
 	Equip = {
 		id = "Equip",
 		priority = 2,
@@ -46,7 +34,6 @@ AnimationTimings.sequences = {
 		},
 	},
 
-	-- Recoil snaps and decays: no blend-in at all, otherwise the kick reads as a nudge.
 	Fire = {
 		id = "Fire",
 		priority = 3,
@@ -58,8 +45,6 @@ AnimationTimings.sequences = {
 		},
 	},
 
-	-- Magazine still has rounds: no chambering pass. Played stretched to the weapon's
-	-- reloadTime (Viewmodel.playReload), so these durations only set the proportions.
 	ReloadShort = {
 		id = "ReloadShort",
 		priority = 2,
@@ -77,7 +62,6 @@ AnimationTimings.sequences = {
 		},
 	},
 
-	-- magazine ran dry: adds the bolt release at the end
 	ReloadFull = {
 		id = "ReloadFull",
 		priority = 2,

@@ -1,13 +1,5 @@
 --!strict
 
--- Damage numbers (docs/gameplay/hit-markers.md): the damage the server confirmed for the
--- local shooter's shot rises from the hit point and fades over DamageNumberConfig.DURATION.
--- Fed by HitMarkers from the same WeaponHit "Shot" reply as the markers (its hits and
--- sixth value), placed at the first flesh hit: one number per shot, a shotgun's pellets
--- summed. A fixed pool of BillboardGuis on invisible, non-queryable anchors in
--- Workspace.DamageNumbers, the oldest reused when all are showing. Headshots take the
--- theme accent, kills the largest size; the "Damage numbers" setting turns them off.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")

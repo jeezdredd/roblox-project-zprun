@@ -1,10 +1,5 @@
 --!strict
 
--- Debug overlay for the spatial audio engine: profile, listener environment, ray use,
--- pool occupancy, per-bus activity and one row per live voice with its class, bus,
--- distance, start delay, occlusion, filter cutoff and volume. Toggled from the Studio
--- test yard (SandboxInput binds a key to AudioDebug.toggle()).
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -18,7 +13,6 @@ local AudioDebug = {}
 
 local REFRESH = 0.1
 local MAX_ROWS = 40
--- the test shot lands this far ahead of the camera
 local TEST_SHOT_DISTANCE = 30
 local TEST_SHOT_KEY = "weapons.close_rifle"
 
@@ -138,9 +132,6 @@ function AudioDebug.toggle()
 	AudioDebug.setVisible(not AudioDebug.isVisible())
 end
 
--- A remote rifle shot 30 studs ahead of the camera with its reflection fan, so the
--- reflections and the distance delay can be heard in the yard before WeaponSfx moves
--- onto the engine (test plan item 3).
 function AudioDebug.fireTestShot()
 	local camera = Workspace.CurrentCamera
 	if not camera or not AudioEngine.enabled() then

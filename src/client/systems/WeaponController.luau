@@ -28,9 +28,6 @@ local WeaponController = {}
 
 local player = Players.LocalPlayer
 
--- Client-side reload, run on the same WeaponsConfig timeline as the server so the
--- predicted count changes when the hands seat the magazine (or each shell), not a
--- round trip later. The server runs its own copy of this and stays authoritative.
 type ReloadState = {
 	weaponId: string,
 	style: string,
@@ -38,20 +35,15 @@ type ReloadState = {
 	empty: boolean,
 	scale: number,
 	endsAt: number,
-	-- magazine
 	ammoAddAt: number,
 	ammoAdded: boolean,
 	fill: number,
-	-- shell: shells planned, counted so far, and the most that will go in (fewer once
-	-- fire has cancelled the loop)
 	planned: number,
 	loaded: number,
 	limit: number,
 	cancelled: boolean,
 }
 
--- A higher AmmoMag than predicted within this long of a shot or a reload end is an
--- older update still in flight, not news. Past it the server's number wins.
 local ACK_WINDOW = 0.75
 
 local triggerHeld = false
@@ -60,28 +52,21 @@ local lastShotAt = 0
 local predictedMag = 0
 local reloadState: ReloadState? = nil
 local lastReloadEndedAt = 0
--- a shot pressed during a shell reload fires once the fast exit is over
 local pendingShot = false
--- a shot pressed in high or low ready fires once the gun is up (Stances)
 local raisePending = false
--- R: pressed when, and whether the hold has turned into a magazine check
 local reloadPressedAt: number? = nil
 local checkStarted = false
 local magCheckLabel: TextLabel? = nil
 local lastWheelSwapAt = 0
--- the mouse wheel's quick swap ignores ticks closer together than this
 local WHEEL_SWAP_GAP = 0.25
 local RELOAD_KEY: Enum.KeyCode = (Enum.KeyCode :: any)[StanceConfig.keys.reload] or Enum.KeyCode.R
 local burstShots = 0
 local lastBurstAt = 0
 local tracerCounter = 0
--- client-side spread for the shooter's own predicted tracers and impacts
 local shotRandom = Random.new()
 local predictParams = RaycastParams.new()
 predictParams.FilterType = Enum.RaycastFilterType.Exclude
 
--- Tracers, impact puffs and impact sounds for one shot. The shooter draws these the
--- frame the shot leaves (predictShot); everyone else draws them from the server's Shot.
 local function drawShot(hits: { WeaponSfx.Hit }, from: Vector3, config: WeaponsConfig.WeaponConfig?, direction: Vector3?)
 	tracerCounter += 1
 	local everyThird = config ~= nil and config.auto
@@ -109,11 +94,6 @@ local function findHumanoidModel(instance: Instance): Model?
 	return nil
 end
 
--- The shooter's own shot, drawn at once from a client ray with the same spread rule
--- as WeaponService. Damage stays the server's (it rays the same origin and direction
--- and validates them); waiting for its Shot reply put every tracer and impact one round
--- trip behind the muzzle flash, and the tracer then started from wherever the viewmodel
--- had moved to.
 local function predictShot(config: WeaponsConfig.WeaponConfig, origin: Vector3, direction: Vector3)
 	local filter: { Instance } = { Workspace.CurrentCamera }
 	if player.Character then
@@ -148,7 +128,6 @@ local function predictShot(config: WeaponsConfig.WeaponConfig, origin: Vector3, 
 end
 local lastWeaponId: string? = nil
 local previousWeaponId: string? = nil
--- the Studio "empty" debug command fakes an empty mag; keep reconcile off it for a bit
 local holdPredictionUntil = 0
 
 local ammoLabel: TextLabel? = nil
@@ -180,7 +159,6 @@ local function canAct(): boolean
 	return not CursorMode.isAnyOpen() and isAlive()
 end
 
--- SkillEffects.reloadScale, replicated by the server so the client timeline matches.
 local function reloadScale(): number
 	local scale = player:GetAttribute("ReloadScale")
 	return if typeof(scale) == "number" and scale > 0 then scale else 1
@@ -209,7 +187,6 @@ local function finishReload()
 	lastReloadEndedAt = os.clock()
 end
 
--- Counts what the reload has seated by `now` and ends it when its time is up.
 local function advanceReload(now: number)
 	local reload = reloadState
 	if not reload then
@@ -237,10 +214,6 @@ local function advanceReload(now: number)
 	end
 end
 
--- Fire pressed during a shell reload: the shell in the hand still goes in, then a fast
--- exit (plus the pump if nothing is chambered) and the buffered shot. Returns
--- "cancelled", "late" when the loop is already over (ReloadToIdle playing), or "empty"
--- when stopping now would leave nothing to fire.
 local function cancelShellReload(config: WeaponsConfig.WeaponConfig, reload: ReloadState, now: number): string
 	local shell = config.shellReload
 	if not shell then
@@ -268,15 +241,11 @@ local function cancelShellReload(config: WeaponsConfig.WeaponConfig, reload: Rel
 	return "cancelled"
 end
 
--- `pressed` is a fresh trigger press (not the auto-fire repeat): it can cancel a shell
--- reload and it arms the one dry click per press.
 local function tryFire(pressed: boolean)
 	local config = currentConfig()
 	if not config or not canAct() then
 		return
 	end
-	-- fully pulled back against a wall: the muzzle is inside it, nothing leaves until
-	-- it clears (partly pulled back, the gun fires)
 	if WallPullback.blocksFire() then
 		return
 	end
@@ -297,15 +266,11 @@ local function tryFire(pressed: boolean)
 			end
 			return
 		elseif sameWeapon and not reload.ammoAdded then
-			-- before ammo-add nothing fires and the old count stands
 			return
 		end
-		-- another weapon's reload, or the magazine is seated: the shot cuts the rest
 		finishReload()
 	end
 
-	-- from high or low ready (or a magazine check) the gun comes up first; the press
-	-- fires once it is up
 	if not Stances.requestFire(config.class) then
 		if pressed then
 			raisePending = true
@@ -339,7 +304,6 @@ local function tryFire(pressed: boolean)
 	Viewmodel.onFired(config)
 	WeaponVfx.muzzleFlash(Viewmodel.getMuzzleAttachment(), config.id)
 	predictShot(config, origin, direction)
-	-- the pump ejects its hull on the pump stroke instead (see the phase listener)
 	if config.ejectOnFire then
 		ejectCasing(config)
 	end
@@ -355,7 +319,6 @@ local function tryReload()
 	if Viewmodel.drawElapsed() < config.drawTime then
 		return
 	end
-	-- the action is still cycling (the pump after a shot): let it close first
 	if now - lastShotAt < 1 / config.fireRate then
 		return
 	end
@@ -418,9 +381,6 @@ local function equipSlot(slot: number)
 	requestEquip(weaponId)
 end
 
--- Number keys: loadout slots 1 and 2 normally. With the temporary
--- WeaponsConfig.ALL_WEAPONS_UNLOCKED test flag, key N takes WeaponsConfig.order[N]
--- whether it is owned or not (keys past the list do nothing).
 local function selectNumber(index: number)
 	if WeaponsConfig.ALL_WEAPONS_UNLOCKED then
 		local weaponId = WeaponsConfig.order[index]
@@ -432,8 +392,6 @@ local function selectNumber(index: number)
 	end
 end
 
--- The mouse wheel (Q leans now, Stances): back to the previous weapon when testing with
--- every weapon unlocked, otherwise the loadout slot toggle.
 local function quickSwap()
 	local previous = previousWeaponId
 	if WeaponsConfig.ALL_WEAPONS_UNLOCKED and previous then
@@ -494,7 +452,6 @@ local function buildHud()
 	corner.Parent = crosshair
 	HipAim.bindCrosshair(crosshair)
 
-	-- the magazine check's count (hold R), only while the weapon is tipped in
 	local check = Instance.new("TextLabel")
 	check.Name = "MagCheck"
 	check.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -511,8 +468,6 @@ local function buildHud()
 	magCheckLabel = check
 end
 
--- The check's count from the client's own count, shown only while the weapon is tipped
--- toward the camera; optionally the corner counter is hidden outside a check.
 local function updateMagCheck()
 	local config = currentConfig()
 	local showing = config ~= nil and Stances.countVisible()
@@ -529,8 +484,6 @@ local function updateMagCheck()
 	end
 end
 
--- Hold R: once held past MAG_CHECK.holdTime with the pack viewmodel up and no reload
--- running, the press is a magazine check instead of a reload.
 local function updateReloadHold(now: number)
 	local pressedAt = reloadPressedAt
 	if not pressedAt or checkStarted then
@@ -542,10 +495,6 @@ local function updateReloadHold(now: number)
 	end
 end
 
--- The server only lowers AmmoMag on a shot, so a lower value than predicted is news
--- (a shot it rejected, a reload it refused). A higher one right after a shot is usually
--- an older update still in flight; reconcileAmmo takes it once things are quiet. While
--- a local reload runs the prediction owns the count.
 local function syncPredictedAmmo(force: boolean?)
 	local mag = player:GetAttribute("AmmoMag")
 	if typeof(mag) ~= "number" then
@@ -631,8 +580,6 @@ end
 
 local function onWeaponChanged()
 	local weaponId = player:GetAttribute("WeaponId")
-	-- a swap cancels the reload (the server keeps whatever it had counted) and any
-	-- buffered shot; reset before setWeapon, which can yield while the rig loads
 	reloadState = nil
 	pendingShot = false
 	raisePending = false
@@ -660,7 +607,6 @@ local function onWeaponHit(kind: string, ...: any)
 		local origin, hits, shooter, weaponId = ...
 		local isLocal = shooter == player
 		local config = if typeof(weaponId) == "string" then WeaponsConfig.get(weaponId) else nil
-		-- the shooter already drew this shot when it left (predictShot)
 		if not isLocal and typeof(hits) == "table" and typeof(origin) == "Vector3" then
 			drawShot(hits :: { WeaponSfx.Hit }, origin, config, nil)
 		end
@@ -670,8 +616,6 @@ local function onWeaponHit(kind: string, ...: any)
 	end
 end
 
--- Studio-only hook so animation work can be driven and screenshotted without
--- synthetic mouse input, which does not reach the client under a locked cursor.
 local function installDebugHook()
 	if not RunService:IsStudio() then
 		return
@@ -701,8 +645,6 @@ local function installDebugHook()
 		elseif command == "lean_left" or command == "lean_right" or command == "lean_off" then
 			Stances.setDebugLean(if command == "lean_left" then -1 elseif command == "lean_right" then 1 else nil)
 		elseif command == "preview_tactical" or command == "preview_empty" then
-			-- the reload animation alone, with no reload behind it: slowed down with the
-			-- camera's ViewmodelTimeScale it is not cut short when the server's reload ends
 			local config = currentConfig()
 			if config then
 				local empty = command == "preview_empty"
@@ -717,8 +659,6 @@ local function installDebugHook()
 				CursorMode.setModalOpen(id, false)
 			end
 		elseif command == "freeze" then
-			-- Stops the forward run so a static target range stays in front of you.
-			-- Without this the runner leaves the dummies behind within a second.
 			RunController.stop()
 		elseif command == "unfreeze" then
 			RunController.start(true)
@@ -736,8 +676,6 @@ local function installDebugHook()
 	end)
 end
 
--- Clip markers: reload foley, and the pump's hull. BoltBack tagged "fire" is the pump
--- stroke after a shot; the chambering pump after a reload ("chamber") ejects nothing.
 local function onPhase(phase: string, class: string, tag: string?)
 	WeaponSfx.playPhase(phase, class, tag)
 	if phase == "BoltBack" and tag == "fire" then
@@ -753,7 +691,6 @@ function WeaponController.init()
 	Stances.init()
 	Viewmodel.onPhase(onPhase)
 	WeaponVfx.onCasingLanded(WeaponSfx.playCasingLand)
-	-- the pickups' outlines and toasts start with the weapons
 	WeaponPickupClient.init()
 	buildHud()
 	installDebugHook()
@@ -769,7 +706,6 @@ function WeaponController.init()
 			dryClickedThisPress = false
 			tryFire(true)
 		elseif input.KeyCode == RELOAD_KEY then
-			-- a short press reloads on release; a hold is the magazine check
 			reloadPressedAt = os.clock()
 			checkStarted = false
 		elseif slot then

@@ -1,12 +1,5 @@
 --!strict
 
--- Makes the soldier the character every player spawns as. Once the soldier meshes have
--- loaded, a fresh R15 model is converted by SoldierBody and parented to StarterPlayer as
--- StarterCharacter; players who spawned on the block body before that (the first seconds
--- after the server starts) are respawned unless they are in a run. While the mesh ids
--- are not filled in (SoldierRigConfig.ready is false) nothing happens and everyone keeps
--- the block body.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
@@ -20,9 +13,6 @@ local LOAD_TIMEOUT = 30
 
 local ready = false
 
--- A character that spawned on the block body while the soldier was still loading (its
--- CharacterAdded can land after the build's own sweep) is respawned once the
--- StarterCharacter exists; a run is never interrupted for it.
 local function respawnIfBlock(player: Player, character: Model)
 	if not ready or character:GetAttribute(SoldierBody.ATTRIBUTE) or MissionState.isParticipant(player) then
 		return
@@ -46,7 +36,6 @@ local function build()
 		return
 	end
 	local model = Players:CreateHumanoidModelFromDescription(Instance.new("HumanoidDescription"), Enum.HumanoidRigType.R15)
-	-- the engine adds the default Animate to every character; a second copy would fight it
 	local animate = model:FindFirstChild("Animate")
 	if animate then
 		animate:Destroy()

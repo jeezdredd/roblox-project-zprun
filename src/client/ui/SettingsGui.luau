@@ -154,8 +154,6 @@ local function creditLabel(parent: Instance, text: string, order: number, size: 
 	label.Parent = parent
 end
 
--- The read-only credits list (CreditsConfig, generated from the manifest): each group
--- of CC BY works, one line per work, then the acknowledgements; scrolls on its own.
 local function makeCredits(parent: Instance, order: number)
 	local list = Instance.new("ScrollingFrame")
 	list.Name = "Credits"
@@ -238,8 +236,6 @@ function SettingsGui.create(): GuiController
 	layout.Padding = UDim.new(0, 6)
 	layout.Parent = panel
 
-	-- the setting rows scroll between the title and the close button, so a longer
-	-- schema (the credits list) never pushes the button off the panel
 	local body = Instance.new("ScrollingFrame")
 	body.Name = "Body"
 	body.Size = UDim2.new(1, 0, 1, -88)

@@ -1,13 +1,5 @@
 --!strict
 
--- Test yard station for map segments (wiki: Map Segments): every map transition the
--- fork graph allows, one row each, laid out as a run would build it: a plain chunk of
--- the old map's sub-location, the MAP_TRANSITION_CHUNKS blended chunks, a plain chunk of
--- the new map's. Built on demand (it is large): set the Workspace attribute
--- MapStripPair to "City>Forest" for one row or "all" for every pair; MapStripShot set to
--- a pair puts the Studio camera at the row's start looking down it (DevCameraCFrame) in
--- the old map's lighting (DevLightingPreset). An empty string gives both back.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -24,9 +16,7 @@ local SandboxMapStrip = {}
 
 export type Pair = { from: string, to: string }
 
--- south of the biome strip (SandboxBiomeStrip sits at z = -560 from the yard origin)
 local STRIP_OFFSET = Vector3.new(0, 0, -1400)
--- one row's width: lane, barriers and both aprons, with a gap
 local ROW_SPACING = GameConstants.LANE_WIDTH + 2 * GameConstants.APRON_WIDTH + 40
 local SEED = 1234
 local OBSTACLE_COUNT = 3
@@ -37,7 +27,6 @@ local origin: Vector3 = DevConfig.SANDBOX.origin
 local folder: Folder? = nil
 local builtRows: { [string]: boolean } = {}
 
--- Every ordered transition the fork graph allows between enabled maps.
 function SandboxMapStrip.pairs(): { Pair }
 	local out: { Pair } = {}
 	for _, id in MapsConfig.order do
@@ -138,7 +127,6 @@ local function build(which: string)
 	end
 end
 
--- Camera and preset for a row's shot, or nil for an unknown pair.
 function SandboxMapStrip.shotFor(name: string): (CFrame?, string?)
 	for row, pair in SandboxMapStrip.pairs() do
 		if pairName(pair) == name then
@@ -153,8 +141,6 @@ function SandboxMapStrip.shotFor(name: string): (CFrame?, string?)
 end
 
 function SandboxMapStrip.init()
-	-- Studio only; the yard is a run-time switch (DevMode), so the strip is wired whether
-	-- or not Play starts in it, and builds a pair only when asked
 	if not RunService:IsStudio() then
 		return
 	end

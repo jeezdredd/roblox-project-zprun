@@ -1,10 +1,5 @@
 --!strict
 
--- Breathing layers (calm, heavy, gasp) weighted by exertion. With the spatial audio
--- engine on each layer is a 2D PlayerFoley loop that starts when its weight rises and
--- stops when it falls away, so idle layers cost no voice; with it off the Sounds from
--- before stay.
-
 local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

@@ -22,8 +22,6 @@ export type ProfileData = {
 	EquippedSkin: string,
 	PurchaseHistory: { [string]: boolean },
 	Loadout: { string },
-	-- perks (PerkService): levels bought, slots owned (1 is free), the perks equipped
-	-- for the next run in slot order
 	PerkLevels: { [string]: number },
 	PerkSlots: number,
 	PerksEquipped: { string },
@@ -47,7 +45,6 @@ local TEMPLATE: ProfileData = {
 	SkinsOwned = { Recruit = true },
 	EquippedSkin = "Recruit",
 	PurchaseHistory = {},
-	-- Slot 1 primary, slot 2 sidearm; the 1 and 2 keys read these directly.
 	Loadout = { "Rifle", "Pistol" },
 	PerkLevels = {},
 	PerkSlots = 1,
@@ -67,8 +64,6 @@ type Profile = typeof(ProfileStore.New("", TEMPLATE):StartSessionAsync(""))
 local store = ProfileStore.New("PlayerData", TEMPLATE)
 local profiles: { [Player]: Profile } = {}
 local loadedCallbacks: { (Player, ProfileData) -> () } = {}
--- run synchronously before a profile's session ends (the player leaving, the server
--- closing), while the data can still be written: the run is settled here
 local releasingCallbacks: { (Player, ProfileData) -> () } = {}
 local started = false
 
@@ -95,8 +90,6 @@ local function migrate(data: ProfileData)
 		data.Version = 2
 	end
 	if data.Version < 3 then
-		-- Everyone starts with a primary as well as a sidearm, so existing profiles get
-		-- the rifle and a second slot rather than being stuck on the pistol alone.
 		if not data.WeaponsOwned.Rifle then
 			data.WeaponsOwned.Rifle = { level = 1, xp = 0 }
 		end
@@ -106,7 +99,6 @@ local function migrate(data: ProfileData)
 		data.Version = 3
 	end
 	if data.Version < 4 then
-		-- the perk layer: one free slot, nothing bought, nothing equipped
 		data.PerkLevels = data.PerkLevels or {}
 		data.PerkSlots = math.max(data.PerkSlots or 1, 1)
 		data.PerksEquipped = data.PerksEquipped or {}
@@ -154,9 +146,6 @@ local function onPlayerAdded(player: Player)
 	end
 end
 
--- Registers a callback that runs before EndSession() for a player leaving and for every
--- profile on BindToClose, synchronously and in order, so credits banked in it land in the
--- profile. A callback that errors is reported and never keeps the session from ending.
 function ProfileManager.onReleasing(callback: (Player, ProfileData) -> ()): () -> ()
 	table.insert(releasingCallbacks, callback)
 	return function()

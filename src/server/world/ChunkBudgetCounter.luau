@@ -1,10 +1,5 @@
 --!strict
 
--- Studio-only cost line per built chunk (parts, estimated triangles, instances, decals,
--- lights, shadow casters against the desktop and mobile budgets), plus the fog check
--- that ties every preset's visibility to the spawn distance. Outside Studio nothing
--- here runs.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
@@ -53,7 +48,6 @@ function ChunkBudgetCounter.count(model: Instance): ChunkBudget.Counts
 	return counts
 end
 
--- Prints the chunk's line and stores it on the model; returns it, or nil outside Studio.
 function ChunkBudgetCounter.report(model: Model, biome: string): string?
 	if not RunService:IsStudio() then
 		return nil
@@ -65,7 +59,6 @@ function ChunkBudgetCounter.report(model: Model, biome: string): string?
 	return line
 end
 
--- Warns once about any preset whose fog would show a chunk being spawned.
 function ChunkBudgetCounter.checkFog()
 	if not RunService:IsStudio() then
 		return

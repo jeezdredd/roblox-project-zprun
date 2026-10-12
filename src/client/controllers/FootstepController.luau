@@ -1,11 +1,5 @@
 --!strict
 
--- Footsteps for the local character (on ExertionState's stride) and for teammates (a
--- stride phase advanced from their velocity), chosen by the material under foot. With
--- the spatial audio engine on each step is a PlayerFootstep or TeammateFootstep voice
--- following the root part, cut at MAX_SLICE with a short fade; with it off the pooled
--- Sounds from before stay.
-
 local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -92,7 +86,6 @@ local function materialUnder(character: Model, humanoid: Humanoid): Enum.Materia
 	return Enum.Material.Air
 end
 
--- A step through the engine: a short voice on the root part, cut at MAX_SLICE.
 local function playEngineStep(root: BasePart, class: string, soundId: number, volume: number, pitch: number): AudioEngine.Handle?
 	if not isPlayableId(soundId) then
 		return nil

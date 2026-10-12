@@ -1,13 +1,5 @@
 --!strict
 
--- Perks on the server (docs/economy/run-economy-and-perks.md): the levels a player has
--- bought, the slots they own and the perks they equipped for the next run, all in the
--- profile; the Perk Lab catalog and purchases go through ShopService's remotes with
--- the vendor id "PerkLab". Slot 1 is free, slots 2 and 3 and every level cost Credits
--- through ProfileManager.spendCredits, never Robux. The equipped set is validated
--- against the slots and levels owned and cleared when the run ends; nothing reads the
--- effects yet.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PerksConfig = require(ReplicatedStorage.Shared.config.PerksConfig)
@@ -40,7 +32,6 @@ local function slotsOwned(data: ProfileManager.ProfileData): number
 	return math.clamp(data.PerkSlots, 1, PerksConfig.MAX_SLOTS)
 end
 
--- Drops anything the profile no longer supports (a corrupted or older profile).
 local function sanitize(data: ProfileManager.ProfileData)
 	if not PerksConfig.validateEquipped(data.PerksEquipped, slotsOwned(data), data.PerkLevels) then
 		data.PerksEquipped = {}
@@ -52,7 +43,6 @@ local function publish(player: Player, data: ProfileManager.ProfileData)
 	player:SetAttribute(EQUIPPED_ATTRIBUTE, table.concat(data.PerksEquipped, ","))
 end
 
--- The equip toggle row of a perk with a level (kind PerkEquip, price 0).
 local function equipEntry(data: ProfileManager.ProfileData, id: string, displayName: string, level: number): Entry
 	local slot = table.find(data.PerksEquipped, id)
 	return {
@@ -71,8 +61,6 @@ local function equipEntry(data: ProfileManager.ProfileData, id: string, displayN
 	}
 end
 
--- The Perk Lab catalog: the slots first, then every perk twice, its level purchase
--- (kind Perk) and its equip toggle (kind PerkEquip).
 function PerkService.entries(data: ProfileManager.ProfileData): { Entry }
 	sanitize(data)
 	local entries: { Entry } = {}
@@ -123,7 +111,6 @@ function PerkService.entries(data: ProfileManager.ProfileData): { Entry }
 	return entries
 end
 
--- Only the equip rows, for the cabin's loadout panel (no purchases there).
 function PerkService.equipEntries(data: ProfileManager.ProfileData): { Entry }
 	sanitize(data)
 	local entries: { Entry } = {}
@@ -168,13 +155,11 @@ function PerkService.purchaseLevel(player: Player, data: ProfileManager.ProfileD
 	return true, string.format("%s at L%d", config.displayName, level + 1)
 end
 
--- Equips or unequips a perk for the next run, within the slots owned.
 function PerkService.toggleEquip(player: Player, data: ProfileManager.ProfileData, perkId: string): (boolean, string)
 	local config = PerksConfig.get(perkId)
 	if not config then
 		return false, "Unknown perk"
 	end
-	-- only in the hub and in the cabin's ready check (LoadoutWindow)
 	if not LoadoutWindow.isOpen(player) then
 		return false, "Perks are set before the run"
 	end
@@ -198,7 +183,6 @@ function PerkService.toggleEquip(player: Player, data: ProfileManager.ProfileDat
 	return true, config.displayName .. " equipped for the next run"
 end
 
--- The perks riding along on this run, in slot order (validated).
 function PerkService.equipped(player: Player): { string }
 	local data = ProfileManager.get(player)
 	if not data then
@@ -208,7 +192,6 @@ function PerkService.equipped(player: Player): { string }
 	return table.clone(data.PerksEquipped)
 end
 
--- The run is over: the choice is lost with it, the levels and slots stay.
 function PerkService.onRunEnd(player: Player)
 	local data = ProfileManager.get(player)
 	if not data then

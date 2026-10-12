@@ -1,24 +1,5 @@
 --!strict
 
--- The bus graph of the spatial audio engine, built once under SoundService.TFZ_Audio:
---
---   3D voices are heard by one AudioListener per bus (interaction group TFZ_<bus>) and
---   2D voices wire straight into the bus fader. Each bus is a fader followed by its
---   effects, everything sums into the master fader, then the limiter, then the device.
---
---   weapons  : listener -> fader -> reverb(env) -> echo(slapback) -> master
---   sfx      : listener -> fader -> reverb(env) -> echo(slapback) -> equalizer -> master
---   voices   : listener -> fader -> reverb(env) -> master
---   ambience : listener -> fader -> duck group -> compressor -> master
---   music    :             fader -> duck group -> compressor -> master
---   ui       :             fader -> master
---   duck send fader -> compressor.Sidechain   (voices of classes with duck = true)
---
--- Every wire here is many-to-one (several sources into one Input pin), which the
--- effects guide documents; no source pin feeds two wires. The settings sliders drive
--- the master and music faders through MusicController; the environment reverb and
--- slapback glide towards the preset of the listener's environment.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
 local Workspace = game:GetService("Workspace")
@@ -38,11 +19,9 @@ type Bus = {
 	equalizer: AudioEqualizer?,
 }
 
--- buses whose reverb and echo follow the environment
 local ENVIRONMENT_BUSES = { weapons = true, sfx = true, voices = true }
 local SLAPBACK_BUSES = { weapons = true, sfx = true }
 local DUCKED_BUSES = { ambience = true, music = true }
--- the wet level that stands in for "off" (AudioEcho and AudioReverb have no gain floor of -inf)
 local SILENT_DB = -80
 
 local root: Folder? = nil
@@ -213,7 +192,6 @@ function AudioBus.init(useSimulation: boolean)
 	output.Parent = folder
 	wire(limiter, output, folder)
 
-	-- ambience and music sum here, then duck together under the sidechain
 	local duckGroup = fader("DuckGroup", 1, folder)
 	local compressor = Instance.new("AudioCompressor")
 	compressor.Name = "Duck"
@@ -252,13 +230,11 @@ function AudioBus.isBuilt(): boolean
 	return root ~= nil
 end
 
--- The instance a 2D voice wires into.
 function AudioBus.input(name: string): Instance?
 	local bus = buses[name]
 	return if bus then bus.fader else nil
 end
 
--- The interaction group a 3D voice's emitter joins to be heard on the bus.
 function AudioBus.group(name: string): string?
 	local bus = buses[name]
 	return if bus then bus.group else nil
@@ -287,14 +263,11 @@ function AudioBus.setMuted(value: boolean)
 	applyMaster()
 end
 
--- The chase duck from UiSfx: 0 no reduction, 1 full (floored at a tenth like the
--- legacy path).
 function AudioBus.setDuck(reduction: number)
 	duckScale = math.clamp(1 - reduction, 0.1, 1)
 	applyMusic()
 end
 
--- The concussion equaliser on the sfx bus.
 function AudioBus.setConcussion(highGain: number, midGain: number)
 	local sfx = buses.sfx
 	local equalizer = sfx and sfx.equalizer
@@ -317,7 +290,6 @@ function AudioBus.environment(): string
 	return environmentId
 end
 
--- Glides the reverb and slapback of every environment bus towards the target preset.
 function AudioBus.step(deltaTime: number)
 	if simulation or not root then
 		return

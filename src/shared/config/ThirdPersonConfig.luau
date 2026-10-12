@@ -1,36 +1,20 @@
 --!strict
 
--- Data for the third-person body layer (src/client/body, docs/animation/third-person-body.md):
--- where each weapon class sits in the hands, where the support hand goes for every
--- gesture, how the aim spreads over the joints, the recoil scale, the sprint pose, the
--- wire rate and the LOD bands. Frames are in the weapon's grip space unless named
--- otherwise: x right, y up, -z forward along the barrel, 1 stud = 0.28 m.
-
 export type ClassSpec = {
-	-- the grip part's CFrame in UpperTorso space with the aim level
 	hold: CFrame,
-	-- support (left) hand position in grip space for the two-handed hold, and its roll
 	support: Vector3,
 	supportRoll: number,
-	-- where the support hand goes for the magazine, the chambering action and the pump
-	-- (grip space); a class without a socket leaves it nil
 	magazine: Vector3,
 	charge: Vector3?,
 	port: Vector3?,
 	pump: Vector3?,
-	-- "bolt": the support hand racks at the charge socket; "slide": the weapon itself is
-	-- pulled back (a pistol slide release, thumb work)
 	chargeStyle: string,
-	-- studs the charge or pump stroke travels back along +z
 	chargePull: number,
 	pumpTravel: number,
-	-- offset multiplied onto the hold in a sprint and at the start of the draw
 	sprint: CFrame,
 	lowered: CFrame,
-	-- recoil scale on WeaponsConfig recoilKick (studs) and recoilSnap (degrees)
 	kickFactor: number,
 	snapFactor: number,
-	-- seconds of the chambering action inside an empty reload, and of the pump stroke
 	chargeTime: number,
 	pumpTime: number,
 }
@@ -45,29 +29,17 @@ export type LodProfile = {
 
 local ThirdPersonConfig = {}
 
--- Needs Motor6D joints: the layer writes Motor6D.Transform, and the avatar joint upgrade
--- builds AnimationConstraint joints instead, so the place keeps
--- StarterPlayer.AvatarJointUpgrade = Disabled (default.project.json; Rojo cannot set it
--- on a live sync, so it is also set by hand in Studio). BodyController, the aim relay and
--- the yard station all stay idle while this is false.
 ThirdPersonConfig.ENABLED = true
 
--- The chest turns by these shares of the aim; the head and the gun end on the whole aim,
--- measured from the root's upright frame (BodyMath.spreadAim)
 ThirdPersonConfig.AIM = {
 	waistPitch = 0.35,
 	waistYaw = 0.55,
 	pitchClamp = 70,
 	yawClamp = 60,
-	-- share of the locomotion clip's chest lean taken out while a gun is held (the run
-	-- clip leans the chest about 37 degrees forward), and of the head's lean always
 	chestStabilize = 0.6,
 	headStabilize = 0.9,
-	-- time constants of the approach: remote characters smooth the 20 Hz packets, the
-	-- local character in the yard follows its own camera
 	smoothing = 0.08,
 	localSmoothing = 0.03,
-	-- the arms pitch about this point of the UpperTorso (between the shoulders)
 	pivot = Vector3.new(0, 0.5, 0),
 }
 
@@ -77,14 +49,11 @@ ThirdPersonConfig.REPLICATION = {
 	minChange = 1,
 	pitchLimit = 89,
 	yawLimit = 179,
-	-- the relay drops packets closer together than this from one player
 	relayInterval = 0.045,
 }
 
 ThirdPersonConfig.RECOIL = {
-	-- WeaponsConfig.recoilSnap is a unitless kick; this many degrees per unit
 	snapDegrees = 12,
-	-- share of the snap that pitches the waist
 	waistShare = 0.3,
 }
 
@@ -100,23 +69,15 @@ ThirdPersonConfig.IK = {
 	fadeIn = 0.25,
 	fadeOut = 0.15,
 	deathFade = 0.15,
-	-- IK weight while the draw starts (the gun is still coming up)
 	equipWeight = 0.3,
-	-- share of the straight arm's length a hand target is kept within (the elbow keeps a
-	-- little bend), how far the gun may come back along its axis for the right hand, and
-	-- the gap the support hand keeps ahead of the right one when it slides back
 	reachMargin = 0.95,
 	maxGunSlide = 1,
 	handGap = 0.3,
 }
 
 ThirdPersonConfig.GESTURES = {
-	-- the support hand's belt position in UpperTorso space (magazines and shells come
-	-- from here)
 	belt = CFrame.new(-0.55, -0.95, -0.15) * CFrame.Angles(math.rad(-60), math.rad(10), math.rad(35)),
-	-- seconds after a shot before the pump stroke starts
 	pumpDelay = 0.12,
-	-- return to the grip after a cancelled reload
 	cancelReturn = 0.2,
 }
 
@@ -129,14 +90,6 @@ local function class(spec: ClassSpec): ClassSpec
 	return spec
 end
 
--- Tuned in the yard's body gallery against the default R15 body (arms about 1.8 studs
--- from the shoulder joint, chest 2 wide). The WorldWeapon geometry (WorldWeaponModel
--- LENGTHS): grip 0.7 tall at the origin with the right hand 0.3 behind it, receiver 0.56
--- above it running along z (1.6 long on the rifle and the shotgun, 1.2 on the SMG, 0.9
--- on the pistol), barrel beyond, magazine under the receiver's middle, handguard just
--- past the receiver, stock from 0.24 behind the grip. The holds keep the gun in front of
--- the chest's middle, where the left arm can still reach along it; a support socket past
--- the reach slides back along the gun (BodyRig), so a longer-armed avatar reaches further.
 ThirdPersonConfig.classes = {
 	Pistol = class({
 		hold = CFrame.new(0.15, 0.45, -1.35),

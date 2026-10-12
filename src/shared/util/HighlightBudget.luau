@@ -1,23 +1,13 @@
 --!strict
 
--- Which pickup scenes hold a Highlight this pass (docs/gameplay/weapon-pickups.md).
--- Roblox renders at most 31 Highlight instances, so the client keeps a pool below
--- that and hands the outlines to the nearest scenes; a scene that already holds one
--- keeps it unless a scene without one is closer by `margin`, so two scenes at the same
--- distance never trade the outline back and forth. Pure Luau, tested by
--- tests/pickups/run.luau.
-
 export type Candidate = {
 	id: string,
 	distance: number,
 }
 
 export type Assignment = {
-	-- the ids holding a highlight after this pass
 	keep: { [string]: boolean },
-	-- ids to hand a highlight to, nearest first
 	acquire: { string },
-	-- ids to take the highlight back from
 	release: { string },
 }
 

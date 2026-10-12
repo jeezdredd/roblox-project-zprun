@@ -63,8 +63,6 @@ function HudGui.init()
 			SettingsService.set("muted", not (SettingsService.get("muted") == true))
 		end
 		return Enum.ContextActionResult.Pass
-		-- N, not M: the weapon modification menu owns M, and two actions on one key made
-		-- the gunsmith unusable.
 	end, false, Enum.KeyCode.N)
 
 	ContextActionService:BindAction(SETTINGS_ACTION, function(_, inputState)

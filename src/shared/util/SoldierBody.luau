@@ -1,16 +1,5 @@
 --!strict
 
--- The soldier body: turns a stock R15 character (Roblox's block body) into the Mixamo
--- soldier split by tools/character_rig/soldier.py. Every body part is swapped for the
--- soldier's mesh (ReplicatedStorage.CharacterMeshes.Soldier through MeshTemplates), the
--- rig attachments and Motor6D joints move to the soldier's pivots (SoldierRigConfig), and
--- the Humanoid takes the soldier's hip height. Joint frames stay axis-aligned and the rest
--- pose keeps the arms hanging straight down, so every R15 clip plays unchanged.
---
--- The server runs it once on a fresh R15 model to make StarterPlayer.StarterCharacter
--- (SoldierCharacter); the yard's mannequins clone the local character and inherit it.
--- Nothing changes while SoldierRigConfig.ready is false (mesh ids not read back yet).
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local SoldierRigConfig = require(ReplicatedStorage.Shared.config.SoldierRigConfig)
@@ -18,12 +7,9 @@ local MeshTemplates = require(script.Parent.MeshTemplates)
 
 local SoldierBody = {}
 
--- set on the character once converted
 SoldierBody.ATTRIBUTE = "SoldierBody"
--- on each hand: the fist's centre relative to the hand part, read by WorldWeaponModel
 SoldierBody.GRIP_ATTRIBUTE = "GripOffset"
 
--- the uniform tint keeps this much of the skin colour (the rest is white, no tint)
 local TINT_STRENGTH = 0.55
 local TORSO_GROUP = "Torso"
 local LEGS_GROUP = "Legs"
@@ -37,7 +23,6 @@ function SoldierBody.available(): boolean
 	return SoldierRigConfig.ready and templates() ~= nil
 end
 
--- Yields until the soldier meshes are loaded (or `timeout`); false when unavailable.
 function SoldierBody.load(timeout: number): boolean
 	local root = templates()
 	if not root or not SoldierRigConfig.ready then
@@ -65,8 +50,6 @@ local function centreOf(name: string): Vector3
 	return SoldierRigConfig.parts[name].centre
 end
 
--- Converts `character` in place. Returns false (and changes nothing) when the soldier is
--- unavailable or the character is not a complete R15 rig.
 function SoldierBody.apply(character: Model): boolean
 	local root = templates()
 	if not root or not SoldierRigConfig.ready then
@@ -122,7 +105,6 @@ function SoldierBody.apply(character: Model): boolean
 				child.Value = info.size
 				child.Parent = part
 			elseif child:IsA("Decal") or child:IsA("WrapTarget") or child:IsA("FaceControls") then
-				-- the block face, and cages that no longer match the mesh
 				child:Destroy()
 			else
 				child.Parent = part
@@ -173,8 +155,6 @@ local function tintOf(colour: Color3): Color3
 	return Color3.new(1, 1, 1):Lerp(full, TINT_STRENGTH)
 end
 
--- Tints the uniform: torso parts by `torso`, leg parts by `legs` (hue kept, brightness
--- from the texture). Head and arms keep their gear colours.
 function SoldierBody.tint(character: Model, torso: Color3, legs: Color3)
 	for name, info in SoldierRigConfig.parts do
 		local tint = if info.group == TORSO_GROUP then tintOf(torso) elseif info.group == LEGS_GROUP then tintOf(legs) else nil

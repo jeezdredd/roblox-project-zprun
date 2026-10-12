@@ -1,11 +1,5 @@
 --!strict
 
--- The server's own check behind every mid-run ProximityPrompt (weapon pickups, the
--- upgrade station): the trigger came from a living participant of the active run, in
--- the Mission phase, whose root stands within reach of the prompt's anchor. The prompt
--- itself only shows within its MaxActivationDistance; the reach is a little more, for
--- the latency of a running player.
-
 local MissionState = require(script.Parent.MissionState)
 
 local RunPromptGuard = {}

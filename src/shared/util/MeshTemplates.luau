@@ -1,19 +1,5 @@
 --!strict
 
--- Real MeshParts for templates mounted by Rojo.
---
--- A MeshPart that Rojo writes (live sync or a model.json) carries its MeshId but not the
--- mesh's native size (MeshSize reads 0,0,0), and Roblox then draws the mesh at its native
--- size instead of stretching it to Size. Measured 2026-09-28: the M4A1 meshes are
--- natively about a fifth of their part size, so the rifle rendered as a toy under
--- oversized arms, and the arm and zombie meshes were drawn 1/SCALE too large.
---
--- AssetService:CreateMeshPartAsync returns a MeshPart with the native size filled in, so
--- each distinct MeshId is loaded once through it and every later use clones that part
--- and copies the template's properties and children (SurfaceAppearance) onto it.
--- `clone` never yields: while a mesh is still loading it hands back a plain clone of the
--- template, so callers should `prefetch` early and `waitFor` where they can yield.
-
 local AssetService = game:GetService("AssetService")
 
 local MeshTemplates = {}
@@ -63,7 +49,6 @@ local function load(meshId: string)
 	end
 end
 
--- Starts loading every MeshPart under `root` (or `root` itself). Does not yield.
 function MeshTemplates.prefetch(root: Instance)
 	local list: { Instance } = root:GetDescendants()
 	table.insert(list, root)
@@ -74,7 +59,6 @@ function MeshTemplates.prefetch(root: Instance)
 	end
 end
 
--- Yields until every MeshPart under `root` has loaded or failed, or `timeout` passes.
 function MeshTemplates.waitFor(root: Instance, timeout: number): boolean
 	MeshTemplates.prefetch(root)
 	local deadline = os.clock() + timeout
@@ -94,7 +78,6 @@ function MeshTemplates.waitFor(root: Instance, timeout: number): boolean
 	return false
 end
 
--- A copy of `template` backed by a correctly sized mesh when one is loaded.
 function MeshTemplates.clone(template: MeshPart): MeshPart
 	local base = loaded[template.MeshId]
 	if not base then
@@ -116,7 +99,6 @@ function MeshTemplates.clone(template: MeshPart): MeshPart
 	return part
 end
 
--- Replaces every MeshPart directly under `model` with a correctly sized copy.
 function MeshTemplates.resolveChildren(model: Instance)
 	for _, child in model:GetChildren() do
 		if child:IsA("MeshPart") and loaded[child.MeshId] then

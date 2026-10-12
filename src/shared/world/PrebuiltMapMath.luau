@@ -1,9 +1,5 @@
 --!strict
 
--- Pure helpers for PrebuiltMaps (no services, no engine types), tested by
--- `luau tests/cityimport/run.luau`: checking a generated layout module, where each mesh
--- goes, what its collision hint means, and the budget line per cell and per map.
-
 export type Mesh = {
 	name: string,
 	offset: { number },
@@ -34,7 +30,6 @@ export type Collision = {
 	canCollide: boolean,
 	canQuery: boolean,
 	canTouch: boolean,
-	-- the CollisionFidelity item name, nil for none
 	fidelity: string?,
 }
 
@@ -52,8 +47,6 @@ PrebuiltMapMath.HINTS = {
 	none = { canCollide = false, canQuery = false, canTouch = false, fidelity = nil },
 	box = { canCollide = true, canQuery = true, canTouch = false, fidelity = "Box" },
 	hull = { canCollide = true, canQuery = true, canTouch = false, fidelity = "Hull" },
-	-- ground, roads and terrain (meshes wider than a cell): Roblox's own decomposition
-	-- when near-planar, the precise one where there is relief
 	default = { canCollide = true, canQuery = true, canTouch = false, fidelity = "Default" },
 	precise = { canCollide = true, canQuery = true, canTouch = false, fidelity = "PreciseConvexDecomposition" },
 } :: { [string]: Collision }
@@ -62,7 +55,6 @@ local function isVector(value: any): boolean
 	return type(value) == "table" and #value == 3 and type(value[1]) == "number" and type(value[2]) == "number" and type(value[3]) == "number"
 end
 
--- Every problem with a loaded layout module, as lines; empty when it is usable.
 function PrebuiltMapMath.check(layout: any): { string }
 	local problems: { string } = {}
 	if type(layout) ~= "table" then
@@ -108,8 +100,6 @@ function PrebuiltMapMath.check(layout: any): { string }
 	return problems
 end
 
--- A point of the scene (studs) placed by the map entry: turned by yaw degrees about Y
--- (the same turn as CFrame.Angles(0, yaw, 0)), then moved to the origin.
 function PrebuiltMapMath.place(origin: { number }, yawDegrees: number, point: { number }): { number }
 	local yaw = math.rad(yawDegrees)
 	local c, s = math.cos(yaw), math.sin(yaw)
@@ -117,7 +107,6 @@ function PrebuiltMapMath.place(origin: { number }, yawDegrees: number, point: { 
 	return { origin[1] + x * c + z * s, origin[2] + y, origin[3] - x * s + z * c }
 end
 
--- Where a mesh's centre goes: the cell's position plus the mesh's offset, placed.
 function PrebuiltMapMath.meshCentre(origin: { number }, yawDegrees: number, cell: Cell, mesh: Mesh): { number }
 	local point = {
 		cell.position[1] + mesh.offset[1],
@@ -131,7 +120,6 @@ function PrebuiltMapMath.collision(hint: string): Collision
 	return PrebuiltMapMath.HINTS[hint] or PrebuiltMapMath.HINTS.hull
 end
 
--- Names in the cell's layout that the loaded asset does not have.
 function PrebuiltMapMath.missing(cell: Cell, found: { [string]: boolean }): { string }
 	local out = {}
 	for _, mesh in cell.meshes do
@@ -175,8 +163,6 @@ local function thousands(value: number): string
 	return tostring(value)
 end
 
--- One line in the chunk reports' style: "[Prebuilt city c_p000_p000] meshes 12/60 (m 30)
--- tris 31k/120k (m 50k) textures 4/12 (m 6)", plus the measures over either budget.
 function PrebuiltMapMath.format(label: string, report: Report, desktop: Budget, mobile: Budget): string
 	local line = string.format(
 		"[Prebuilt %s] meshes %d/%d (m %d) tris %s/%s (m %s) textures %d/%d (m %d)",

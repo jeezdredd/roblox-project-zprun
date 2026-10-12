@@ -1,11 +1,5 @@
 --!strict
 
--- Music, the hub siren bed and the volume controls. Owns the legacy SoundGroup tree,
--- which WeaponSfx and the legacy paths still play through, and mirrors every volume,
--- mute and duck change onto the spatial audio engine's buses so the two mixes move
--- together. With the engine on, the tracks themselves are 2D voices on the music bus
--- (cross-faded by the engine's fades) and the siren is an ambience bed.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
@@ -88,7 +82,6 @@ local function missionTrackId(): (number, number)
 	if isPlayableId(AudioConfig.MISSION_MUSIC_ID) then
 		return AudioConfig.MISSION_MUSIC_ID, 1
 	end
-	-- the menu track stands in, a little faster
 	return AudioConfig.MENU_MUSIC_ID, 1.12
 end
 

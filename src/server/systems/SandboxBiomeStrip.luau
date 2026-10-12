@@ -1,13 +1,5 @@
 --!strict
 
--- Test yard station for the environment pass: one pure chunk per biome, side by side
--- south of the yard floor, built with the wiki's measurement seed so the counter lines
--- are comparable. Fixed screenshot cameras per biome (docs/world/environment.md,
--- section 6) are selected from Studio by setting the Workspace attribute
--- BiomeStripShot to "<Biome>/<Shot>" (for example "City/A"); the station then writes
--- DevCameraCFrame, which CameraController honours, and DevLightingPreset, which
--- LightingDirector honours. An empty string gives both back.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -23,17 +15,14 @@ local SandboxBiomeStrip = {}
 
 export type Shot = {
 	id: string,
-	-- relative to the chunk centre (floor top at y = 0.5)
 	eye: Vector3,
 	look: Vector3,
 	night: boolean?,
 	what: string,
 }
 
--- south of the yard floor, which ends at z = -400 from the origin
 local STRIP_OFFSET = Vector3.new(0, 0, -560)
 local CHUNK_GAP = 20
--- the wiki's measurement setup (Performance.md): seed 1234, obstacle count 3
 local SEED = 1234
 local OBSTACLE_COUNT = 3
 local SHOT_ATTRIBUTE = "BiomeStripShot"
@@ -106,7 +95,6 @@ local function build()
 	end
 end
 
--- Camera and preset for a shot of a biome, or nil for an unknown pair.
 function SandboxBiomeStrip.shotFor(biome: string, shotId: string): (CFrame?, string?)
 	local index = table.find(LocationsConfig.order, biome)
 	if not index then
@@ -140,7 +128,6 @@ function SandboxBiomeStrip.init()
 	if not RunService:IsStudio() then
 		return
 	end
-	-- built the first time the yard opens (Play may start in the run, DevMode)
 	task.spawn(function()
 		while Workspace:GetAttribute("SandboxActive") ~= true do
 			Workspace:GetAttributeChangedSignal("SandboxActive"):Wait()

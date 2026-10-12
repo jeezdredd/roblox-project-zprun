@@ -1,13 +1,5 @@
 --!strict
 
--- World sources: the hangar roomtone bed, fire crackle loops on the diorama's
--- FireAnchor parts, the distant boom every so often, the radio in the hangar cabin.
--- With the spatial audio engine on the fires and the radio are AmbienceSource voices
--- following their parts, the boom is an Explosion (delayed by distance, with
--- reflections off the surroundings) and the roomtone a 2D bed; the legacy Sounds and
--- the global AmbientReverb switch stay for the flag off (AmbientReverb only ever
--- touched Sounds, so it is harmless to the engine's buses either way).
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")

@@ -1,9 +1,5 @@
 --!strict
 
--- Mesh set for world dressing (trees, rocks, cars, crops). Ids come from
--- assets/manifest.json (mesh/world/* and texture/world/*) through AssetIds. A mesh
--- with id 0 is simply skipped and the builders fall back to their primitive shapes.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local AssetIds = require(ReplicatedStorage.Shared.config.AssetIds)
@@ -11,14 +7,8 @@ local AssetIds = require(ReplicatedStorage.Shared.config.AssetIds)
 export type MeshEntry = {
 	mesh: number,
 	texture: number,
-	-- Box for things that are boxes (cars), Hull for rocks. Trees never collide with
-	-- their mesh: they get an invisible trunk collider instead.
 	collision: Enum.CollisionFidelity,
-	-- PBR look: the SurfaceAppearance of this name in ReplicatedStorage.PropSurfaces
-	-- (assets/props/surfaces.model.json), used instead of `texture`
 	surface: string?,
-	-- studs per mesh unit at the prop's real size: the Sketchfab / Poly Haven props are
-	-- modelled in metres and the world is 1 stud = 0.28 m (WorldMeshes.placeNatural)
 	studsPerUnit: number?,
 }
 
@@ -33,11 +23,8 @@ local function entry(name: string, collision: Enum.CollisionFidelity): MeshEntry
 	}
 end
 
--- 1 stud = 0.28 m
 local METRE = 1 / 0.28
 
--- Post-apocalyptic props (assets/props, CC0 / CC BY, see LICENSES): mesh read back from
--- the Model upload, PBR maps as a SurfaceAppearance template of the same name.
 local function prop(name: string, collision: Enum.CollisionFidelity): MeshEntry
 	return {
 		mesh = (AssetIds.mesh.props :: any)[name] or 0,
@@ -66,7 +53,6 @@ local WorldMeshConfig = {
 			texture = AssetIds.texture.props.car_wreck,
 			collision = Enum.CollisionFidelity.Box,
 		},
-		-- the crashed supply drop (WeaponPickups); a Cube 3D box, placed by height
 		supply_crate = {
 			mesh = AssetIds.mesh.props.supply_crate,
 			texture = 0,
@@ -76,7 +62,6 @@ local WorldMeshConfig = {
 		grass_dry = entry("grass_dry", Enum.CollisionFidelity.Box),
 		car_hatch = entry("car_hatch", Enum.CollisionFidelity.Box),
 		car_van = entry("car_van", Enum.CollisionFidelity.Box),
-		-- the textured street face is +Z in the mesh; WorldFlanks turns it to the road
 		building_brick = entry("building_brick", Enum.CollisionFidelity.Box),
 		building_concrete = entry("building_concrete", Enum.CollisionFidelity.Box),
 		building_townhouse = entry("building_townhouse", Enum.CollisionFidelity.Box),
@@ -99,7 +84,6 @@ local WorldMeshConfig = {
 		road_sign_curve = prop("road_sign_curve", Enum.CollisionFidelity.Box),
 	} :: { [string]: MeshEntry },
 
-	-- Builders ask for a group and get one of its loaded members at random.
 	groups = {
 		tree_leafy = { "tree_oak", "tree_birch" },
 		tree_pine = { "tree_pine" },

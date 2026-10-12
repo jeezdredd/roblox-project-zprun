@@ -1,9 +1,5 @@
 --!strict
 
--- Route fork prompt: shows the two choices while the local runner approaches the vote
--- line, highlights the side they are on, then announces the result. Reads only the
--- Workspace attributes ForkService writes. See wiki/project-zprun/Route Forks.md.
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")

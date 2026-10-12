@@ -2,8 +2,8 @@
 
 local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 
+local PostFx = require(script.Parent.PostFx)
 local SettingsService = require(script.Parent.SettingsService)
 local ZombieAudio = require(script.Parent.ZombieAudio)
 local ZombieVfx = require(script.Parent.ZombieVfx)
@@ -11,40 +11,6 @@ local ZombieVfx = require(script.Parent.ZombieVfx)
 local GoreController = {}
 
 local BLOOD_COLOR = ColorSequence.new(Color3.fromRGB(120, 30, 30))
-
-local vignette: Frame
-
-local function buildVignette()
-	local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
-	local screen = Instance.new("ScreenGui")
-	screen.Name = "DamageVignette"
-	screen.ResetOnSpawn = false
-	screen.IgnoreGuiInset = true
-	screen.DisplayOrder = 30
-	screen.Parent = playerGui
-
-	vignette = Instance.new("Frame")
-	vignette.Size = UDim2.fromScale(1, 1)
-	vignette.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
-	vignette.BackgroundTransparency = 1
-	vignette.BorderSizePixel = 0
-	vignette.Parent = screen
-
-	local gradient = Instance.new("UIGradient")
-	gradient.Rotation = 90
-	gradient.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0.2),
-		NumberSequenceKeypoint.new(0.4, 1),
-		NumberSequenceKeypoint.new(0.6, 1),
-		NumberSequenceKeypoint.new(1, 0.2),
-	})
-	gradient.Parent = vignette
-end
-
-local function flashVignette()
-	vignette.BackgroundTransparency = 0.55
-	TweenService:Create(vignette, TweenInfo.new(0.5), { BackgroundTransparency = 1 }):Play()
-end
 
 local function spawnBlood(root: BasePart)
 	local attachment = Instance.new("Attachment")
@@ -81,7 +47,7 @@ local function watchCharacter(character: Model)
 				end
 			end
 			if SettingsService.get("bloodEnabled") then
-				flashVignette()
+				PostFx.flashDamage()
 			end
 		end
 		lastHealth = health
@@ -89,7 +55,6 @@ local function watchCharacter(character: Model)
 end
 
 function GoreController.init()
-	buildVignette()
 	local player = Players.LocalPlayer
 	player.CharacterAdded:Connect(watchCharacter)
 	if player.Character then

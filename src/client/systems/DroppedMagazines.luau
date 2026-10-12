@@ -13,9 +13,18 @@ local Workspace = game:GetService("Workspace")
 
 local DroppedMagazines = {}
 
-export type Piece = { part: BasePart, cframe: CFrame }
+-- `bones`: world CFrames of the joints a mesh skinned to several bones is drawn with
+-- (ViewmodelPackConfig.MagDrop `skin`); `body`: the magazine's box in mesh space when
+-- the mesh bounds are larger than the magazine
+export type Piece = {
+	part: BasePart,
+	cframe: CFrame,
+	bones: { [string]: CFrame }?,
+	body: { center: Vector3, size: Vector3 }?,
+}
 
 type Mag = {
+	model: Model,
 	parts: { BasePart },
 	offsets: { CFrame },
 	pivot: CFrame,
@@ -85,9 +94,7 @@ local function remove(index: number)
 	local mag = table.remove(mags, index)
 	if mag then
 		bounces[mag] = nil
-		for _, part in mag.parts do
-			part:Destroy()
-		end
+		mag.model:Destroy()
 	end
 end
 
@@ -162,6 +169,10 @@ function DroppedMagazines.drop(pieces: { Piece }, eye: Vector3, scale: number, v
 	while #mags >= MAX_MAGS do
 		remove(1)
 	end
+	-- one model per magazine: a skinned copy finds its bones by name within its model,
+	-- so the bones of two dropped magazines must not share one
+	local model = Instance.new("Model")
+	model.Name = "Magazine"
 	local parts: { BasePart } = {}
 	local worlds: { CFrame } = {}
 	for _, piece in pieces do
@@ -180,18 +191,35 @@ function DroppedMagazines.drop(pieces: { Piece }, eye: Vector3, scale: number, v
 		copy.CastShadow = true
 		copy.Size = piece.part.Size * scale
 		local cframe = piece.cframe
-		table.insert(worlds, CFrame.new(eye + (cframe.Position - eye) * scale) * cframe.Rotation)
-		copy.Parent = getFolder()
+		local world = CFrame.new(eye + (cframe.Position - eye) * scale) * cframe.Rotation
+		table.insert(worlds, world)
+		if piece.bones then
+			for name, boneWorld in piece.bones do
+				local bone = Instance.new("Bone")
+				bone.Name = name
+				bone.CFrame = world:ToObjectSpace(CFrame.new(eye + (boneWorld.Position - eye) * scale) * boneWorld.Rotation)
+				bone.Parent = copy
+			end
+		end
+		copy.Parent = model
 		table.insert(parts, copy)
 	end
+	model.Parent = getFolder()
 	local main = parts[1]
 	local pivot = worlds[1]
+	local size = main.Size
+	-- the magazine turns about its own centre and lies on its own faces
+	local body = pieces[1].body
+	if body and main:IsA("MeshPart") then
+		local toPart = main.Size / main.MeshSize
+		pivot *= CFrame.new(body.center * toPart)
+		size = body.size * toPart
+	end
 	local offsets: { CFrame } = {}
 	for index, world in worlds do
 		offsets[index] = pivot:ToObjectSpace(world)
 	end
 	-- the thinnest local axis of the body is the one it lies on
-	local size = main.Size
 	local flatAxis = Vector3.xAxis
 	local thinnest = size.X
 	if size.Y < thinnest then
@@ -201,6 +229,7 @@ function DroppedMagazines.drop(pieces: { Piece }, eye: Vector3, scale: number, v
 		flatAxis, thinnest = Vector3.zAxis, size.Z
 	end
 	local mag: Mag = {
+		model = model,
 		parts = parts,
 		offsets = offsets,
 		pivot = pivot,

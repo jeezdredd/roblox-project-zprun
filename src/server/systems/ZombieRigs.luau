@@ -3,14 +3,16 @@
 -- Loads the skinned zombie rigs (ZombieSkins) from their Model assets into
 -- ServerStorage.ZombieRigs at require time, one template per skin, prepared for
 -- ZombieFactory: the part that holds the Bones is renamed "Rig" (the clips address it by
--- that name), the importer's AnimationController and InitialPoses go, and every visual
--- part is made non-colliding, non-queryable and massless.
+-- that name), the importer's AnimationController and InitialPoses go, every visual part
+-- is made non-colliding, non-queryable and massless, and the skin's `surfaces` replace
+-- the SurfaceAppearances the importer built wrong (SurfaceTemplates).
 
 local InsertService = game:GetService("InsertService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
 local ZombieSkins = require(ReplicatedStorage.Shared.config.ZombieSkins)
+local SurfaceTemplates = require(script.Parent.SurfaceTemplates)
 
 local ZombieRigs = {}
 
@@ -20,7 +22,7 @@ folder.Parent = ServerStorage
 
 local pending: { [string]: boolean } = {}
 
-local function prepare(model: Model): Model?
+local function prepare(model: Model, skin: ZombieSkins.Skin): Model?
 	local holder: BasePart? = nil
 	for _, item in model:GetDescendants() do
 		if item:IsA("Bone") and item.Parent and item.Parent:IsA("BasePart") then
@@ -54,6 +56,7 @@ local function prepare(model: Model): Model?
 			part.CastShadow = true
 		end
 	end
+	SurfaceTemplates.dressAll(flat, "ZombieSurfaces", skin.surfaces, true)
 	return flat
 end
 
@@ -66,7 +69,7 @@ local function load(skin: ZombieSkins.Skin)
 		return InsertService:LoadAsset(skin.asset)
 	end)
 	if ok and result then
-		local model = prepare(result :: Model)
+		local model = prepare(result :: Model, skin)
 		if model then
 			model.Name = skin.name
 			model.Parent = folder

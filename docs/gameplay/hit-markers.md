@@ -89,3 +89,17 @@ kill over a hit, a hit not cutting a kill, a headshot over a hit), and the per-p
 Not verified without Studio: the ticks' look at 1080p and on a phone, the motion of the
 pop and fade (to be checked as motion, frames around each shot), and the new settings
 section's fit in the panel.
+
+## 7. Damage numbers (2026-10-12)
+
+The confirmed damage also rises as a number from the hit point (`src/client/ui/DamageNumbers.luau`, numbers in `src/shared/config/DamageNumberConfig.luau`). Same source as the markers: `HitMarkers` passes the shooter's own "Shot" reply, its hits for the position (the first `Flesh` hit, else the first hit) and the sixth value for the number, so a number never shows for damage the server did not deal. One number per shot (a shotgun's pellets summed at the first flesh pellet), rounded, at least 1; a kill shows the health the zombie had left, not the weapon's damage.
+
+| Variant | Text size | Colour |
+| --- | --- | --- |
+| Hit | 24 | `UiTheme.TEXT` |
+| Headshot | 32 | `UiTheme.ACCENT` |
+| Kill | 42 | `UiTheme.TEXT`, the accent when it was a headshot |
+
+The number rises 2.5 studs over 0.6 s (eased out), with up to 0.6 studs of sideways jitter so quick hits do not stack on one spot, and fades over the last 60 percent. A pool of 24 BillboardGuis on invisible anchors (`Workspace.DamageNumbers`, not collidable or queryable), drawn on top, hidden beyond 150 studs; when all are showing the oldest is reused. Settings, Interface, "Damage numbers" (on by default) turns them off independently of the hit markers.
+
+Checked in Play on 2026-10-12 in the test yard: hits, headshots and kills on the Walker, Hazmat and Ghoul read at about 55 studs, the headshot amber stands out. The Studio MCP screen capture does not draw `AlwaysOnTop` billboards at all, so these were checked by eye in the Studio window. Not checked yet: the size on a phone and the rise against a running camera.

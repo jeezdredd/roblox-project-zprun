@@ -299,6 +299,54 @@ local function sample(track: Track, frame: number): CFrame
 	return values[lo]:Lerp(values[hi], u)
 end
 
+-- Where a pack trades two identical meshes between bones in one frame (the G17's
+-- magazines swap roles at frame 54 of both reloads), interpolating across the trade flies
+-- both through the view for that frame. The tracks of `clipName` matching `pattern` hold
+-- their pose of the frame before and snap on `frame` instead.
+function ViewmodelClipPlayer.cut(self: Player, clipName: string, pattern: string, frame: number)
+	local clip = load(self, clipName)
+	if not clip then
+		return
+	end
+	local before = frame - 1
+	for name, track in clip.tracks do
+		if not string.find(name, pattern) then
+			continue
+		end
+		local hold = sample(track, before)
+		local target = sample(track, frame)
+		local frames: { number } = {}
+		local values: { CFrame } = {}
+		local function add(f: number, value: CFrame)
+			table.insert(frames, f)
+			table.insert(values, value)
+		end
+		local placed = false
+		for i, f in track.frames do
+			if f > before and f < frame then
+				continue
+			end
+			if not placed and f >= frame then
+				if frames[#frames] ~= before then
+					add(before, hold)
+				end
+				add(frame - 0.001, hold)
+				if f ~= frame then
+					add(frame, target)
+				end
+				placed = true
+			end
+			add(f, track.values[i])
+		end
+		if not placed then
+			add(before, hold)
+			add(frame - 0.001, hold)
+			add(frame, target)
+		end
+		track.frames, track.values = frames, values
+	end
+end
+
 -- A bone's own Transform (relative to its parent bone) at one clip time: the bolt or
 -- slide locked back on an empty magazine is held at this, so it stays on the gun while
 -- the gun moves through whatever else plays.

@@ -53,17 +53,38 @@ export type ShellClips = {
 -- the rig as a world-size copy that falls and lies on the ground (DroppedMagazines);
 -- `hidden` keeps magazine meshes out of sight over clip fractions where the hand would
 -- otherwise carry the dropped one. `worldScale` turns the rig size into world size.
+-- `skin` lists the joints of a mesh skinned to more than one bone (the Uzi's magazine and
+-- its rounds are one mesh): the copy takes those bones along as the viewmodel poses
+-- them, or it is drawn in its bind pose with the rounds lying apart from the magazine.
+-- `body` is the magazine's box in the mesh's own space (centre and size, MeshSize
+-- units) for a mesh whose bounds are larger than the magazine: the copy falls, spins
+-- and lies on that box instead of the mesh bounds. Only the first piece's is used.
+-- `tuck` moves the vertices of `skin` joints from their centre (`from`, mesh space) to
+-- a point inside the magazine (`to`), out of sight: an empty magazine shows no rounds.
 export type MagDrop = {
 	clip: string,
 	at: number,
-	pieces: { { part: string, bone: string } },
+	pieces: {
+		{
+			part: string,
+			bone: string,
+			skin: { string }?,
+			body: { center: Vector3, size: Vector3 }?,
+			tuck: { [string]: { from: Vector3, to: Vector3 } }?,
+		}
+	},
 	hidden: { { part: string, bone: string?, from: number, to: number } },
 	worldScale: number,
 }
 
 -- After the last round the bolt or slide stays locked back until an empty reload
--- releases it: the joint, and the clip whose first frame holds it back.
-export type LockBack = { bone: string, clip: string }
+-- releases it: the joints that clip's first frame holds there (the slide or bolt, the
+-- parts that ride on it, the raised slide stop or bolt catch), and the clip.
+export type LockBack = { bones: { string }, clip: string }
+
+-- A frame where the pack trades identical meshes between bones: the matching tracks of
+-- the clip hold and snap there instead of interpolating (ViewmodelClipPlayer.cut).
+export type Cut = { clip: string, bones: string, frame: number }
 
 export type ClassPack = {
 	asset: string,
@@ -115,9 +136,15 @@ export type ClassPack = {
 	phases: { [string]: { Phase } },
 	magDrop: MagDrop?,
 	lockBack: LockBack?,
+	cuts: { Cut }?,
 	-- material name in a mesh's name -> SurfaceAppearance template in
 	-- ReplicatedStorage.ViewmodelSurfaces, for meshes the importer left without one
 	surfaces: { [string]: string }?,
+	-- the templates also replace the importer's own SurfaceAppearance on matching meshes:
+	-- Roblox's importer reads a metallicRoughness texture without the material's
+	-- metallicFactor, so a skin or glove with factor 0 over a white B channel comes in
+	-- fully metallic
+	surfacesReplace: boolean?,
 }
 
 local ViewmodelPackConfig = {}
@@ -188,12 +215,22 @@ ViewmodelPackConfig.classes = {
 			-- Mag1 is the dropped one until the trade at frame 54 (0.594), then Mag2 carries
 			-- the old magazine's pouching track
 			hidden = {
-				{ part = "^Mag1_", from = 0.214, to = 0.594 },
-				{ part = "^Mag2_", from = 0.594, to = 1.01 },
+				{ part = "^Mag1_", from = 0.214, to = 54 / 91 },
+				{ part = "^Mag2_", from = 54 / 91, to = 1.01 },
 			},
 			worldScale = 2.5,
 		},
-		lockBack = { bone = "Slide_j_00", clip = "ReloadEmpty" },
+		-- the pack's "FireSelector" is the Glock 18 selector on the slide's back plate: it
+		-- rides with the slide (0.138 forward of the bind in every other clip, like the
+		-- slide), and the slide stop ("SlideRelease") stands raised in ReloadEmpty's first
+		-- frame; holding the slide alone left the selector forward of it
+		lockBack = { bones = { "Slide_j_00", "FireSelector_j_057", "SlideRelease_j_059" }, clip = "ReloadEmpty" },
+		-- both reloads trade the magazines' roles at frame 54 (Mag1 and Mag2 swap places in
+		-- one frame); interpolated, the two crossed the view for a frame
+		cuts = {
+			{ clip = "Reload", bones = "^Mag[12]_", frame = 54 },
+			{ clip = "ReloadEmpty", bones = "^Mag[12]_", frame = 54 },
+		},
 		-- the importer gave this rig no SurfaceAppearance at all (its materials carry only
 		-- a base colour); the arms share the M4 pack's textures
 		surfaces = {
@@ -257,7 +294,15 @@ ViewmodelPackConfig.classes = {
 			},
 			worldScale = 2.5,
 		},
-		lockBack = { bone = "Bolt_j_052", clip = "ReloadEmpty" },
+		-- the bolt catch stands engaged (7 degrees) in ReloadEmpty's first frame
+		lockBack = { bones = { "Bolt_j_052", "BoltCatch_j_053" }, clip = "ReloadEmpty" },
+		-- the imported arms read metalness 255 (metallicFactor 0 dropped); the same maps
+		-- with the factor applied, shared with the G17
+		surfaces = {
+			Hand_D = "fab_arms_hand",
+			Glove_D = "fab_arms_glove",
+		},
+		surfacesReplace = true,
 	},
 	-- Fire (1.625 s) is recoil plus a slow settle: peak 0.12-0.14 (36 degrees) and the
 	-- clip's own bolt flick is home by 0.16, so only the first 20% is kept (31 degrees
@@ -295,6 +340,9 @@ ViewmodelPackConfig.classes = {
 			AccionFire = { { at = 0.1, name = "BoltBack" }, { at = 0.48, name = "BoltForward" } },
 			Reload = { { at = 0.7, name = "ShellIn" } },
 		},
+		-- the imported sleeves read metalness 255 (metallicFactor 0 dropped)
+		surfaces = { Shirt_BlackCamo2 = "comando_shirt" },
+		surfacesReplace = true,
 	},
 	-- Uzi pack (1Matzh). Reload 2.033 s: MagOut 0.12, MagIn 0.51, gun back by 0.71 with
 	-- a small overshoot, settled by 0.80 (0.2 degrees at the 0.9 cut). ReloadEmpty 3.7 s:
@@ -302,7 +350,9 @@ ViewmodelPackConfig.classes = {
 	-- the rear 0.62 (BoltBack), home 0.70 (BoltForward), gun back by 0.88 (1 degree at
 	-- the 0.9 cut). Both cuts play at natural speed. Fire moves no weapon part (open
 	-- bolt), the procedural recoil carries the shot. Eye: the pack camera is at
-	-- (0, 4.42, -0.07), moved back like the other packs'.
+	-- (0, 4.42, -0.07), moved back like the other packs'. ReloadEmpty's frame 11 lifted
+	-- the left arm for that one frame: smoothed in SMGClips with
+	-- tools/fps_pack/smooth_keys.py --set (2026-10-10).
 	SMG = {
 		asset = "smg",
 		clips = "SMGClips",
@@ -322,7 +372,41 @@ ViewmodelPackConfig.classes = {
 		reloadEmpty = { "ReloadEmpty" },
 		tactical = { clip = "Reload", to = 0.9, blendOut = 0.17 },
 		empty = { clip = "ReloadEmpty", to = 0.9, blendOut = 0.2 },
+		-- the speed reload: the magazine falls free as it clears the grip (frame 10) and
+		-- stays hidden until the hand comes back with the fresh one at frame 25. The clip
+		-- itself carries the same magazine off and teleports it into the hand at frame 24,
+		-- with its rounds flying in from off screen a frame later.
+		magDrop = {
+			clip = "ReloadEmpty",
+			at = 10 / 111,
+			pieces = {
+				{
+					part = "^UZI_UZI Magazine",
+					bone = "UZI Mag_0713",
+					skin = { "UZI Mag_0713", "UZI Bullets_0734" },
+					-- the mesh's bounds reach from the magazine to the rounds' bind spot
+					-- 2.2 studs away; the magazine's own vertices (measured with
+					-- EditableMesh, 2026-10-10)
+					body = { center = Vector3.new(0.21, -1.127, 0), size = Vector3.new(0.081, 0.103, 0.589) },
+					-- ReloadEmpty parks the rounds 4 studs off the magazine (it is empty);
+					-- the dropped copy keeps them inside it, at the floorplate end (+Z,
+					-- the feed lips are at -Z): the side holes in the middle showed them
+					tuck = {
+						["UZI Bullets_0734"] = {
+							from = Vector3.new(-0.222, 1.134, 0.053),
+							to = Vector3.new(0.21, -1.127, 0.22),
+						},
+					},
+				},
+			},
+			hidden = { { part = "^UZI_UZI Magazine", from = 10 / 111, to = 25 / 111 } },
+			worldScale = 2.5,
+		},
 		inspect = "Inspect",
+		-- the importer dropped the watch material's baseColorFactor (0.24): the template
+		-- carries it. The full part name, "Watch" alone also matches Mesh_Watch_Emission_0
+		surfaces = { Mesh_Watch_0 = "uzi_watch" },
+		surfacesReplace = true,
 		phases = {
 			Reload = { { at = 0.12, name = "MagOut" }, { at = 0.51, name = "MagIn" } },
 			ReloadEmpty = {

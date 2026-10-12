@@ -521,12 +521,12 @@ Tracer thinning: `showTracer` is true for every shot on semi-auto weapons and ev
 
 Files: `src/shared/config/ViewmodelPackConfig.luau`, `src/server/systems/ViewmodelPacks.luau`, `src/client/systems/PackViewmodel.luau`, `src/client/systems/ViewmodelClipPlayer.luau`, clip modules `src/shared/viewmodel_clips/{Pistol,Rifle,Shotgun,SMG}Clips.luau`
 
-All four classes are drawn from first-person packs taken whole (skinned arms, weapon and authored clips) from Sketchfab under CC BY 4.0:
+All four classes are drawn from first-person packs taken whole (skinned arms, weapon and authored clips): the shotgun and SMG from Sketchfab under CC BY 4.0, the pistol and rifle since 2026-10-01 from Fab packs (Fab Standard License: their rigs and clip modules stay on the owner's machine, `assets/fab/` and `src/shared/fab/` are git-ignored):
 
 | Class | Pack | Clips used |
 | --- | --- | --- |
-| Pistol | "FPS Character Animation Pack Pistol" by DuqueCD7 | Equip, Idle, Walk, Fire, Reload (tactical cut at 0.76; empty plays it all with a `SlideRelease` marker at 0.78) |
-| Rifle | "FPS Character Animation Pack Ak-47" by DuqueCD7 | Equip, Idle, Walk, Fire, Reload (tactical to 0.55, before the hand reaches the bolt; empty to 0.88 with the rack) |
+| Pistol | "G17 - FPS Weapon Animations Pack" by BarcodeGames (Fab) | Draw, Idle and Walk (one pose), Fire, Reload (tactical to 0.92), ReloadEmpty (speed reload to 0.78, slide release) |
+| Rifle | "M4 - FPS Weapon Animations Pack FREE" by BarcodeGames (Fab) | Draw, Idle and Walk (the draw's last pose), Fire, Reload (tactical to 0.8), ReloadEmpty (speed reload to 0.85, bolt catch) |
 | Shotgun | "FPS Character Animation Pack Saps-12" by DuqueCD7 | Equip, Idle, Walk, the first 20% of Fire followed by the AccionFire pump, IdleToReload / Reload loop 0.1..0.88 / ReloadToIdle |
 | SMG | "UZI, First Person Animations (2026 Remake)" by 1Matzh | Equip, Idle, Walk, Fire, Reload (to 0.9), ReloadEmpty (to 0.9, with the top-knob cock), Inspect |
 
@@ -542,6 +542,10 @@ Each pack's skinned rig is a Model asset (`viewmodel/fps/<class>/rig`). Rojo can
 The rigs are uploaded at about 2.2x life size with a common arm span (UnitScale nodes: AK 2.961, Saps-12 1.2218, Uzi 3.0, pistol native), and each clone is scaled by `RIG_SCALE` 0.4 so the arms do not reach into walls and cars beside the camera. `eye` is the view point in the rig's RootPart space; `restTilt` corrects the Uzi, whose bind A-pose came in turned -90 degrees about X. Muzzle and eject attachments are placed from the front and top of the weapon mesh and follow `weaponBone` through every clip. `Viewmodel.luau` keeps the procedural layer (recoil springs, sway, drift, hip aim) for both kinds of rig and hands `PackViewmodel.step` the camera-space placement each frame; for packs the procedural translations are scaled by `PROCEDURAL_POSITION_SCALE` 1.1 and the procedural bob is damped to 25% (`BOB_SCALE`), because the Walk clip carries its own.
 
 The packs frame their guns for their own camera, which put the Uzi's stock against the cheek and the pistol at arm's length in the middle of the view. A class's `hold` moves the whole rig in camera space between the camera and the eye point (every clip alike): Uzi (0.08, -0.16, -0.08), pistol (0.03, 0.05, 0.14). `workspace.CurrentCamera:SetAttribute("ViewmodelHold", Vector3.new(...))` overrides it live for tuning. `actionHold` replaces `hold` while a reload, a draw or an inspect plays, blended over about 0.1 s: the pistol's is zero, because its reload rolls the gun up to the face on its own and the closer `hold` pushed it into the camera.
+
+**Reload handling (2026-10-01, 2026-10-10).** The tactical reload keeps the pack's retention; the empty one is a speed reload. `magDrop` names the magazine meshes and the clip fraction where a world-size copy leaves the rig (`DroppedMagazines`: falls with the runner's velocity, bounces, lies flat, 30 s), and the windows where the hand's magazine stays hidden. A piece whose mesh is skinned to several bones takes them along (`skin`, one Model per dropped magazine so same-named bones do not mix); `tuck` moves a joint's vertices inside the magazine (the Uzi's rounds, which its ReloadEmpty parks 4 studs away); `body` is the magazine's own box in mesh space when the mesh bounds are larger (the Uzi mesh also spans the rounds' bind spot). After the last round `lockBack.bones` hold the pose of the empty clip's first frame (slide or bolt, the parts riding on them, the slide stop or bolt catch) until that clip releases them. `cuts` make tracks hold and snap at a frame where a pack trades identical meshes between bones (the G17 magazines at frame 54).
+
+**Surfaces.** The importer builds each mesh's SurfaceAppearance from the glTF but drops `metallicFactor`, `roughnessFactor` and `baseColorFactor` and reads alpha MASK as opaque. Where that shows, `ViewmodelPackConfig.surfaces` (and `ZombieSkins.surfaces` for zombies) maps a name inside the mesh's name to a template in `ReplicatedStorage.ViewmodelSurfaces` / `ZombieSurfaces`; `SurfaceTemplates` puts it on meshes left without one, or in place of the importer's with `surfacesReplace`. The maps come from `tools/fps_pack/extract_surfaces.py` with the factors applied.
 
 ### Viewmodel
 

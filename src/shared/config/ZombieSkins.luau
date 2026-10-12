@@ -31,6 +31,10 @@ export type Skin = {
 	-- where the rig sits against its imported bind pose: some packs' clips hold the
 	-- skeleton root away from the bind in every frame, and the rig is moved the other way
 	offset: Vector3?,
+	-- material name in a mesh's name -> SurfaceAppearance template in
+	-- ReplicatedStorage.ZombieSurfaces that replaces the importer's (it read the
+	-- metalness maps without the materials' metallicFactor 0: the skin came in as metal)
+	surfaces: { [string]: string }?,
 }
 
 local ZombieSkins = {}
@@ -72,6 +76,7 @@ ZombieSkins.skins = {
 	Walker = {
 		name = "Walker",
 		asset = if rigs.walker then rigs.walker.rig else 0,
+		surfaces = { Zombie = "walker_body" },
 		head = "Base HumanHead_09",
 		chest = "Base HumanRibcage_07",
 		hips = "Base HumanPelvis_01",
@@ -95,6 +100,9 @@ ZombieSkins.skins = {
 	Hazmat = {
 		name = "Hazmat",
 		asset = if rigs.hazmat then rigs.hazmat.rig else 0,
+		-- the head came in as metal (metallicFactor 0 dropped); the suit's broken visor is
+		-- cut out of its colour alpha (glTF MASK), which the importer's Overlay drew opaque
+		surfaces = { ZombieHead = "hazmat_head", HazMatSuit = "hazmat_suit" },
 		head = "mixamorig:Head_06",
 		chest = "mixamorig:Spine2_04",
 		hips = "mixamorig:Hips_01",

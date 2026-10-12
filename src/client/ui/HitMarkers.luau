@@ -19,6 +19,7 @@ local HitMarkerMath = require(ReplicatedStorage.Shared.util.HitMarkerMath)
 local AudioEngine = require(script.Parent.Parent.audio.AudioEngine)
 local SettingsService = require(script.Parent.Parent.systems.SettingsService)
 local SfxPlayer = require(script.Parent.Parent.systems.SfxPlayer)
+local DamageNumbers = require(script.Parent.DamageNumbers)
 
 local HitMarkers = {}
 
@@ -135,6 +136,25 @@ local function onConfirm(raw: any)
 	end
 end
 
+local function showDamageNumber(hits: any, confirm: any)
+	if typeof(confirm) ~= "table" or typeof(confirm.damage) ~= "number" or typeof(hits) ~= "table" then
+		return
+	end
+	local position: Vector3? = nil
+	for _, hit in hits do
+		if typeof(hit) == "table" and typeof(hit.position) == "Vector3" then
+			if hit.material == "Flesh" then
+				position = hit.position
+				break
+			end
+			position = position or hit.position
+		end
+	end
+	if position then
+		DamageNumbers.show(position, confirm.damage, confirm.headshot == true, confirm.killed == true)
+	end
+end
+
 function HitMarkers.init()
 	build()
 	SettingsService.observe(HitMarkerConfig.SETTING_KEY, function(value)
@@ -146,9 +166,11 @@ function HitMarkers.init()
 	end)
 	-- the same reply WeaponController draws other players' shots from; only the local
 	-- shooter's own shots carry a confirmation for this player
-	Remotes.getEvent(Remotes.Event.WeaponHit).OnClientEvent:Connect(function(kind, _origin, _hits, shooter, _weaponId, confirm)
+	DamageNumbers.init()
+	Remotes.getEvent(Remotes.Event.WeaponHit).OnClientEvent:Connect(function(kind, _origin, hits, shooter, _weaponId, confirm)
 		if kind == "Shot" and shooter == player then
 			onConfirm(confirm)
+			showDamageNumber(hits, confirm)
 		end
 	end)
 	RunService.RenderStepped:Connect(draw)

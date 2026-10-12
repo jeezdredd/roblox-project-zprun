@@ -3,12 +3,22 @@
   "children": [
     {
       "className": "SurfaceAppearance",
+      "name": "comando_shirt",
+      "properties": {
+        "ColorMap": "rbxassetid://112730358451763",
+        "NormalMap": "rbxassetid://75795090603069",
+        "RoughnessMap": "rbxassetid://89587216022760",
+        "MetalnessMap": "rbxassetid://96429502147967"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
       "name": "fab_arms_glove",
       "properties": {
         "ColorMap": "rbxassetid://137222277383604",
         "NormalMap": "rbxassetid://130098750358330",
         "RoughnessMap": "rbxassetid://109949743955801",
-        "MetalnessMap": "rbxassetid://133620623064996"
+        "MetalnessMap": "rbxassetid://125721131102521"
       }
     },
     {
@@ -18,7 +28,7 @@
         "ColorMap": "rbxassetid://109444492907814",
         "NormalMap": "rbxassetid://132780053316750",
         "RoughnessMap": "rbxassetid://78108733802389",
-        "MetalnessMap": "rbxassetid://92526722294554"
+        "MetalnessMap": "rbxassetid://76297631540146"
       }
     },
     {
@@ -37,6 +47,16 @@
         "ColorMap": "rbxassetid://137879752068302",
         "RoughnessMap": "rbxassetid://122836886971045",
         "MetalnessMap": "rbxassetid://89314741858417"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "uzi_watch",
+      "properties": {
+        "ColorMap": "rbxassetid://71336080168869",
+        "NormalMap": "rbxassetid://109783793400316",
+        "RoughnessMap": "rbxassetid://138462986927331",
+        "MetalnessMap": "rbxassetid://84780369462668"
       }
     }
   ]

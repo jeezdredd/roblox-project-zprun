@@ -40,11 +40,55 @@ local function disconnectDied(player: Player)
 	end
 end
 
+-- The client owns its character, and a teleport could come back: measured 2026-10-12 on
+-- relaunched runs, the server put the character at the wreck and 0.3 s later the
+-- client's own simulation, freshly given the character back as it left the cabin seat,
+-- returned it to the cabin, 8000 studs off (the run then ended a minute later with
+-- nobody on the road). The server holds the character while the new CFrame reaches the
+-- client, then hands it back; the checks repeat the teleport if it still came back.
+-- A runner covers a few dozen studs in the checked seconds, far inside the tolerance.
+local OWNERSHIP_HOLD = 0.5
+local TELEPORT_CHECKS = { 1, 2, 3 }
+local TELEPORT_TOLERANCE = 200
+
+local function setOwner(root: BasePart, owner: Player?)
+	-- refused for an anchored assembly (a corpse pose), which stays where it is anyway
+	pcall(function()
+		root:SetNetworkOwner(owner)
+	end)
+end
+
+local function placeHeld(player: Player, character: Model, root: BasePart, cframe: CFrame)
+	setOwner(root, nil)
+	character:PivotTo(cframe)
+	task.wait(OWNERSHIP_HOLD)
+	if player.Character == character and root.Parent then
+		setOwner(root, player)
+	end
+end
+
 local function teleportCharacter(player: Player, cframe: CFrame)
 	local character = player.Character
-	if character and character.PrimaryPart then
-		character:PivotTo(cframe)
+	local root = character and character.PrimaryPart
+	if not character or not root then
+		return
 	end
+	task.spawn(function()
+		placeHeld(player, character, root, cframe)
+		local elapsed = OWNERSHIP_HOLD
+		for _, at in TELEPORT_CHECKS do
+			task.wait(math.max(at - elapsed, 0))
+			elapsed = at
+			if player.Character ~= character or not character.Parent then
+				return
+			end
+			if (character:GetPivot().Position - cframe.Position).Magnitude <= TELEPORT_TOLERANCE then
+				return
+			end
+			placeHeld(player, character, root, cframe)
+			elapsed += OWNERSHIP_HOLD
+		end
+	end)
 end
 
 local function applyEnvironment(modifierIds: { string })

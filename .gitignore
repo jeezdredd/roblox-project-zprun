@@ -9,6 +9,7 @@ roblox.toml
 .DS_Store
 wiki/project-zprun/.obsidian/workspace.json
 .opencloud.key
+.tripo.key
 assets/textures/*.jpg
 assets/textures/*.png
 # prebuilt maps (tools/city_import/split_scene.py): the cells are large and often
@@ -57,3 +58,6 @@ CLAUDE.md
 # baked first-person clip modules (M4Clips, G17Clips), on the owner's machine only
 assets/fab/
 src/shared/fab/
+
+# the owner's local scripts and their virtual environments, not tracked
+local/

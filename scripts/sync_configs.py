@@ -33,6 +33,7 @@ LUAU_OUT = os.path.join(ROOT, "src", "shared", "config", "AssetIds.luau")
 LICENSES_OUT = os.path.join(ROOT, "assets", "LICENSES.md")
 SURFACES_OUT = os.path.join(ROOT, "assets", "props", "surfaces.model.json")
 VIEWMODEL_SURFACES_OUT = os.path.join(ROOT, "assets", "viewmodels", "surfaces.model.json")
+ZOMBIE_SURFACES_OUT = os.path.join(ROOT, "assets", "zombies", "surfaces.model.json")
 CREDITS_OUT = os.path.join(ROOT, "src", "shared", "config", "CreditsConfig.luau")
 PROJECT_OUT = os.path.join(ROOT, "default.project.json")
 MEGASCANS_OUT = os.path.join(ROOT, "src", "shared", "config", "MegascansMaterials.luau")
@@ -159,15 +160,17 @@ def render_surfaces(manifest):
     return json.dumps(tree, indent=2) + "\n"
 
 
-def render_viewmodel_surfaces(manifest):
-    """One SurfaceAppearance per texture/viewmodel/<surface>_<suffix> group, named after
-    the surface, for the first-person pack meshes the importer left without one
-    (ReplicatedStorage.ViewmodelSurfaces, put on by ViewmodelPacks). A surface without an
-    approved colour map is left out, so a mesh keeps whatever it had until it is."""
+def render_viewmodel_surfaces(manifest, prefix="texture/viewmodel/"):
+    """One SurfaceAppearance per <prefix><surface>_<suffix> group, named after the
+    surface: for the first-person pack meshes (texture/viewmodel/,
+    ReplicatedStorage.ViewmodelSurfaces, put on by ViewmodelPacks) and the zombie rigs
+    (texture/zombie/, ReplicatedStorage.ZombieSurfaces, put on by ZombieRigs), where the
+    importer left a mesh without one or read its maps wrong. A surface without an approved
+    colour map is left out, so a mesh keeps whatever it had until it is."""
     groups = {}
     suffixes = tuple(suffix for suffix, _ in SURFACE_MAPS)
     for key in manifest:
-        if not key.startswith("texture/viewmodel/"):
+        if not key.startswith(prefix):
             continue
         stem = key.split("/", 2)[2]
         surface, _, suffix = stem.rpartition("_")
@@ -179,6 +182,10 @@ def render_viewmodel_surfaces(manifest):
         properties = {prop: f"rbxassetid://{maps[suffix]}" for suffix, prop in SURFACE_MAPS if maps.get(suffix)}
         if "ColorMap" not in properties:
             continue
+        # a cut-out colour map (alpha) sets "alphaMode" on its colour row
+        alpha = manifest[f"{prefix}{surface}_color"].get("alphaMode")
+        if alpha:
+            properties["AlphaMode"] = alpha
         children.append({"className": "SurfaceAppearance", "name": surface, "properties": properties})
     return json.dumps({"className": "Folder", "children": children}, indent=2) + "\n"
 
@@ -584,6 +591,7 @@ def main():
         (LICENSES_OUT, render_licenses(manifest)),
         (SURFACES_OUT, render_surfaces(manifest)),
         (VIEWMODEL_SURFACES_OUT, render_viewmodel_surfaces(manifest)),
+        (ZOMBIE_SURFACES_OUT, render_viewmodel_surfaces(manifest, "texture/zombie/")),
         (CREDITS_OUT, credits),
         (PROJECT_OUT, project),
         (MEGASCANS_OUT, render_megascans(sets)),

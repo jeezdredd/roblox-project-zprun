@@ -13,7 +13,9 @@ Studio checks in `docs/gameplay/hit-markers.md`. Stage 4 of the quality pass in
 | `src/shared/util/HitMarkerMath.luau` | Pure: variant, duration, scale, restart with priority, the marker's frame, the per-pellet sum. `luau tests/hitmarkers/run.luau` |
 | `src/server/systems/WeaponService.luau` | `handleHit` returns the outcome (damage dealt, head, kill); `onFire` sends the shot's sum as the sixth value of the `WeaponHit` "Shot" reply |
 | `src/client/ui/HitMarkers.luau` | The four ticks on the crosshair, driven by that confirmation for the local shooter only |
-| `SettingsConfig` | "Hit markers" (`hitMarkers`), Interface section, default on |
+| `src/client/ui/DamageNumbers.luau` | Floating damage numbers (2026-10-12): a pool of 24 `AlwaysOnTop` billboards on invisible anchors in `Workspace.DamageNumbers`, shown by `HitMarkers` at the first flesh hit of a confirmed shot |
+| `src/shared/config/DamageNumberConfig.luau` | Pool size, 0.6 s life, 2.5 studs rise, jitter, fade from 0.4, text size per hit, headshot and kill, 150 studs range |
+| `SettingsConfig` | "Hit markers" (`hitMarkers`) and "Damage numbers" (`damageNumbers`), Interface section, both default on |
 | `assets/manifest.json` | `audio/ui/hit_marker`, `audio/ui/kill_marker`: `needed`, id 0, silent |
 
 ## Rules
@@ -22,3 +24,4 @@ Studio checks in `docs/gameplay/hit-markers.md`. Stage 4 of the quality pass in
 - One marker at a time; a kill marker is not cut short by a hit.
 - Hit 0.12 s scaled 0.9..1.25 by damage, headshot amber, kill red 1.35 for 0.25 s.
 - Silent until real sound files fill the two slots.
+- Damage numbers follow the same confirmation: the number is the shot's sum, placed at the first flesh hit; checked in Play by eye only, because Studio's screen capture does not draw `AlwaysOnTop` billboards.

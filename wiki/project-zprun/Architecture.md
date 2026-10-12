@@ -93,6 +93,7 @@ All under `src/server/systems/`.
 | `ZombieHitboxes.luau` | Keeps the invisible hit boxes of skinned zombies on their bones: one Motor6D per box whose `Transform` is written every `PreSimulation` from `bone.TransformedWorldCFrame`; zombies beyond 220 studs of every player are skipped |
 | `ZombieAnimator.luau` | Zombie AnimationTracks. Skinned rigs: every clip of the skin, walk/run chosen by ground speed and played at `speed / groundSpeed`, attack swing, spotted scream, hit flinch, held death pose, `poseCorpse` for corpse props. Fallback rigs: seeded variant arrays with per-zombie phase and speed jitter. Degrades silently when asset ids are 0 |
 | `ViewmodelPacks.luau` | Loads the four first-person pack rigs (`viewmodel/fps/<class>/rig`) into `ReplicatedStorage.ViewModelPacks` with `InsertService` for the client to clone |
+| `SurfaceTemplates.luau` | SurfaceAppearance templates (`ReplicatedStorage.ViewmodelSurfaces`, `ZombieSurfaces`) put on pack and zombie meshes by a name inside the mesh's name, in place of the importer's where the config asks (`surfacesReplace`, zombies always) |
 
 ### Economy
 

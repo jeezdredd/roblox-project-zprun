@@ -282,9 +282,6 @@ function Viewmodel.onFired(config: WeaponsConfig.WeaponConfig)
 	sprintActive = false
 end
 
--- The authored sequence drives the pose and the audio phases; the springs only add
--- the mechanical travel on top, so nothing here runs on a wall-clock timer any more.
--- The plan's times come from WeaponsConfig, the same timeline the server counts ammo on.
 -- WeaponController's predicted magazine ran dry or was filled (the bolt or slide of a
 -- pack rig holds back while it is empty)
 function Viewmodel.setMagEmpty(empty: boolean)
@@ -294,6 +291,9 @@ function Viewmodel.setMagEmpty(empty: boolean)
 	end
 end
 
+-- The authored sequence drives the pose and the audio phases; the springs only add
+-- the mechanical travel on top, so nothing here runs on a wall-clock timer any more.
+-- The plan's times come from WeaponsConfig, the same timeline the server counts ammo on.
 function Viewmodel.playReload(plan: PackViewmodel.ReloadPlan)
 	local pack = packRig
 	if pack then

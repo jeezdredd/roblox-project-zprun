@@ -95,9 +95,8 @@ export type Rig = {
 	-- the magazine is empty (WeaponController's prediction): the bolt or slide holds back
 	empty: boolean,
 	locked: boolean,
-	-- the held bone and its Transform while locked back (ViewmodelPackConfig.lockBack)
-	lockBone: Bone?,
-	lockPose: CFrame?,
+	-- the held bones and their Transforms while locked back (ViewmodelPackConfig.lockBack)
+	lockHolds: { { bone: Bone, pose: CFrame } },
 	-- the speed reload has dropped its magazine (reset when the empty reload ends)
 	dropped: boolean,
 	-- magazine meshes hidden by the speed reload, with the transparency they had
@@ -331,8 +330,7 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 		returnFade = DEFAULT_RETURN_FADE,
 		empty = false,
 		locked = false,
-		lockBone = nil,
-		lockPose = nil,
+		lockHolds = {},
 		dropped = false,
 		hiddenParts = {},
 		partIndex = {},
@@ -340,15 +338,22 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 	for index, part in parts do
 		rig.partIndex[part] = index
 	end
+	for _, cut in pack.cuts or {} do
+		player:cut(cut.clip, cut.bones, cut.frame)
+	end
 	local lock = pack.lockBack
 	if lock then
-		for _, item in model:GetDescendants() do
-			if item:IsA("Bone") and item.Name == lock.bone then
-				rig.lockBone = item
-				break
+		for _, name in lock.bones do
+			local pose = player:localPose(name, lock.clip, 0)
+			for _, item in model:GetDescendants() do
+				if item:IsA("Bone") and item.Name == name then
+					if pose then
+						table.insert(rig.lockHolds, { bone = item, pose = pose })
+					end
+					break
+				end
 			end
 		end
-		rig.lockPose = player:localPose(lock.bone, lock.clip, 0)
 	end
 	-- the draw always plays at natural speed; WeaponsConfig.drawTime decides when a shot
 	-- may cut its tail
@@ -401,8 +406,7 @@ end
 -- (its own clip starts locked back and releases it). Written after the clips each frame,
 -- relative to the gun, so it rides along with every clip and the procedural layer.
 local function updateLockBack(rig: Rig)
-	local bone, pose = rig.lockBone, rig.lockPose
-	if not bone or not pose then
+	if #rig.lockHolds == 0 then
 		return
 	end
 	local entry = rig.entry
@@ -413,7 +417,9 @@ local function updateLockBack(rig: Rig)
 		rig.model:SetAttribute("LockedBack", want)
 	end
 	if want then
-		bone.Transform = pose
+		for _, hold in rig.lockHolds do
+			hold.bone.Transform = hold.pose
+		end
 	end
 end
 
@@ -449,9 +455,43 @@ local function updateMagDrop(rig: Rig, rootCFrame: CFrame)
 		if not bone or not rest then
 			continue
 		end
+		-- a mesh skinned to several bones takes them along, posed as drawn now
+		local skin: { [string]: CFrame }? = nil
+		if piece.skin then
+			local worlds: { [string]: CFrame } = {}
+			for _, name in piece.skin do
+				local world = rig.player:boneWorld(name)
+				if world then
+					worlds[name] = rootCFrame * world
+				end
+			end
+			skin = worlds
+		end
 		for _, part in partsMatching(rig, piece.part, piece.bone) do
 			local offset = rig.offsets[rig.partIndex[part]]
-			table.insert(pieces, { part = part, cframe = rootCFrame * bone * rest:Inverse() * offset })
+			local bones: { [string]: CFrame }? = skin
+			local body = piece.body
+			if skin and piece.tuck and part:IsA("MeshPart") then
+				-- tucked joints move their vertices inside the magazine and ride with it
+				-- (RootPart space at rest: offset * mesh point)
+				local tucked = table.clone(skin)
+				local toPart = part.Size / part.MeshSize
+				local carry = bone * rest:Inverse()
+				for name, move in piece.tuck do
+					local tuckRest = rig.player:restWorld(name)
+					if tuckRest then
+						local shift = offset * (move.to * toPart) - offset * (move.from * toPart)
+						tucked[name] = rootCFrame * carry * CFrame.new(shift) * tuckRest
+					end
+				end
+				bones = tucked
+			end
+			table.insert(pieces, {
+				part = part,
+				cframe = rootCFrame * bone * rest:Inverse() * offset,
+				bones = bones,
+				body = body,
+			})
 		end
 	end
 	local camera = rig.model.Parent

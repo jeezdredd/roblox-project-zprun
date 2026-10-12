@@ -41,9 +41,16 @@ local function getAliveHumanoid(): Humanoid?
 	return humanoid
 end
 
+-- Past the band by more than this the character is not on the run at all: still in the
+-- cabin or the hub while the server's teleport to the wreck is on its way. Clamped there,
+-- it was thrown to the band's edge at the cabin's height and z, overwrote the teleport
+-- (the client owns its character) and fell out of the map (2026-10-12, relaunches).
+local OFF_FIELD_MARGIN = 100
+
 local function clampToField(root: BasePart)
 	local offsetX = root.Position.X - GameConstants.RUN_ORIGIN.X
-	if math.abs(offsetX) <= wrapThreshold then
+	local excess = math.abs(offsetX) - wrapThreshold
+	if excess <= 0 or excess > OFF_FIELD_MARGIN then
 		return
 	end
 	local targetX = math.sign(offsetX) * wrapThreshold

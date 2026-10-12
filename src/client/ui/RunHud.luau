@@ -130,7 +130,7 @@ local function build()
 	goals.Name = "Goals"
 	goals.AnchorPoint = Vector2.new(0, 0)
 	-- under the FPS counter (12, 88), clear of the wallet row above it
-	goals.Position = UDim2.new(0, 16, 0, 116)
+	goals.Position = UDim2.fromOffset(16, 116)
 	goals.Size = UDim2.fromOffset(250, 18 * #MissionGoalsConfig.order + 20)
 	goals.BackgroundTransparency = 1
 	goals.Parent = screen

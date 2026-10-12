@@ -23,10 +23,11 @@
   },
   "run": {
    "source": "Run",
-   "duration": 1.6667,
+   "duration": 1.55,
    "loop": true,
    "groundSpeed": 12.015,
-   "bones": 52
+   "bones": 52,
+   "note": "trimmed to its loop point by tools/zombie_pack/close_loop.py"
   },
   "attack": {
    "source": "Attack",

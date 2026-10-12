@@ -12,6 +12,8 @@ local LOW_HEALTH_RATIO = 0.3
 local DAMAGE_DECAY = 2.6
 local HEARTBEAT_RATE_LOW = 2.4
 local HEARTBEAT_RATE_CRITICAL = 3.6
+local FLASH_DURATION = 0.5
+local FLASH_START_TRANSPARENCY = 0.55
 
 local damageEffect: ColorCorrectionEffect
 local bloom: BloomEffect
@@ -20,6 +22,7 @@ local vignette: Frame
 local damagePulse = 0
 local deathFade = 0
 local pulsePhase = 0
+local flashElapsed = FLASH_DURATION
 local started = false
 
 local function approach(current: number, target: number, speed: number, deltaTime: number): number
@@ -82,13 +85,24 @@ local function step(deltaTime: number)
 	bloom.Intensity = preset.bloomIntensity + deathFade * 1.6 + damagePulse * 0.5
 	bloom.Threshold = preset.bloomThreshold
 
-	vignette.BackgroundTransparency = 1 - math.clamp(damagePulse * 0.7 + lowness * 0.3 * (0.5 + pulse * 0.5), 0, 0.85)
+	local pulseTransparency = 1 - math.clamp(damagePulse * 0.7 + lowness * 0.3 * (0.5 + pulse * 0.5), 0, 0.85)
+	local flashTransparency = 1
+	if flashElapsed < FLASH_DURATION then
+		flashElapsed += deltaTime
+		local remaining = 1 - math.clamp(flashElapsed / FLASH_DURATION, 0, 1)
+		flashTransparency = 1 - (1 - FLASH_START_TRANSPARENCY) * remaining * remaining
+	end
+	vignette.BackgroundTransparency = math.min(pulseTransparency, flashTransparency)
 end
 
 function PostFx.setMenuBlur(enabled: boolean)
 	if menuBlur then
 		menuBlur.Enabled = enabled
 	end
+end
+
+function PostFx.flashDamage()
+	flashElapsed = 0
 end
 
 function PostFx.damage(amount: number)

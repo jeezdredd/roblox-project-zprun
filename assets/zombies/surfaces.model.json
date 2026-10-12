@@ -1,0 +1,36 @@
+{
+  "className": "Folder",
+  "children": [
+    {
+      "className": "SurfaceAppearance",
+      "name": "hazmat_head",
+      "properties": {
+        "ColorMap": "rbxassetid://107017461364378",
+        "NormalMap": "rbxassetid://108905655603672",
+        "RoughnessMap": "rbxassetid://128662371594933",
+        "MetalnessMap": "rbxassetid://75665118343698"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "hazmat_suit",
+      "properties": {
+        "ColorMap": "rbxassetid://112935496993722",
+        "NormalMap": "rbxassetid://127574584193950",
+        "RoughnessMap": "rbxassetid://102762565214840",
+        "MetalnessMap": "rbxassetid://100493183336624",
+        "AlphaMode": "Transparency"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "walker_body",
+      "properties": {
+        "ColorMap": "rbxassetid://113547023033125",
+        "NormalMap": "rbxassetid://115920892515464",
+        "RoughnessMap": "rbxassetid://86615355940159",
+        "MetalnessMap": "rbxassetid://112372674619348"
+      }
+    }
+  ]
+}

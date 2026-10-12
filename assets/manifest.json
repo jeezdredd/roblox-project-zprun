@@ -2060,9 +2060,9 @@
     "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip 'Run' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
     "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
     "file": "assets/animation/zombie_sf/walker/run.rbxmx",
-    "assetId": "112885913195614",
+    "assetId": "88252511906918",
     "status": "approved",
-    "note": "clip 'Run', 1.6667s, loop=True, ground speed 12.015 studs/s"
+    "note": "clip 'Run' (1.6667s in the source), trimmed to its loop point at 1.55s and closed on the first pose by tools/zombie_pack/close_loop.py (the source runs 0.1 s past its loop: a 38 degree calf pop at every wrap); loop=True, ground speed 12.015 studs/s; replaces 112885913195614"
   },
   "animation/zombie_sf/walker/attack": {
     "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; clip 'Attack' baked onto the imported Bones by tools/zombie_pack/build_zombie_anims.py",
@@ -4215,9 +4215,9 @@
     "source": "\"M4 - FPS Weapon Animations Pack FREE (v.1)\" by BarcodeGames, https://www.fab.com/listings/38da8f1e-cb54-4cda-beb1-6e55642a55a9; metalness map of the arms shared by the BarcodeGames M4 and G17 packs (identical base colour in both), written from the rig GLB by tools/fps_pack/extract_surfaces.py",
     "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
     "file": "assets/fab/viewmodels/textures/fab_arms_glove_metalness.png",
-    "assetId": "133620623064996",
+    "assetId": "125721131102521",
     "status": "approved",
-    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks); metallicFactor 0 applied (flat 0), replaces 133620623064996"
   },
   "texture/viewmodel/fab_arms_glove_normal": {
     "source": "\"M4 - FPS Weapon Animations Pack FREE (v.1)\" by BarcodeGames, https://www.fab.com/listings/38da8f1e-cb54-4cda-beb1-6e55642a55a9; normal map of the arms shared by the BarcodeGames M4 and G17 packs (identical base colour in both), written from the rig GLB by tools/fps_pack/extract_surfaces.py",
@@ -4247,9 +4247,9 @@
     "source": "\"M4 - FPS Weapon Animations Pack FREE (v.1)\" by BarcodeGames, https://www.fab.com/listings/38da8f1e-cb54-4cda-beb1-6e55642a55a9; metalness map of the arms shared by the BarcodeGames M4 and G17 packs (identical base colour in both), written from the rig GLB by tools/fps_pack/extract_surfaces.py",
     "license": "Fab Standard License (https://www.fab.com/eula); not committed, the repo is public",
     "file": "assets/fab/viewmodels/textures/fab_arms_hand_metalness.png",
-    "assetId": "92526722294554",
+    "assetId": "76297631540146",
     "status": "approved",
-    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks)"
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, ViewmodelPacks); metallicFactor 0 applied (flat 0), replaces 92526722294554"
   },
   "texture/viewmodel/fab_arms_hand_normal": {
     "source": "\"M4 - FPS Weapon Animations Pack FREE (v.1)\" by BarcodeGames, https://www.fab.com/listings/38da8f1e-cb54-4cda-beb1-6e55642a55a9; normal map of the arms shared by the BarcodeGames M4 and G17 packs (identical base colour in both), written from the rig GLB by tools/fps_pack/extract_surfaces.py",
@@ -4346,5 +4346,166 @@
     "assetId": 0,
     "status": "needed",
     "note": "Farmland map ambience bed (MapAmbience, MapsConfig.maps.Farmland.ambience): looped 2D bed crossfaded with the next map's over the map transition; silent until the id is set. Wanted: open fields: wind through crops, a distant windmill or loose barn door, sparse crows; a seamless loop of 60 s or more. Candidates: Sonniss GameAudioGDC bundles (royalty free), freesound CC0 field recordings, a recording by the owner. No synthesized audio."
+  },
+  "texture/zombie/walker_body_color": {
+    "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; color map of the 'Zombie' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/textures/walker_body_color.png",
+    "assetId": "113547023033125",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it read metalness without metallicFactor 0: fully metallic); ZombieRigs, the Walker skin (Z_*_Zombie_0 meshes)"
+  },
+  "texture/zombie/walker_body_normal": {
+    "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; normal map of the 'Zombie' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/textures/walker_body_normal.png",
+    "assetId": "115920892515464",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it read metalness without metallicFactor 0: fully metallic); ZombieRigs, the Walker skin (Z_*_Zombie_0 meshes)"
+  },
+  "texture/zombie/walker_body_roughness": {
+    "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; roughness map of the 'Zombie' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/textures/walker_body_roughness.png",
+    "assetId": "86615355940159",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it read metalness without metallicFactor 0: fully metallic); ZombieRigs, the Walker skin (Z_*_Zombie_0 meshes)"
+  },
+  "texture/zombie/walker_body_metalness": {
+    "source": "\"Zombie\" by pxltiger (@pxltiger), https://sketchfab.com/3d-models/73ef58af341e46afba1da53366ed79cf; metalness map of the 'Zombie' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/textures/walker_body_metalness.png",
+    "assetId": "112372674619348",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it read metalness without metallicFactor 0: fully metallic); ZombieRigs, the Walker skin (Z_*_Zombie_0 meshes)"
+  },
+  "texture/zombie/hazmat_head_color": {
+    "source": "\"Zombie Hazmat\" by LxNazarov (@LxNazarov), https://sketchfab.com/3d-models/49b3b4307f6a4d2386fdb02354158d04; color map of the 'ZombieHead' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/textures/hazmat_head_color.png",
+    "assetId": "107017461364378",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it read metalness without metallicFactor 0: fully metallic); ZombieRigs, the Hazmat skin head (ZombieHead mesh)"
+  },
+  "texture/zombie/hazmat_head_normal": {
+    "source": "\"Zombie Hazmat\" by LxNazarov (@LxNazarov), https://sketchfab.com/3d-models/49b3b4307f6a4d2386fdb02354158d04; normal map of the 'ZombieHead' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/textures/hazmat_head_normal.png",
+    "assetId": "108905655603672",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it read metalness without metallicFactor 0: fully metallic); ZombieRigs, the Hazmat skin head (ZombieHead mesh)"
+  },
+  "texture/zombie/hazmat_head_roughness": {
+    "source": "\"Zombie Hazmat\" by LxNazarov (@LxNazarov), https://sketchfab.com/3d-models/49b3b4307f6a4d2386fdb02354158d04; roughness map of the 'ZombieHead' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/textures/hazmat_head_roughness.png",
+    "assetId": "128662371594933",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it read metalness without metallicFactor 0: fully metallic); ZombieRigs, the Hazmat skin head (ZombieHead mesh)"
+  },
+  "texture/zombie/hazmat_head_metalness": {
+    "source": "\"Zombie Hazmat\" by LxNazarov (@LxNazarov), https://sketchfab.com/3d-models/49b3b4307f6a4d2386fdb02354158d04; metalness map of the 'ZombieHead' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/textures/hazmat_head_metalness.png",
+    "assetId": "75665118343698",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it read metalness without metallicFactor 0: fully metallic); ZombieRigs, the Hazmat skin head (ZombieHead mesh)"
+  },
+  "texture/viewmodel/comando_shirt_color": {
+    "source": "\"FPS Character Animation Pack Saps-12\" by Cristian David Duque Camacho (@DuqueCD7), https://sketchfab.com/3d-models/3e5ebbd4ace24f2e92eadb7252927b31; color map of the 'M_Shirt_BlackCamo2' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/viewmodels/fps/textures/comando_shirt_color.png",
+    "assetId": "112730358451763",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it read metalness without metallicFactor 0: fully metallic); ViewmodelPacks, the Shotgun pack sleeves"
+  },
+  "texture/viewmodel/comando_shirt_normal": {
+    "source": "\"FPS Character Animation Pack Saps-12\" by Cristian David Duque Camacho (@DuqueCD7), https://sketchfab.com/3d-models/3e5ebbd4ace24f2e92eadb7252927b31; normal map of the 'M_Shirt_BlackCamo2' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/viewmodels/fps/textures/comando_shirt_normal.png",
+    "assetId": "75795090603069",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it read metalness without metallicFactor 0: fully metallic); ViewmodelPacks, the Shotgun pack sleeves"
+  },
+  "texture/viewmodel/comando_shirt_roughness": {
+    "source": "\"FPS Character Animation Pack Saps-12\" by Cristian David Duque Camacho (@DuqueCD7), https://sketchfab.com/3d-models/3e5ebbd4ace24f2e92eadb7252927b31; roughness map of the 'M_Shirt_BlackCamo2' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/viewmodels/fps/textures/comando_shirt_roughness.png",
+    "assetId": "89587216022760",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it read metalness without metallicFactor 0: fully metallic); ViewmodelPacks, the Shotgun pack sleeves"
+  },
+  "texture/viewmodel/comando_shirt_metalness": {
+    "source": "\"FPS Character Animation Pack Saps-12\" by Cristian David Duque Camacho (@DuqueCD7), https://sketchfab.com/3d-models/3e5ebbd4ace24f2e92eadb7252927b31; metalness map of the 'M_Shirt_BlackCamo2' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/viewmodels/fps/textures/comando_shirt_metalness.png",
+    "assetId": "96429502147967",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it read metalness without metallicFactor 0: fully metallic); ViewmodelPacks, the Shotgun pack sleeves"
+  },
+  "texture/viewmodel/uzi_watch_color": {
+    "source": "\"UZI | First Person Animations (2026 Remake)\" by 1Matzh (@1Matzh); uses \"UZI\" by @Gintoki1234 and \"Division Agent (Rigged)\" by @Blue-Spirit, https://sketchfab.com/3d-models/73266e9f1eb949b69a3ab11d8f636048; color map of the 'Watch' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/viewmodels/fps/textures/uzi_watch_color.png",
+    "assetId": "71336080168869",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it dropped the material's baseColorFactor 0.24: the watch came in about twice as light); ViewmodelPacks, the SMG pack's wrist watch"
+  },
+  "texture/viewmodel/uzi_watch_normal": {
+    "source": "\"UZI | First Person Animations (2026 Remake)\" by 1Matzh (@1Matzh); uses \"UZI\" by @Gintoki1234 and \"Division Agent (Rigged)\" by @Blue-Spirit, https://sketchfab.com/3d-models/73266e9f1eb949b69a3ab11d8f636048; normal map of the 'Watch' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/viewmodels/fps/textures/uzi_watch_normal.png",
+    "assetId": "109783793400316",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it dropped the material's baseColorFactor 0.24: the watch came in about twice as light); ViewmodelPacks, the SMG pack's wrist watch"
+  },
+  "texture/viewmodel/uzi_watch_roughness": {
+    "source": "\"UZI | First Person Animations (2026 Remake)\" by 1Matzh (@1Matzh); uses \"UZI\" by @Gintoki1234 and \"Division Agent (Rigged)\" by @Blue-Spirit, https://sketchfab.com/3d-models/73266e9f1eb949b69a3ab11d8f636048; roughness map of the 'Watch' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/viewmodels/fps/textures/uzi_watch_roughness.png",
+    "assetId": "138462986927331",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it dropped the material's baseColorFactor 0.24: the watch came in about twice as light); ViewmodelPacks, the SMG pack's wrist watch"
+  },
+  "texture/viewmodel/uzi_watch_metalness": {
+    "source": "\"UZI | First Person Animations (2026 Remake)\" by 1Matzh (@1Matzh); uses \"UZI\" by @Gintoki1234 and \"Division Agent (Rigged)\" by @Blue-Spirit, https://sketchfab.com/3d-models/73266e9f1eb949b69a3ab11d8f636048; metalness map of the 'Watch' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/viewmodels/fps/textures/uzi_watch_metalness.png",
+    "assetId": "84780369462668",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (it dropped the material's baseColorFactor 0.24: the watch came in about twice as light); ViewmodelPacks, the SMG pack's wrist watch"
+  },
+  "texture/zombie/hazmat_suit_color": {
+    "source": "\"Zombie Hazmat\" by LxNazarov (@LxNazarov), https://sketchfab.com/3d-models/49b3b4307f6a4d2386fdb02354158d04; color map of the 'HazMatSuit' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied; RGBA, alpha cut at the material's alphaCutoff (MASK)",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/textures/hazmat_suit_color.png",
+    "assetId": "112935496993722",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (its Overlay alpha mode drew the broken visor as opaque grey); ZombieRigs, the Hazmat skin suit (HazMatSuit mesh)",
+    "alphaMode": "Transparency"
+  },
+  "texture/zombie/hazmat_suit_normal": {
+    "source": "\"Zombie Hazmat\" by LxNazarov (@LxNazarov), https://sketchfab.com/3d-models/49b3b4307f6a4d2386fdb02354158d04; normal map of the 'HazMatSuit' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/textures/hazmat_suit_normal.png",
+    "assetId": "127574584193950",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (its Overlay alpha mode drew the broken visor as opaque grey); ZombieRigs, the Hazmat skin suit (HazMatSuit mesh)"
+  },
+  "texture/zombie/hazmat_suit_roughness": {
+    "source": "\"Zombie Hazmat\" by LxNazarov (@LxNazarov), https://sketchfab.com/3d-models/49b3b4307f6a4d2386fdb02354158d04; roughness map of the 'HazMatSuit' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/textures/hazmat_suit_roughness.png",
+    "assetId": "102762565214840",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (its Overlay alpha mode drew the broken visor as opaque grey); ZombieRigs, the Hazmat skin suit (HazMatSuit mesh)"
+  },
+  "texture/zombie/hazmat_suit_metalness": {
+    "source": "\"Zombie Hazmat\" by LxNazarov (@LxNazarov), https://sketchfab.com/3d-models/49b3b4307f6a4d2386fdb02354158d04; metalness map of the 'HazMatSuit' material written from the rig glb by tools/fps_pack/extract_surfaces.py with the glTF factors applied",
+    "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), credit the author",
+    "file": "assets/zombies/sketchfab/textures/hazmat_suit_metalness.png",
+    "assetId": "100493183336624",
+    "status": "approved",
+    "note": "SurfaceAppearance map replacing the importer's (its Overlay alpha mode drew the broken visor as opaque grey); ZombieRigs, the Hazmat skin suit (HazMatSuit mesh)"
   }
 }

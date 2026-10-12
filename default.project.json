@@ -49,6 +49,9 @@
       },
       "ViewmodelSurfaces": {
         "$path": "assets/viewmodels/surfaces.model.json"
+      },
+      "ZombieSurfaces": {
+        "$path": "assets/zombies/surfaces.model.json"
       }
     },
     "ReplicatedFirst": {

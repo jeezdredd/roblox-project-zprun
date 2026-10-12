@@ -53,6 +53,8 @@ local tiltRoll = makeSpring("tiltRoll")
 local impactPos = makeSpring("impactPos")
 local breathe = makeSpring("breathe")
 local equipOffset = makeSpring("equip")
+local HOLSTER_TIMEOUT = 0.6
+local holsterUntil = 0
 local inspectOffset = makeSpring("inspect")
 local aimRot = makeSpring("aim")
 local driftRot = makeSpring("drift")
@@ -161,7 +163,7 @@ function Viewmodel.setWeapon(weaponId: string)
 	destroyRig()
 	currentClass = config.class
 	if PackViewmodel.available(config.class) then
-		packRig = PackViewmodel.build(config.class, camera)
+		packRig = PackViewmodel.build(config.class, camera, config.drawTime)
 	end
 	if not packRig then
 		rig = ViewmodelBuilder.build(config, camera)
@@ -180,6 +182,7 @@ function Viewmodel.setWeapon(weaponId: string)
 	slideSpring:Reset(0)
 	pumpSpring:Reset(0)
 	magazineSpring:Reset(0)
+	holsterUntil = 0
 	equipOffset:Reset(Vector3.new(0, -ViewmodelConfig.equip.drop, 0))
 	equipOffset:SetTarget(Vector3.zero)
 	inspectOffset:Reset(Vector3.zero)
@@ -190,6 +193,11 @@ function Viewmodel.setWeapon(weaponId: string)
 	legacyTag = "equip"
 	sprintActive = false
 	emitPhase("Draw", "equip")
+end
+
+function Viewmodel.holster()
+	holsterUntil = os.clock() + HOLSTER_TIMEOUT
+	equipOffset:SetTarget(Vector3.new(0, -ViewmodelConfig.equip.drop, 0))
 end
 
 function Viewmodel.drawElapsed(): number
@@ -436,6 +444,10 @@ local function updateChannels(deltaTime: number, cameraCFrame: CFrame)
 	breathe:Update(deltaTime)
 	aimRot:Update(deltaTime)
 	driftRot:Update(deltaTime)
+	if holsterUntil > 0 and os.clock() >= holsterUntil then
+		holsterUntil = 0
+		equipOffset:SetTarget(Vector3.zero)
+	end
 	equipOffset:Update(deltaTime)
 	inspectOffset:Update(deltaTime)
 	slideSpring:Update(deltaTime)
@@ -588,6 +600,7 @@ local function step(deltaTime: number)
 end
 
 function Viewmodel.init()
+	PackViewmodel.preloadPacks()
 	sequencer:onPhase(function(name: string)
 		emitPhase(name, legacyTag)
 	end)

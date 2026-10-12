@@ -547,6 +547,8 @@ local AssetIds = {
 			g17_round_color = 137879752068302,
 			g17_round_metalness = 89314741858417,
 			g17_round_roughness = 122836886971045,
+			g36c_body_color = 138014360655497,
+			g36c_body_normal = 87270099315233,
 			uzi_watch_color = 71336080168869,
 			uzi_watch_metalness = 84780369462668,
 			uzi_watch_normal = 109783793400316,
@@ -611,6 +613,9 @@ local AssetIds = {
 		fps = {
 			g17 = {
 				rig = 121633029876399,
+			},
+			g36c = {
+				rig = 99685704983879,
 			},
 			m4 = {
 				rig = 104429592630828,

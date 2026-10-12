@@ -30,17 +30,25 @@ Shipped layers, roughly in the order they landed:
 | D3 | Perks are wired into gameplay |
 | D4 | No comments in code (done) |
 | D5 | Distance credits per minute are capped at the base-speed rate times 1.1; kill and goal credits are not |
+| D6 | Aiming is hip fire with an aim focus: holding aim pulls the weapon slightly toward centre, narrows FOV a little and calms sway, so the player reads as aiming; no full sight alignment |
+| D7 | Arms are camo sleeves and gloves on every class |
+| D8 | Reloads differ by ammo state: empty, partly spent and almost full each get their own animation and timing |
+| D9 | State is visible everywhere: the magazine check and inspect show the real round count, and animations, textures, sounds and behaviour reflect what is happening to the weapon, the player and the zombies |
+| D10 | The arsenal grows large: rifles, pistols, SMGs, machine guns, launchers, grenades. Every weapon is its own entry with its own pack; the committed AK ships as a second rifle beside the Fab M4 |
+
+### The detail rule (D9)
+
+The owner's bar for AAA is that nothing is generic. Every task checks itself against these questions before it closes:
+- Does the presentation change with state? Ammo left, magazine empty or not, health, speed, surface underfoot, distance, wet or dry, damaged or clean.
+- Can the player read that state without the HUD? Rounds visible in the magazine check, a lighter rattle near the end of a magazine, a heavier breath at low health, a limp on a crippled zombie.
+- Are there variants instead of one clip or one sound? Reloads per ammo state, impacts per surface, deaths per hit direction, footsteps per surface.
 
 Open for the owner:
 
 | Call | Options | Blocks |
 | --- | --- | --- |
-| Audit rerun | Targeted rerun of the camera, VFX and zombie-animation audits (recommended), full rerun, or accept the briefs as written | M2 sprint planning |
-| D-AV2 slice rifle | The committed `RifleClips` or the Fab `M4Clips`, picked on look; clean clones and CI keep the fallback either way | Quality bar sign-off, then D-AV1 |
-| D-AV1 arms | Camo sleeves and gloves (three of four packs today) or the bare forearm with a watch | A16 and the class arm passes |
-| ADS | Keep hip fire only, or add aim-down-sights (closer to the references, adds a viewmodel and camera epic) | Quality bar weapon rows |
-| Boundary clock | Keep the ClockTime sweep inside map boundary blends, or change the clock behind the fork | Lighting passes |
-| Rifle empty reload | Keep 3.4 s, or `reloadTimeEmpty` 3.13 with `ammoAddEmpty` 2.40 | A17 |
+| Slice anchor rifle | Both the AK and the M4 ship (D10). The art director recommends the AK as the vertical slice anchor: camo sleeves already match D7, it lives in the public repo so CI builds it, and the M4 needs new arms and a value lift. Captures in production/captures/rifle-compare.jpg | Quality bar sign-off |
+| Boundary clock | Each map has its own time of day, and the lighting blend at a map boundary moves the clock, so the sun or moon visibly races across the sky for a few seconds. Keep that sweep, hide the clock change behind the fork (fog or tunnel), or give every map the same time | Lighting passes |
 
 ## Milestones
 
@@ -153,7 +161,7 @@ T1, T2, then T3 inside M1. The quality bar and the capture harness gate every M2
 ## Later
 
 - **Route forks steps 4-8**: frozen until grenades exist ([[Route Forks]]).
-- **Run music intensity layer**, the low-health heartbeat, more hero props, teammate revive and aim-down-sights: backlog until the owner or game design asks for them.
+- **Run music intensity layer**, the low-health heartbeat, more hero props and teammate revive: backlog until the owner or game design asks for them.
 - **More biomes and zombie types**: both are data, an entry in `LocationsConfig` or `ZombiesConfig`.
 - **TeleportService**: only if the hub and the run ever split into separate places; the transport is already behind `FlowService` phases.
 

@@ -135,6 +135,7 @@ end
 
 SpatialAudioConfig.classes = {
 	OwnGunshot = class({ bus = "weapons", range = 0, hold = 0, curve = "natural", air = 0, occlusion = 0, reflections = true, priority = 100, maxVoices = 8, delay = false, duck = true, pitchJitter = 0.04, gainJitterDb = 1.5 }),
+	WeaponFoley = class({ bus = "weapons", range = 0, hold = 0, curve = "natural", air = 0, occlusion = 0, reflections = false, priority = 70, maxVoices = 6, delay = false, duck = false, pitchJitter = 0.03, gainJitterDb = 1 }),
 	GunshotRemote = class({ bus = "weapons", range = 1400, hold = 24, curve = "power", air = 1, occlusion = 1, reflections = true, priority = 90, maxVoices = 8, delay = true, duck = true, pitchJitter = 0.04, gainJitterDb = 1.5, layerBands = { close = { lo = 0, hi = 60 }, mid = { lo = 40, hi = 350 }, far = { lo = 250, hi = 1400 } } }),
 	Explosion = class({ bus = "sfx", range = 2600, hold = 60, curve = "power", air = 1, occlusion = 0.7, reflections = true, priority = 100, maxVoices = 4, delay = true, duck = true, pitchJitter = 0.06, gainJitterDb = 1, layerBands = { close = { lo = 0, hi = 120 }, far = { lo = 90, hi = 2600 } } }),
 	ZombieVocal = class({ bus = "voices", range = 140, hold = 8, curve = "natural", air = 0.6, occlusion = 1, reflections = false, priority = 60, maxVoices = 8, delay = true, duck = false, pitchJitter = 0.15, gainJitterDb = 1.5 }),

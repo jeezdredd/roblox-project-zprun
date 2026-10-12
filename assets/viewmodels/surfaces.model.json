@@ -51,6 +51,14 @@
     },
     {
       "className": "SurfaceAppearance",
+      "name": "g36c_body",
+      "properties": {
+        "ColorMap": "rbxassetid://138014360655497",
+        "NormalMap": "rbxassetid://87270099315233"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
       "name": "uzi_watch",
       "properties": {
         "ColorMap": "rbxassetid://71336080168869",

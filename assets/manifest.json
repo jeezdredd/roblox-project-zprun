@@ -4507,5 +4507,29 @@
     "assetId": "100493183336624",
     "status": "approved",
     "note": "SurfaceAppearance map replacing the importer's (its Overlay alpha mode drew the broken visor as opaque grey); ZombieRigs, the Hazmat skin suit (HazMatSuit mesh)"
+  },
+  "viewmodel/fps/g36c/rig": {
+    "source": "\"FPS Essentials Kit\" 0.9b, Unity Asset Store, bought by the owner 2026-10-12; G36C first-person rig unpacked from the .unitypackage without Unity (data only), each clip FBX converted by FBX2glTF 0.13.1 (Autodesk FBX SDK), clips merged by tools/fps_pack/merge_clips.py (duplicate node names made unique), rigid weapon parts skinned by rigidify.py, node scales removed by unscale.py, every skin given its full bone chain by unscale.py so Roblox keeps all bones, arms and weapon parts joined into one mesh and one skin (a primitive per material) by join_arms.py, animations stripped by strip_glb.py; sized in game by importScale 4.29",
+    "license": "Unity Asset Store EULA (Standard), bought by the owner; not committed, the repo is public",
+    "file": "assets/unity/fps-essentials-kit/converted/g36c_rig.glb",
+    "status": "approved",
+    "note": "test mount: first-person arms + G36C; clips baked to src/shared/unity/G36CClips.luau (gitignored)",
+    "assetId": "99685704983879"
+  },
+  "texture/viewmodel/g36c_body_color": {
+    "source": "\"FPS Essentials Kit\" 0.9b, Unity Asset Store, bought by the owner 2026-10-12; G36C albedo map unpacked from the .unitypackage without Unity",
+    "license": "Unity Asset Store EULA (Standard), bought by the owner; not committed, the repo is public",
+    "file": "assets/unity/fps-essentials-kit/Textures/Weapons/G36C/G36C_Albedo.jpg",
+    "status": "reviewing",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, put on by ViewmodelPacks): the G36C body and parts",
+    "assetId": "138014360655497"
+  },
+  "texture/viewmodel/g36c_body_normal": {
+    "source": "\"FPS Essentials Kit\" 0.9b, Unity Asset Store, bought by the owner 2026-10-12; G36C normal map unpacked from the .unitypackage without Unity",
+    "license": "Unity Asset Store EULA (Standard), bought by the owner; not committed, the repo is public",
+    "file": "assets/unity/fps-essentials-kit/Textures/Weapons/G36C/G36C_Normal.jpg",
+    "status": "reviewing",
+    "note": "SurfaceAppearance map for the first-person pack rigs (ReplicatedStorage.ViewmodelSurfaces, put on by ViewmodelPacks): the G36C body and parts",
+    "assetId": "87270099315233"
   }
 }

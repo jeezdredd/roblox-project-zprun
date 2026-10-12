@@ -216,6 +216,27 @@ Do: pass the header through a temporary file with mode 600 or through stdin with
 Accept: the key never appears in argv; uploads still work.
 ```
 
+### T23. Weapon roster architecture (D10)
+```
+Decision D10: the arsenal will grow to many weapons per class (rifles, pistols, SMGs, machine guns, launchers, grenades). Today WeaponsConfig gives each weapon an id and a class, but ViewmodelPackConfig, PackViewmodel, Viewmodel and SandboxWeaponGallery look packs up by class, ViewmodelConfig.ARM_GRIP and AnimationsConfig.locomotionSets are keyed by class, and about 17 files use the literal "Rifle". Two rifles cannot coexist.
+Do: give every weapon in WeaponsConfig a pack key and make ViewmodelPackConfig keyed by pack, with class kept for shared behaviour (stance, locomotion set, arm grip default, audio class). Route every pack lookup through the weapon id. Add a data-only weapon template so a new weapon is one config entry plus assets. Keep ownership, upgrades, pickups, shop and loadout slots working per weapon id, with a profile migration if saved data keys change. Make the test yard gallery list weapons, not classes, and include Fab packs when present.
+Accept: two weapons of the same class can be owned, equipped and switched in one run, each with its own viewmodel and clips; existing saves load unchanged; a Luau test covers the pack lookup and the migration; selene, validate_api, comment check, rojo build and all tests pass.
+```
+
+### T24. AK as a second rifle (D10)
+```
+Depends on T23. The committed AK pack (asset "rifle", clips viewmodel_clips/RifleClips, CC BY 4.0, rig id in AssetIds.viewmodel.fps.rifle) shipped as the Rifle until commit bd4325b moved the class to the Fab M4. Its old config block is in that commit's parent.
+Do: add the AK as its own weapon (id, display name, stats distinct from the M4, price, upgrade path) with its pack entry restored from the old block, minus comments. Apply the art director's notes from production/av-polish-tasks.md: darker or black-polymer furniture, reload actionHold low enough that the muzzle stays below the horizon. Leave the extra reload states and visible rounds to A42 and A43.
+Accept: the AK can be bought, equipped and fired next to the M4 in a run; first-person captures match the comparison set; credits in LICENSES.md stay correct; all checks pass.
+```
+
+### T25. Import the FPS Essentials Kit weapons (D10)
+```
+Depends on T23. The owner bought FPS Essentials Kit 0.9b on the Unity Asset Store (asset policy rule 3, revised 2026-10-12). Already unpacked on 2026-10-12 without Unity into the gitignored assets/unity/fps-essentials-kit/ (data only; code, shaders and third-party additions dropped; file list in _extract_manifest.json). It holds first-person rigs and FBX clips for G36C (Draw, Fire, FireAim, Reload, CompleteReload, Hide, Melee, Vault), RSASS (Draw, Fire, Reload, ReloadEmpty, Hide, Melee, Vault), MP7 (Draw, Fire, FireAim, Reload, CompleteReload, Hide, Melee, Vault), M590 (Draw, Fire, FireAim, ReloadStart, ShellInLoop, ReloadEnd, Hide, Melee, Vault) and ACR (Draw, Down, Fire_HIP, Fire_ADS, Reload Full, Reload_Empty, Melee, Vault); an M67 grenade and a scope as OBJ meshes; a Soldier model; 63 WAV sounds (per weapon, generic, bullet impacts, footsteps, player) and PBR textures.
+Do: per weapon, convert the rig and clips to glTF with Blender MCP, run tools/fps_pack (report, bake, emit_luau) into the gitignored src/shared/unity/<Weapon>Clips.luau, extend PackViewmodel's clip search to the unity folder, upload rigs and sounds through the manifest with the product page as source and "Unity Asset Store EULA" as licence, and add each as its own weapon entry on top of T23. Map the reload clips onto the D8 ammo states, the sounds onto WeaponSfx layers, and reskin the arms to camo sleeves (D7) where they differ.
+Accept: each of the five weapons can be bought, equipped, fired and reloaded in a run with its own clips and sounds; nothing from the pack is tracked by git; all checks pass.
+```
+
 ## Suggested order
 
 T1, T2, T5, T6 first: small, mechanical, and they close the exploit and stability holes. Then T3, T9, T4, T8, T10. T7 comes after those, because PC is the priority, but before any public launch. T11 and T19 wait for D5 and D4. Run T14 before any of T15 to T17.

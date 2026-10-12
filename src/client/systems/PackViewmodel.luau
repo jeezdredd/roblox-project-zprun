@@ -1,5 +1,6 @@
 --!strict
 
+local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -103,7 +104,7 @@ local function clipData(pack: ViewmodelPackConfig.ClassPack): ViewmodelClipPlaye
 		return cached
 	end
 	local module: Instance? = nil
-	for _, name in { "viewmodel_clips", "fab" } do
+	for _, name in { "viewmodel_clips", "fab", "unity" } do
 		local folder = ReplicatedStorage.Shared:FindFirstChild(name)
 		module = folder and folder:FindFirstChild(pack.clips)
 		if module then
@@ -128,12 +129,38 @@ local function template(class: string): Model?
 	return if model and model:IsA("Model") then model else nil
 end
 
+function PackViewmodel.preloadPacks()
+	task.spawn(function()
+		local folder = ReplicatedStorage:WaitForChild("ViewModelPacks", 30)
+		if not folder then
+			return
+		end
+		local function warm(model: Instance)
+			task.spawn(function()
+				pcall(function()
+					ContentProvider:PreloadAsync({ model })
+				end)
+			end)
+		end
+		for _, model in folder:GetChildren() do
+			warm(model)
+		end
+		folder.ChildAdded:Connect(warm)
+	end)
+end
+
 function PackViewmodel.available(class: string): boolean
 	local pack = ViewmodelPackConfig.get(class)
 	return pack ~= nil and template(class) ~= nil and clipData(pack) ~= nil
 end
 
 local function weaponAnchors(model: Model, root: BasePart, pack: ViewmodelPackConfig.ClassPack, boneRest: CFrame): (CFrame, CFrame)
+	local inverse = boneRest:Inverse()
+	local explicit: CFrame? = nil
+	if pack.muzzle then
+		local position = pack.muzzle.position * (ViewmodelPackConfig.RIG_SCALE * (pack.importScale or 1))
+		explicit = inverse * CFrame.lookAt(position, position + pack.muzzle.direction)
+	end
 	local mesh: BasePart? = nil
 	for _, item in model:GetDescendants() do
 		if item:IsA("MeshPart") and string.find(item.Name, pack.weaponMesh) then
@@ -142,16 +169,15 @@ local function weaponAnchors(model: Model, root: BasePart, pack: ViewmodelPackCo
 		end
 	end
 	if not mesh then
-		return CFrame.identity, CFrame.identity
+		return explicit or CFrame.identity, CFrame.identity
 	end
 	local local_ = root.CFrame:ToObjectSpace(mesh.CFrame)
 	local size = mesh.Size
-	local inverse = boneRest:Inverse()
 	local tilt = pack.restTilt
 	if not tilt then
 		local front = local_ * CFrame.new(0, size.Y * 0.28, -size.Z * 0.5)
 		local port = local_ * CFrame.new(size.X * 0.5, size.Y * 0.3, -size.Z * 0.05)
-		return inverse * front, inverse * port
+		return explicit or inverse * front, inverse * port
 	end
 	local upright = tilt:Inverse() * local_
 	local r = upright.Rotation
@@ -162,7 +188,7 @@ local function weaponAnchors(model: Model, root: BasePart, pack: ViewmodelPackCo
 	local center = upright.Position
 	local front = tilt * CFrame.new(center + Vector3.new(0, ey * 0.28, -ez * 0.5))
 	local port = tilt * CFrame.new(center + Vector3.new(ex * 0.5, ey * 0.3, -ez * 0.05))
-	return inverse * front, inverse * port
+	return explicit or inverse * front, inverse * port
 end
 
 local function start(rig: Rig, entry: Entry): boolean
@@ -206,7 +232,7 @@ local function returnToBase(rig: Rig, fade: number)
 	rig.player:stop()
 end
 
-function PackViewmodel.build(class: string, camera: Camera): Rig?
+function PackViewmodel.build(class: string, camera: Camera, drawTime: number?): Rig?
 	local pack = ViewmodelPackConfig.get(class)
 	local source = template(class)
 	local data = if pack then clipData(pack) else nil
@@ -297,7 +323,7 @@ function PackViewmodel.build(class: string, camera: Camera): Rig?
 			end
 		end
 	end
-	playEntry(rig, { name = pack.equip, tag = "equip" })
+	playEntry(rig, { name = pack.equip, from = pack.equipFrom, to = pack.equipTo, duration = drawTime, tag = "equip" })
 	return rig
 end
 

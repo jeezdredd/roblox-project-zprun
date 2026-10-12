@@ -59,6 +59,11 @@ CLAUDE.md
 assets/fab/
 src/shared/fab/
 
+# Unity Asset Store content (Standard Unity Asset Store EULA), bought by the owner:
+# never committed for the same reason; source packs, converted rigs and baked clips
+assets/unity/
+src/shared/unity/
+
 # the owner's local scripts and their virtual environments, not tracked
 local/
 project.local.yaml

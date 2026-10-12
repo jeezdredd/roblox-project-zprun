@@ -36,13 +36,20 @@ that we do not have the right to ship.
    Allowed:
    - Own work, in any tool.
    - CC0, public domain, CC-BY with the attribution recorded in `LICENSES.md`.
-   - Paid or free packs whose licence permits use in a shipped game on any engine,
-     including packs bought on Fab or the Unity Asset Store **when the individual
-     asset's licence is not engine-bound**: read the licence text, not the storefront.
-     Fab content (Fab Standard License, Quixel Megascans included) is used in the game
-     but never committed, processed files included: the repository is public. Its files
-     stay in the gitignored `assets/fab/`, only the manifest rows are committed
-     (`docs/environment/megascans.md`).
+   - Paid or free packs whose licence permits use in a shipped game, including packs
+     bought on Fab and on the Unity Asset Store (revised 2026-10-12: Unity Asset Store
+     packs bought by the owner are allowed; models, animations, textures and sounds
+     from them are used in the game, the pack's C# code is not, since it cannot run on
+     Roblox). Read the licence on the product page.
+     Fab content (Fab Standard License, Quixel Megascans included) and Unity Asset Store
+     content (Standard Unity Asset Store EULA) are used in the game but never committed,
+     processed files included: the repository is public. Fab files stay in the gitignored
+     `assets/fab/`, Unity files in the gitignored `assets/unity/`; only the manifest rows
+     are committed (`docs/environment/megascans.md`). A Unity pack is imported only when
+     the owner bought it and keeps the receipt; the `.unitypackage` is unpacked with a
+     script (no Unity install needed) that keeps models, animations, textures and sounds
+     and drops all code, shaders and anything a third party added to the archive. Its
+     manifest row records the product page as the source.
    - Roblox Creator Store items, including AI-generated ones (Cube 3D and similar)
      made under the owner's account.
    - AI-generated audio, motion, models and textures from services whose terms grant

@@ -3,6 +3,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
@@ -15,6 +16,13 @@ local localPlayer = Players.LocalPlayer
 local TAU = math.pi * 2
 
 local TRACER_COLOR = Color3.fromRGB(255, 214, 140)
+local TRACER_START = 5
+local TRACER_MIN_LENGTH = 2
+local TRACER_LENGTH = 9
+local TRACER_WIDTH = 0.04
+local TRACER_TRANSPARENCY = 0.35
+local TRACER_SPEED = 1100
+local TRACER_MIN_TIME = 0.03
 local FLASH_COLOR = Color3.fromRGB(255, 196, 110)
 local FLASH_HOT_COLOR = Color3.fromRGB(255, 244, 222)
 local FLASH_TIP_COLOR = Color3.fromRGB(255, 150, 60)
@@ -103,7 +111,9 @@ local FLASH_LIGHT_BRIGHTNESS = 3.5
 local FLASH_LIGHT_RANGE = 12
 local VIEWMODEL_LIGHT_BRIGHTNESS = 1.2
 local FLASH_SPARK_CHANCE = 0.35
-local VIEWMODEL_FLASH_SCALE = 0.4
+local VIEWMODEL_FLASH_PER_STUD = 0.2
+local VIEWMODEL_FLASH_MIN = 0.05
+local VIEWMODEL_FLASH_MAX = 0.4
 
 local BEAM_TRANSPARENCY = NumberSequence.new({
 	NumberSequenceKeypoint.new(0, 0.05),
@@ -349,7 +359,8 @@ local function getMuzzleRig(attachment: Attachment): MuzzleRig
 	local rig = buildMuzzleRig(attachment)
 	local camera = Workspace.CurrentCamera
 	if camera and attachment:IsDescendantOf(camera) then
-		scaleRig(rig, VIEWMODEL_FLASH_SCALE)
+		local distance = (attachment.WorldPosition - camera.CFrame.Position).Magnitude
+		scaleRig(rig, math.clamp(distance * VIEWMODEL_FLASH_PER_STUD, VIEWMODEL_FLASH_MIN, VIEWMODEL_FLASH_MAX))
 	end
 	muzzleRigs[attachment] = rig
 	return rig
@@ -1044,14 +1055,23 @@ onRenderStep = function(deltaTime: number)
 end
 
 function WeaponVfx.tracer(from: Vector3, to: Vector3)
-	local distance = (to - from).Magnitude
-	if distance < 4 then
+	local offset = to - from
+	local distance = offset.Magnitude
+	if distance < TRACER_START + TRACER_MIN_LENGTH then
 		return
 	end
-	local beam = makeGhostPart("Tracer", Vector3.new(0.05, 0.05, distance), CFrame.lookAt(from, to) * CFrame.new(0, 0, -distance / 2))
+	local direction = offset / distance
+	local length = math.min(TRACER_LENGTH, distance - TRACER_START)
+	local travel = distance - TRACER_START - length
+	local function at(along: number): CFrame
+		return CFrame.lookAt(from + direction * along, from + direction * (along + 1))
+	end
+	local beam = makeGhostPart("Tracer", Vector3.new(TRACER_WIDTH, TRACER_WIDTH, length), at(TRACER_START + length / 2))
 	beam.Color = TRACER_COLOR
-	beam.Transparency = 0.25
-	task.delay(0.045, function()
+	beam.Transparency = TRACER_TRANSPARENCY
+	local duration = math.max(travel / TRACER_SPEED, TRACER_MIN_TIME)
+	TweenService:Create(beam, TweenInfo.new(duration, Enum.EasingStyle.Linear), { CFrame = at(TRACER_START + length / 2 + travel) }):Play()
+	task.delay(duration, function()
 		beam:Destroy()
 	end)
 end

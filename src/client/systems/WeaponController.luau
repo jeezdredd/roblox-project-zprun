@@ -71,9 +71,9 @@ local function drawShot(hits: { WeaponSfx.Hit }, from: Vector3, config: WeaponsC
 	tracerCounter += 1
 	local everyThird = config ~= nil and config.auto
 	local showTracer = not everyThird or tracerCounter % 3 == 0
-	for _, hit in hits do
+	for index, hit in hits do
 		WeaponVfx.impact(hit.position, hit.normal, hit.material)
-		if showTracer then
+		if showTracer and index == 1 then
 			WeaponVfx.tracer(from, hit.position)
 		end
 	end
@@ -369,6 +369,7 @@ local function requestEquip(weaponId: string)
 	local current = currentConfig()
 	if current then
 		WeaponSfx.playPhase("Holster", current.class)
+		Viewmodel.holster()
 	end
 	Remotes.getEvent(Remotes.Event.WeaponEquip):FireServer(weaponId)
 end

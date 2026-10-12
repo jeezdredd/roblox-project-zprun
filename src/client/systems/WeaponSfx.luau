@@ -159,15 +159,19 @@ local function playPooled(soundId: number, volume: number, pitch: number)
 	end)
 end
 
-local function playOneShot(soundId: number, volume: number, pitch: number)
+local function playOneShot(soundId: number, volume: number, pitch: number, class: string?)
 	if soundId <= 0 or volume <= 0 then
 		return
 	end
 	if onEngine() then
-		AudioEngine.play({ id = soundId, class = "OwnGunshot", volume = volume, pitch = pitch })
+		AudioEngine.play({ id = soundId, class = class or "OwnGunshot", volume = volume, pitch = pitch })
 		return
 	end
 	playPooled(soundId, volume, pitch)
+end
+
+local function playFoley(soundId: number, volume: number, pitch: number)
+	playOneShot(soundId, volume, pitch, "WeaponFoley")
 end
 
 local function weaponSoundId(key: string): number
@@ -336,21 +340,21 @@ function WeaponSfx.playShot(weaponId: string, remaining: number?, muzzle: Vector
 end
 
 function WeaponSfx.playDryfire()
-	playOneShot(weaponSoundId("dryfire"), 0.45, 1)
+	playFoley(weaponSoundId("dryfire"), 1.2, 1)
 end
 
 type PhaseSound = { generic: { string }, volume: number, pitch: number? }
 
 local PHASE_SOUNDS: { [string]: PhaseSound } = {
-	MagOut = { generic = { "mag_out" }, volume = 0.5 },
-	MagIn = { generic = { "mag_in" }, volume = 0.55 },
-	BoltBack = { generic = { "bolt" }, volume = 0.45 },
-	BoltForward = { generic = { "bolt" }, volume = 0.4, pitch = 1.08 },
-	SlideBack = { generic = { "bolt" }, volume = 0.4, pitch = 1.05 },
-	SlideRelease = { generic = { "bolt" }, volume = 0.45, pitch = 1.1 },
-	ShellIn = { generic = { "mag_in" }, volume = 0.32, pitch = 1.3 },
-	Draw = { generic = { "weapon_draw" }, volume = 0.4 },
-	Holster = { generic = { "weapon_holster" }, volume = 0.35 },
+	MagOut = { generic = { "mag_out" }, volume = 1.5 },
+	MagIn = { generic = { "mag_in" }, volume = 1.7 },
+	BoltBack = { generic = { "bolt" }, volume = 1.5 },
+	BoltForward = { generic = { "bolt" }, volume = 1.6, pitch = 1.08 },
+	SlideBack = { generic = { "bolt" }, volume = 1.4, pitch = 1.05 },
+	SlideRelease = { generic = { "bolt" }, volume = 1.6, pitch = 1.1 },
+	ShellIn = { generic = { "mag_in" }, volume = 1.2, pitch = 1.3 },
+	Draw = { generic = { "weapon_draw" }, volume = 1.1 },
+	Holster = { generic = { "weapon_holster" }, volume = 1 },
 }
 
 local CLASS_PHASE_KEYS: { [string]: { [string]: string } } = {
@@ -422,11 +426,11 @@ function WeaponSfx.playPhase(phase: string, class: string?, tag: string?)
 	if id <= 0 then
 		return
 	end
-	playOneShot(id, volume, pitch)
+	playFoley(id, volume, pitch)
 
 	if phase == "MagOut" and tag == "empty" then
 		task.delay(MAG_DROP_DELAY, function()
-			playOneShot(weaponSoundId("mag_drop"), 0.3, 1)
+			playFoley(weaponSoundId("mag_drop"), 0.9, 1)
 		end)
 	end
 end

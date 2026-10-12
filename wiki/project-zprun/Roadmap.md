@@ -1,108 +1,169 @@
 # Roadmap
 
-Ordering is approximate and gets renegotiated as the build moves. Items that cannot progress without the project owner acting outside the codebase (Creator Dashboard, asset authoring, publishing) are marked **owner-blocked**; everything else is code work.
+Rewritten 2026-10-12 after the four-pass project review and the AV polish plan. The work now runs in five milestones, each with exit criteria a playtest can check. Items that cannot move without the project owner acting outside the codebase (Creator Dashboard, Mixamo downloads, publishing, look and listen sign-off) are marked **owner step**.
 
-See [[Progress]] for what each shipped layer actually contains, [[Architecture]] for how the systems fit together and [[Decisions]] for why the awkward parts are the way they are.
+The task briefs live outside the wiki: the review's T1-T22 in `production/claude-desktop-tasks.md`, the AV tasks A1-A40 in `production/av-polish-tasks.md`, the current sprint in `production/sprints/`. See [[Progress]] for what each shipped layer contains, [[Architecture]] for how the systems fit together and [[Decisions]] for why the awkward parts are the way they are.
+
+The target for presentation is Call of Duty: Modern Warfare (2019) for weapon audio, foley and the living camera, TTK Testing by Sable Digital for weapon feel on Roblox, and Into the Dead for the run and the biomes. The frame-by-frame TTK breakdown is in [[Research AAA on Roblox]].
 
 ## Done
 
 Shipped layers, roughly in the order they landed:
 
-- **Prototype run**: auto-run driver (`src/client/controllers/RunController.luau`), A/D lateral input, lane clamp against `GameConstants.RUN_ORIGIN`, distance scored as `root.Position:Dot(RUN_DIRECTION)` in `src/server/systems/DistanceTracker.luau` with speed ramping from base to max.
-- **Procedural biomes**: five locations in `src/shared/config/LocationsConfig.luau` (City, Forest, Wasteland, Farmstead, Cornfield) built by the 240x128 chunk factory `src/server/systems/ChunkFactory.luau` and streamed by `src/server/systems/ChunkSpawner.luau`, which plans a route, pools chunks and cross-fades colour, material and props into the next biome.
-- **Zombies**: part-based rig factory, weighted spawning per chunk, difficulty-gated aggro and the juke mechanic (each zombie chases a delayed position sample, `reactionDelay` 0.35s for Runners and 0.75s for Walkers) in `src/server/systems/ZombieAI.luau`, plus a cross-fading animation layer in `src/server/systems/ZombieAnimator.luau`.
-- **Hub and squad lobby**: hangar, vendor rooms, burning-city diorama and three boardable helicopters; `src/server/systems/SquadService.luau` runs one squad record per pad with Solo/FriendsOnly/Public gating, leader-only map/difficulty/modifier config, snapshot fan-out and a countdown that hands a fresh seed to `src/server/systems/MissionService.luau`.
-- **Death sequence**: corpse pose, zombie lure and feeding ring, corpse-eye camera, YOU ARE DEAD, counted-up results and Return/Continue with one revive per run (`src/server/systems/DeathService.luau`, `src/client/controllers/DeathController.luau`, `src/client/systems/DeathGore.luau`).
-- **Settings and skins**: schema-driven settings panel built from `src/shared/config/SettingsConfig.luau`, server-side sanitising and persistence, gore content warning, and five HumanoidDescription skins applied on spawn by `src/server/systems/SkinService.luau`.
-- **Asset pipeline**: `assets/manifest.json` as the single source of truth (302 entries on 2026-09-29: 247 approved, 43 reviewing, 7 pending, 4 rejected, 1 needed), uploaded through Open Cloud by `scripts/upload_assets.py`, re-checked by `scripts/refresh_status.py`, with `scripts/sync_configs.py` regenerating `src/shared/config/AssetIds.luau` and `assets/LICENSES.md`. Every consumer treats id `0` as "not uploaded" and no-ops.
-- **Audio, VFX and lighting detail pass**: foley and body-state audio, zombie voices, world ambience and reverb zones, step dust, juke bursts, breath vapour, embers and ash, event-driven post processing, and a lighting director that lerps presets per phase, night flag and biome.
-- **Profiles**: ProfileStore persistence with template, version migration, Credits/XP attributes and an automatic `store.Mock` fallback when DataStores are unavailable in Studio (`src/server/systems/ProfileManager.luau`).
-- **Desert base and range**: ground plane, road out to the burning city and an outdoor shooting range with gong targets behind the hangar (`src/server/systems/DesertBase.luau`).
-- **Weapons**: four classes in `src/shared/config/WeaponsConfig.luau` with five upgrade levels; `src/server/systems/WeaponService.luau` validates fire intent (rate tolerance, unit direction, muzzle origin within 5 studs of head/root plus a line-of-sight raycast), does raycast damage with headshots and per-weapon ammo state that survives swaps; procedural first-person viewmodel (`src/client/systems/Viewmodel.luau`), third-person world model (`src/server/systems/WorldWeapon.luau`), per-class gunshot audio with interior/open reverb tails driven by `AcousticSpace` zone attributes.
-- **Vendors and monetization**: authoritative catalogs and purchases over a RemoteFunction in `src/server/systems/ShopService.luau` (weapon unlock/upgrade, skills, skins, two loadout slots), and `src/server/systems/MonetizationService.luau` with an idempotent `ProcessReceipt` keyed on the profile's `PurchaseHistory` and a Robux Continue product.
-- **ITD run layer**: ammo crates with green smoke pillars, per-run mission goals with credit bonuses, loadout slots, and the Farmstead and Cornfield biomes.
-- **Anti-blur pass**: texel density normalised across surfaces, bloom limits and a sun-in-frame exception for the forest preset.
-- **Skinned zombies (2026-09-29, da0ea7e)**: three CC BY 4.0 Sketchfab characters with 22 authored clips (`ZombieSkins`, `ZombieRigs`), bone-driven hit boxes and static torso blockers (`ZombieHitboxes`), walk/run choice by ground speed, attack swing, Hazmat scream, Ghoul flinch, held death poses and posed corpse props. See [[Gameplay Systems]].
-- **MW2019 weapon pass (2026-09-29, da0ea7e)**: first-person packs for all four classes (`PackViewmodel`, `ViewmodelClipPlayer`), tactical and empty reloads with ammo-add, shell-by-shell shotgun with fire cancel, draw time, pooled visible casings with landing sounds, a new muzzle flash, marker-driven foley, the low-ammo layer, and 32 CC0 recordings from The Free Firearm Sound Library. See [[Gameplay Systems]] and [[Decisions]].
+- **Run core**: auto-run driver, lateral input, lane clamp, server distance and speed ramp in `DistanceTracker`; five procedural biomes from the chunk factory, then long maps chained with forks ([[Map Segments]], [[Prebuilt Maps]], [[Megascans]], [[Environment]]).
+- **Zombies**: weighted spawning, the juke mechanic and the three-radius state machine in `ZombieAI`; three CC BY 4.0 skinned zombies with 22 clips, bone-driven hit boxes and held death poses ([[Gameplay Systems]]).
+- **Hub, squad and flow**: hangar, vendor rooms, three boardable helicopters, squad lobby and launch; the helicopter intermission with cabin, crash beat and wake-up ([[Heli Intermission]]).
+- **Death sequence**: corpse pose, feeding ring, corpse-eye camera, results and one Continue per run.
+- **Weapons**: four classes with five upgrade levels, server-validated fire and ammo, Fab and committed first-person packs with tactical and empty reloads, casings, marker-driven foley, the low-ammo layer, stances, wall pullback, hit and kill markers, damage numbers ([[Stances]], [[Wall Pullback]], [[Hit Markers]], [[Weapon Audio]]).
+- **Sound in space**: the spatial audio engine with distance curves, occlusion, reflections, a bus mix and a limiter; weapons play on it behind a switch until the listening pass ([[Weapon Audio]]).
+- **Zombies layer**: kill credits banked at run end and the Perk Lab ([[Run Economy]]), diegetic weapon pickups and the supply drop ([[Weapon Pickups]]), the upgrade station ([[Upgrade Station]]), mission goals on the HUD ([[Goals HUD]]), route forks step 1 ([[Route Forks]]).
+- **Bodies**: the Swat Guy soldier body, the third-person body layer and the coded locomotion sets ([[Soldier Body]], [[Third-Person Body]], [[Third-Person Locomotion]]).
+- **Asset pipeline and credits**: `assets/manifest.json` as the single source of truth through Open Cloud, generated `AssetIds` and `LICENSES.md`, and the in-game credits panel ([[Assets Pipeline]], [[Credits]]).
+- **Code health**: every comment removed from `src/` with `tools/strip_comments.py --check` keeping them out (2026-10-12).
 
-## Now: quality pass in stages
+## Decisions in force
 
-After the 2026-09-29 review the work runs in stages, one area at a time, each held to the standard of the best current shooters:
+| # | Decision |
+| --- | --- |
+| D1 | Zombies chase all the time but cannot catch a player who keeps running; they catch you when you stop, stumble or hit a barrier |
+| D2 | PC first; console at PC parity through gamepad; phone and tablet supported, with degraded visuals allowed |
+| D3 | Perks are wired into gameplay |
+| D4 | No comments in code (done) |
+| D5 | Distance credits per minute are capped at the base-speed rate times 1.1; kill and goal credits are not |
 
-| Stage | Scope | Status |
+Open for the owner:
+
+| Call | Options | Blocks |
 | --- | --- | --- |
-| 0. Test yard | A Studio yard in place of the run, with every texture, prop, weapon and animation on show and weapons to fire | Done (da0ea7e) |
-| 1. Regressions | Casing size, animations that looked broken, muffled gunshots | Casings checked at real size; gunshots rebuilt (v6), waiting for a listen; first-person clips checked frame by frame; the weapon gallery's rigs hung above their posts and now stand on them; the Uzi (stock against the cheek) and pistol (too far) reframed; recoil made frame-rate independent and set near MW2019 hip fire, the shotgun's clip kick cut from 34 to about 15 degrees |
-| 2. Sound in space | Distance curves per class, air absorption, speed-of-sound delay, occlusion, reflections, environment tails and reverb, a bus mix with ducking and a limiter, for every sound | Engine in (70feddb) and the weapons on it behind `SfxConfig.WEAPONS_ON_ENGINE` ([[Weapon Audio]]); waiting for the listening pass, then the legacy paths go |
-| 3. Animation | Everything that moves: first-person packs, zombies, the third-person player, procedural layers; the best available sources | Third-person body layer on (the place keeps the avatar joint upgrade off for `Motor6D` joints), holds being tuned ([[Third-Person Body]]); third-person locomotion sets coded ([[Third-Person Locomotion]]), owed: the sixteen Mixamo clips through the retarget, then the yard gallery on `clipSetFor` |
-| 4. Weapons and ammunition | Behaviour and feel, the remaining MW spec items (mech and punch layers, hit and kill markers, wall pull-back, the first raise) | Planned |
-| 5. Environment | Props in the road chunks, textures and decals, map and lighting | Environment pass in (a371ee6): road dressing clusters, material variants per biome, mesh middle row and ruins, decal layer, night presets per biome, chunk budgets and the yard's biome strip ([[Environment]]); the screenshot plan and the missing decals are open |
+| Audit rerun | Targeted rerun of the camera, VFX and zombie-animation audits (recommended), full rerun, or accept the briefs as written | M2 sprint planning |
+| D-AV2 slice rifle | The committed `RifleClips` or the Fab `M4Clips`, picked on look; clean clones and CI keep the fallback either way | Quality bar sign-off, then D-AV1 |
+| D-AV1 arms | Camo sleeves and gloves (three of four packs today) or the bare forearm with a watch | A16 and the class arm passes |
+| ADS | Keep hip fire only, or add aim-down-sights (closer to the references, adds a viewmodel and camera epic) | Quality bar weapon rows |
+| Boundary clock | Keep the ClockTime sweep inside map boundary blends, or change the clock behind the fork | Lighting passes |
+| Rifle empty reload | Keep 3.4 s, or `reloadTimeEmpty` 3.13 with `ammoAddEmpty` 2.40 | A17 |
 
-Carried over from the MW2019 pass:
+## Milestones
 
-| Item | Detail |
-| --- | --- |
-| Skinned zombie gaps | No rise or feeding clips, so riser and feast formations spawn as idle zombies and corpse feeders stand still; the Hazmat has no death clip. Mixamo has Zombie Stand Up (three variants) and Zombie Biting Victim On The Ground (`docs/research/animation-sources-2026-09-30.md`) |
-| Animation sources | Searched 2026-09-30 under the asset policy (`docs/research/animation-sources-2026-09-30.md`): no free CC0 / CC BY first-person pack reaches MW2019; the packs at that level are engine-bound Fab listings. Shortlist: Mixamo for every third-person clip, Cransh AK-74m and 1Matzh 9mm Pistol / Scorpion for first person, UTPS.dsk for native R15 reloads |
-| In-game credits | Every Sketchfab asset is CC BY 4.0, and the footsteps, the OpenGameArt shots and the mag drop are CC BY 3.0; `assets/LICENSES.md` says the credits belong in the settings panel before release |
-| Ship switches and gate | Set `WeaponsConfig.ALL_WEAPONS_UNLOCKED` back to false; run `selene src/`, `python3 tools/validate_api.py` and `rojo build` before each commit |
-| Shotgun pack | Stays the Saps-12: teenjust500's 870 has the same broken shared skin and no idle or walk clips; revisit if a clean pump pack turns up |
+Sprints are two weeks. There is no velocity history yet, so the targets are re-baselined after sprint 1.
 
-## Next: Zombies layer
+| # | Theme | Target |
+| --- | --- | --- |
+| M1 | Secure foundation | end of sprint 2 |
+| M2 | Vertical slice: City night, Rifle, skinned zombies at the bar | sprints 3-6 |
+| M3 | Scale presentation to every weapon and zombie, gamepad | sprints 7-8 |
+| M4 | Every biome, touch and the Low tier | sprints 9-10 |
+| M5 | Public test readiness | sprints 11-12 |
 
-The stage the owner has specified. Reference for it is Call of Duty: Zombies as a risk economy, not as a wave-based map. Fixed work order: kill credits → perks → diegetic pickups → intermission → upgrade station.
+### M1 Secure foundation
 
-### 1. Kill credits paid mid-run (`RunEconomy`)
+Contains T1, T2, T3 (split into server multipliers and the speed path), T4, T5, T6, T11, T14, T18, T21, T22, and A1-A5 (asset guidance, worktree setup, generation probe, quality bar, capture harness).
 
-A new server service holding a per-run credit balance separate from the profile balance. Kills pay into it as they happen; the results screen banks it into the profile through `ProfileManager`. Dying without a Continue does **not** burn what was earned: penalties there were judged demotivating, and that call belongs in [[Decisions]]. The kill hook already exists: `src/server/systems/WeaponService.luau` awards weapon XP and reports the `Kills` metric to `MissionGoals` from the same place.
+Exit criteria:
+- CI is green on main, and a deliberately broken test turns it red.
+- In a non-Studio server an equip for an unowned weapon is ignored (**owner step** for the live check).
+- Moving the HumanoidRootPart 5000 studs during a run changes neither credits nor the leaderstat, and a test covers the clamp.
+- Every perk has a measurable effect; the combined reload multiplier stays at or above 0.6 and max health at or below 180.
+- A 36 studs/s run earns at most 1.1 times the distance credits of a 24 studs/s run (test in `tests/economy`).
+- Every Continue receipt resolves, the timeout case included; product id 0 grants nothing outside Studio.
+- A thrown error in one client init leaves the HUD, weapons and death flow working.
+- Non-finite numbers are rejected on every remote that takes one (test).
+- [[Performance]] holds the baseline numbers and names the measurement method later tasks reuse.
+- The Open Cloud key never appears in a process argument list.
+- A worktree made by `scripts/worktree_setup.sh` builds, draws the Fab rifle in Studio and shows a clean `git status`.
+- The asset guidance matches the 2026-09-07 policy, and generated assets carry `generator` and `terms` in the manifest and in `LICENSES.md`.
+- The Studio MCP generation tools and the audio upload quota are checked and written down.
+- The quality bar (`docs/av/vertical-slice-bar.md`, at most 30 rows tagged P0 or P1) is signed off by the owner, and the capture harness reproduces its shots.
 
-### 2. Perks
+### M2 Vertical slice
 
-Six starter perks (Toughness, Sprinter, Fast Hands, Field Medic, Scavenger, Steady Aim), levels 1-3. Slot 1 is free, slots 2 and 3 are bought with Credits. Perks and slots are **Credits only, never Robux**: the no-pay-to-win rule in the project rules. Build order inside the item: config module → Perk Lab station in the hangar (a sixth vendor-style room, same `VendorPrompt` pattern as `src/server/systems/VendorRooms.luau`) → HUD readout.
+Scope: the City map at night, the Rifle only, the skinned zombies, played solo. Everything the player sees and hears in that slice reaches the bar before any of it is copied to other content. It opens with T9 (relentless chase), T15 (light budget and quality tiers), T16, T17 (pooling, then the WeaponVfx split) and T20 (ZombieAI split), because the AV tasks build on them. Then A6-A31: the baseline capture, the weapon audio listening pass and the legacy removal, the mix master, the mech and punch layers, impacts, distant shots, markers, City ambience, the living camera, the weapon motion layer, arms, clip polish, the first raise, rifle surfaces, zombie flinch, death and wound materials, pursuit audio, muzzle, impact and blood effects, City lighting, decals, up to three hero props, the colour grade and the hit direction indicator.
 
-Open question to settle before writing the config: four of the six names overlap the persistent skills already in `src/shared/config/SkillsConfig.luau` (Toughness, Endurance, FastHands, Scavenger), which are applied through `src/server/systems/SkillEffects.luau`. Either perks subsume skills or perks are the per-run layer over them; shipping both under near-identical names would be confusing.
+Exit criteria:
+- Every P0 row of the bar passes in an owner review of a 5-minute Medium run, with the verdict, date and capture recorded in the row; P1 rows are tracked.
+- No manifest slot used by the slice is `needed` or `placeholder`.
+- `SfxConfig.WEAPONS_ON_ENGINE` and the legacy weapon audio path are gone.
+- Every bus sits within 3 LU of its loudness target.
+- T9 holds on Medium: an auto-running player with no steering input is never reached from behind; a player who stops is reached within about 3 s.
+- With 60 zombies alive the zombie server step stays under 0.3 ms by the [[Performance]] method, and `InstanceCount` stays within 2 percent over 30 s of fire after warm-up.
+- At most 12 live PointLights with 6 chunks ahead on High, with 2 reserved for muzzle flashes.
+- PC High shows no frame time regression against the M1 baseline.
+- A dummy remote shooter reads as near, mid and far at 30, 200 and 600 studs.
+- All tests, selene, `validate_api.py`, `strip_comments.py --check` and `rojo build` are green.
 
-### 3. Diegetic weapon pickups
+### M3 Scale presentation
 
-No wall-buy. Weapons lie in the world as staged scenes defined by a new `PickupScenesConfig` (dead soldier, shotgun on a fence post, chainsaw at a sawmill, pistol by a police car, SMG on checkpoint sandbags) picked up by holding a key for 0.3s. Each scene carries a `Highlight` outline so it reads through fog, and highlights must be **pooled: Roblox only renders 31 `Highlight` instances at once**, so scenes beyond the budget hand their outline back as the player passes.
+Contains T7a (gamepad and console menus), T10 (telemetry), T13 (shotgun and TTK), and A32-A37: clip defects, class parity for Pistol, SMG and Shotgun, zombie rise, feed and Hazmat death clips, third-person locomotion clips, the HUD pass and the upgrade announcer.
 
-The mystery box survives in reworked form: a crashed supply drop marked with red smoke. Green smoke stays reserved for ammo crates (`src/server/systems/AmmoCrates.luau`) so the two are never confused at distance.
+Exit criteria:
+- Pistol, SMG and Shotgun each pass the bar's weapon rows.
+- The SMG reload and equip defects and the shotgun shell slide are gone in frame-step captures.
+- Risers rise, feeders chew, the Hazmat dies on a clip (**owner step**: the Mixamo downloads).
+- Teammates use the class locomotion sets with no fallback (**owner step**: the Mixamo downloads).
+- A full run and every menu, the credits panel included, work with a gamepad only; PC controls are unchanged.
+- The smallest HUD text is at least 24 px at 1080p in the console emulator.
+- A Luau test covers the shotgun one-shot rule, and [[Gameplay Systems]] has the TTK table.
+- Telemetry events appear in the Creator Dashboard after a published test (**owner step**).
 
-### 4. Helicopter intermission
+### M4 Every biome, every platform
 
-Replaces the current instant hand-off, where `MissionService.startSquad` spawns the squad straight onto `HangarConfig.RUN_START_CFRAME`. Three beats:
+Contains T7b (touch), A38 (Forest, Wasteland, Farmstead and Cornfield, each through lighting, materials and the ambience bed) and A39 (Low tier audiovisual budget).
 
-| Beat | Content |
-| --- | --- |
-| Cabin | Interactive helicopter interior: loadout and perk swap, ready check, 90s AFK timeout |
-| Crash cinematic | ~12-15s; the pilot turns, the copilot shoots him. No gore in this cutscene: everyone sees it and the Gore toggle does not apply |
-| Wake-up | Player comes to at the wreck with a 6s aggro grace window and a "RUN" prompt |
+Exit criteria:
+- Each of the four biomes passes the bar's world rows, and its bed crossfades at the boundary.
+- A full run is playable with touch only, and touch buttons stay clear of the HUD at 16:9, 19.5:9 and 4:3.
+- Low tier frame time beats the M1 baseline in the phone emulator, and the pursuit cue is still audible.
 
-Repeat runs play a compressed ~5s version with skip voting. The crash is faked entirely with camera keyframes, light and sound: no real physics.
+### M5 Public test readiness
 
-### 5. Upgrade station
+Contains T8 (first 60 seconds), T12 (squad scaling, spectate, squad goal), A40 (placeholder release gate), and the owner items below.
 
-A Pack-a-Punch-style station reachable mid-run that upgrades the carried weapon for run credits, with an announcer voice on use. The weapon level ladder it drives already exists (`WeaponsConfig.MAX_LEVEL = 5`, `upgradePrice`, `damageAt`), so the work is the station, the in-run spend path and the audio. Announcer lines are **owner-blocked**: the project rules require real licensed audio files through the manifest pipeline, never generated speech.
+Exit criteria:
+- A new profile gets its first kill within 25 s.
+- Zombies per player per minute stay within 20 percent across 1, 2 and 3 players; a dead player can cycle spectate targets; the squad goal pays every member once.
+- `refresh_status.py --release` fails on any placeholder and on any needed slot whose system ships, and passes on the release build.
+- One owner-run 2-player session confirms distant shots, pursuit audio and teammate locomotion.
+- Product ids are set, the maturity questionnaire is done and the live receipt test from `docs/monetization-test-plan.md` passes (**owner step**).
 
-## Planned: Route forks
+## Critical path
 
-Branching route choice at biome boundaries: the squad votes with their feet between two entrances (Sewer, Forest, Metro with a burning train hazard, more to come), each branch trades a cost for a reward, and run modifiers stack on top. Full design and the live status board are in [[Route Forks]]. First step is a fork between two existing biomes to prove voting and route insertion before any new art. Step 1 is built and in playtest (2026-09-28).
+T1, T2, then T3 inside M1. The quality bar and the capture harness gate every M2 review. In M2 the chain is T17 then the WeaponVfx split, then T15's light budget, then the muzzle and impact effects; T16 then the ZombieAI split, then zombie flinch and death; the weapon audio listening pass, then the legacy removal, then the mech and punch layers. The owner's look and listen reviews are on the critical path for every M2 exit row, so they are batched twice per sprint.
+
+## How parallel work stays safe
+
+- **One Studio lane.** Studio MCP drives one Studio session, so only one task at a time plays, captures or verifies. Code lanes merge first and hand over a verification note.
+- **One asset lane.** Assets are authored in parallel, but only one task at a time writes the manifest, `AssetIds.luau`, `LICENSES.md` and `NEEDED.md`.
+- **One writer per shared module.** The order per module (WeaponService, DistanceTracker, ZombieAI, ZombieVfx, WeaponVfx, WeaponSfx, the viewmodel modules, lighting, PostFx, settings and the rest) is in the single-writer map of `production/av-polish-tasks.md`.
+- **Worktrees carry the Fab content.** The Fab packs are gitignored, so a plain worktree falls back to the legacy viewmodel; viewmodel work runs only in the main checkout or a worktree from `scripts/worktree_setup.sh` ([[Development Policy]]).
+- **Line numbers are stale.** The comment strip moved every line, so briefs locate code by symbol name.
+
+## Risks
+
+| Risk | Likelihood | Impact | Mitigation |
+| --- | --- | --- | --- |
+| The AV briefs rest on unaudited premises (two already failed: the camera bob exists, no ragdoll exists) | High | Med | "Verify first" lines; targeted audit rerun before M2 planning |
+| Owner time for look and listen reviews holds up M2 | High | High | The bar turns reviews into a checklist; two review slots per sprint |
+| The single Studio session serialises verification | High | Med | Code in parallel, one verification queue in merge order |
+| The audio upload quota is too small for about 40 M2 uploads | Med | High | Checked in M1; fallback packs variants into one file with playback regions |
+| Studio MCP generators cannot make what a brief assumes (alpha sprite sheets, uploadable ids) | Med | Med | Checked in M1; Blender renders and licensed packs as the fallback |
+| Moderation delays leave slots silent | Med | Med | Upload early in the sprint; id 0 degrades to silence |
+| Mixamo downloads need the owner's account | High | Med | Exact clip lists in the briefs; agents do the retarget and wiring |
+| Generated asset terms change | Low | High | Service and terms date recorded per manifest row |
+| Merge conflicts in the god modules | Med | Med | Single-writer map; the ZombieAI and WeaponVfx splits land early in M2 |
 
 ## Later
 
-- **Robux product and pass ids**: `src/shared/config/ProductsConfig.luau` still ships `productId = 0` and `passId = 0` for Continue, VIP and Supporter Pack. Every call site checks `ProductsConfig.isConfigured(...)` first, so the game runs with them at 0 and falls back to a free Continue. **Owner-blocked**: the items have to be created in the Creator Dashboard and the numeric ids pasted in. Test procedure is written up in `docs/monetization-test-plan.md`.
-- **Animation clips** (updated 2026-09-29): player run, death and stumble are live, zombies use the 22 clips of their Sketchfab packs (the 7 Quaternius zombie clips remain for the fallback rigs), and the five viewmodel slots are obsolete because the pack clips are baked into Luau. Open: `player/strafe_left` and `player/strafe_right` and the sixteen locomotion and zombie slots of [[Third-Person Locomotion]] (Mixamo through `retarget_mixamo.py`; the rifle and pistol strafes replace the additive strafe leans once uploaded).
-- **Spectating**: on death in a squad, watch surviving teammates until the run ends instead of returning to the hub immediately. Nothing in `src/` implements this yet.
-- **More biomes and zombie types**: both are data-driven; a biome is an entry in `LocationsConfig` plus a `laneStyle`/prop set in `ChunkFactory`, a zombie is an entry in `ZombiesConfig`.
-- **TeleportService**: only if the hub and the run ever split into separate places. Today they share one DataModel, 4300 studs apart (`HangarConfig.HUB_CENTER` vs `GameConstants.RUN_ORIGIN`), which `StreamingEnabled` handles; transport is already abstracted behind `FlowService` phases, so the split would be contained.
-- **Loose ends worth closing**: (closed 2026-10-01: the `NoDamage500` goal is reachable, `DistanceTracker` reports the best clean stretch as `CleanDistance`, see [[Goals HUD]]); (closed 2026-10-12: `src/server/systems/TrackBuilder.luau` line 20 already pivots the start platform from `GameConstants.RUN_ORIGIN`, verified in the code, no change needed); (closed 2026-10-12: one `DamageVignette` ScreenGui, owned by `PostFx`; `GoreController` calls `PostFx.flashDamage()` when `bloodEnabled` is on, and the flash stacks with the low-health pulse by taking the minimum transparency).
+- **Route forks steps 4-8**: frozen until grenades exist ([[Route Forks]]).
+- **Run music intensity layer**, the low-health heartbeat, more hero props, teammate revive and aim-down-sights: backlog until the owner or game design asks for them.
+- **More biomes and zombie types**: both are data, an entry in `LocationsConfig` or `ZombiesConfig`.
+- **TeleportService**: only if the hub and the run ever split into separate places; the transport is already behind `FlowService` phases.
 
 ## Blocked on the owner
 
-| Item | Why it cannot move in code | What unblocks it |
-| --- | --- | --- |
-| Continue product, VIP and Supporter passes | Ids must exist in the Creator Dashboard | Create the items, paste ids into `ProductsConfig` |
-| Player strafe clips | No strafe loop in the CC0 library | Download Mixamo `Rifle Strafe Left/Right`, run the retarget pipeline, upload |
-| Upgrade station announcer voice | Audio must be a real licensed file; generated speech is banned | Source or record licensed lines, add them to `assets/manifest.json` |
-| Real receipt testing | Studio purchase testing does not exercise the live receipt pipeline | Publish the place and re-run the cases in `docs/monetization-test-plan.md` with a non-owner account |
-| Maturity questionnaire | Stylised blood and dismemberment need the experience rated before wider release | Complete the questionnaire at publish time |
+| Item | What unblocks it |
+| --- | --- |
+| Continue product, VIP and Supporter passes | Create the items in the Creator Dashboard and paste the ids into `ProductsConfig` |
+| Real receipt testing | Publish and run `docs/monetization-test-plan.md` with a non-owner account |
+| Maturity questionnaire | Complete it at publish time |
+| Mixamo clips (player strafes, third-person sets, zombie rise and feed) | Download the clips listed in the A34 and A35 briefs |
+| Audio upload quota | Read it in the Creator Dashboard for the M1 probe |
+| Look and listen sign-off | Score the bar rows in the batched reviews |

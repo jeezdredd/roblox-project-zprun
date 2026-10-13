@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Python dependencies
-        run: pip install numpy
+        run: pip install numpy pillow
       - name: Lint
         run: selene src/
       - name: API usage

@@ -8,6 +8,7 @@ local Workspace = game:GetService("Workspace")
 local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local LocationsConfig = require(ReplicatedStorage.Shared.config.LocationsConfig)
 local DevConfig = require(ReplicatedStorage.Shared.config.DevConfig)
+local RunDistanceGuard = require(ReplicatedStorage.Shared.util.RunDistanceGuard)
 local MissionState = require(script.Parent.MissionState)
 local MissionGoals = require(script.Parent.MissionGoals)
 local SkillEffects = require(script.Parent.SkillEffects)
@@ -26,6 +27,9 @@ type RunState = {
 	strikes: number,
 	lastHealth: number,
 	lastHitDistance: number,
+	guard: RunDistanceGuard.State?,
+	lastPosition: Vector3?,
+	validCFrame: CFrame?,
 }
 
 local STUCK_CHECK_INTERVAL = 2
@@ -34,6 +38,8 @@ local STUCK_NUDGE_STRIKES = 2
 local STUCK_DEATH_STRIKES = 5
 local STUCK_GRACE = 3
 local NUDGE_STEPS = { 14, 28, 42 }
+
+local VALID_LEAD = 8
 
 local runs: { [Player]: RunState } = {}
 
@@ -49,11 +55,57 @@ local function newRun(): RunState
 		strikes = 0,
 		lastHealth = math.huge,
 		lastHitDistance = 0,
+		guard = nil,
+		lastPosition = nil,
+		validCFrame = nil,
 	}
 end
 
 local function freezeHeld(): boolean
 	return RunService:IsStudio() and (DevConfig.FREEZE_RUN or workspace:GetAttribute("DevFreezeRun") == true)
+end
+
+local function forwardOf(position: Vector3): number
+	return position:Dot(GameConstants.RUN_DIRECTION)
+end
+
+local function rebase(run: RunState, root: BasePart)
+	local guard = run.guard
+	if guard then
+		RunDistanceGuard.rebase(guard, forwardOf(root.Position))
+	end
+	run.lastPosition = root.Position
+	run.validCFrame = root.CFrame
+end
+
+local function snapBack(run: RunState, root: BasePart)
+	local valid = run.validCFrame
+	if not valid then
+		return
+	end
+	root.AssemblyLinearVelocity = Vector3.zero
+	root.CFrame = valid
+	rebase(run, root)
+end
+
+local function validate(run: RunState, root: BasePart, deltaTime: number, now: number): number
+	local position = root.Position
+	local guard = run.guard
+	if not guard then
+		guard = RunDistanceGuard.new(forwardOf(position))
+		run.guard = guard
+		run.lastPosition = position
+		run.validCFrame = root.CFrame
+	end
+	local last = run.lastPosition or position
+	local verdict = RunDistanceGuard.step(guard, forwardOf(position), (position - last).Magnitude, deltaTime, GameConstants.MAX_RUN_SPEED, now)
+	run.lastPosition = position
+	if verdict == "snap" then
+		snapBack(run, root)
+	elseif verdict == "ok" or (verdict == "clamped" and forwardOf(position) - guard.validated <= VALID_LEAD) then
+		run.validCFrame = root.CFrame
+	end
+	return guard.best
 end
 
 local function relocate(character: Model, root: BasePart): boolean
@@ -156,7 +208,7 @@ local function step(deltaTime: number)
 			runs[player] = run
 		end
 
-		local traveled = root.Position:Dot(GameConstants.RUN_DIRECTION)
+		local traveled = validate(run, root, deltaTime, now)
 		if traveled > run.best then
 			run.best = traveled
 			updateLeaderstats(player, traveled)
@@ -189,7 +241,9 @@ local function step(deltaTime: number)
 				if run.strikes >= STUCK_DEATH_STRIKES then
 					(humanoid :: Humanoid).Health = 0
 				elseif run.strikes >= STUCK_NUDGE_STRIKES then
-					relocate(character :: Model, root)
+					if relocate(character :: Model, root) then
+						rebase(run, root)
+					end
 				end
 			end
 		end
@@ -241,6 +295,26 @@ function DistanceTracker.init()
 		runs[player] = nil
 	end)
 	RunService.Heartbeat:Connect(step)
+end
+
+function DistanceTracker.resetBaseline(player: Player)
+	local run = runs[player]
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if run and root and root:IsA("BasePart") then
+		rebase(run, root)
+	end
+end
+
+function DistanceTracker.getValidatedPosition(player: Player): Vector3?
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	local run = runs[player]
+	local valid = run and run.validCFrame
+	if valid then
+		return valid.Position
+	end
+	return if root and root:IsA("BasePart") then root.Position else nil
 end
 
 function DistanceTracker.getDistance(player: Player): number

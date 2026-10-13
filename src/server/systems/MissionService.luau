@@ -53,6 +53,7 @@ end
 local function placeHeld(player: Player, character: Model, root: BasePart, cframe: CFrame)
 	setOwner(root, nil)
 	character:PivotTo(cframe)
+	DistanceTracker.resetBaseline(player)
 	task.wait(OWNERSHIP_HOLD)
 	if player.Character == character and root.Parent then
 		setOwner(root, player)

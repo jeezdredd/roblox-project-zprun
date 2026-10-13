@@ -9,6 +9,7 @@ local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local WeaponService = require(script.Parent.WeaponService)
 local SkillEffects = require(script.Parent.SkillEffects)
+local DistanceTracker = require(script.Parent.DistanceTracker)
 
 local AmmoCrates = {}
 
@@ -145,8 +146,9 @@ local function step()
 		if not humanoid or humanoid.Health <= 0 then
 			continue
 		end
+		local position = DistanceTracker.getValidatedPosition(player) or root.Position
 		for _, crate in crates do
-			if not crate.taken and (crate.root.Position - root.Position).Magnitude <= PICKUP_RADIUS then
+			if not crate.taken and (crate.root.Position - position).Magnitude <= PICKUP_RADIUS then
 				collect(player, crate)
 			end
 		end

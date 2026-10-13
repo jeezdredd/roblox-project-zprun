@@ -24,7 +24,7 @@ Estimates are optimistic / expected / pessimistic agent-days. No velocity histor
 | A4a | Quality bar: weapon and camera rows | creative-director | 0.5 / 0.5 / 1 | none | docs/av/vertical-slice-bar.md (new) | H | G1 | todo |
 | A3 | Generation probe and upload quota | technical-artist | 0.5 / 0.5 / 1 | Studio lane free; owner for the quota | docs/av/generation-capabilities.md (new) | S (Studio) | G1 | todo |
 | A4b | Quality bar: audio rows | sound-designer | 0.5 / 0.5 / 1 | A4a | docs/av/vertical-slice-bar.md | H | G2 | todo |
-| T2 | Server-validated distance (CRITICAL PATH) | network-programmer | 1.5 / 2 / 3 | T1 merged | DistanceTracker, RunPromptGuard, AmmoCrates, WeaponPickups, UpgradeStations, DeathService (baseline resets), GameConstants, tests/distance (new) | A | G2 | todo |
+| T2 | Server-validated distance (CRITICAL PATH) | network-programmer | 1.5 / 2 / 3 | T1 merged | DistanceTracker, RunPromptGuard, AmmoCrates, WeaponPickups, UpgradeStations, DeathService (baseline resets), GameConstants, tests/distance (new) | A | G2 | done (owner live check pending) |
 | T14 | Baseline profile | performance-analyst | 0.5 / 1 / 1.5 | A3 done in the Studio lane; owner for MicroProfiler | wiki Performance.md only | S (Studio) | G2 | todo |
 | A4c | Quality bar: world, effects, HUD rows and capture list | art-director | 0.5 / 0.5 / 1 | A4b | docs/av/vertical-slice-bar.md | H | G3 | todo |
 | T3a | Perks: server multipliers (CRITICAL PATH) | gameplay-programmer | 1.5 / 2 / 3 | T2 merged; T5 if it registers a client module | PerkEffects (new), PerkService, SkillEffects, PerksConfig, WeaponService, AmmoCrates | A | G3 | todo |

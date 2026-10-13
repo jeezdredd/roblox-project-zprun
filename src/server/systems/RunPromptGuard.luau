@@ -1,6 +1,7 @@
 --!strict
 
 local MissionState = require(script.Parent.MissionState)
+local DistanceTracker = require(script.Parent.DistanceTracker)
 
 local RunPromptGuard = {}
 
@@ -17,7 +18,8 @@ function RunPromptGuard.canUse(player: Player, anchor: Vector3, reach: number): 
 	if not root or not root:IsA("BasePart") or not humanoid or humanoid.Health <= 0 then
 		return false
 	end
-	return (root.Position - anchor).Magnitude <= reach
+	local position = DistanceTracker.getValidatedPosition(player) or root.Position
+	return (position - anchor).Magnitude <= reach
 end
 
 return RunPromptGuard

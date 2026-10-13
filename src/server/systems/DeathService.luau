@@ -86,6 +86,7 @@ local function reviveAtDeath(player: Player, deathCFrame: CFrame)
 	local character = player.Character
 	if character then
 		character:PivotTo(deathCFrame + Vector3.new(0, 2, 0))
+		DistanceTracker.resetBaseline(player)
 		local forceField = Instance.new("ForceField")
 		forceField.Parent = character
 		task.delay(REVIVE_PROTECTION_TIME, function()

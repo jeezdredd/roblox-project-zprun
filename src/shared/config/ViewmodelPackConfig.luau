@@ -14,6 +14,7 @@ export type ShellClips = {
 	enter: string,
 	loop: ClipCut,
 	leave: string,
+	leaveFrom: number?,
 	chamber: ClipCut,
 }
 
@@ -71,6 +72,7 @@ export type ClassPack = {
 	cuts: { Cut }?,
 	surfaces: { [string]: string }?,
 	surfacesReplace: boolean?,
+	clipSounds: { [string]: string }?,
 }
 
 local ViewmodelPackConfig = {}
@@ -178,7 +180,7 @@ ViewmodelPackConfig.classes = {
 		},
 		surfacesReplace = true,
 	},
-	Shotgun = {
+	ShotgunSaps = {
 		asset = "shotgun",
 		clips = "ShotgunClips",
 		eye = CFrame.new(0, 4.72, -0.066),
@@ -207,7 +209,7 @@ ViewmodelPackConfig.classes = {
 		surfaces = { Shirt_BlackCamo2 = "comando_shirt" },
 		surfacesReplace = true,
 	},
-	SMG = {
+	SMGUzi = {
 		asset = "smg",
 		clips = "SMGClips",
 		eye = CFrame.new(0, 4.42, -0.066),
@@ -257,6 +259,67 @@ ViewmodelPackConfig.classes = {
 				{ at = 0.7, name = "BoltForward" },
 			},
 		},
+	},
+	SMG = {
+		asset = "mp7",
+		clips = "MP7Clips",
+		importScale = 10.897,
+		eye = CFrame.new(-0.13, 0.12, 0.36),
+		hold = Vector3.new(0, 0, 0),
+		actionHold = Vector3.new(0, 0, 0),
+		weaponBone = "MAIN",
+		weaponMesh = "^MP72$",
+		muzzle = { position = Vector3.new(0.0565, -0.0562, -0.0896), direction = Vector3.new(-0.1971, -0.5957, -0.7786) },
+		equip = "Draw",
+		idle = "Idle",
+		move = "Idle",
+		fire = "Fire",
+		reload = { "Reload" },
+		reloadEmpty = { "ReloadEmpty" },
+		tactical = { clip = "Reload", to = 0.95, blendOut = 0.2 },
+		empty = { clip = "ReloadEmpty", to = 0.95, blendOut = 0.2 },
+		phases = {
+			Reload = { { at = 0.21, name = "MagOut" }, { at = 0.645, name = "MagIn" } },
+			ReloadEmpty = {
+				{ at = 0.16, name = "MagOut" },
+				{ at = 0.49, name = "MagIn" },
+				{ at = 0.74, name = "BoltBack" },
+				{ at = 0.78, name = "BoltForward" },
+			},
+		},
+		surfaces = { MP7 = "comando_shirt", MP72 = "mp7_body" },
+		surfacesReplace = true,
+		clipSounds = { Reload = "mp7_reload", ReloadEmpty = "mp7_reload_empty" },
+	},
+	Shotgun = {
+		asset = "m590",
+		clips = "M590Clips",
+		importScale = 10.897,
+		eye = CFrame.new(-0.13, 0.12, 0.36),
+		hold = Vector3.new(0, 0, 0),
+		actionHold = Vector3.new(0, 0, 0),
+		weaponBone = "MAIN",
+		weaponMesh = "^M5902$",
+		muzzle = { position = Vector3.new(-0.041, -0.1227, -0.13), direction = Vector3.new(-0.4769, -0.6119, -0.631) },
+		equip = "Draw",
+		idle = "Idle",
+		move = "Idle",
+		fire = "Fire",
+		reload = { "ReloadStart", "ShellIn", "ReloadEnd" },
+		shell = {
+			enter = "ReloadStart",
+			loop = { clip = "ShellIn" },
+			leave = "ReloadEnd",
+			leaveFrom = 0.4,
+			chamber = { clip = "ReloadEnd", from = 0.12, to = 0.4, blendOut = 0.2 },
+		},
+		phases = {
+			Fire = { { at = 0.24, name = "BoltBack" }, { at = 0.47, name = "BoltForward" } },
+			ShellIn = { { at = 0.42, name = "ShellIn" } },
+			ReloadEnd = { { at = 0.19, name = "BoltBack" }, { at = 0.33, name = "BoltForward" } },
+		},
+		surfaces = { M590 = "comando_shirt", M5902 = "m590_body", M5903 = "m590_shell" },
+		surfacesReplace = true,
 	},
 	Rifle = {
 		asset = "g36c",

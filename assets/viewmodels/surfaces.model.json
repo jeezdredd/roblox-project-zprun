@@ -59,6 +59,29 @@
     },
     {
       "className": "SurfaceAppearance",
+      "name": "m590_body",
+      "properties": {
+        "ColorMap": "rbxassetid://97640560782097",
+        "NormalMap": "rbxassetid://105635469662279"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "m590_shell",
+      "properties": {
+        "ColorMap": "rbxassetid://128570997462993"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
+      "name": "mp7_body",
+      "properties": {
+        "ColorMap": "rbxassetid://77473104290041",
+        "NormalMap": "rbxassetid://123952459739740"
+      }
+    },
+    {
+      "className": "SurfaceAppearance",
       "name": "uzi_watch",
       "properties": {
         "ColorMap": "rbxassetid://71336080168869",

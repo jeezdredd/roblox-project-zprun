@@ -353,7 +353,7 @@ local PHASE_SOUNDS: { [string]: PhaseSound } = {
 	SlideBack = { generic = { "bolt" }, volume = 1.4, pitch = 1.05 },
 	SlideRelease = { generic = { "bolt" }, volume = 1.6, pitch = 1.1 },
 	ShellIn = { generic = { "mag_in" }, volume = 1.2, pitch = 1.3 },
-	Draw = { generic = { "weapon_draw" }, volume = 1.1 },
+	Draw = { generic = { "kit_draw", "weapon_draw" }, volume = 1 },
 	Holster = { generic = { "weapon_holster" }, volume = 1 },
 }
 
@@ -374,10 +374,10 @@ local CLASS_PHASE_KEYS: { [string]: { [string]: string } } = {
 	},
 	Shotgun = {
 		MagOut = "",
-		MagIn = "shotgun_shell_in",
-		ShellIn = "shotgun_shell_in",
-		BoltBack = "shotgun_pump_back",
-		BoltForward = "shotgun_pump_forward",
+		MagIn = "m590_shell_in",
+		ShellIn = "m590_shell_in",
+		BoltBack = "m590_pump",
+		BoltForward = "",
 	},
 	SMG = {
 		MagOut = "smg_mag_out",
@@ -433,6 +433,43 @@ function WeaponSfx.playPhase(phase: string, class: string?, tag: string?)
 			playFoley(weaponSoundId("mag_drop"), 0.9, 1)
 		end)
 	end
+end
+
+local CLIP_SOUND_VOLUME = 0.85
+local CLIP_SOUND_FADE = 0.08
+local clipHandle: AudioEngine.Handle? = nil
+local clipSound: Sound? = nil
+
+function WeaponSfx.playClipSound(key: string?, speed: number)
+	local handle = clipHandle
+	if handle then
+		handle:stop(CLIP_SOUND_FADE)
+		clipHandle = nil
+	end
+	local pooled = clipSound
+	if pooled then
+		pooled:Stop()
+		clipSound = nil
+	end
+	if not key then
+		return
+	end
+	local id = weaponSoundId(key)
+	if id <= 0 then
+		return
+	end
+	if onEngine() then
+		clipHandle = AudioEngine.play({ id = id, class = "WeaponFoley", volume = CLIP_SOUND_VOLUME, pitch = speed, pitchJitter = 0 })
+		return
+	end
+	local sound = acquireVoice(id)
+	sound.Volume = CLIP_SOUND_VOLUME
+	sound.PlaybackSpeed = speed
+	sound.TimePosition = 0
+	pcall(function()
+		sound:Play()
+	end)
+	clipSound = sound
 end
 
 local CASING_VOICES = 12
@@ -633,7 +670,7 @@ end
 
 local IMPACT_VOLUME = 0.7
 local IMPACT_FLESH_VOLUME = 0.5
-local IMPACT_VARIATIONS = 2
+local IMPACT_VARIATIONS = 3
 local IMPACTS_PER_VOLLEY = 2
 local RICOCHET_CHANCE = 1 / 6
 local RICOCHET_VOLUME = 0.5

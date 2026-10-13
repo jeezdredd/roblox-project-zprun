@@ -7,7 +7,9 @@
 The base file keeps its nodes, meshes and skins; its first animation is renamed --name.
 Each --clip file contributes its first animation, its channels re-targeted to the base's
 nodes by name. --idle adds an Idle clip holding the last frame of that clip (the kit has
-no idle). --drop-mesh removes helper meshes by node name. --albedo and --normal embed
+no idle) and makes every other clip hold the idle value on the channels it does not
+animate, as Unity keeps a property no clip writes (the M590 Fire clip leaves the left arm
+controller out, which otherwise snapped back to the file's bind pose). --drop-mesh removes helper meshes by node name. --albedo and --normal embed
 textures into every material whose name matches --material (FBX2glTF cannot find the
 kit's textures at the paths the FBX recorded). Nodes sharing a name (the kit nests a second
 x_wrist_l under x_wrist_l) get _2, _3 by depth in every file, so channels, bakes and
@@ -94,6 +96,29 @@ def held_last_frame(doc, w, source, values_by_sampler, name):
     doc["animations"].append({"name": name, "samplers": samplers, "channels": channels})
 
 
+def hold_missing(doc, w, source, values_by_sampler):
+    last = {}
+    for ch in source["channels"]:
+        last[(ch["target"]["node"], ch["target"]["path"])] = values_by_sampler[ch["sampler"]][-1:]
+    for anim in doc["animations"]:
+        if anim is source or anim["name"] == "Idle":
+            continue
+        have = {(ch["target"]["node"], ch["target"]["path"]) for ch in anim["channels"]}
+        added = 0
+        for (node, path), value in last.items():
+            if (node, path) in have:
+                continue
+            anim["samplers"].append({
+                "input": w.add(np.array([[0.0], [1.0 / 30.0]], np.float32), "SCALAR", FLOAT, minmax=True),
+                "output": w.add(np.vstack([value, value]).astype(np.float32), WIDTHS[path], FLOAT),
+                "interpolation": "LINEAR",
+            })
+            anim["channels"].append({"sampler": len(anim["samplers"]) - 1, "target": {"node": node, "path": path}})
+            added += 1
+        if added:
+            print(f"clip {anim['name']}: held {added} channels at the idle pose")
+
+
 def embed_image(doc, w, path):
     data = open(path, "rb").read()
     while len(w.blob) % 4:
@@ -140,6 +165,7 @@ def main():
         source = next((a for a in doc["animations"] if a["name"] == idle_from), None)
         if source is not None:
             held_last_frame(doc, w, source, caches[idle_from], "Idle")
+            hold_missing(doc, w, source, caches[idle_from])
 
     drop = option(args, "--drop-mesh")
     if drop:

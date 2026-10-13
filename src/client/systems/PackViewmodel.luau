@@ -90,6 +90,7 @@ local SOFT_TAGS: { [string]: boolean } = {
 }
 
 local clipCache: { [string]: ViewmodelClipPlayer.PackData } = {}
+local clipSoundListeners: { (string?, number) -> () } = {}
 
 local function anglesOf(degrees: Vector3?): CFrame
 	if not degrees then
@@ -191,6 +192,16 @@ local function weaponAnchors(model: Model, root: BasePart, pack: ViewmodelPackCo
 	return explicit or inverse * front, inverse * port
 end
 
+local function announceClip(key: string?, speed: number)
+	for _, listener in clipSoundListeners do
+		listener(key, speed)
+	end
+end
+
+function PackViewmodel.onClipSound(listener: (string?, number) -> ())
+	table.insert(clipSoundListeners, listener)
+end
+
 local function start(rig: Rig, entry: Entry): boolean
 	local ok = rig.player:play(entry.name, {
 		speed = entry.speed,
@@ -205,6 +216,8 @@ local function start(rig: Rig, entry: Entry): boolean
 		rig.entry = entry
 		rig.phaseTime = rig.player.time
 		rig.returnFade = entry.blendOut or DEFAULT_RETURN_FADE
+		local sounds = rig.pack.clipSounds
+		announceClip(if sounds then sounds[entry.name] else nil, rig.player.speed)
 	end
 	return ok
 end
@@ -230,6 +243,7 @@ local function returnToBase(rig: Rig, fade: number)
 	rig.base = nil
 	rig.returnFade = fade
 	rig.player:stop()
+	announceClip(nil, 1)
 end
 
 function PackViewmodel.build(class: string, camera: Camera, drawTime: number?): Rig?
@@ -466,6 +480,7 @@ function PackViewmodel.setStancePose(rig: Rig, pose: CFrame)
 end
 
 function PackViewmodel.destroy(rig: Rig)
+	announceClip(nil, 1)
 	rig.model:Destroy()
 end
 
@@ -556,7 +571,19 @@ local function reloadShells(rig: Rig, shell: ViewmodelPackConfig.ShellClips, tim
 			phases = loop.phases,
 		})
 	end
-	table.insert(entries, { name = shell.leave, duration = timing.finish * scale, fade = CHAIN_FADE, tag = "shell" })
+	local leaveFrom = shell.leaveFrom
+	if leaveFrom and plan.empty then
+		table.insert(entries, {
+			name = shell.leave,
+			duration = (timing.finish + timing.chamber) * scale,
+			fade = CHAIN_FADE,
+			tag = "chamber",
+			blendOut = shell.chamber.blendOut,
+		})
+		runQueue(rig, entries)
+		return
+	end
+	table.insert(entries, { name = shell.leave, from = leaveFrom, duration = timing.finish * scale, fade = CHAIN_FADE, tag = "shell" })
 	if plan.empty then
 		local chamber = shell.chamber
 		table.insert(entries, {
@@ -672,7 +699,8 @@ end
 local function firePhases(rig: Rig, clipName: string?, clipDuration: number, onPhase: (string, string?) -> ())
 	local entry = rig.entry
 	local time = rig.player.time
-	if not clipName or not entry or entry.name ~= clipName or clipDuration <= 0 then
+	local sounds = rig.pack.clipSounds
+	if not clipName or not entry or entry.name ~= clipName or clipDuration <= 0 or (sounds ~= nil and sounds[clipName] ~= nil) then
 		rig.phaseTime = time
 		return
 	end

@@ -16,4 +16,7 @@ RunEconomyConfig.STREAK_CAP = 25
 
 RunEconomyConfig.STUDS_PER_CREDIT = 10
 
+RunEconomyConfig.DISTANCE_PAY_SPEED = 24
+RunEconomyConfig.DISTANCE_PAY_SLACK = 1.1
+
 return RunEconomyConfig

@@ -8,8 +8,9 @@ local Workspace = game:GetService("Workspace")
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local HitMarkerMath = require(ReplicatedStorage.Shared.util.HitMarkerMath)
+local PerkMath = require(ReplicatedStorage.Shared.util.PerkMath)
 local ProfileManager = require(script.Parent.ProfileManager)
-local SkillEffects = require(script.Parent.SkillEffects)
+local PerkEffects = require(script.Parent.PerkEffects)
 local MissionGoals = require(script.Parent.MissionGoals)
 local RunEconomy = require(script.Parent.RunEconomy)
 
@@ -199,7 +200,8 @@ local function onEquip(player: Player, weaponId: any)
 	state.drawUntil = os.clock() + config.drawTime
 	states[player] = state
 	player:SetAttribute("Reloading", false)
-	player:SetAttribute("ReloadScale", SkillEffects.reloadScale(player))
+	player:SetAttribute("ReloadScale", PerkEffects.reloadScale(player))
+	player:SetAttribute("SpreadScale", PerkEffects.spreadScale(player))
 	syncAttributes(player, state)
 end
 
@@ -277,6 +279,11 @@ local function handleHit(player: Player, config: WeaponsConfig.WeaponConfig, res
 		MissionGoals.report(player, "Kills", 1)
 		local zombieId = model:GetAttribute("ZombieId")
 		RunEconomy.onKill(player, if typeof(zombieId) == "string" then zombieId else nil, headshot)
+		local heal = PerkEffects.healPerKill(player)
+		local shooter = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+		if heal > 0 and shooter then
+			shooter.Health = PerkMath.healAfterKill(shooter.Health, shooter.MaxHealth, heal)
+		end
 		if progress then
 			progress.xp += WeaponsConfig.XP_PER_KILL
 		end
@@ -383,7 +390,7 @@ local function onFire(player: Player, origin: any, direction: any)
 	local outcomes: { HitMarkerMath.Confirm } = {}
 	for _ = 1, config.pellets do
 		local shotDirection = if config.pellets > 1 or config.spreadDeg > 0
-			then applySpread(direction.Unit, config.spreadDeg)
+			then applySpread(direction.Unit, config.spreadDeg * PerkEffects.spreadScale(player))
 			else direction.Unit
 		local result = Workspace:Raycast(origin, shotDirection * config.range, params)
 		if result then
@@ -421,7 +428,7 @@ local function onReload(player: Player)
 		return
 	end
 
-	local scale = SkillEffects.reloadScale(player)
+	local scale = PerkEffects.reloadScale(player)
 	player:SetAttribute("ReloadScale", scale)
 	local empty = state.mag <= 0
 	local job: ReloadJob = {
@@ -616,7 +623,7 @@ function WeaponService.init()
 	end)
 	ProfileManager.onLoaded(function(player, data)
 		syncLoadout(player)
-		player:SetAttribute("ReloadScale", SkillEffects.reloadScale(player))
+		player:SetAttribute("ReloadScale", PerkEffects.reloadScale(player))
 		local primary = data.Loadout[1]
 		if typeof(primary) == "string" and WeaponsConfig.get(primary) then
 			onEquip(player, primary)

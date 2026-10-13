@@ -110,7 +110,8 @@ local function predictShot(config: WeaponsConfig.WeaponConfig, origin: Vector3, 
 	for _ = 1, config.pellets do
 		local shotDirection = unit
 		if config.pellets > 1 or config.spreadDeg > 0 then
-			local spread = math.rad(config.spreadDeg)
+			local spreadScale = player:GetAttribute("SpreadScale")
+			local spread = math.rad(config.spreadDeg * (if typeof(spreadScale) == "number" then spreadScale else 1))
 			local up = if math.abs(unit.Y) > 0.999 then Vector3.xAxis else Vector3.yAxis
 			shotDirection = (CFrame.lookAt(Vector3.zero, unit, up) * CFrame.Angles(shotRandom:NextNumber(-spread, spread), shotRandom:NextNumber(-spread, spread), 0)).LookVector
 		end

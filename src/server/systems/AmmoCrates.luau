@@ -8,7 +8,7 @@ local GameConstants = require(ReplicatedStorage.Shared.config.GameConstants)
 local Remotes = require(ReplicatedStorage.Shared.net.Remotes)
 local WeaponsConfig = require(ReplicatedStorage.Shared.config.WeaponsConfig)
 local WeaponService = require(script.Parent.WeaponService)
-local SkillEffects = require(script.Parent.SkillEffects)
+local PerkEffects = require(script.Parent.PerkEffects)
 local DistanceTracker = require(script.Parent.DistanceTracker)
 
 local AmmoCrates = {}
@@ -125,7 +125,7 @@ local function collect(player: Player, crate: Crate)
 	local weaponId = player:GetAttribute("WeaponId")
 	local config = if typeof(weaponId) == "string" then WeaponsConfig.get(weaponId) else nil
 	local base = random:NextInteger(ROUNDS_MIN, ROUNDS_MAX)
-	local rounds = if config then math.floor(base * SkillEffects.ammoScale(player)) else 0
+	local rounds = if config then math.floor(base * PerkEffects.ammoScale(player)) else 0
 	WeaponService.addReserve(player, rounds)
 	Remotes.getEvent(Remotes.Event.AmmoPickup):FireClient(player, rounds, crate.root.Position)
 	crate.model:Destroy()

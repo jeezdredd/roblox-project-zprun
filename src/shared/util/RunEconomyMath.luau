@@ -8,6 +8,8 @@ export type Config = {
 	STREAK_STEP: number,
 	STREAK_CAP: number,
 	STUDS_PER_CREDIT: number,
+	DISTANCE_PAY_SPEED: number,
+	DISTANCE_PAY_SLACK: number,
 }
 
 export type Balance = {
@@ -38,8 +40,17 @@ function RunEconomyMath.distanceCredits(config: Config, traveled: number, multip
 	return math.max(0, math.floor(math.max(traveled, 0) / config.STUDS_PER_CREDIT * math.max(multiplier, 0)))
 end
 
-function RunEconomyMath.distanceOwed(config: Config, traveled: number, multiplier: number, banked: number): number
-	return math.max(0, RunEconomyMath.distanceCredits(config, traveled, multiplier) - math.max(banked, 0))
+function RunEconomyMath.distancePayCap(config: Config, elapsed: number, multiplier: number): number
+	local perSecond = config.DISTANCE_PAY_SPEED / config.STUDS_PER_CREDIT * config.DISTANCE_PAY_SLACK
+	return math.max(0, math.floor(math.max(elapsed, 0) * perSecond * math.max(multiplier, 0)))
+end
+
+function RunEconomyMath.distanceOwed(config: Config, traveled: number, multiplier: number, banked: number, elapsed: number?): number
+	local earned = RunEconomyMath.distanceCredits(config, traveled, multiplier)
+	if elapsed then
+		earned = math.min(earned, RunEconomyMath.distancePayCap(config, elapsed, multiplier))
+	end
+	return math.max(0, earned - math.max(banked, 0))
 end
 
 function RunEconomyMath.unpaidBonus(completed: { string }, rewards: { [string]: number }, paid: { [string]: boolean }): (number, { [string]: boolean })

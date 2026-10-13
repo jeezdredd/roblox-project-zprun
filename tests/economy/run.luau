@@ -7,6 +7,8 @@
 local RunEconomyConfig = require("../../src/shared/config/RunEconomyConfig")
 local RunEconomyMath = require("../../src/shared/util/RunEconomyMath")
 local PerksConfig = require("../../src/shared/config/PerksConfig")
+local PerkMath = require("../../src/shared/util/PerkMath")
+local SkillsConfig = require("../../src/shared/config/SkillsConfig")
 
 local failures = 0
 
@@ -163,6 +165,46 @@ group("equip validation", function()
 	check("level 0 cannot ride", not PerksConfig.validateEquipped({ "Scavenger" }, 3, levels))
 	check("slots clamp at max", not PerksConfig.validateEquipped({ "Toughness", "SteadyAim", "FieldMedic", "Sprinter" }, 9, levels))
 	check("slots clamp at one", PerksConfig.validateEquipped({ "Toughness" }, 0, levels))
+end)
+
+
+group("distance pay cap per minute", function()
+	check("cap speed is the base run speed (GameConstants.BASE_RUN_SPEED)", C.DISTANCE_PAY_SPEED == 24)
+	local function minute(speed: number, multiplier: number): number
+		return RunEconomyMath.distanceOwed(C, speed * 60, multiplier, 0, 60)
+	end
+	local base = minute(24, 1)
+	local fast = minute(36, 1)
+	check("base run is under the cap", base == RunEconomyMath.distanceCredits(C, 24 * 60, 1), tostring(base))
+	check("fast run earns at most 1.1x", fast <= math.floor(base * 1.1 + 0.5), string.format("%d vs %d", fast, base))
+	check("fast run still earns more than base", fast > base)
+	check("difficulty multiplier scales the cap", minute(36, 1.5) <= math.floor(base * 1.5 * 1.1 + 1))
+	check("no elapsed time, no pay", RunEconomyMath.distanceOwed(C, 500, 1, 0, 0) == 0)
+	check("without elapsed the old rule holds", RunEconomyMath.distanceOwed(C, 500, 1, 0) == 50)
+	check("cap respects what is banked", RunEconomyMath.distanceOwed(C, 36 * 60, 1, 100, 60) == RunEconomyMath.distancePayCap(C, 60, 1) - 100)
+end)
+
+
+group("perk and skill caps", function()
+	local function skill(id: string): number
+		local config = SkillsConfig.get(id)
+		return if config then config.maxLevel * config.valuePerLevel else 0
+	end
+	local function perkMax(id: string): number
+		local config = PerksConfig.get(id)
+		return if config then config.values[config.maxLevel] else 0
+	end
+	local health = PerkMath.maxHealth(100, skill("Toughness"), perkMax("Toughness"))
+	check("max health never above 180", health <= 180, tostring(health))
+	check("max health keeps the skill alone", PerkMath.maxHealth(100, skill("Toughness"), 0) == 100 + skill("Toughness"))
+	local reload = PerkMath.reloadScale(1 - skill("FastHands") / 100, perkMax("FastHands"))
+	check("reload never below 0.6", reload >= 0.6, tostring(reload))
+	check("reload uses both", PerkMath.reloadScale(0.88, 0.9) < 0.88)
+	check("ammo stacks", math.abs(PerkMath.ammoScale(1.25, 1.3) - 1.625) < 1e-9)
+	check("spread floor", PerkMath.spreadScale(0.1) == PerkMath.SPREAD_FLOOR)
+	check("spread never widens", PerkMath.spreadScale(1.4) == 1)
+	check("heal capped at max", PerkMath.healAfterKill(95, 100, 6) == 100)
+	check("no heal when dead", PerkMath.healAfterKill(0, 100, 6) == 0)
 end)
 
 if failures > 0 then

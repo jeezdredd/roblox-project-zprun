@@ -23,6 +23,7 @@ vendors and skills it sits beside.
 
 - Every pay is multiplied by the difficulty reward multiplier when earned and floored.
 - The balance is one number (kill pay plus distance pay), shown as "+N CR THIS RUN".
+- Distance pay is capped by the server's run clock (decision D5, sprint 1 T11): the distance credits never exceed elapsed seconds x `DISTANCE_PAY_SPEED` (24, the base run speed) / `STUDS_PER_CREDIT` x `DISTANCE_PAY_SLACK` (1.1) x the reward multiplier (`RunEconomyMath.distancePayCap`). A 36 studs/s run earns at most 1.1x the distance credits of a 24 studs/s run per minute; the distance past the cap still counts for leaderstats and goals, and kill, headshot, streak and goal pay stay uncapped. The distance itself is the server-validated one (`RunDistanceGuard`, T2).
 - Banking: the results screen banks and zeroes the balance (a Continue earns afresh, and
   neither the distance already paid nor a goal bonus already paid is paid twice);
   leaving a run alive banks the rest through `addCredits` without counting a run, from
@@ -35,7 +36,18 @@ vendors and skills it sits beside.
   ends. Slot 1 is free. Never Robux.
 - The four perks that stack on a skill read differently: Thick Skin (Toughness),
   Adrenaline (Endurance), Speedloader (Fast Hands), Pack Rat (Scavenger).
-- No perk effect is read by gameplay yet; the effect keys name the system that will.
+- Perks are read by `PerkEffects` (server, sprint 1 T3a/T3b), which mirrors `SkillEffects` and folds each skill and perk pair through `src/shared/util/PerkMath.luau`:
+
+| Perk (effect) | Read by | Combined with | Cap |
+| --- | --- | --- | --- |
+| Thick Skin (`bonusHealth`) | `FlowService` max health | Toughness skill | max health 180 |
+| Adrenaline (`sprintSpeed`) | `DistanceTracker` run speed | Endurance skill | `MAX_RUN_SPEED` 60; distance pay capped per minute (T11) |
+| Speedloader (`reloadScale`) | `WeaponService` reload time, `ReloadScale` attribute | Fast Hands skill | multiplier never below 0.6 |
+| Field Medic (`healPerKill`) | `WeaponService` on a confirmed kill | none | up to max health, never revives |
+| Pack Rat (`ammoScale`) | `AmmoCrates` crate rounds | Scavenger skill | none (1.75 x 1.5 at most) |
+| Steady Aim (`spreadScale`) | `WeaponService` server spread, `SpreadScale` attribute for the client prediction | none | never below 0.4, never widens |
+
+Equipped perks still clear at run end (`PerkService.onRunEnd`).
 
 ## Trade-offs (owner's calls made here)
 

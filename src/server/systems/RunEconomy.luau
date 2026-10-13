@@ -18,12 +18,13 @@ type RunState = {
 	kills: number,
 	streak: number,
 	lastKillAt: number?,
+	startedAt: number,
 }
 
 local runs: { [Player]: RunState } = {}
 
 local function newState(): RunState
-	return { balance = { kills = 0, distance = 0 }, distanceBanked = 0, kills = 0, streak = 0, lastKillAt = nil }
+	return { balance = { kills = 0, distance = 0 }, distanceBanked = 0, kills = 0, streak = 0, lastKillAt = nil, startedAt = os.clock() }
 end
 
 local function multiplier(): number
@@ -58,7 +59,7 @@ function RunEconomy.setDistance(player: Player, traveled: number)
 	if not state then
 		return
 	end
-	local owed = RunEconomyMath.distanceOwed(RunEconomyConfig, traveled, multiplier(), state.distanceBanked)
+	local owed = RunEconomyMath.distanceOwed(RunEconomyConfig, traveled, multiplier(), state.distanceBanked, os.clock() - state.startedAt)
 	state.balance.distance = math.max(state.balance.distance, owed)
 	publish(player, state)
 end

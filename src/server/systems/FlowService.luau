@@ -8,7 +8,7 @@ local HangarConfig = require(ReplicatedStorage.Shared.config.HangarConfig)
 local Flow = require(ReplicatedStorage.Shared.types.Flow)
 local MissionState = require(script.Parent.MissionState)
 local WeaponService = require(script.Parent.WeaponService)
-local SkillEffects = require(script.Parent.SkillEffects)
+local PerkEffects = require(script.Parent.PerkEffects)
 
 local PHASE_ATTRIBUTE = "FlowPhase"
 
@@ -21,8 +21,7 @@ local function applyHumanoidConfig(character: Model, phase: Flow.FlowPhase, play
 	end
 	humanoid.BreakJointsOnDeath = false
 	if player then
-		local bonusHealth = SkillEffects.bonusHealth(player)
-		local maxHealth = GameConstants.PLAYER_MAX_HEALTH + bonusHealth
+		local maxHealth = PerkEffects.maxHealth(player)
 		if humanoid.MaxHealth ~= maxHealth then
 			local ratio = if humanoid.MaxHealth > 0 then humanoid.Health / humanoid.MaxHealth else 1
 			humanoid.MaxHealth = maxHealth

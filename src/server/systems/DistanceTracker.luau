@@ -12,6 +12,7 @@ local RunDistanceGuard = require(ReplicatedStorage.Shared.util.RunDistanceGuard)
 local MissionState = require(script.Parent.MissionState)
 local MissionGoals = require(script.Parent.MissionGoals)
 local SkillEffects = require(script.Parent.SkillEffects)
+local PerkEffects = require(script.Parent.PerkEffects)
 local RunEconomy = require(script.Parent.RunEconomy)
 
 local DistanceTracker = {}
@@ -250,7 +251,7 @@ local function step(deltaTime: number)
 
 		if humanoid then
 			local target = math.min(
-				locationTargetSpeed(now - run.startedAt) + SkillEffects.bonusSpeed(player),
+				locationTargetSpeed(now - run.startedAt) + SkillEffects.bonusSpeed(player) + PerkEffects.sprintSpeed(player),
 				GameConstants.MAX_RUN_SPEED
 			)
 			if now < run.slowUntil then

@@ -383,8 +383,10 @@ local function equipSlot(slot: number)
 	requestEquip(weaponId)
 end
 
+local freeWeapons = WeaponsConfig.ALL_WEAPONS_UNLOCKED and RunService:IsStudio()
+
 local function selectNumber(index: number)
-	if WeaponsConfig.ALL_WEAPONS_UNLOCKED then
+	if freeWeapons then
 		local weaponId = WeaponsConfig.order[index]
 		if weaponId then
 			requestEquip(weaponId)
@@ -396,7 +398,7 @@ end
 
 local function quickSwap()
 	local previous = previousWeaponId
-	if WeaponsConfig.ALL_WEAPONS_UNLOCKED and previous then
+	if freeWeapons and previous then
 		requestEquip(previous)
 		return
 	end

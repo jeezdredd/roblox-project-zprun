@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: CompeyDev/setup-rokit@v0.2.1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python dependencies
+        run: pip install numpy
+      - name: Lint
+        run: selene src/
+      - name: API usage
+        run: python3 tools/validate_api.py
+      - name: No comments
+        run: python3 tools/strip_comments.py --check
+      - name: Packages
+        run: wally install
+      - name: Build
+        run: rojo build -o build.rbxl
+      - name: Tests
+        run: scripts/run_tests.sh

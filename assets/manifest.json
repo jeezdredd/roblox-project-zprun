@@ -3486,7 +3486,7 @@
     "source": "\"FPS Essentials Kit\" 0.9b, Unity Asset Store, bought by the owner 2026-10-12; Sounds/Sfx/Weapons/BulletImpact/Concrete_Impact_01.wav, whole take; 48 kHz 16-bit WAV",
     "license": "Unity Asset Store EULA (Standard), bought by the owner; not committed, the repo is public",
     "file": "assets/unity/fps-essentials-kit/converted/audio/impact_concrete_01.wav",
-    "status": "reviewing",
+    "status": "approved",
     "note": "bullet on stone",
     "assetId": "136630316722813"
   },
@@ -3510,7 +3510,7 @@
     "source": "\"FPS Essentials Kit\" 0.9b, Unity Asset Store, bought by the owner 2026-10-12; Sounds/Sfx/Weapons/BulletImpact/metal_02.wav, whole take; 48 kHz 16-bit WAV",
     "license": "Unity Asset Store EULA (Standard), bought by the owner; not committed, the repo is public",
     "file": "assets/unity/fps-essentials-kit/converted/audio/impact_metal_02.wav",
-    "status": "reviewing",
+    "status": "approved",
     "note": "bullet on metal",
     "assetId": "114407083094942"
   },
@@ -3518,7 +3518,7 @@
     "source": "\"FPS Essentials Kit\" 0.9b, Unity Asset Store, bought by the owner 2026-10-12; Sounds/Sfx/Weapons/BulletImpact/Wood_02.wav, whole take; 48 kHz 16-bit WAV",
     "license": "Unity Asset Store EULA (Standard), bought by the owner; not committed, the repo is public",
     "file": "assets/unity/fps-essentials-kit/converted/audio/impact_wood_01.wav",
-    "status": "reviewing",
+    "status": "approved",
     "note": "bullet on wood",
     "assetId": "84903238717547"
   },
@@ -3526,7 +3526,7 @@
     "source": "\"FPS Essentials Kit\" 0.9b, Unity Asset Store, bought by the owner 2026-10-12; Sounds/Sfx/Weapons/BulletImpact/Wood_03.wav, whole take; 48 kHz 16-bit WAV",
     "license": "Unity Asset Store EULA (Standard), bought by the owner; not committed, the repo is public",
     "file": "assets/unity/fps-essentials-kit/converted/audio/impact_wood_02.wav",
-    "status": "reviewing",
+    "status": "approved",
     "note": "bullet on wood",
     "assetId": "93681869844468"
   },
@@ -4672,7 +4672,7 @@
     "source": "\"FPS Essentials Kit\" 0.9b, Unity Asset Store, bought by the owner 2026-10-12; Sounds/Sfx/Weapons/BulletImpact/metal_03.wav, whole take; 48 kHz 16-bit WAV",
     "license": "Unity Asset Store EULA (Standard), bought by the owner; not committed, the repo is public",
     "file": "assets/unity/fps-essentials-kit/converted/audio/impact_metal_03.wav",
-    "status": "reviewing",
+    "status": "approved",
     "note": "bullet on metal",
     "assetId": "78892265768154"
   }

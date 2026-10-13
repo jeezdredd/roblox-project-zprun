@@ -165,12 +165,14 @@ local function syncLoadout(player: Player)
 	player:SetAttribute("LoadoutSlot2", loadout[2] or "")
 end
 
+local freeWeapons = WeaponsConfig.ALL_WEAPONS_UNLOCKED and RunService:IsStudio()
+
 local function onEquip(player: Player, weaponId: any)
 	if typeof(weaponId) ~= "string" then
 		return
 	end
 	local config = WeaponsConfig.get(weaponId)
-	if not config or not (WeaponsConfig.ALL_WEAPONS_UNLOCKED or ownsWeapon(player, weaponId)) then
+	if not config or not (freeWeapons or ownsWeapon(player, weaponId)) then
 		return
 	end
 	local current = states[player]

@@ -41,7 +41,8 @@ def load_key():
 
 def fetch_state(api_key, asset_id):
     result = subprocess.run(
-        ["curl", "-s", "-H", f"x-api-key: {api_key}", ASSET_ENDPOINT + str(asset_id)],
+        ["curl", "-s", "-H", "@-", ASSET_ENDPOINT + str(asset_id)],
+        input=f"x-api-key: {api_key}\n",
         capture_output=True,
         text=True,
     )

@@ -78,8 +78,8 @@ def asset_type_for(key, path):
     return None
 
 
-def curl_json(args):
-    result = subprocess.run(args, capture_output=True, text=True)
+def curl_json(args, key):
+    result = subprocess.run(args + ["-H", "@-"], input=f"x-api-key: {key}\n", capture_output=True, text=True)
     if result.returncode != 0:
         return None, result.stderr.strip() or f"curl exited {result.returncode}"
     try:
@@ -98,10 +98,9 @@ def upload(key, name, path, asset_type):
     content_type = CONTENT_TYPES.get(os.path.splitext(path)[1].lower(), "application/octet-stream")
     payload, error = curl_json([
         "curl", "-s", "-X", "POST", ASSET_ENDPOINT,
-        "-H", f"x-api-key: {key}",
         "-F", f"request={json.dumps(request)}",
         "-F", f"fileContent=@{path};type={content_type}",
-    ])
+    ], key)
     if payload is None:
         return None, error
     operation_id = payload.get("operationId")
@@ -112,7 +111,7 @@ def upload(key, name, path, asset_type):
 
 def poll(key, operation_id):
     for _ in range(POLL_ATTEMPTS):
-        payload, error = curl_json(["curl", "-s", OPERATION_ENDPOINT + operation_id, "-H", f"x-api-key: {key}"])
+        payload, error = curl_json(["curl", "-s", OPERATION_ENDPOINT + operation_id], key)
         if payload is None:
             return None, None, error
         if payload.get("done"):

@@ -14,10 +14,10 @@ Estimates are optimistic / expected / pessimistic agent-days. No velocity histor
 
 | ID | Task | Owner | Estimate | Dependencies | Files touched | Lane | Group | Status |
 |----|------|-------|----------|-------------|---------------|------|-------|--------|
-| T1 | Gate free-weapons flag (CRITICAL PATH) | security-engineer | 0.5 / 0.5 / 1 | none | WeaponsConfig, WeaponService, WeaponController | A | G1 | todo |
-| T5 | Client boot isolation | lead-programmer | 0.5 / 0.5 / 1 | none | src/client/init.client.luau | B | G1 | todo |
-| T6 | Test runner and CI | devops-engineer | 0.5 / 1 / 2 | none | scripts/run_tests.sh (new), .github/workflows/ci.yml (new), rokit.toml | C | G1 | todo |
-| T22 | Dev key handling | security-engineer | 0.5 / 0.5 / 1 | none | scripts/upload_assets.py, scripts/refresh_status.py | D | G1 | todo |
+| T1 | Gate free-weapons flag (CRITICAL PATH) | security-engineer | 0.5 / 0.5 / 1 | none | WeaponsConfig, WeaponService, WeaponController | A | G1 | done |
+| T5 | Client boot isolation | lead-programmer | 0.5 / 0.5 / 1 | none | src/client/init.client.luau | B | G1 | done |
+| T6 | Test runner and CI | devops-engineer | 0.5 / 1 / 2 | none | scripts/run_tests.sh (new), .github/workflows/ci.yml (new), rokit.toml | C | G1 | done |
+| T22 | Dev key handling | security-engineer | 0.5 / 0.5 / 1 | none | scripts/upload_assets.py, scripts/refresh_status.py | D | G1 | done |
 | A1 | Asset guidance and generator provenance | tools-programmer | 1 / 1.5 / 2.5 | none | scripts/sync_needed.py, scripts/sync_configs.py, assets/NEEDED.md, assets/LICENSES.md, a tests fixture, wiki Assets Pipeline.md | E (asset lane) | G1 | todo |
 | A2 | Worktree Fab setup and ignore fix | tools-programmer | 0.5 / 0.5 / 1 | none | .gitignore, scripts/worktree_setup.sh (new), wiki Development Policy.md | F | G1 | todo |
 | T21 | Wiki truth pass | producer | 0.5 / 1 / 1.5 | none | wiki Progress.md, Gameplay Systems.md, Route Forks.md, src/shared/config/PickupScenesConfig.luau (Roadmap.md only if the roadmap rewrite is not applied) | G | G1 | todo |

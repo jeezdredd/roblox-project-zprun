@@ -11,10 +11,12 @@ local RAY_DOWN = 4.5
 local MAX_OFFSET = 1.6
 local LERP_SPEED = 9
 local STAND_SPEED = 1.5
+local POLE_OFFSET = Vector3.new(0, -0.8, -3)
 
 type FootRig = {
 	control: IKControl,
 	target: Attachment,
+	pole: Attachment?,
 	restY: number,
 	current: number,
 }
@@ -30,6 +32,10 @@ local function clearRig()
 		end
 		if foot.target.Parent then
 			foot.target:Destroy()
+		end
+		local pole = foot.pole
+		if pole and pole.Parent then
+			pole:Destroy()
 		end
 	end
 	rig = {}
@@ -47,16 +53,28 @@ local function buildFoot(character: Model, humanoid: Humanoid, footName: string,
 	target.WorldPosition = foot.Position
 	target.Parent = Workspace.Terrain
 
+	local leg = character:FindFirstChild(legName)
+	local pole: Attachment? = nil
+	if leg and leg:IsA("BasePart") then
+		local attachment = Instance.new("Attachment")
+		attachment.Name = footName .. "IkPole"
+		attachment.Position = POLE_OFFSET
+		attachment.Parent = leg
+		pole = attachment
+	end
+
 	local control = Instance.new("IKControl")
 	control.Name = footName .. "Ik"
 	control.Type = Enum.IKControlType.Position
-	control.ChainRoot = character:FindFirstChild(legName) or character:FindFirstChild("LowerTorso") or root
+	control.ChainRoot = leg or character:FindFirstChild("LowerTorso") or root
 	control.EndEffector = character:FindFirstChild(endEffectorName) or foot
 	control.Target = target
+	control.Pole = pole
 	control.Weight = 0
+	control.Enabled = false
 	control.Parent = humanoid
 
-	table.insert(rig, { control = control, target = target, restY = foot.Position.Y, current = 0 })
+	table.insert(rig, { control = control, target = target, pole = pole, restY = foot.Position.Y, current = 0 })
 end
 
 local function setupCharacter(character: Model)
@@ -83,6 +101,7 @@ local function update(deltaTime: number)
 	if not character or not humanoid or humanoid.Health <= 0 or not inHub then
 		for _, foot in rig do
 			foot.control.Weight = math.max(0, foot.control.Weight - deltaTime * 4)
+			foot.control.Enabled = foot.control.Weight > 0
 		end
 		return
 	end
@@ -110,6 +129,7 @@ local function update(deltaTime: number)
 		else
 			foot.control.Weight = math.max(0, foot.control.Weight - deltaTime * 8)
 		end
+		foot.control.Enabled = foot.control.Weight > 0
 	end
 end
 
